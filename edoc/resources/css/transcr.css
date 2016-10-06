@@ -1,0 +1,99 @@
+/* Karlstadt: Transkripte */
+/* basierend auf Vorarbeiten erstellt 2016-05-23 */
+/* DK - Dario Kampkaspar <kampkaspar@hab.de> */
+
+@import "common.css";
+
+/** --- Apparat --- **/
+.fn_number_app {
+	width: 3.25em;
+}
+span.footnoteText{
+	padding-left: 3.25em;
+}
+
+/** --- Überschriften --- **/
+h2 + h3 {
+	padding-top: 0;
+}
+h4 {
+	background-color: #EEE;
+	color: #900129;					/* neu 2016-07-11 DK */
+	padding-left: 1em;			/* Padding angepaßt für Zentrierung; 2016-07-11 DK */
+	padding-right: 1em;
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+	position: relative;
+	width: 80%;
+	width: calc(100% - 2em);
+	font-size: 1em;
+	/*font-weight: normal;*/
+}
+h5 {
+	font-size: 1em;
+	margin-bottom: 0;
+	background-color: #EEE;
+	font-weight: normal;
+}
+h5 + p.content {
+	margin-top: 0;
+}
+h4 + p.content {
+	margin-top: 0.25em;
+}
+
+/** --- Listen --- **/
+/* lange Zahl, hängender Einzug */
+dl.flex dt {
+	float: left;
+	clear: left;
+	margin-right: 5px;
+}
+
+#marginalia_container {
+	position: relative;
+	float: left;
+	width: 19.75%;
+	width: calc(20% - 0.15em);
+	display: none;
+}
+
+.marginalia_text {
+	font-size: 8pt;
+	line-height: 1.2;
+	/*max-width: 187px;
+	max-width: calc(100% - 0.5em);*/
+}
+.mref {
+	font-size: 8pt;
+	vertical-align: super;
+	height: 1px;
+	display: inline-block;
+}
+
+/* Supplemente */
+div.supplement {
+	padding-top: 4em;
+	padding-bottom: 0.5em;
+	font-weight: bold;
+	font-size: 110%;
+}
+
+/** Zitate müssen im Text getrennt behandelt werden; 2016-07-11 DK **/
+/* Anführungszeichen nicht im Text, sondern nur in einer Fußnote; 2016-07-11 DK */
+q {
+	quotes: "" "" "" "";
+}
+span.footnoteText q {
+	quotes: "»" "«" "›" "‹";
+	font-style: normal;
+}
+/* Schriftsatz für Anführungszeichen explizit, damit bei fremdspr. Texten nicht die aus Calibri genommen werden */
+span.footnoteText q:before {
+	content: open-quote;
+	font-family: mufi;
+}
+span.footnoteText q:after {
+	content: close-quote;
+	font-family: mufi;
+}

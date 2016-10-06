@@ -1,0 +1,22 @@
+/* CSS für index- und andere breite Seiten in eXist */
+/* 2016-07-20 Dario Kampkaspar (DK) – kampkaspar@hab.de */
+
+@import "common.css";
+
+/* basiert auf diglib.hab.de/navigator2.css */
+#toc_title {
+	background-color: #EEE;
+	padding: 0.5em;
+	border: 1px solid gray;
+	font-size: 0.8em;
+	margin-bottom: 2em;
+}
+
+div.startImage {
+	position: relative;
+	left: 10%;
+	width: 80%;
+	padding: 1em;
+	text-align: center;
+	border: 1px solid gray;
+}

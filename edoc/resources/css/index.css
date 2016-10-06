@@ -1,0 +1,13 @@
+/* CSS für index- und andere breite Seiten in eXist */
+/* 2016-07-25 Dario Kampkaspar (DK) – kampkaspar@hab.de */
+
+@import "common.css";
+
+#container {
+	width: 100%;
+}
+
+#content {
+	width: 70%;
+	padding-left: 15%;
+}

@@ -1,0 +1,345 @@
+/* Karlstadt: common */
+/* erstellt 2016-05-23 */
+/* DK - Dario Kampkaspar <kampkaspar@hab.de> */
+
+@font-face {
+	font-family:'mufi'; 
+	src: url('Junicode.woff') format('woff');
+}
+
+/** --- Body --- **/
+body {
+	margin-left: 2.5em;
+	margin-right: 2.5em;
+	margin-top: 0;
+	margin-bottom: 1em;
+	font-family: mufi;
+	font-size: 1rem;
+	line-height: 1.4rem;
+	min-width: 30rem;
+	/*max-width: 80rem; width: 80%; /* (Maximale) Breite nur bei #content sinnvoll; 2016-06-28 DK */
+}
+
+/* auf Druckern darf die Schrift durchaus etwas kleiner werden; Ränder können angepaßt werden; 2016-05-24 DK */
+@media print {
+	body {
+		font-size: 0.75rem;
+		margin-left: 25mm;
+		margin-right: 40mm;
+	}
+}
+
+/* Inhalt */
+#container {
+	width: 50%;
+}
+#content {
+	text-align: justify;
+	/*overflow: auto;*/
+	/* neu 2016-06-28 DK */
+	/* Breite jetzt 100%, da container auf 50% reduziert */
+	width: calc(100% - 1em);
+	min-width: 20rem;
+	max-width: 60rem;
+}
+
+/** --- Links --- **/
+a{
+	color: #098AB2;
+	text-decoration: none;
+}
+a.upRef {
+	float: right;
+	font-style: normal;
+}
+h4 a.upRef {
+	margin-right: -0.75em; /* neu 2016-07-11 DK */
+}
+/* Hervorheben von Sprungzielen */
+:target {
+	background-color: #FFEF19;
+/*	background-color: #14A0CC;*/
+}
+
+/** --- Apparat --- **/
+/* Container */
+div.footnotes {
+	font-size: 0.9em;
+	line-height: 1em;
+	text-align: justify;
+	padding-bottom: 1.5mm
+}
+/* Fußnotenlinie ausschalten, falls keine Anmerkungen vorhanden */
+hr.fnRule:only-child {
+	display: none;
+}
+/* Fußnotennummer im Text */
+a.fn_number {
+	font-size: 0.7em;
+	vertical-align: super;
+	line-height: 0;					/* verhindert, daß die umliegende Zeile höher wird */
+}
+/* Fußnotennummer im Apparat */
+.fn_number_app {
+	color: #098AB2;
+	display: block;
+	float: left;
+	position: relative;
+}
+/* Fußnotentext im Apparat */
+span.footnoteText{
+	display: block;
+	text-align: justify;
+}
+
+#FußnotenApparat + hr {
+	height: 1px;
+	margin: 1em 0 1em 0;
+}
+
+/** --- fremdsprachliche Teile --- **/
+[lang=grc], [lang=he] {
+	font-family: calibri;
+}
+
+/** --- Überschriften --- **/
+/* Nr., Titel der EE */
+h1 {
+	font-size: 1.1em;
+	text-align: center;
+	letter-spacing: 0.09em;
+	color: #900129;
+	margin-bottom: 0.5em;
+}
+/* Titel des Teils (Einleitung, Text, Beilage) */
+h2 {
+	letter-spacing: 0.3em;
+	font-size: 1em;
+	padding: 0;
+	margin: 0;
+	font-weight: normal;
+	display: inline-block;
+}
+h2 + hr {
+	margin: 0;
+	margin-bottom: 0.5em;
+	padding: 0;
+	height: 1px;
+}
+p.editors {
+	text-align: center;
+	margin-bottom: 2em;
+	margin-top: 0;
+}
+/* Überschrift von Abschnitten */
+h3 {
+	font-style: italic;
+	font-size: 1em;
+	text-align: center;
+	padding-top: 0.75em;
+	color: #900129;
+}
+
+/** --- feste Navigation am Kopf --- **/
+#navBar {
+	position: fixed;
+	background-color: white;
+	top: 0;
+	z-index: 99;
+	/* 5em: Breite der Ränder; neu 2016-07-01 DK */
+	width: 90%;
+	width: calc(100% - 5em);
+}
+#navBar hr {
+	margin-top: 0;
+}
+span.dispOpts {
+	float: right;
+	font-size: 0.8em;
+}
+
+/** Projektnavigation links **/
+#sideBar {
+	max-width: 30%;
+	max-height: calc(100% - 150px);
+	padding: 4px;
+	overflow: auto;
+	z-index: 99;
+	position:fixed;
+	background-color: white;
+	border: 1px solid;
+	display: none;
+}
+ul#nav {
+	margin-bottom: 0;
+	margin-top: 8px;
+	padding-left: 1.1em;
+	padding-left: calc(1em + 4px);
+}
+ul#nav li ul {
+	padding-left: 1.1em;
+	padding-left: calc(1em + 4px);
+}
+
+/* Spezialbereich rechts */
+#rightSide {
+	width: 46%;
+	width: calc(50% - 3em);
+	height: 98%;
+	height: calc(100% - 150px);
+	position: fixed;
+	right: 2.5em;
+	background-color:white;
+}
+
+/* eingeblendete Informationen, Fußnoten etc. */
+.info {
+	background-color: yellow;
+	border: 1px solid;
+	position: fixed;
+	top: 150px;
+	right: 2.5em;
+	max-height: calc(100% - 300px);
+	display: none;
+}
+
+/* Faksimile im Spezialbereich */
+#facsimile {
+	display: none;
+}
+
+/* Work-in-progress oder Versionshinweise etc. */
+#wip {
+	background-color: #EEE;
+	border: 1px solid black;
+	font-size: 11pt;
+	text-align: center;
+	margin-bottom: 2em;
+}
+
+/* Footer */
+/* an navigator2.css angepaßt; 2016-07-20 DK */
+.footer {
+	width: 50%;
+	background-color: #EEE;
+	margin: 1em 0.5em 1em 0.5em;
+	padding: 0.2em;
+	font-size: 0.7em
+}
+
+/** --- Tabellen --- **/
+table {
+	border-collapse: collapse;
+	padding: 1px;
+}
+/* border immer weitergeben; 2016-08-16 DK */
+tbody {
+	border: inherit;
+}
+tr {
+	border: inherit;
+}
+td {
+	border: inherit;
+	padding: 0.2em;
+}
+th {
+	background-color: #EEE;
+	font-weight: bold;
+	text-align: center;
+	padding: 0.2em;
+	border: 1px solid;
+	border-top: 0;
+	border-color: white;
+	border-bottom: 0;
+}
+table.firstColumnLabel td:first-child {
+	font-weight: bold;
+	text-align: center;
+	border-left: 0;
+	background-color: #EEE;
+	border-color: white;
+	border-right-color: black;
+}
+
+/* rahmenlose Tabelle; 2016-08-17 DK */
+table.noborder {
+	border: 0;
+}
+table.noborder td {
+	border: inherit;
+	vertical-align: top;
+}
+table.noborder ul {
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-left: 15pt;
+}
+
+/** --- Hover-Boxen für Fußnoten etc --- **/
+/* Style des Inhalts wird durch das Kopieren aus dem Apparat übernommen */
+span.infoContainer {
+	display: block;
+	text-align: justify;
+	font-size: small;
+	position: absolute;
+	border: 1px solid;
+	background-color: rgb(238,238,238);
+	color: black;
+	z-index: 1;
+	font-weight: normal;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+/** --- Fußbereich --- **/
+/* CreativeCommons-Angabe */
+div.ccsec {
+	width: 50%;
+	font-weight: 600;
+	text-align: right;
+	margin-top: 1em;
+}
+img.ccimg {
+	width: 50px;
+	float: right;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+/** --- Hoch- und Tiefgestelles --- **/
+.subscript {
+	vertical-align: sub;
+	line-height: 0px;
+	font-size: 0.7em;
+}
+.superscript {					/* identisch a.fn_number */
+	vertical-align: super;
+	line-height: 0px;
+	font-size: 0.7em;
+}
+
+/* cit */
+.blockquote {
+	padding-left: 3em;
+	padding-right: 3em;
+	display: inline-block;
+}
+p.content {
+	padding-right: 0.2em; /* damit kursiver Text vollständig angezeigt wird */
+	margin-top: 0.4em;		/* 2x neu, überschreibt Browser-Voreinstellungen; 2016-07-12 DK */
+	margin-bottom: 0.4em;
+}
+p.content + p.content {
+	text-indent: 1em;
+}
+
+/* Originalschreibung; 2016-07-11 DK */
+span.orig {
+	font-style: normal;
+}
+
+/* Autoren in Kapitälchen; 2016-07-11 DK */
+span.nameSC {
+	font-variant: small-caps;
+}
