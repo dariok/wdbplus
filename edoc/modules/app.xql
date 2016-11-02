@@ -101,3 +101,9 @@ declare function hab:getEENr($node as node(), $model as map(*), $id as xs:string
 	let $ee := substring-before(substring-after($id, 'edoc_'), '_')
 	return <meta name="edition" content="{$ee}" />
 };
+
+(: neu für das Laden projektspezifischer JS; 2016-11-02 DK :)
+declare function hab:getJS($node as node(), $model as map(*)) {
+	let $path := concat($model("ed"), "/script/project.js")
+	return <script src="{$path}" type="text/javascript" />
+};
