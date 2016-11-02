@@ -220,9 +220,10 @@ ul#nav li ul {
 /* Footer */
 /* an navigator2.css angepaßt; 2016-07-20 DK */
 .footer {
-	width: 50%;
+	/* Breite 100%, da nur innerhalb content / rightSide; 2016-11-02 DK */
+	width: calc(100% - 2em);
 	background-color: #EEE;
-	margin: 1em 0.5em 1em 0.5em;
+	/* margin: 1em 0.5em 1em 0.5em; */
 	padding: 0.2em;
 	font-size: 0.7em
 }
