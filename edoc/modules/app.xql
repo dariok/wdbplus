@@ -93,8 +93,11 @@ declare function hab:getCSS($node as node(), $model as map(*)) {
 	let $f := if ($model("type") = "transcript")
 			then "transcr.css"
 			else "intro.css"
-			
-	return <link rel="stylesheet" type="text/css" href="resources/css/{$f}" />
+	let $path := concat($model("ed"), "/layout/project.css")
+	
+	return (<link rel="stylesheet" type="text/css" href="resources/css/{$f}" />,
+		<link rel="stylesheet" type="text/css" href="{$path}" />
+	)
 };
 
 declare function hab:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
