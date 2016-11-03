@@ -1,6 +1,6 @@
 xquery version "3.0";
 
-module namespace hab="http://diglib.hab.de/ns/hab";
+module namespace hab = "http://diglib.hab.de/ns/hab";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "http://diglib.hab.de/ns/config" at "config.xqm";
@@ -62,7 +62,7 @@ declare function hab:EEbody($node as node(), $model as map(*)) {
 	let $params := <parameters><param name="server" value="eXist"/></parameters>
 	
 	return transform:transform(doc($file), doc($xslt), $params)
-(:	return <div><p>{$file}</p><p>{$xslt}</p><p>{$params}</p></div>:)
+(:	return <div><p>f {$file}</p><p>x {$xslt}</p><p>p {$params}</p></div>:)
 };
 
 declare function hab:pageTitle($node as node(), $model as map(*)) {
