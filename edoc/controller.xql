@@ -28,6 +28,8 @@ else if (ends-with($exist:path, 'start.html')) then
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</error-handler>
 	</dispatch>
+(: spezifiziert auf view.html; 2016-11-03 DK :)
+(: kann weiter generell bleiben; 2016-11-04 DK :)
 else if (ends-with($exist:resource, ".html")) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<view>
