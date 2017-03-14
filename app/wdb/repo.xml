@@ -1,0 +1,14 @@
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>Workbench und Publikationsumgebung für Digitale Bibliotheken Wien/Wolfenbüttel</description>
+    <author>Dario Kampkaspar</author>
+    <author>Dario Kampkaspar</author>
+    <website>https://github.com/dariok/wdb-exist-public</website>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>application</type>
+    <target>wdb</target>
+    <prepare>pre-install.xql</prepare>
+    <finish/>
+    <permissions user="kampkaspar" password="21Ec2020-3AEA" group="dba" mode="rw-rw-r--"/>
+</meta>
