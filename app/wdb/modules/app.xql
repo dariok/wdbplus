@@ -6,9 +6,10 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "http://diglib.hab.de/ns/config" at "config.xqm";
 import module namespace habt			= "http://diglib.hab.de/ns/transform" at "transform.xqm";
 
-declare namespace mets = "http://www.loc.gov/METS/";
-declare namespace xlink = "http://www.w3.org/1999/xlink";
-declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace mets	= "http://www.loc.gov/METS/";
+declare namespace mods	= "http://www.loc.gov/mods/v3";
+declare namespace xlink	= "http://www.w3.org/1999/xlink";
+declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 declare variable $hab:edoc := "/db/edoc";
 declare variable $hab:edocRestBase := "http://dev2.hab.de/rest";
@@ -18,22 +19,33 @@ declare variable $hab:edocBase := 'http://dev2.hab.de/edoc';
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
 declare %templates:wrap
-function hab:getEE($node as node(), $model as map(*), $id as xs:string) as map(*) {
-    let $ed := substring-before(substring-after($id, 'edoc_'), '_')
-    
-	let $mets := doc(concat($hab:edoc, '/', $ed, "/mets.xml"))
+function hab:getEE($node as node(), $model as map(*), $id as xs:string) { (:as map(*) {:)
+	let $m := hab:populateModel($id)
+	return $m
+};
+
+declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
+	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
+	let $ed := if (contains($id, 'edoc'))
+		then substring-before(substring-after($id, 'edoc_'), '_')
+		else $id
+	
+	let $metsLoc := concat($hab:edoc, '/', $ed, "/mets.xml")
+	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
 	let $file := doc(concat($hab:edoc, '/', $ed, '/', $fileLoc))
-	(:let $type := $metsfile/parent::mets:fileGrp/@ID:)
-	let $type := $mets//mets:div[@TYPE='group']/mets:div[descendant::mets:fptr[@FILEID=$id]]/@ID
-	let $structid := $mets//mets:div[mets:fptr[@FILEID=$id]]/@ID
+	(:let $structId := $metsfile/parent::mets:fileGrp/@ID:)
+	let $structId := $mets//mets:div[@TYPE='group']/mets:div[descendant::mets:fptr[@FILEID=$id]]/@ID
+	let $structType := $mets//mets:div[mets:fptr[@FILEID=$id]]/@TYPE
 	let $xslt := 
-	    if ($mets//mets:behaviorSec[@ID='html'])
-	        then $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$type]/mets:mechanism/@xlink:href
-	        else $mets//mets:behavior[(@LABEL='html' or @LABEL='HTML') 
-	                and @STRUCTID=$structid]/mets:mechanism/@xlink:href
-	
+		if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML'])
+			then if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId])
+				then $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId]/mets:mechanism/@xlink:href
+				(: Unterstützung für den Fall in Karlstadt: in einer div sind Intro und Transcript zusammen :)
+				else $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structType]/mets:mechanism/@xlink:href
+	    else $mets//mets:behavior[(@LABEL='html' or @LABEL='HTML') 
+	                and @STRUCTID=$structType]/mets:mechanism/@xlink:href
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
 	let $shortTitle := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type]
 	let $nr := $file/tei:TEI/@n
@@ -42,26 +54,31 @@ function hab:getEE($node as node(), $model as map(*), $id as xs:string) as map(*
 		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type)]/node()
 	}
 	
-	(:return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "type" := $type, "title" := $title ,
-			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed }:)
-	return <ul>
+	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "type" := $structId, "title" := $title ,
+			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
+	(:return <ul>
 	    <li>ID: {$id}</li>
 	    <li>Mets: {concat($hab:edoc, '/', $ed, "/mets.xml")}; existiert? {doc-available(concat($hab:edoc, '/', $ed, "/mets.xml"))}</li>
 	    <li>metsfile: {$metsfile}</li>
 	    <li>fileloc: {string($fileLoc)}</li>
 	    <li>file: {concat($hab:edoc, '/', $ed, '/', $fileLoc)}</li>
-	    <li>structid: {string($structid)}</li>
-	    <li>type: {string($type)}</li>
+	    <li>structType: {string($structType)}</li>
+	    <li>structId: {string($structId)}</li>
 	    <li>xslt: {string($xslt)}</li>
-	</ul>
+	</ul>:)
 };
 
-declare function hab:EEtitle($node as node(), $model as map(*)) {
+declare function hab:getEdTitle($node as node(), $model as map(*)) as element() {
+	let $name := doc($model("metsLoc"))//mods:mods/mods:titleInfo/mods:title
+	return <h1>{string($name)}</h1>
+};
+
+declare function hab:EEtitle($node as node(), $model as map(*)) as xs:string {
 	let $title := habt:transform($model("title"))
-	return $title
+	return string-join($title, '|')
 };
 
-declare function hab:EEpart($node as node(), $model as map(*)) {
+declare function hab:EEpart($node as node(), $model as map(*)) as xs:string {
 	<h2>{
 		switch ($model("type"))
 			case "introduction"
@@ -79,11 +96,14 @@ declare function hab:EEbody($node as node(), $model as map(*)) {
 	let $xslt := concat($hab:edoc, '/', $model("ed"), '/', $model("xslt"))
 	let $params := <parameters><param name="server" value="eXist"/></parameters>
 	(: ambiguous rule match soll nicht zum Abbruch führen :)
-	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
+(:	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>:)
+let $attr := ()
 	
-(:	return transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no"):)
-	return transform:transform(doc($file), doc($xslt), $params)
-(:	return <div><p>f {$file}</p><p>x {$xslt}</p><p>p {$params}</p></div>:)
+	return
+		try { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
+		catch * { <ul><li>f: {$file}</li><li>x: {$xslt}</li><li>p: {$params}</li><li>a: {$attr}</li></ul>
+				,<ul><li>{$err:code}: {$err:description}</li><li>{$err:line-number}:{$err:column-number}</li><li>a: {$err:additional}</li></ul>}
+		(:doc($file):)
 };
 
 declare function hab:pageTitle($node as node(), $model as map(*)) {
