@@ -219,7 +219,7 @@ function toggleSidebar() {
 	if($('#sideBar').text() === '') {
 		$('#sideBar').text('lädt...');
 		var id = $('meta[name="edition"]').attr('content');
-		var res = $.get('http://dev2.hab.de/apps/wdb/modules/mets.xql?id=' + id, '',
+		var res = $.get('/apps/wdb/modules/mets.xql?id=' + id, '',
 				function(data) { $('#sideBar').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },
 				'html');
 	}
@@ -234,7 +234,7 @@ function toggleSidebar() {
 
 function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
-	var q = 'http://dev2.hab.de:8080/exist/edoc/entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
+	var q = '/edoc/entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
 	
 	$.ajaxSetup({ cache: false });
 	var res = $.get(q, '', function(data, textStatus, jqXHR) { 
