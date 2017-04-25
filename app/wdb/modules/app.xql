@@ -36,36 +36,71 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
 	let $file := doc(concat($hab:edoc, '/', $ed, '/', $fileLoc))
 	(:let $structId := $metsfile/parent::mets:fileGrp/@ID:)
-	let $structId := $mets//mets:div[@TYPE='group']/mets:div[descendant::mets:fptr[@FILEID=$id]]/@ID
-	let $structType := $mets//mets:div[mets:fptr[@FILEID=$id]]/@TYPE
-	let $xslt := 
+	(:let $structId := $mets//mets:div[@TYPE='group']//mets:div[descendant::mets:fptr[@FILEID=$id]]/@ID
+	let $structType := $mets//mets:div[mets:fptr[@FILEID=$id]]/@TYPE:)
+	(:let $xslt := 
 		if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML'])
 			then if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId])
 				then $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId]/mets:mechanism/@xlink:href
-				(: Unterstützung für den Fall in Karlstadt: in einer div sind Intro und Transcript zusammen :)
+				( : Unterstützung für den Fall in Karlstadt: in einer div sind Intro und Transcript zusammen : )
 				else $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structType]/mets:mechanism/@xlink:href
-	    else $mets//mets:behavior[(@LABEL='html' or @LABEL='HTML') 
-	                and @STRUCTID=$structType]/mets:mechanism/@xlink:href
+	    else $mets//mets:behavior[@STRUCTID=$structId]/mets:mechanism/@xlink:href:)
+	(: Das XSLT finden :)
+	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
+     : damit ist die »spezifischste« ID immer die letzte :)
+    let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
+    (: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
+    let $be := for $s in $structs
+        return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
+    (:  :)
+    let $behavior := for $b in $be
+        order by local:val($b, $structs, 'HTML')
+        return $b
+    let $xslt := $behavior[position() = last()]/mets:mechanism/@xlink:href
+	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
 	let $shortTitle := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type]
 	let $nr := $file/tei:TEI/@n
 	let $title := element tei:title {
 		$nr,
-		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type)]/node()
+		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')]/node()
 	}
 	
-	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "type" := $structId, "title" := $title ,
+	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
 			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
 	(:return <ul>
 	    <li>ID: {$id}</li>
-	    <li>Mets: {concat($hab:edoc, '/', $ed, "/mets.xml")}; existiert? {doc-available(concat($hab:edoc, '/', $ed, "/mets.xml"))}</li>
+	    <li>Ed: {$ed}</li>
+	    <li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
 	    <li>metsfile: {$metsfile}</li>
 	    <li>fileloc: {string($fileLoc)}</li>
-	    <li>file: {concat($hab:edoc, '/', $ed, '/', $fileLoc)}</li>
-	    <li>structType: {string($structType)}</li>
-	    <li>structId: {string($structId)}</li>
+	    <li>file: {concat($hab:edoc, '/', $ed, '/', $fileLoc)}; existiert? {doc-available(concat($hab:edoc, '/', $ed, '/', $fileLoc))}</li>
+	    <li>structId: {string($behavior[position() = last()]/@ID)}</li>
 	    <li>xslt: {string($xslt)}</li>
+	    <li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
 	</ul>:)
+};
+
+(: Finden der korrekten behavior
+ : $test: zu bewertende mets:behavior
+ : $seqStruct: sequence von mets:div/@ID, spezifischste zuletzt
+ : $type: gesuchter Ausgabetyp
+ : returns: einen gewichteten Wert für den Rang der behavior :)
+declare function local:val($test, $seqStruct, $type) {
+    let $vIDt := for $s at $i in $seqStruct
+        return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
+            then math:exp10($i)
+            else 0
+    let $vID := fn:max($vIDt)
+    let $vS := if ($test[@BTYPE = $type])
+        then 5
+        else if ($test[@LABEL = $type])
+        then 3
+        else if ($test[@ID = $type])
+        then 1
+        else 0
+    
+    return $vS + $vID
 };
 
 declare function hab:getEdTitle($node as node(), $model as map(*)) as element() {
