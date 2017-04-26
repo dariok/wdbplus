@@ -35,16 +35,7 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
 	let $file := doc(concat($hab:edoc, '/', $ed, '/', $fileLoc))
-	(:let $structId := $metsfile/parent::mets:fileGrp/@ID:)
-	(:let $structId := $mets//mets:div[@TYPE='group']//mets:div[descendant::mets:fptr[@FILEID=$id]]/@ID
-	let $structType := $mets//mets:div[mets:fptr[@FILEID=$id]]/@TYPE:)
-	(:let $xslt := 
-		if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML'])
-			then if ($mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId])
-				then $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structId]/mets:mechanism/@xlink:href
-				( : Unterstützung für den Fall in Karlstadt: in einer div sind Intro und Transcript zusammen : )
-				else $mets//mets:behaviorSec[@ID='html' or @ID='HTML']/mets:behavior[@STRUCTID=$structType]/mets:mechanism/@xlink:href
-	    else $mets//mets:behavior[@STRUCTID=$structId]/mets:mechanism/@xlink:href:)
+
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
      : damit ist die »spezifischste« ID immer die letzte :)
@@ -67,7 +58,7 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 	}
 	
 	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
-			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
+			"shortTitle" := $shortTitle[1], "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
 	(:return <ul>
 	    <li>ID: {$id}</li>
 	    <li>Ed: {$ed}</li>
