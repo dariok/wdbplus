@@ -4,7 +4,7 @@ module namespace hab = "http://diglib.hab.de/ns/hab";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "http://diglib.hab.de/ns/config" at "config.xqm";
-import module namespace habt			= "http://diglib.hab.de/ns/transform" at "transform.xqm";
+import module namespace habt		= "http://diglib.hab.de/ns/transform" at "transform.xqm";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
@@ -184,4 +184,29 @@ declare function hab:getEENr($node as node(), $model as map(*), $id as xs:string
 declare function hab:getJS($node as node(), $model as map(*)) {
 	let $path := concat($model("ed"), "/scripts/project.js")
 	return <script src="{$path}" type="text/javascript" />
+};
+
+(: Anmeldeinformationen oder Login anzeigen; 2017-05-0 DK :)
+declare function hab:getAuth($node as node(), $model as map(*)) {
+    let $current := xmldb:get-current-user()
+    let $user := request:get-parameter('user', '')
+    return
+        if ($user != '') then
+            <div>{$user}</div>
+        else
+        if ($current = 'guest') then
+            <div>
+                <form enctype="multipart/form-data" method="post" action="/apps/wdb/auth.xql">
+    				<input type="text" name="user"/>
+    				<input type="password" name="password" />
+    				<input type="submit" value="login"/>
+    				<input type="hidden" name="query" value="{request:get-parameter('query', '')}" />
+    				<input type="hidden" name="edition" value="{request:get-parameter('edition', '')}" />
+    			</form>
+    			<p>{$current}</p>
+            </div>
+        else
+            <div>
+                User: <a>{$current}</a>
+            </div>
 };

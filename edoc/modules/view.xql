@@ -15,6 +15,7 @@ import module namespace hab				= "http://diglib.hab.de/ns/hab"			at "/db/apps/wd
 import module namespace habs			= "http://diglib.hab.de/ns/stats"		at "/db/apps/wdb/modules/stats.xqm";
 import module namespace habe			= "http://diglib.hab.de/ns/entity"	at "/db/apps/wdb/modules/entity.xqm";
 import module namespace habpq			= "http://diglib.hab.de/ns/pquery"	at "/db/apps/wdb/modules/pquery.xqm";
+import module namespace haba			= "http://diglib.hab.de/ns/auth"		at "/db/apps/wdb/modules/auth.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 
