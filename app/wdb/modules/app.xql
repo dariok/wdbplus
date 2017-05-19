@@ -56,9 +56,13 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 		$nr,
 		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')]/node()
 	}
+	let $type := if (contains($id, 'transcr'))
+		then "transcript"
+		else "introduction"
 	
 	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
-			"shortTitle" := $shortTitle[1], "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
+			"shortTitle" := $shortTitle[1], "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
+			"type" := $type }
 	(:return <ul>
 	    <li>ID: {$id}</li>
 	    <li>Ed: {$ed}</li>
@@ -157,7 +161,7 @@ declare function hab:authors($node as node(), $model as map(*)) {
 };
 
 declare function hab:getCSS($node as node(), $model as map(*)) {
-    let $ed := $model("ed")
+	let $ed := $model("ed")
 	let $f := if ($model("type") = "transcript")
 			then "transcr.css"
 			else "intro.css"
