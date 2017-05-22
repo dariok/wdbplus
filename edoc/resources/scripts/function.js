@@ -46,7 +46,7 @@ $(document).ready(function() {
 
 var timer;
 $(window).on('load resize', function() {
-	if (!loaded) return;
+	//if (!loaded) return;
 	
 	clearTimeout(timer);
 	timer = setTimeout(marginPos, 250);
