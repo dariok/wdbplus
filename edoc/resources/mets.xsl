@@ -408,7 +408,7 @@
                     <a href="javascript:switchlayer('bd{$number}');">
                         <xsl:if test="@ORDER">
                             <xsl:value-of select="@ORDER"/>
-                            <xsl:text>&#160;</xsl:text>
+                            <xsl:text> </xsl:text>
                         </xsl:if>
                         <xsl:value-of select="@LABEL"/>
                     </a>

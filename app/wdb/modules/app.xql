@@ -34,23 +34,24 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-	let $file := doc(concat($hab:edoc, '/', $ed, '/', $fileLoc))
+	let $fil := concat($hab:edoc, '/', $ed, '/', $fileLoc)
+	let $file := doc($fil)
 
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
-     : damit ist die »spezifischste« ID immer die letzte :)
-    let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
-    (: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
-    let $be := for $s in $structs
-        return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
-    (:  :)
-    let $behavior := for $b in $be
-        order by local:val($b, $structs, 'HTML')
-        return $b
-    let $xslt := $behavior[position() = last()]/mets:mechanism/@xlink:href
+	 : damit ist die »spezifischste« ID immer die letzte :)
+	let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
+	(: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
+	let $be := for $s in $structs
+		return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
+	let $behavior := for $b in $be
+		order by local:val($b, $structs, 'HTML')
+		return $b
+	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
+	let $xslt := concat($hab:edoc, '/', $ed, '/', $trans)
 	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
-	let $shortTitle := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type]
+	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
 	let $nr := $file/tei:TEI/@n
 	let $title := element tei:title {
 		$nr,
@@ -60,20 +61,20 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 		then "transcript"
 		else "introduction"
 	
-	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
-			"shortTitle" := $shortTitle[1], "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
-			"type" := $type }
-	(:return <ul>
-	    <li>ID: {$id}</li>
-	    <li>Ed: {$ed}</li>
-	    <li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
-	    <li>metsfile: {$metsfile}</li>
-	    <li>fileloc: {string($fileLoc)}</li>
-	    <li>file: {concat($hab:edoc, '/', $ed, '/', $fileLoc)}; existiert? {doc-available(concat($hab:edoc, '/', $ed, '/', $fileLoc))}</li>
-	    <li>structId: {string($behavior[position() = last()]/@ID)}</li>
-	    <li>xslt: {string($xslt)}</li>
-	    <li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
-	</ul>:)
+	(:return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
+			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
+			"type" := $type }:)
+	return <ul>
+		<li>ID: {$id}</li>
+		<li>Ed: {$ed}</li>
+		<li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
+		<li>metsfile: {$metsfile}</li>
+		<li>fileloc: {string($fileLoc)}</li>
+		<li>file: {$fil}; existiert? {doc-available($fil)}</li>
+		<li>structId: {string($behavior[position() = last()]/@ID)}</li>
+		<li>xslt: {$xslt}; existiert? {doc-available($xslt)}</li>
+		<li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
+	</ul>
 };
 
 (: Finden der korrekten behavior
