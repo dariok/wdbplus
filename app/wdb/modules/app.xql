@@ -61,10 +61,10 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 		then "transcript"
 		else "introduction"
 	
-	(:return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
+	return map { "fileLoc" := $fil, "xslt" := $xslt, "title" := $title ,
 			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
-			"type" := $type }:)
-	return <ul>
+			"type" := $type }
+	(:return <ul>
 		<li>ID: {$id}</li>
 		<li>Ed: {$ed}</li>
 		<li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
@@ -74,7 +74,7 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 		<li>structId: {string($behavior[position() = last()]/@ID)}</li>
 		<li>xslt: {$xslt}; existiert? {doc-available($xslt)}</li>
 		<li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
-	</ul>
+	</ul>:)
 };
 
 (: Finden der korrekten behavior
@@ -122,9 +122,9 @@ declare function hab:EEpart($node as node(), $model as map(*)) as xs:string {
 };
 
 declare function hab:EEbody($node as node(), $model as map(*)) {
-	let $file := concat($hab:edoc, '/', $model("ed"), '/', $model("fileLoc"))
-	(:let $xslt := concat('xmldb:exist://', $hab:edoc, '/', $model("xslt")):)
-	let $xslt := concat($hab:edoc, '/', $model("ed"), '/', $model("xslt"))
+	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
+	let $file := $model("fileLoc")
+	let $xslt := $model("xslt")
 	let $params := <parameters><param name="server" value="eXist"/></parameters>
 	(: ambiguous rule match soll nicht zum Abbruch führen :)
 (:	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>:)
