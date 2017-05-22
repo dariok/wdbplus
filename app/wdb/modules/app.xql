@@ -143,12 +143,13 @@ declare function hab:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function hab:footer($node as node(), $model as map(*)) {
-	let $xml := string($model("fileLoc"))
-	let $xsl := string($model("xslt"))
+	let $xml := substring-after($model("fileLoc"), '/db')
+	let $xsl := substring-after($model("xslt"), '/db')
+	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
 	return
 	<div class="footer">
-		<div class="footerEntry">XML: <a href="{concat($hab:edocRest, '/', $model("ed"), '/', $xml)}">{$xml}</a></div>
-		<div class="footerEntry">XSLT: <a href="{concat($hab:edocRest, '/', $model("ed"), '/', $xsl)}">{$xsl}</a></div>
+		<div class="footerEntry">XML: <a href="{$xml}">{$xml}</a></div>
+		<div class="footerEntry">XSLT: <a href="{$xsl}">{$xsl}</a></div>
 	</div>
 };
 
