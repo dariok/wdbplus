@@ -12,9 +12,9 @@ declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 declare variable $hab:edoc := "/db/edoc";
-declare variable $hab:edocRestBase := "http://dev2.hab.de/rest";
+declare variable $hab:edocRestBase := "/rest";
 declare variable $hab:edocRest := concat($hab:edocRestBase, $hab:edoc);
-declare variable $hab:edocBase := 'http://dev2.hab.de/edoc';
+declare variable $hab:edocBase := '/edoc';
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
@@ -34,46 +34,41 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-	let $fil := concat($hab:edoc, '/', $ed, '/', $fileLoc)
-	let $file := doc($fil)
+	let $file := doc(concat($hab:edoc, '/', $ed, '/', $fileLoc))
 
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
-	 : damit ist die »spezifischste« ID immer die letzte :)
-	let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
-	(: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
-	let $be := for $s in $structs
-		return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
-	let $behavior := for $b in $be
-		order by local:val($b, $structs, 'HTML')
-		return $b
-	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
-	let $xslt := concat($hab:edoc, '/', $ed, '/', $trans)
+     : damit ist die »spezifischste« ID immer die letzte :)
+    let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
+    (: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
+    let $be := for $s in $structs
+        return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
+    (:  :)
+    let $behavior := for $b in $be
+        order by local:val($b, $structs, 'HTML')
+        return $b
+    let $xslt := $behavior[position() = last()]/mets:mechanism/@xlink:href
 	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
-	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
+	let $shortTitle := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type]
 	let $nr := $file/tei:TEI/@n
 	let $title := element tei:title {
 		$nr,
 		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')]/node()
 	}
-	let $type := if (contains($id, 'transcr'))
-		then "transcript"
-		else "introduction"
 	
-	return map { "fileLoc" := $fil, "xslt" := $xslt, "title" := $title ,
-			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
-			"type" := $type }
+	return map { "fileLoc" := $fileLoc, "xslt" := $xslt, "title" := $title ,
+			"shortTitle" := $shortTitle[1], "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc }
 	(:return <ul>
-		<li>ID: {$id}</li>
-		<li>Ed: {$ed}</li>
-		<li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
-		<li>metsfile: {$metsfile}</li>
-		<li>fileloc: {string($fileLoc)}</li>
-		<li>file: {$fil}; existiert? {doc-available($fil)}</li>
-		<li>structId: {string($behavior[position() = last()]/@ID)}</li>
-		<li>xslt: {$xslt}; existiert? {doc-available($xslt)}</li>
-		<li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
+	    <li>ID: {$id}</li>
+	    <li>Ed: {$ed}</li>
+	    <li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
+	    <li>metsfile: {$metsfile}</li>
+	    <li>fileloc: {string($fileLoc)}</li>
+	    <li>file: {concat($hab:edoc, '/', $ed, '/', $fileLoc)}; existiert? {doc-available(concat($hab:edoc, '/', $ed, '/', $fileLoc))}</li>
+	    <li>structId: {string($behavior[position() = last()]/@ID)}</li>
+	    <li>xslt: {string($xslt)}</li>
+	    <li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
 	</ul>:)
 };
 
@@ -122,9 +117,9 @@ declare function hab:EEpart($node as node(), $model as map(*)) as xs:string {
 };
 
 declare function hab:EEbody($node as node(), $model as map(*)) {
-	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
-	let $file := $model("fileLoc")
-	let $xslt := $model("xslt")
+	let $file := concat($hab:edoc, '/', $model("ed"), '/', $model("fileLoc"))
+	(:let $xslt := concat('xmldb:exist://', $hab:edoc, '/', $model("xslt")):)
+	let $xslt := concat($hab:edoc, '/', $model("ed"), '/', $model("xslt"))
 	let $params := <parameters><param name="server" value="eXist"/></parameters>
 	(: ambiguous rule match soll nicht zum Abbruch führen :)
 (:	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>:)
@@ -143,13 +138,12 @@ declare function hab:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function hab:footer($node as node(), $model as map(*)) {
-	let $xml := substring-after($model("fileLoc"), '/db')
-	let $xsl := substring-after($model("xslt"), '/db')
-	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
+	let $xml := string($model("fileLoc"))
+	let $xsl := string($model("xslt"))
 	return
 	<div class="footer">
-		<div class="footerEntry">XML: <a href="{$xml}">{$xml}</a></div>
-		<div class="footerEntry">XSLT: <a href="{$xsl}">{$xsl}</a></div>
+		<div class="footerEntry">XML: <a href="{concat($hab:edocRest, '/', $model("ed"), '/', $xml)}">{$xml}</a></div>
+		<div class="footerEntry">XSLT: <a href="{concat($hab:edocRest, '/', $model("ed"), '/', $xsl)}">{$xsl}</a></div>
 	</div>
 };
 
@@ -163,7 +157,7 @@ declare function hab:authors($node as node(), $model as map(*)) {
 };
 
 declare function hab:getCSS($node as node(), $model as map(*)) {
-	let $ed := $model("ed")
+    let $ed := $model("ed")
 	let $f := if ($model("type") = "transcript")
 			then "transcr.css"
 			else "intro.css"
