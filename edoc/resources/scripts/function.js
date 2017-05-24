@@ -1,9 +1,9 @@
 function marginPos (){
 	var mRefs = $("a.mref");
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
-		$('#content').css('width', '79.5%');					 // changed values due to changed layout; 2016-07-25 DK
-		$('#content').css('width', 'calc(80% - 0.15em)');
-		$('#content').css('padding-left', '20%');
+		$('#content').css('width', '39.5%');
+		$('#content').css('width', 'calc(40% - 0.15em)');
+		$('#content').css('padding-left', '10%');
 		$('#marginalia_container').height($('#content').height())
 		$('#marginalia_container').show();
 		mRefs.each(positionMarginalia);
@@ -46,36 +46,19 @@ $(document).ready(function() {
 
 var timer;
 $(window).on('load resize', function() {
-	//if (!loaded) return;
+	if (!loaded) return;
 	
 	clearTimeout(timer);
 	timer = setTimeout(marginPos, 250);
 });
 
-// Für Hervorhebung einer Abfolge von Elementen
-$(document).ready(function() {
-    if (window.location.search.indexOf('&l') > -1) {
-        var range = window.location.search.split('&l=')[1];
-        var from = range.split('-')[0];
-        var to = range.split('-')[1];
-        $('#' + from).nextUntil('#' + to).css('background-color', 'red');
-        var scrollto = $('#' + from).offset().top - $('#navBar').innerHeight(); // minus fixed header height
-        console.log($('#' + from).offset().top);
-        $('html, body').animate({scrollTop:scrollto}, 0);
-    }
-});
 $(window).bind('hashchange', function() {
-	var target = $(':target')
-	if (!(target === undefined)) {
-		var offset = $(':target').offset();
-		console.log(offset);
-		var scrollto = offset.top - $('#navBar').innerHeight(); // minus fixed header height
-		$('html, body').animate({scrollTop:scrollto}, 0);
-
-		if (window.location.hash) sprung();
-	} else {
-		console.log('no target - logout?')
-	}
+	var offset = $(':target').offset();
+	console.log(offset);
+	var scrollto = offset.top - $('#navBar').innerHeight(); // minus fixed header height
+	$('html, body').animate({scrollTop:scrollto}, 0);
+	
+	if (window.location.hash) sprung();
 });
 
 $(document).ready(function() {
@@ -92,7 +75,7 @@ function mouseIn (event) {
 																	// nowrap to get the length of the string in pixels
 	$('#rightSide').html(content.html());
 	
-	/*var fn = cont.append(content);
+	var fn = cont.append(content);
 	me.after(fn);
 	
 	var tPos, lPos, fWidth;
@@ -113,7 +96,7 @@ function mouseIn (event) {
 	
 	fn.css('max-width' , maxWidth);
 	content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
-	fn.outerWidth(fWidth);*/
+	fn.outerWidth(fWidth);
 }
 
 function mouseOut (event) {
@@ -136,7 +119,6 @@ function commonAncestor (e1, e2) {
 }
 
 function sprung (event) {
-    console.log(event);
 	var targ = window.location.hash.substring(1);
 	var startMarker = $(".anchorRef#" + targ);
 	if (startMarker.length == 0) return;
@@ -204,7 +186,7 @@ function sprung (event) {
 	var parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
 	if (parentsListEnd.has(startMarker).length === 0) {
 		// Go through each of these and access earlier siblings
-		done = false;
+		var done = false;
 		parentsListEnd.each(function() {
 			$(this).prevAll().each(function() {
 				if (done) return;
@@ -217,7 +199,7 @@ function sprung (event) {
 				}
 			});
 		});
-	}
+	};
 }
 
 /** fixed div at top of page: body needs offset for correct scrolling */
@@ -234,10 +216,9 @@ function toggleSidebar() {
 		$('#liSB').text('Navigation ausblenden');
 	else $('#liSB').text('Navigation einblenden');
 	
-	if($('#sideBar').text() === '') {
+	if($('#sideBar').text() == '') {
 		$('#sideBar').text('lädt...');
-		var id = $('meta[name="edition"]').attr('content');
-		var res = $.get('http://dev2.hab.de/apps/wdb/modules/mets.xql?id=' + id, '',
+		var res = $.get('http://diglib.hab.de/content.php?dir=edoc/ed000216&xml=mets.xml&xsl=http:\/\/diglib.hab.de/rules/styles/mets.xsl', '',
 				function(data) { $('#sideBar').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },
 				'html');
 	}
@@ -252,67 +233,11 @@ function toggleSidebar() {
 
 function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
-	var q = 'http://dev2.hab.de/edoc/entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
-	
-	$.ajaxSetup({ cache: false });
-	var res = $.get(q, '', function(data, textStatus, jqXHR) { 
-        var ins = $("<div></div>");
-        ins.append($(data).find("#navBar").html());
-        ins.append($(data).find(".content").html());
-        $('#rightSide').html(ins.html());
-	}, 'html');
+	var q = 'http://diglib.hab.de/content.php?dir='+dir+'&xml='+xml+'&xsl='+xsl+'&ref='+ref+'&nocache=1';
+	var res = $.get(q, '', function(data) { $('#rightSide').html($('#info-body', data)); console.log($('#info-body', data)); }, 'html');
 }
 
 function switchlayer(Layer_Name) {
-	var target = '#' + Layer_Name.replace( /(,|:|\.|\[|\])/g, "\\$1" );
+	var target = '#' + Layer_Name.replace( /(:|\.|\[|\]|,)/g, "\\$1" );
 	$(target).toggle();
 }
-
-/** AJAX functions to enable login in NavBar **/
-// url: '/apps/wdb/modules/auth.xql',
-$(document).ready(function(){
-	$('#login').submit(function(e){
-		$.ajax({
-		    url: 'login',
-		    method: 'post',
-			data: {user: $('#user').val(),
-				password: $('#password').val(),
-				edition: $('#edition').val()
-			},
-			success: function(data) {
-				try {
-				    $('#login').html(data);
-					console.log('logged in');
-					console.log(data);
-				}
-				catch (e) {
-				    console.log('logged in, tried to replace #login with:');
-				    console.log(data);
-				    console.log(e);
-				}
-			},
-			dataType: 'text'}
-		);
-		e.preventDefault();
-	});
-})
-$(document).ready(function(){
-    $('#logout-button').click(function(e){
-        $.ajax({
-            url: 'login',
-            method: 'post',
-            data: {logout: 'logout'},
-            success: function(data) { 
-                try {
-                	$('#logout').html(data);
-                	console.log('trying to log off' + data);
-                }
-                catch (e) {
-                    console.log('logging out, tried to replace #logout with:');
-                    console.log(data);
-                    console.log(e);
-                }},
-            dataType: 'text'}
-        );
-    });
-});
