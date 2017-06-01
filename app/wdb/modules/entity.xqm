@@ -28,15 +28,15 @@ declare function habe:getEntityName($node as node(), $model as map(*)) {
 	return <h1>{
 	typeswitch ($entryEd)
 		case element(tei:person)
-			return 
-			if ($entryEd/tei:persName[@type='index']) then habe:passthrough($entryEd/tei:persName[@type='index'], $model)
-			else habe:shortName($entryEd/tei:persName[1])
+			return if ($entryEd/tei:persName[@type='index'])
+				then habe:passthrough($entryEd/tei:persName[@type='index'], $model)
+				else habe:shortName($entryEd/tei:persName[1])
 		case element(tei:bibl)
 			return habe:shortTitle($entryEd, $model)
 		case element(tei:place)
 			return habe:shortPlace($entryEd)
 		default
-			return name($entryEd)
+			return name($entryEd[1])
 	}</h1>
 };
 
@@ -73,9 +73,11 @@ declare function habe:transform($node, $model as map(*)) as item()* {
 				then habe:shortPlace($node)
 				else habe:placeName($node)
 		case element(tei:place) return <table class="noborder">{habe:passthrough($node, $model)}</table>
+		case element(tei:idno) return habe:idno($node)
 		
 (:		default return habe:passthrough($node):)
-		default return concat("def: ", name($node))
+		(:default return concat("def: ", name($node)):)
+		default return $node
 };
 
 declare function habe:passthrough($nodes as node()*, $model) as item()* {
@@ -188,4 +190,9 @@ declare function habe:placeName($node) {
 		<tr><td>Name</td><td>{string($node/tei:settlement)}</td></tr>,
 		<tr><td>Land</td><td>{string($node/tei:country)}</td></tr>
 	)
+};
+
+(: neu 2017-05-22 DK :)
+declare function habe:idno($node) {
+	<tr><td>Normdaten-ID</td><td><a href="{$node}">{$node}</a></td></tr>
 };

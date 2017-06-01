@@ -26,8 +26,9 @@ declare function habm:pageTitle($node as node(), $model as map(*)) {
 
 declare function habm:getLeft($node as node(), $model as map(*)) {
 	let $xml := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/mets.xml'))
-	(: TODO Falls vorhanden, projekteigene mets.xml benutzen :)
-	let $xsl := doc('xmldb:exist:///db/edoc/resources/mets.xsl')
+	let $xsl := if (doc-available(concat('/db/edoc/', $model("id"), '/mets.xsl')))
+		then doc(concat('/db/edoc/', $model("id"), '/mets.xsl'))
+		else doc('xmldb:exist:///db/edoc/resources/mets.xsl')
 	
 	return
 		transform:transform($xml, $xsl, ())

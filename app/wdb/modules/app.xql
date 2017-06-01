@@ -12,9 +12,9 @@ declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 declare variable $hab:edoc := "/db/edoc";
-declare variable $hab:edocRestBase := "http://dev2.hab.de/rest";
+declare variable $hab:edocRestBase := "/rest";
 declare variable $hab:edocRest := concat($hab:edocRestBase, $hab:edoc);
-declare variable $hab:edocBase := 'http://dev2.hab.de/edoc';
+declare variable $hab:edocBase := '/edoc';
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
