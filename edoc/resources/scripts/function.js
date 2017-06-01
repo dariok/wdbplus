@@ -46,7 +46,7 @@ $(document).ready(function() {
 
 var timer;
 $(window).on('load resize', function() {
-	if (!loaded) return;
+	//if (!loaded) return;
 	
 	clearTimeout(timer);
 	timer = setTimeout(marginPos, 250);
@@ -58,7 +58,9 @@ $(document).ready(function() {
         var range = window.location.search.split('&l=')[1];
         var from = range.split('-')[0];
         var to = range.split('-')[1];
+        $('#' + from).css('background-color', 'red');
         $('#' + from).nextUntil('#' + to).css('background-color', 'red');
+        $('#' + to).css('background-color', 'red');
         var scrollto = $('#' + from).offset().top - $('#navBar').innerHeight(); // minus fixed header height
         console.log($('#' + from).offset().top);
         $('html, body').animate({scrollTop:scrollto}, 0);
