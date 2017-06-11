@@ -5,7 +5,7 @@ declare function haba:getAuth($node as node(), $model as map(*)) {
     let $current := xmldb:get-current-user()
     return
     	if ($current = 'guest' or $model('res') = 'logout') then
-            <div id="login">
+            <span id="login">
                 <form
                     enctype="multipart/form-data"
                     method="post">
@@ -27,9 +27,9 @@ declare function haba:getAuth($node as node(), $model as map(*)) {
                         name="edition"
                         value="{request:get-parameter('edition', '')}"/>
                 </form>
-            </div>
+            </span>
         else
-            <div id="logout">
+            <span id="logout">
                 User: <a id="logout-button" alt="Click to logout" href="#">{$current}</a>
-            </div>
+            </span>
 };
