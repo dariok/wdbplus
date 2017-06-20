@@ -1,13 +1,18 @@
 function marginPos (){
+    var tar = window.location.hash;
+    window.location.hash = '#';
+    
 	var mRefs = $("a.mref");
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
-		$('#content').css('width', '39.5%');
-		$('#content').css('width', 'calc(40% - 0.15em)');
-		$('#content').css('padding-left', '10%');
+		$('#content').css('width', '79.5%');					 // changed values due to changed layout; 2016-07-25 DK
+		$('#content').css('width', 'calc(80% - 0.15em)');
+		$('#content').css('padding-left', '20%');
 		$('#marginalia_container').height($('#content').height())
 		$('#marginalia_container').show();
 		mRefs.each(positionMarginalia);
 	}
+	
+	window.location.hash = tar;
 };
 function positionMarginalia (index, element){
 	var mRefs = $("a.mref");
