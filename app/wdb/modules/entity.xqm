@@ -186,10 +186,11 @@ declare function habe:shortPlace($node) {
 };
 
 declare function habe:placeName($node) {
-	(: TODO anpassen an ausführlichere Angaben :)(
-		<tr><td>Name</td><td>{replace($node/tei:settlement, '!', ', ')}</td></tr>,
-		<tr><td>Land</td><td>{string($node/tei:country)}</td></tr>
-	)
+	(: TODO anpassen an ausführlichere Angaben :)
+	if ($node/tei:country)
+		then (<tr><td>Name</td><td>{replace($node/tei:settlement, '!', ', ')}</td></tr>,
+			<tr><td>Land</td><td>{string($node/tei:country)}</td></tr>)
+		else <tr><td>Name</td><td>{replace($node/tei:settlement, '!', ', ')}</td></tr>
 };
 
 (: neu 2017-05-22 DK :)
