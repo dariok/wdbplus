@@ -182,12 +182,12 @@ declare function habe:note($node, $model) {
 declare function habe:shortPlace($node) {
 	(: TODO tei:head oder tei:label als Standardwert nutzen, falls vorhanden :)
 	(: TODO ggfs. sind hier andere Arten zu berücksichtigen (tei:geogName) :)
-	<span>{string($node/tei:placeName[1]/tei:settlement)}</span>
+	<span>{replace($node/tei:placeName[1]/tei:settlement, '!', ', ')}</span>
 };
 
 declare function habe:placeName($node) {
 	(: TODO anpassen an ausführlichere Angaben :)(
-		<tr><td>Name</td><td>{string($node/tei:settlement)}</td></tr>,
+		<tr><td>Name</td><td>{replace($node/tei:settlement, '!', ', ')}</td></tr>,
 		<tr><td>Land</td><td>{string($node/tei:country)}</td></tr>
 	)
 };
