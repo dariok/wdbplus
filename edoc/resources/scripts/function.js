@@ -163,7 +163,7 @@ function sprung (event) {
 	
 	// 1b: Colour its later siblings if they dont have the end point marker
 	var done = false;
-	startMarker.nextAll().andSelf().each(function() {
+	startMarker.nextAll().addBack().each(function() {
 		if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return;
 		else {
 			$(this).css("background-color", "#FFEF19");
@@ -199,7 +199,7 @@ function sprung (event) {
 	}).wrap("<span></span>");
 	
 	//3b: Colour its earlier siblings if they dont have start marker
-	$(endMarker.prevAll().andSelf().get().reverse()).each(function() {
+	$(endMarker.prevAll().addBack().get().reverse()).each(function() {
 		if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) return;
 		else {
 			$(this).css("background-color", "#FFEF19");
@@ -260,6 +260,7 @@ function toggleSidebar() {
 function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
 	var q = 'http://dev2.hab.de/edoc/entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
+	console.log(q);
 	
 	$.ajaxSetup({ cache: false });
 	var res = $.get(q, '', function(data, textStatus, jqXHR) { 
