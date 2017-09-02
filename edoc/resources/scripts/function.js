@@ -269,9 +269,10 @@ function show_annotation (dir, xml, xsl, ref, height, width) {
 	
 	$.ajaxSetup({ cache: false });
 	var res = $.get(q, '', function(data, textStatus, jqXHR) { 
-        var ins = $('<div><a href="javascript:clear();">[x]</a></div>');
+        var ins = $('<div></div>');
         ins.append($(data).find("#navBar").html());
         ins.append($(data).find(".content").html());
+        ins.append('<a href="javascript:clear();">[x]</a>');
         $('#ann').html(ins.html());
 	}, 'html');
 }
