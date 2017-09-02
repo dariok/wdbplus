@@ -97,7 +97,8 @@ function mouseIn (event) {
 		cont = $('<span id="' + id + '" class="infoContainer" style="display: block;"></span>"'),
 		content = $('<span class="infoContent" style="display: block; white-space: nowrap;">' + fm + '</span>');
 																	// nowrap to get the length of the string in pixels
-	$('#rightSide').html(content.html());
+	$('#ann').html(content.html());
+	$('#ann').append('<a onclick="clear();" href="javascript:clear()">[x]</a>')
 	
 	/*var fn = cont.append(content);
 	me.after(fn);
@@ -121,6 +122,10 @@ function mouseIn (event) {
 	fn.css('max-width' , maxWidth);
 	content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
 	fn.outerWidth(fWidth);*/
+}
+
+function clear () {
+	$('#ann').html('');
 }
 
 function mouseOut (event) {
@@ -267,7 +272,7 @@ function show_annotation (dir, xml, xsl, ref, height, width) {
         var ins = $("<div></div>");
         ins.append($(data).find("#navBar").html());
         ins.append($(data).find(".content").html());
-        $('#rightSide').html(ins.html());
+        $('#ann').html(ins.html());
 	}, 'html');
 }
 
@@ -323,4 +328,15 @@ $(document).ready(function(){
             dataType: 'text'}
         );
     });
+});
+
+// Parallel view
+$(document).ready(function(){
+	$('.pagebreak > a').click(function(event){
+		event.preventDefault();
+		href = $(this).attr('href');
+		$('#fac').html('<iframe id="facsimile"></iframe>');
+		$('#facsimile').attr('src', href);
+		$('#facsimile').css('display', 'block');
+	});
 });

@@ -97,3 +97,19 @@ span.footnoteText q:after {
 	content: close-quote;
 	font-family: mufi;
 }
+
+/* Parallelansicht */
+#ann {
+	z-index: 1;
+	position: fixed;
+	background-color: white;
+	padding-right: 2.5em;
+}
+#fac {
+	height: 100%;
+}
+#facsimile {
+	height: 100%;
+	width: 100%;
+	display: block;
+}
