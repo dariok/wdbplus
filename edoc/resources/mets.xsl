@@ -408,7 +408,7 @@
                     <a href="javascript:switchlayer('bd{$number}');">
                         <xsl:if test="@ORDER">
                             <xsl:value-of select="@ORDER"/>
-                            <xsl:text>&#160;</xsl:text>
+                            <xsl:text> </xsl:text>
                         </xsl:if>
                         <xsl:value-of select="@LABEL"/>
                     </a>
@@ -450,7 +450,7 @@
                                 <xsl:attribute name="target">display2</xsl:attribute>
                             </xsl:otherwise>
                         </xsl:choose>
-                        <xsl:value-of select="@LABEL"/>
+                        <xsl:value-of select="concat(@ORDER, ' ', @LABEL)"/>
                     </a>
                 </li>
             </xsl:when><!-- Dateien, die per XML und XSL zusammengesetzt werden (default); wird ueber MIMETYPE gesteuert -->
@@ -476,7 +476,7 @@
 								select="//mets:behavior[parent::mets:behaviorSec[@ID != 'function_navigator']][@STRUCTID = current()/ancestor-or-self::mets:div/@ID]/mets:mechanism/@xlink:href"
 							/>-->
                         </xsl:attribute><!--						<xsl:attribute name="target">display2</xsl:attribute>-->
-                        <xsl:value-of select="@LABEL"/>
+                    	<xsl:value-of select="concat(@ORDER, ' ', @LABEL)"/>
                     </a>
                 </li>
             </xsl:when><!--  Fehlerhafte mets.xml; vermutlich fehlender MIME-Type oder falsche Funktionsbezeichnung --><!--<xsl:otherwise>
