@@ -76,7 +76,13 @@ $(window).bind('hashchange', function() {
 	if (!(target === undefined)) {
 		var offset = $(':target').offset();
 		console.log(offset);
-		var scrollto = offset.top - $('#navBar').innerHeight(); // minus fixed header height
+        if ($('#navBar').innerHeight() > 0) {
+            var scrollto = offset.top - $('#navBar').innerHeight(); // minus fixed header height
+        } else {
+            var scrollto = offset.top;
+        }
+        console.log(scrollto);
+		
 		$('html, body').animate({scrollTop:scrollto}, 0);
 
 		if (window.location.hash) sprung();
