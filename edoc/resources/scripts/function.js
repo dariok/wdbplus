@@ -205,7 +205,10 @@ function sprung (event) {
 	
 	//3b: Colour its earlier siblings if they dont have start marker
 	$(endMarker.prevAll().addBack().get().reverse()).each(function() {
-		if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) return;
+		if ($(this).has(startMarker).length > 0
+				|| $(this).is(startMarker)
+				|| $(this).nextAll().has(startMarker)
+		) return;
 		else {
 			$(this).css("background-color", "#FFEF19");
 		}
