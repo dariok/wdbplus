@@ -52,11 +52,17 @@ span.siglum {
 	vertical-align: top;
 	text-indent: 0;				/* für den hängenden Einzug */
 }
-div.exemplar {
+/* Für Einträge der Bibliographie und Exemplarangeben*/
+.exemplar {
+    font-variant-ligatures: none;
 	margin-top: 0;
 	padding-left: 4.5em;
 	text-indent: -4.5em;
 	margin-bottom: 0.5em;
+}
+.abbr {
+	font-weight:bold;
+	vertical-align: top;
 }
 ul.lit {
 	display: inline;

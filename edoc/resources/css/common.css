@@ -296,6 +296,7 @@ span.infoContainer {
 /** --- Fußbereich --- **/
 /* CreativeCommons-Angabe */
 div.ccsec {
+	min-height: 18px;
 	width: 50%;
 	font-weight: 600;
 	text-align: right;
@@ -325,6 +326,7 @@ img.ccimg {
 	padding-left: 3em;
 	padding-right: 3em;
 	display: inline-block;
+	text-indent: 0;
 }
 p.content {
 	padding-right: 0.2em; /* damit kursiver Text vollständig angezeigt wird */
@@ -343,4 +345,9 @@ span.orig {
 /* Autoren in Kapitälchen; 2016-07-11 DK */
 span.nameSC {
 	font-variant: small-caps;
+}
+
+/* Hebr. Text auch in Junicode */
+span[lang=he] {
+	font-family: mufi;
 }
