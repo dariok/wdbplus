@@ -4,44 +4,41 @@ function marginPos (){
     
 	var mRefs = $("a.mref");
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
-		$('#content').css('width', '79.5%');					 // changed values due to changed layout; 2016-07-25 DK
+		//$('#content').css('width', '79.5%');					 // changed values due to changed layout; 2016-07-25 DK
 		$('#content').css('width', 'calc(80% - 0.15em)');
 		$('#content').css('padding-left', '20%');
 		$('#marginalia_container').height($('#content').height())
-		$('#marginalia_container').show();
+		navbarHeight = $('#navBar').height();
 		mRefs.each(positionMarginalia);
+		$('#marginalia_container').show();
 	}
 	
 	window.location.hash = tar;
 };
 function positionMarginalia (index, element){
 	var mRefs = $("a.mref");
-	var thisRefPos = $(element).offset().top;
+	var thisRefPos = $(element)[0].offsetTop;
 	var thisRefID = $(element).attr('id');
 	var targetMargID = "#text_" + thisRefID;
 	
-	var prevMargTop;
-	var prevMargHeight;
 	if (index > 0) {											  // the first element can in any case stay where it is
 		var prevRefID = mRefs.eq(index-1).attr('id');
 		var prevMargID = "#text_" + prevRefID;
-		prevMargTop = $(prevMargID).offset().top;
-		prevMargHeight = $(prevMargID).height();
+		var prevMargTop = $(prevMargID)[0].offsetTop;
+		var prevMargHeight = $(prevMargID)[0].offsetHeight;
 	}
 	else {
 		prevMargTop = 0;
 		prevMargHeight = 0;
 	}
 	
-	var targetTop;
 	if (thisRefPos > (prevMargTop + prevMargHeight))
-		targetTop = thisRefPos;
+		var targetTop = thisRefPos;
 	else {
-		targetTop = prevMargTop + prevMargHeight + 1;
-		console.log(thisRefID + ": " + thisRefPos);
+		var targetTop = prevMargTop + prevMargHeight + 1;
 	}
 	
-	$(targetMargID).css('position', 'absolute').offset({top: targetTop});
+	$(targetMargID)[0].style.top = targetTop - navbarHeight + 'px';
 };
 
 var loaded = false;
