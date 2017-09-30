@@ -61,8 +61,7 @@ dl.flex dt {
 .marginalia_text {
 	font-size: 8pt;
 	line-height: 1.2;
-	/*max-width: 187px;
-	max-width: calc(100% - 0.5em);*/
+	position: absolute;
 }
 .mref {
 	font-size: 8pt;
