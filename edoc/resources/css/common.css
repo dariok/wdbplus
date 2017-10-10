@@ -160,7 +160,7 @@ span.dispOpts {
 
 /** Projektnavigation links **/
 #sideBar {
-	max-width: 30%;
+/*	max-width: 30%;*/
 	max-height: calc(100% - 150px);
 	padding: 4px;
 	overflow: auto;
@@ -173,19 +173,21 @@ span.dispOpts {
 ul#nav {
 	margin-bottom: 0;
 	margin-top: 8px;
-	padding-left: 1.1em;
+/*	padding-left: 1.1em;*/
 	padding-left: calc(1em + 4px);
 }
 ul#nav li ul {
-	padding-left: 1.1em;
+/*	padding-left: 1.1em;*/
 	padding-left: calc(1em + 4px);
 }
 
 /* Spezialbereich rechts */
 #rightSide {
-	width: 46%;
+	/* flex wegen toggle-div */
+	display: flex;
+	/*width: 46%;*/
 	width: calc(50% - 3em);
-	height: 98%;
+	/*height: 98%;*/
 	height: calc(100% - 150px);
 	position: fixed;
 	right: 2.5em;
@@ -350,4 +352,19 @@ span.nameSC {
 /* Hebr. Text auch in Junicode */
 span[lang=he] {
 	font-family: mufi;
+}
+
+/* Pfeil zum Ein-/Ausblenden von #rightSide; 2017-10-10 DK */
+/* So wird vertikal zentriert */
+#rDis {
+	width: 0.5em;
+	height: 100%;
+	display: table;
+}
+#rDis a {
+	display: table-cell;
+	vertical-align: middle;
+}
+#fac {
+	width: calc(100% - 0.75em);
 }

@@ -347,3 +347,16 @@ $(document).ready(function(){
 		$('#facsimile').css('display', 'block');
 	});
 });
+
+/* toggle rightSide visibility */
+function toggleRightside() {
+	if ($('#rightSide').width() > 30) {
+		$('#rightSide').width('1em');
+		$('#rDis > a').html('«');
+		$('#container').width('calc(100% - 1.5em)');
+	} else {
+		$('#rightSide').width('calc(50% - 3em)');
+		$('#rDis > a').html('»');
+		$('#container').width('50%');
+	}
+}
