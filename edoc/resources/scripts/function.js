@@ -342,11 +342,22 @@ $(document).ready(function(){
 	$('.pagebreak > a').click(function(event){
 		event.preventDefault();
 		href = $(this).attr('href');
-		$('#fac').html('<iframe id="facsimile"></iframe>');
-		$('#facsimile').attr('src', href);
-		$('#facsimile').css('display', 'block');
+		displayImage(href);
 	});
 });
+$(document).ready(function(){
+	target = $('.pagebreak > a').first().attr('href');
+	if (target) {
+		console.log(target);
+		displayImage(target);
+	}
+});
+
+function displayImage(href) {
+	$('#fac').html('<iframe id="facsimile"></iframe>');
+	$('#facsimile').attr('src', href);
+	$('#facsimile').css('display', 'block');
+}
 
 /* toggle rightSide visibility */
 function toggleRightside() {
