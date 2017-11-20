@@ -105,7 +105,9 @@
                     </h2>
                     <div style="border: 1px solid gray;padding-right:5px;">
                         <ul>
-                            <xsl:apply-templates select="/mets:mets/mets:structMap/mets:div/mets:div[@ID != 'parallel_views']"/>
+                        	<xsl:apply-templates select="/mets:mets/mets:structMap/mets:div/mets:div[@ID != 'parallel_views']">
+                        		<xsl:sort select="@ORDER"/>
+                        	</xsl:apply-templates>
                         </ul>
                     </div>
                 </div>
@@ -406,10 +408,11 @@
             <xsl:when test="@TYPE = 'submenu' or //mets:behavior[@ID = 'function_folding'][@STRUCTID = current()/@ID]/mets:mechanism[@xlink:actuate = 'onRequest']">
                 <li>
                     <a href="javascript:switchlayer('bd{$number}');">
-                        <xsl:if test="@ORDER">
-                            <xsl:value-of select="@ORDER"/>
-                            <xsl:text> </xsl:text>
-                        </xsl:if>
+                    	<xsl:if test="@ORDER">
+                    		<!-- auch im Inhalt Zahlen ohne führende Null ausgeben; 2017-05-19 DK -->
+                    		<xsl:value-of select="format-number(@ORDER, '#')"/>
+                    		<xsl:text> </xsl:text>
+                    	</xsl:if>
                         <xsl:value-of select="@LABEL"/>
                     </a>
                     <ul>
@@ -418,17 +421,17 @@
                             <xsl:value-of select="$number"/>
                         </xsl:attribute>
                         <xsl:attribute name="style">display:none;</xsl:attribute>
-                        <xsl:choose>
-                            <xsl:when test="mets:div/@ORDER">
-                                <xsl:for-each select="mets:div">
-                                    <xsl:sort select="@ORDER"/>
-                                    <xsl:apply-templates select="current()"/>
-                                </xsl:for-each>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:apply-templates/>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                    	<xsl:choose>
+                    		<xsl:when test="@ORDER">
+                    			<xsl:for-each select="mets:div">
+                    				<xsl:sort select="@ORDER"/>
+                    				<xsl:apply-templates select="current()"/>
+                    			</xsl:for-each>
+                    		</xsl:when>
+                    		<xsl:otherwise>
+                    			<xsl:apply-templates/>
+                    		</xsl:otherwise>
+                    	</xsl:choose>
                     </ul>
                 </li>
             </xsl:when><!--  Menuefunktionen Ende #####################################################  --><!-- Darstellung von Dateien ###############################################################--><!--   Dateien,  die nicht per XML und XSL generiert werden --><!-- @TYPE = 'facsimile' or @TYPE = 'URL' als Steuerung deprecated, wird ueber MIMETYPE gesteuert --><!-- im zugehoerigen Filesegment muss stets ein absoluter Pfad (URL) stehen; interne Links (localhost, diglib.hab.de) werden im Frame, 
@@ -450,7 +453,7 @@
                                 <xsl:attribute name="target">display2</xsl:attribute>
                             </xsl:otherwise>
                         </xsl:choose>
-                        <xsl:value-of select="concat(@ORDER, ' ', @LABEL)"/>
+                        <xsl:value-of select="@LABEL"/>
                     </a>
                 </li>
             </xsl:when><!-- Dateien, die per XML und XSL zusammengesetzt werden (default); wird ueber MIMETYPE gesteuert -->
@@ -476,10 +479,11 @@
 								select="//mets:behavior[parent::mets:behaviorSec[@ID != 'function_navigator']][@STRUCTID = current()/ancestor-or-self::mets:div/@ID]/mets:mechanism/@xlink:href"
 							/>-->
                         </xsl:attribute><!--						<xsl:attribute name="target">display2</xsl:attribute>-->
-                    	<xsl:value-of select="concat(@ORDER, ' ', @LABEL)"/>
+                        <xsl:value-of select="@LABEL"/>
                     </a>
                 </li>
-            </xsl:when><!--  Fehlerhafte mets.xml; vermutlich fehlender MIME-Type oder falsche Funktionsbezeichnung --><!--<xsl:otherwise>
+            </xsl:when><!--  Fehlerhafte mets.xml; vermutlich fehlender MIME-Type oder falsche Funktionsbezeichnung -->
+            <!--<xsl:otherwise>
                 <h1>ERROR - mets.xml ist not valid</h1>
             </xsl:otherwise>-->
         </xsl:choose>
