@@ -10,7 +10,7 @@ declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 declare function wdbs:getEd($node as node(), $model as map(*)) {
-	let $editions := collection('/db/edoc')//mets:mets
+	let $editions := collection($hab:edoc)//mets:mets
 	return
 		<table>
 			<tr>
