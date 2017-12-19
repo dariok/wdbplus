@@ -25,9 +25,9 @@ declare variable $config:app-root :=
                 substring($rawPath, 15)
         else
             $rawPath
-    return '/edoc'
-    (:return
-        substring-before($modulePath, "/modules"):)
+
+    return
+        substring-before($modulePath, "/modules")
 ;
 
 declare variable $config:data-root := $config:app-root || "/data";
