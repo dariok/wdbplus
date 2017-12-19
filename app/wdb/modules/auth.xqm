@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-module namespace haba = "http://diglib.hab.de/ns/auth";
+module namespace haba = "https://github.com/dariok/wdbplus/auth";
 declare function haba:getAuth($node as node(), $model as map(*)) {
     let $current := xmldb:get-current-user()
     return

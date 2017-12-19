@@ -1,9 +1,9 @@
 xquery version "3.0";
 
-module namespace habs = "http://diglib.hab.de/ns/stats";
+module namespace habs = "https://github.com/dariok/wdbplus/stats";
 
-import module namespace templates="http://exist-db.org/xquery/templates";
-import module namespace hab="http://diglib.hab.de/ns/hab";
+import module namespace templates	= "http://exist-db.org/xquery/templates";
+import module namespace hab				= "https://github.com/dariok/wdbplus/hab";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";

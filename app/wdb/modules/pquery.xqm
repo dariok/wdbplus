@@ -3,10 +3,10 @@
  : erstellt 2016-11-03 DK :)
 xquery version "3.0";
 
-module namespace habpq = "http://diglib.hab.de/ns/pquery";
+module namespace habpq = "https://github.com/dariok/wdbplus/pquery";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace hab				= "http://diglib.hab.de/ns/hab" at "app.xql";
+import module namespace hab				= "https://github.com/dariok/wdbplus/hab" at "app.xql";
 
 declare %templates:default("q", "") %templates:default("q2", "")
 	function habpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string, $q2 as xs:string) as map(*) {
@@ -30,7 +30,7 @@ declare function habpq:pageTitle ($node as node(), $model as map(*)) {
 		(vgl. Mail Thomas 2017-01-04T12:05) :)
 declare function habpq:body($node as node(), $model as map(*)) {
 	let $path := concat($hab:edoc, '/', $model("ed"), '/scripts/', $model("query"))
-	let $module := util:import-module(xs:anyURI("http://diglib.hab.de/ns/habq"), 'habq', xs:anyURI($path))
+	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/habq"), 'habq', xs:anyURI($path))
 	
 		return util:eval("habq:query()", xs:boolean('false'), (xs:QName('map'), $model))
 };
@@ -38,7 +38,7 @@ declare function habpq:body($node as node(), $model as map(*)) {
 (: gibt das h2 für die navbar aus; neu 2017-03-27 DK :)
 declare function habpq:getTask($node as node(), $model as map(*)) {
 	let $path := concat($hab:edoc, '/', $model("ed"), '/scripts/', $model("query"))
-	let $module := util:import-module(xs:anyURI("http://diglib.hab.de/ns/habq"), 'habq', xs:anyURI($path))
+	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/habq"), 'habq', xs:anyURI($path))
 	
 	return util:eval("habq:getTask()", xs:boolean('false'), (xs:QName('map'), $model))
 };

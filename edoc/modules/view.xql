@@ -3,25 +3,25 @@
  : to process any URI ending with ".html". It receives the HTML from
  : the controller and passes it to the templating system.
  :)
-xquery version "3.0";
+xquery version "3.1";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
-import module namespace templates = "http://exist-db.org/xquery/templates" ;
-import module namespace habm			= "http://diglib.hab.de/ns/mets"		at "/db/apps/wdb/modules/mets.xqm";
-import module namespace hab				= "http://diglib.hab.de/ns/hab"			at "/db/apps/wdb/modules/app.xql";
-import module namespace habs			= "http://diglib.hab.de/ns/stats"		at "/db/apps/wdb/modules/stats.xqm";
-import module namespace habe			= "http://diglib.hab.de/ns/entity"	at "/db/apps/wdb/modules/entity.xqm";
-import module namespace habpq			= "http://diglib.hab.de/ns/pquery"	at "/db/apps/wdb/modules/pquery.xqm";
-import module namespace haba			= "http://diglib.hab.de/ns/auth"		at "/db/apps/wdb/modules/auth.xqm";
+import module namespace templates	= "http://exist-db.org/xquery/templates" ;
+import module namespace habm			= "https://github.com/dariok/wdbplus/mets"		at "/db/apps/wdb/modules/mets.xqm";
+import module namespace hab				= "https://github.com/dariok/wdbplus/hab"			at "/db/apps/wdb/modules/app.xql";
+import module namespace habs			= "https://github.com/dariok/wdbplus/stats"		at "/db/apps/wdb/modules/stats.xqm";
+import module namespace habe			= "https://github.com/dariok/wdbplus/entity"	at "/db/apps/wdb/modules/entity.xqm";
+import module namespace habpq			= "https://github.com/dariok/wdbplus/pquery"	at "/db/apps/wdb/modules/pquery.xqm";
+import module namespace haba			= "https://github.com/dariok/wdbplus/auth"		at "/db/apps/wdb/modules/auth.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 
  : templating.
  :)
-import module namespace config	= "http://diglib.hab.de/ns/config" at "/db/apps/wdb/modules/config.xqm";
+import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at "/db/apps/wdb/modules/config.xqm";
 
 let $config := map {
     $templates:CONFIG_APP_ROOT := $config:app-root,

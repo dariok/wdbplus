@@ -1,10 +1,10 @@
 xquery version "3.0";
 (: erstellt 2016-07-26 Bearbeiter:DK Dario Kampkaspar – kampkaspar@hab.de :)
 
-module namespace habe = "http://diglib.hab.de/ns/entity";
+module namespace habe = "https://github.com/dariok/wdbplus/entity";
 
-import module namespace config	= "http://diglib.hab.de/ns/config" at "config.xqm";
-import module namespace hab		= "http://diglib.hab.de/ns/hab" at "app.xql";
+import module namespace config	= "https://github.com/dariok/wdbplus/config" at "config.xqm";
+import module namespace hab			= "https://github.com/dariok/wdbplus/hab" at "app.xql";
 
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 

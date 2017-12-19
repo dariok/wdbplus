@@ -1,13 +1,13 @@
 xquery version "3.0";
 
-import module namespace habm = "http://diglib.hab.de/ns/mets" at "/db/apps/wdb/modules/mets.xqm";
-import module namespace hab = "http://diglib.hab.de/ns/hab" at "/db/apps/wdb/modules/app.xql";
+import module namespace habm	= "https://github.com/dariok/wdbplus/mets"	at "/db/apps/wdb/modules/mets.xqm";
+import module namespace hab		= "https://github.com/dariok/wdbplus/hab"		at "/db/apps/wdb/modules/app.xql";
 
-declare namespace match = "http://www.w3.org/2005/xpath-functions";
-declare namespace mets	= "http://www.loc.gov/METS/";
-declare namespace mods	= "http://www.loc.gov/mods/v3";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
-declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace match 	= "http://www.w3.org/2005/xpath-functions";
+declare namespace mets		= "http://www.loc.gov/METS/";
+declare namespace mods		= "http://www.loc.gov/mods/v3";
+declare namespace tei			= "http://www.tei-c.org/ns/1.0";
+declare namespace output	= "http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
