@@ -14,9 +14,10 @@ declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 (:declare variable $wdb:edoc := "/db/edoc";:)
 declare variable $wdb:edoc := $config:app-root;
-declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";
+(:declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";:)
 declare variable $wdb:edocRest := concat($wdb:edocRestBase, $wdb:edoc);
-declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';
+(:declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';:)
+declare variable $wdb:edocBase := '/edoc';
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
