@@ -3,7 +3,7 @@ xquery version "3.0";
 module namespace hab = "https://github.com/dariok/wdbplus/hab";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace config		= "https://github.com/dariok/wdbplus/config" at "config.xqm";
+import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "config.xqm";
 import module namespace habt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
@@ -206,7 +206,7 @@ declare function hab:getAuth($node as node(), $model as map(*)) {
         else
         if ($current = 'guest') then
             <div>
-                <form enctype="multipart/form-data" method="post" action="/apps/wdb/auth.xql">
+                <form enctype="multipart/form-data" method="post" action="auth.xql">
     				<input type="text" name="user"/>
     				<input type="password" name="password" />
     				<input type="submit" value="login"/>

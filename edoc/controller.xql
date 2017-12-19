@@ -1,7 +1,7 @@
 (: Bearbeiter DK = Dario Kampkaspar, kampkaspar@hab.de :)
 xquery version "3.0";
 
-import module namespace haba = "https://github.com/dariok/wdbplus/auth" at "/apps/wdb/modules/auth.xqm";
+import module namespace haba = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
