@@ -1,7 +1,7 @@
 xquery version "3.0";
 
-import module namespace habm	= "https://github.com/dariok/wdbplus/mets"	at "modules/mets.xqm";
-import module namespace hab		= "https://github.com/dariok/wdbplus/wdb"		at "modules/app.xql";
+import module namespace wdbm	= "https://github.com/dariok/wdbplus/mets"	at "modules/mets.xqm";
+import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "modules/app.xql";
 
 declare namespace match 	= "http://www.w3.org/2005/xpath-functions";
 declare namespace mets		= "http://www.loc.gov/METS/";
@@ -17,7 +17,7 @@ let $dir := analyze-string($path, '^/?(.*)/([^/]+)$')
 let $xsl := doc('xmldb:exist:///db/edoc/resources/mets.xsl')
  
 	let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
-	let $metsFile := concat($hab:edoc, '/', $id,"/mets.xml")
+	let $metsFile := concat($wdb:edoc, '/', $id,"/mets.xml")
 	let $mets := doc($metsFile)
 	let $title := ($mets//mods:title)[1]/text()
 	
@@ -29,7 +29,7 @@ return
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	{habm:pageTitle($bogus, $model)}
+	{wdbm:pageTitle($bogus, $model)}
 	<link rel="stylesheet" type="text/css" href="$shared/css/start.css" />
 	<script src="http://code.jquery.com/jquery-3.1.0.js" type="text/javascript" />
 	<script src="$shared/scripts/function.js" type="text/javascript" />
@@ -37,7 +37,7 @@ return
 <body>
 	<div id="sideBar" />
 	<div id="rightSide">
-		{habm:getRight($bogus, $model)}
+		{wdbm:getRight($bogus, $model)}
 	</div>
 	<div id="container">
 		<div id="navBar">
@@ -45,9 +45,9 @@ return
 			<hr />
 		</div>
 		<div id="content">
-			{habm:getLeft($bogus, $model)}
+			{wdbm:getLeft($bogus, $model)}
 		</div>
-		<!-- <div id="footer" data-template="habm:footer"/> -->
+		<!-- <div id="footer" data-template="wdbm:footer"/> -->
 	</div>
 </body>
 </html>

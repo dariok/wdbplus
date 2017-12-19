@@ -1,7 +1,7 @@
 (: Bearbeiter DK = Dario Kampkaspar, kampkaspar@hab.de :)
 xquery version "3.0";
 
-import module namespace haba = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
+import module namespace wdba = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -51,9 +51,9 @@ else if ($exist:resource = 'login') then
                 ):)
         try {
             if (request:get-parameter('logout', '') = 'logout') then
-                haba:getAuth(<br/>, map {'res': 'logout'})
+                wdba:getAuth(<br/>, map {'res': 'logout'})
             else if (local:user-allowed()) then
-                haba:getAuth(<br/>, map {'res': request:get-attribute("wd.user")})
+                wdba:getAuth(<br/>, map {'res': request:get-attribute("wd.user")})
             else (
                 response:set-status-code(401),
                     <status>fail</status>

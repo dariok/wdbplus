@@ -1,10 +1,10 @@
 xquery version "3.0";
 
-module namespace hab = "https://github.com/dariok/wdbplus/wdb";
+module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "config.xqm";
-import module namespace habt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
+import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
@@ -12,30 +12,30 @@ declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
-declare variable $hab:edoc := "/db/edoc";
-declare variable $hab:edocRestBase := "http://dev2.hab.de/rest";
-declare variable $hab:edocRest := concat($hab:edocRestBase, $hab:edoc);
-declare variable $hab:edocBase := 'http://dev2.hab.de/edoc';
+declare variable $wdb:edoc := "/db/edoc";
+declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";
+declare variable $wdb:edocRest := concat($wdb:edocRestBase, $wdb:edoc);
+declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
 declare %templates:wrap
-function hab:getEE($node as node(), $model as map(*), $id as xs:string) { (:as map(*) {:)
-	let $m := hab:populateModel($id)
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as map(*) {:)
+	let $m := wdb:populateModel($id)
 	return $m
 };
 
-declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
+declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	let $ed := if (contains($id, 'edoc'))
 		then substring-before(substring-after($id, 'edoc_'), '_')
 		else $id
 	
-	let $metsLoc := concat($hab:edoc, '/', $ed, "/mets.xml")
+	let $metsLoc := concat($wdb:edoc, '/', $ed, "/mets.xml")
 	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-	let $fil := concat($hab:edoc, '/', $ed, '/', $fileLoc)
+	let $fil := concat($wdb:edoc, '/', $ed, '/', $fileLoc)
 	let $file := doc($fil)
 
 	(: Das XSLT finden :)
@@ -49,7 +49,7 @@ declare function hab:populateModel($id as xs:string) { (:as map(*) {:)
 		order by local:val($b, $structs, 'HTML')
 		return $b
 	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
-	let $xslt := concat($hab:edoc, '/', $ed, '/', $trans)
+	let $xslt := concat($wdb:edoc, '/', $ed, '/', $trans)
 	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
 	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
@@ -100,17 +100,17 @@ declare function local:val($test, $seqStruct, $type) {
     return $vS + $vID
 };
 
-declare function hab:getEdTitle($node as node(), $model as map(*)) as element() {
+declare function wdb:getEdTitle($node as node(), $model as map(*)) as element() {
 	let $name := doc($model("metsLoc"))//mods:mods/mods:titleInfo/mods:title
 	return <h1>{string($name)}</h1>
 };
 
-declare function hab:EEtitle($node as node(), $model as map(*)) as xs:string {
-	let $title := habt:transform($model("title"))
+declare function wdb:EEtitle($node as node(), $model as map(*)) as xs:string {
+	let $title := wdbt:transform($model("title"))
 	return string-join($title, '|')
 };
 
-declare function hab:EEpart($node as node(), $model as map(*)) as xs:string {
+declare function wdb:EEpart($node as node(), $model as map(*)) as xs:string {
 	<h2>{
 		switch ($model("type"))
 			case "introduction"
@@ -122,7 +122,7 @@ declare function hab:EEpart($node as node(), $model as map(*)) as xs:string {
 	</h2>
 };
 
-declare function hab:EEbody($node as node(), $model as map(*)) {
+declare function wdb:EEbody($node as node(), $model as map(*)) {
 	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
 	let $file := $model("fileLoc")
 	let $xslt := $model("xslt")
@@ -141,12 +141,12 @@ declare function hab:EEbody($node as node(), $model as map(*)) {
 (:		return doc($file):)
 };
 
-declare function hab:pageTitle($node as node(), $model as map(*)) {
+declare function wdb:pageTitle($node as node(), $model as map(*)) {
 	let $ti := string ($model("shortTitle"))
 	return <title>WDB {string($model("title")/@n)} – {$ti}</title>
 };
 
-declare function hab:footer($node as node(), $model as map(*)) {
+declare function wdb:footer($node as node(), $model as map(*)) {
 	let $xml := substring-after($model("fileLoc"), '/db')
 	let $xsl := substring-after($model("xslt"), '/db')
 	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
@@ -157,7 +157,7 @@ declare function hab:footer($node as node(), $model as map(*)) {
 	</div>
 };
 
-declare function hab:authors($node as node(), $model as map(*)) {
+declare function wdb:authors($node as node(), $model as map(*)) {
 	let $max := count($model("authors"))
 	for $auth at $i in $model("authors")
 		let $t := if ($i > 1 and $i < max)
@@ -166,7 +166,7 @@ declare function hab:authors($node as node(), $model as map(*)) {
 		return concat($t, $auth)
 };
 
-declare function hab:getCSS($node as node(), $model as map(*)) {
+declare function wdb:getCSS($node as node(), $model as map(*)) {
 	let $ed := $model("ed")
 	let $f := if ($model("type") = "transcript")
 			then "transcr.css"
@@ -185,19 +185,19 @@ declare function hab:getCSS($node as node(), $model as map(*)) {
 	)
 };
 
-declare function hab:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
+declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
 	let $ee := substring-before(substring-after($id, 'edoc_'), '_')
 	return <meta name="edition" content="{$ee}" />
 };
 
 (: neu für das Laden projektspezifischer JS; 2016-11-02 DK :)
-declare function hab:getJS($node as node(), $model as map(*)) {
+declare function wdb:getJS($node as node(), $model as map(*)) {
 	let $path := concat($model("ed"), "/scripts/project.js")
 	return <script src="{$path}" type="text/javascript" />
 };
 
 (: Anmeldeinformationen oder Login anzeigen; 2017-05-0 DK :)
-declare function hab:getAuth($node as node(), $model as map(*)) {
+declare function wdb:getAuth($node as node(), $model as map(*)) {
     let $current := xmldb:get-current-user()
     let $user := request:get-parameter('user', '')
     return

@@ -1,15 +1,15 @@
 xquery version "3.0";
 
-module namespace habs = "https://github.com/dariok/wdbplus/stats";
+module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace hab				= "https://github.com/dariok/wdbplus/wdb";
+import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
-declare function habs:getEd($node as node(), $model as map(*)) {
+declare function wdbs:getEd($node as node(), $model as map(*)) {
 	let $editions := collection('/db/edoc')//mets:mets
 	return
 		<table>
@@ -29,15 +29,15 @@ declare function habs:getEd($node as node(), $model as map(*)) {
 				return
 					<tr>
 						<td style="padding-right: 5px;">{$id}</td>
-						<td style="padding-right: 5px;"><a href="{concat($hab:edocBase, '/', $id, '/start.html')}">{$name}</a></td>
-						<td style="padding-right: 5px;"><a href="{concat($hab:edocRestBase, $metsFile)}">{$metsFile}</a></td>
+						<td style="padding-right: 5px;"><a href="{concat($wdb:edocBase, '/', $id, '/start.html')}">{$name}</a></td>
+						<td style="padding-right: 5px;"><a href="{concat($wdb:edocRestBase, $metsFile)}">{$metsFile}</a></td>
 						<td style="padding-right: 5px;"><a href="{$link}">Link</a></td>
 					</tr>
 			}
 		</table>
 };
 
-declare function habs:getEE($node as node(), $model as map(*), $edoc as xs:string) {
+declare function wdbs:getEE($node as node(), $model as map(*), $edoc as xs:string) {
 	let $ed := collection('/db/edoc/' | $edoc)//tei:TEI/tei:teiHeader
 	return
 		<div>
