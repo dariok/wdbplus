@@ -4,7 +4,7 @@ xquery version "3.0";
 module namespace habe = "https://github.com/dariok/wdbplus/entity";
 
 import module namespace config	= "https://github.com/dariok/wdbplus/config" at "config.xqm";
-import module namespace hab			= "https://github.com/dariok/wdbplus/hab" at "app.xql";
+import module namespace hab			= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 

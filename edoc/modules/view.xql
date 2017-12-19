@@ -11,7 +11,7 @@ declare option output:media-type "text/html";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
 import module namespace habm			= "https://github.com/dariok/wdbplus/mets"		at "mets.xqm";
-import module namespace hab				= "https://github.com/dariok/wdbplus/hab"			at "app.xql";
+import module namespace hab				= "https://github.com/dariok/wdbplus/wdb"			at "app.xql";
 import module namespace habs			= "https://github.com/dariok/wdbplus/stats"		at "stats.xqm";
 import module namespace habe			= "https://github.com/dariok/wdbplus/entity"	at "entity.xqm";
 import module namespace habpq			= "https://github.com/dariok/wdbplus/pquery"	at "pquery.xqm";
