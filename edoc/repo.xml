@@ -7,7 +7,7 @@
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
     <type>application</type>
-    <target>wdb</target>
+    <target>edoc</target>
     <prepare>pre-install.xql</prepare>
     <finish/>
     <permissions user="kampkaspar" password="21Ec2020-3AEA" group="dba" mode="rw-rw-r--"/>

@@ -1,4 +1,4 @@
-<package xmlns="http://expath.org/ns/pkg" name="http://dev2.hab.de/edoc" abbrev="wdb" version="0.1" spec="1.0">
-    <title>WDB</title>
+<package xmlns="http://expath.org/ns/pkg" name="https://github.com/dariok/wdbplus" abbrev="wdb" version="0.1" spec="1.0">
+    <title>W. Digitale Bibliothek</title>
     <dependency package="http://exist-db.org/apps/shared"/>
 </package>
