@@ -18,7 +18,12 @@ declare variable $wdb:edoc := $config:app-root;
 declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";
 declare variable $wdb:edocRest := concat($wdb:edocRestBase, $wdb:edoc);
 (:declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';:)
-declare variable $wdb:edocBase := substring-after($config:app-root, '/db');
+(:declare variable $wdb:edocBase := substring-after($config:app-root, '/db');:)
+declare variable $wdb:edocBase :=
+	if ( doc($wdb:edoc || '/config.xml')/main:config/main:server )
+	then ()
+	else request:get-uri()
+;
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
@@ -64,6 +69,8 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	let $type := if (contains($id, 'transcr'))
 		then "transcript"
 		else "introduction"
+		
+	(: TODO parameter aus config.xml einlesen und übergeben:)
 	
 	return map { "fileLoc" := $fil, "xslt" := $xslt, "title" := $title ,
 			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,

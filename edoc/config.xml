@@ -1,17 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="https://github.com/dariok/wdbplus">
-	<!-- general meta data -->
+	<!-- General meta data -->
+	<!-- name and short are mandatory -->
 	<meta>
 		<!-- long name -->
 		<name>Wien[n]erisches Diarium digital</name>
 		<!-- short title -->
 		<short>Digitarium</short>
 		<!-- a logo -->
-		<logo />
+		<!-- <logo>http://mydomain.tld/logo.png</logo> -->
 	</meta>
+	
 	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
-	<role>
+	<!-- <role>
 		<type>workbench</type>
-		<other/>
-	</role>
+		<other>http://dev2.hab.de/edoc</other>
+	</role> -->
+	
+	<!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
+	<params>
+		<param name="vd16">http://gateway-bayern.de/VD16+</param>
+	</params>
+	
+	<!-- if the base address cannot be correctly extracted, a value – full URI to the instance's root, possibly including
+		ports – can be given here -->
+	<!-- <server>http://mydomain.tld:8088/my/path</server> -->
+	
+	
 </config>
