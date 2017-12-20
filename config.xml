@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="https://github.com/dariok/wdbplus">
+	<!-- general meta data -->
+	<meta>
+		<!-- long name -->
+		<name>Wien[n]erisches Diarium digital</name>
+		<!-- short title -->
+		<short>Digitarium</short>
+		<!-- a logo -->
+		<logo />
+	</meta>
+	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
+	<role>
+		<type>workbench</type>
+		<other/>
+	</role>
+</config>
