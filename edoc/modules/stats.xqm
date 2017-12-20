@@ -34,6 +34,7 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 						<td style="padding-right: 5px;"><a href="{$link}">Link</a></td>
 					</tr>
 			}
+			</table>
 };
 
 declare function wdbs:getEE($node as node(), $model as map(*), $edoc as xs:string) {
