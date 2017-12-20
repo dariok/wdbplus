@@ -35,7 +35,7 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := doc(concat($model("id"), '/start.xml'))
+	let $xml := doc(concat($wdb:edoc, '/', $model("id"), '/start.xml'))
 	
 (:	TODO eigene start.xsl benutzen, falls vorhanden:)
 (:	let $xsl := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/start.xsl')):)
