@@ -4,7 +4,7 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "./config.xqm";
-import module namespace wdbt		= "https://github.com/dariok/wdbplus/transform" at "./transform.xqm";
+import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "./transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
@@ -14,10 +14,10 @@ declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 (:declare variable $wdb:edoc := "/db/edoc";:)
 declare variable $wdb:edoc := $config:app-root;
-(:declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";:)
+declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";
 declare variable $wdb:edocRest := concat($wdb:edocRestBase, $wdb:edoc);
 (:declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';:)
-declare variable $wdb:edocBase := '/edoc';
+declare variable $wdb:edocBase := substring-after($config:app-root, '/db');
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
 
