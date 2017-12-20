@@ -14,15 +14,13 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 	return
 		<table>
 			<tr>
-				<th>Edoc-Nr</th>
+				<th>Eintrag</th>
 				<th>Titel</th>
 				<th>METS</th>
-				<th>WDB-Classic</th>
 			</tr>
 			
 			{for $mets in $editions
 				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]/text()
-				let $link := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:identifier[1]/text()
 				let $id := substring-after($mets/@OBJID, '/')
 				let $metsFile := document-uri(root($mets))
 				order by $id
@@ -31,7 +29,6 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 						<td style="padding-right: 5px;">{$id}</td>
 						<td style="padding-right: 5px;"><a href="{concat($id, '/start.html')}">{$name}</a></td>
 						<td style="padding-right: 5px;"><a href="{concat($wdb:edocRestBase, $metsFile)}">{$metsFile}</a></td>
-						<td style="padding-right: 5px;"><a href="{$link}">Link</a></td>
 					</tr>
 			}
 			</table>

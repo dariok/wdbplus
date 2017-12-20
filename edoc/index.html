@@ -1,15 +1,11 @@
 <div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page2.html" data-template-at="container">
     <div id="navBar">
-        <h1>Wolfenbütteler digitale Bibliothek</h1>
+        <h1 data-template="wdb:getInstanceName"/>
         <hr/>
     </div>
     <div>
-        <p>
-            <a href="http://diglib.hab.de/">zur WDB Classic</a>.
-		</p>
-        <div>
-            <h2>Enthaltene Editionen der WDB:</h2>
-            <table data-template="wdbs:getEd"/>
-        </div>
+    	<h2>Projekte im <span data-template="wdb:getInstanceShort"/>
+        </h2>
+    	<table data-template="wdbs:getEd"/>
     </div>
 </div>

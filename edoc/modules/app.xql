@@ -11,6 +11,7 @@ declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace main	= "https://github.com/dariok/wdbplus";
 
 (:declare variable $wdb:edoc := "/db/edoc";:)
 declare variable $wdb:edoc := $config:app-root;
@@ -221,4 +222,14 @@ declare function wdb:getAuth($node as node(), $model as map(*)) {
             <div>
                 User: <a>{$current}</a>
             </div>
+};
+
+(: Den Instanznamen ausgeben :)
+declare function wdb:getInstanceName($node as node(), $model as map(*)) {
+	<h1>{normalize-space(doc('../config.xml')/main:config/main:meta/main:name)}</h1>
+};
+
+(: Den Kurznamen ausgeben :)
+declare function wdb:getInstanceShort($node as node(), $model as map(*)) {
+	<span>{normalize-space(doc('../config.xml')/main:config/main:meta/main:short)}</span>
 };
