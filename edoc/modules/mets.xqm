@@ -25,21 +25,21 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $xml := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/mets.xml'))
-	let $xsl := if (doc-available(concat('/db/edoc/', $model("id"), '/mets.xsl')))
-		then doc(concat('/db/edoc/', $model("id"), '/mets.xsl'))
-		else doc('xmldb:exist:///db/edoc/resources/mets.xsl')
+	let $xml := doc($model('mets'))
+	let $xsl := if (doc-available(concat($model("id"), '/mets.xsl')))
+		then doc(concat($wdb:edoc, '/', $model("id"), '/mets.xsl'))
+		else doc('../resources/mets.xsl')
 	
 	return
 		transform:transform($xml, $xsl, ())
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/start.xml'))
+	let $xml := doc(concat($model("id"), '/start.xml'))
 	
 (:	TODO eigene start.xsl benutzen, falls vorhanden:)
 (:	let $xsl := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/start.xsl')):)
-    let $xsl := doc('xmldb:exist:///db/edoc/resources/start.xsl')
+    let $xsl := doc('../resources/start.xsl')
 	
 	return
 		transform:transform($xml, $xsl, ())
