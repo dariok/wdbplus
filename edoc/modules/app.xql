@@ -13,16 +13,22 @@ declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace main	= "https://github.com/dariok/wdbplus";
 
-(:declare variable $wdb:edoc := "/db/edoc";:)
+(: get the name of the server, possibly including the port :)
+declare variable $wdb:server := if ( request:get-server-port() != 80 )
+	then request:get-scheme() || '://' || request:get-server-name() || ':' || request:get-server-port()
+	else request:get-scheme() || '://' || request:get-server-name()
+;
+
+(: get the base of this instance within the db (i.e. relative to /db) :)
 declare variable $wdb:edoc := $config:app-root;
-declare variable $wdb:edocRestBase := "http://dev2.hab.de/rest";
-declare variable $wdb:edocRest := concat($wdb:edocRestBase, $wdb:edoc);
-(:declare variable $wdb:edocBase := 'http://dev2.hab.de/edoc';:)
-(:declare variable $wdb:edocBase := substring-after($config:app-root, '/db');:)
+
+(: get the base URI either from the data of the last call or from the configuration :)
 declare variable $wdb:edocBase :=
 	if ( doc($wdb:edoc || '/config.xml')/main:config/main:server )
-	then ()
-	else request:get-uri()
+	then normalize-space(doc($wdb:edoc || '/config.xml')/main:config/main:server)
+	else
+		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
+		return $wdb:server || $dir
 ;
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)

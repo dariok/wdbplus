@@ -23,7 +23,7 @@
 	</params>
 	
 	<!-- if the base address cannot be correctly extracted, a value – full URI to the instance's root, possibly including
-		ports – can be given here -->
+		ports – can be given here. It should _not_ end with a '/' -->
 	<!-- <server>http://mydomain.tld:8088/my/path</server> -->
 	
 	
