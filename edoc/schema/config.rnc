@@ -1,0 +1,20 @@
+default namespace = "https://github.com/dariok/wdbplus"
+
+start =
+  element config {
+    element meta {
+      element name { xsd:string },
+      element short { xsd:string }
+    },
+    element role {
+      element type { xsd:NCName },
+      element peer { xsd:anyURI }
+    }?,
+    element params {
+      element param {
+        attribute name { xsd:NCName },
+        xsd:anyURI
+      }+
+    }?,
+    element server { xsd:anyURI }?
+  }

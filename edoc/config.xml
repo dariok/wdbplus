@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="schema/config.rnc" type="application/relax-ng-compact-syntax"?>
 <config xmlns="https://github.com/dariok/wdbplus">
 	<!-- General meta data -->
 	<!-- name and short are mandatory -->
@@ -12,19 +13,18 @@
 	</meta>
 	
 	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
-	<!-- <role>
+	<!--<role>
 		<type>workbench</type>
 		<peer>http://dev2.hab.de/edoc</peer>
-	</role> -->
+	</role>-->
 	
 	<!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
-	<params>
+	<!--<params>
 		<param name="vd16">http://gateway-bayern.de/VD16+</param>
-	</params>
+		<param name="hab">http://diglib.hab.de</param>
+	</params>-->
 	
 	<!-- if the base address cannot be correctly extracted, a value – full URI to the instance's root, possibly including
 		ports – can be given here. It should _not_ end with a '/' -->
-	<!-- <server>http://mydomain.tld:8088/my/path</server> -->
-	
-	
+	<!--<server>http://mydomain.tld:8088/my/path</server>-->
 </config>
