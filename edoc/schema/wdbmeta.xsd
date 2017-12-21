@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" targetNamespace="https://github.com/dariok/wdbplus/wdbmeta"
+	xmlns:wdbmeta="https://github.com/dariok/wdbplus/wdbmeta"
+	elementFormDefault="qualified" vc:minVersion="1.1">
+	<xs:element name="struct">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element maxOccurs="unbounded" ref="wdbmeta:file"/>
+				<xs:element maxOccurs="unbounded" ref="wdbmeta:fileGrp"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- file meta data -->
+	<xs:element name="fileGrp">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="wdbmeta:file"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="file">
+		<xs:complexType>
+			<xs:attribute name="mimeType" use="optional" type="xs:string" default="application/xml" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
