@@ -3,6 +3,7 @@ xquery version "3.0";
 module namespace wdbm = "https://github.com/dariok/wdbplus/mets";
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb 			= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+import module namespace console="http://exist-db.org/xquery/console";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
@@ -25,15 +26,19 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $xml := doc($model('mets'))
+	let $xml := if ( string-length($model('mets')) > 0 )
+		then doc($model('mets'))
+		else doc($wdb:edocBaseDB || '/' || $model('id')||'/mets.xml')
 	let $xsl := if (doc-available(concat($model("id"), '/mets.xsl')))
 		then doc(concat($wdb:edocBaseDB, '/', $model("id"), '/mets.xsl'))
 		else doc($wdb:edocBaseDB || '/resources/mets.xsl')
 	let $param := <parameters>
-			<param name="footerXML" value="{wdb:getUrl($model('mets'))}" />
+			<param name="footerXML" value="{wdb:getUrl(base-uri($xml))}" />
 			<param name="footerXSL" value="{wdb:getUrl(base-uri($xsl))}" />
 			<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
 		</parameters>
+	
+	
 	
 	return
 		transform:transform($xml, $xsl, $param)
