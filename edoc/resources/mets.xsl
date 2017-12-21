@@ -7,14 +7,13 @@
     <xsl:param name="lang"/>
     <xsl:param name="footerXML"/>
     <xsl:param name="footerXSL"/>
+	<xsl:param name="wdb" />
     <xsl:variable name="codeNo">
         <xsl:value-of select="mets:mets/@OBJID"/>
     </xsl:variable>
     <!-- überschreibt Wert für WDB-eXist; 2016-07-19 DK -->
     <!-- angepaßt für verbesserte URL; 2016-10-06 DK -->
-    <xsl:variable name="wdb">
-        <xsl:text>http://dev2.hab.de/edoc/view.html</xsl:text>
-    </xsl:variable><!-- Legenden (Lokalisation; ggf.  in Zukunft auslagern in param.xsl) -->
+    <!-- Legenden (Lokalisation; ggf.  in Zukunft auslagern in param.xsl) -->
     <xsl:variable name="content_en">
         <xsl:text>Contents</xsl:text>
     </xsl:variable>

@@ -27,15 +27,20 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
 	let $xml := doc($model('mets'))
 	let $xsl := if (doc-available(concat($model("id"), '/mets.xsl')))
-		then doc(concat($wdb:edoc, '/', $model("id"), '/mets.xsl'))
-		else doc('../resources/mets.xsl')
+		then doc(concat($wdb:edocBaseDB, '/', $model("id"), '/mets.xsl'))
+		else doc($wdb:edocBaseDB || '/resources/mets.xsl')
+	let $param := <parameters>
+			<param name="footerXML" value="{wdb:getUrl($model('mets'))}" />
+			<param name="footerXSL" value="{wdb:getUrl(base-uri($xsl))}" />
+			<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
+		</parameters>
 	
 	return
-		transform:transform($xml, $xsl, ())
+		transform:transform($xml, $xsl, $param)
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := doc(concat($wdb:edoc, '/', $model("id"), '/start.xml'))
+	let $xml := doc(concat($wdb:edocBaseDB, '/', $model("id"), '/start.xml'))
 	
 (:	TODO eigene start.xsl benutzen, falls vorhanden:)
 (:	let $xsl := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/start.xsl')):)

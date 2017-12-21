@@ -20,15 +20,16 @@ declare variable $wdb:server := if ( request:get-server-port() != 80 )
 ;
 
 (: get the base of this instance within the db (i.e. relative to /db) :)
-declare variable $wdb:edoc := $config:app-root;
+declare variable $wdb:edocBaseDB := $config:app-root;
 
 (: get the base URI either from the data of the last call or from the configuration :)
-declare variable $wdb:edocBase :=
-	if ( doc($wdb:edoc || '/config.xml')/main:config/main:server )
-	then normalize-space(doc($wdb:edoc || '/config.xml')/main:config/main:server)
+declare variable $wdb:edocBaseURL :=
+	if ( doc($wdb:edocBaseDB || '/config.xml')/main:config/main:server )
+	then normalize-space(doc($wdb:edocBaseDB|| '/config.xml')/main:config/main:server)
 	else
 		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
-		return $wdb:server || $dir
+		let $url := substring-after($wdb:edocBaseDB, 'db/')
+		return $wdb:server || substring-before($dir, $url) || $url
 ;
 
 (:  :declare option exist:serialize "expand-xincludes=no";:)
@@ -45,11 +46,11 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		then substring-before(substring-after($id, 'edoc_'), '_')
 		else $id
 	
-	let $metsLoc := concat($wdb:edoc, '/', $ed, "/mets.xml")
+	let $metsLoc := concat($wdb:edocBaseDB, '/', $ed, "/mets.xml")
 	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-	let $fil := concat($wdb:edoc, '/', $ed, '/', $fileLoc)
+	let $fil := concat($wdb:edocBaseDB, '/', $ed, '/', $fileLoc)
 	let $file := doc($fil)
 
 	(: Das XSLT finden :)
@@ -63,7 +64,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		order by local:val($b, $structs, 'HTML')
 		return $b
 	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
-	let $xslt := concat($wdb:edoc, '/', $ed, '/', $trans)
+	let $xslt := concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
 	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
 	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
@@ -245,4 +246,9 @@ declare function wdb:getInstanceName($node as node(), $model as map(*)) {
 (: Den Kurznamen ausgeben :)
 declare function wdb:getInstanceShort($node as node(), $model as map(*)) {
 	<span>{normalize-space(doc('../config.xml')/main:config/main:meta/main:short)}</span>
+};
+
+(: die vollständige URL zu einer Resource auslesen :)
+declare function wdb:getUrl ( $path as xs:string ) as xs:string {
+	$wdb:edocBaseURL || substring-after($path, $wdb:edocBaseDB)
 };

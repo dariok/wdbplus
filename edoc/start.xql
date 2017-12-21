@@ -17,7 +17,7 @@ let $dir := analyze-string($path, '^/?(.*)/([^/]+)$')
 let $xsl := doc('xmldb:exist:///db/edoc/resources/mets.xsl')
  
 	let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
-	let $metsFile := concat($wdb:edoc, '/', $id,"/mets.xml")
+	let $metsFile := concat($wdb:edocBaseDB, '/', $id,"/mets.xml")
 	let $mets := doc($metsFile)
 	let $title := ($mets//mods:title)[1]/text()
 	
