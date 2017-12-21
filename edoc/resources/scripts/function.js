@@ -270,7 +270,7 @@ function toggleSidebar() {
 
 function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
-	var q = 'http://dev2.hab.de/edoc/entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
+	var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
 	console.log(q);
 	
 	$.ajaxSetup({ cache: false });
