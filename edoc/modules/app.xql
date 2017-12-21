@@ -169,8 +169,8 @@ declare function wdb:footer($node as node(), $model as map(*)) {
 	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
 	return
 	<div class="footer">
-		<div class="footerEntry">XML: <a href="{$xml}">{$xml}</a></div>
-		<div class="footerEntry">XSLT: <a href="{$xsl}">{$xsl}</a></div>
+		<div class="footerEntry">XML: <a href="{wdb:getUrl($model("fileLoc"))}">{wdb:getUrl($model("fileLoc"))}</a></div>
+		<div class="footerEntry">XSLT: <a href="{wdb:getUrl($model('xslt'))}">{wdb:getUrl($model('xslt'))}</a></div>
 	</div>
 };
 
