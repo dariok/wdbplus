@@ -9,11 +9,17 @@
 				<xs:element minOccurs="0" ref="wdbplus:role"/>
 				<xs:element minOccurs="0" ref="wdbplus:params"/>
 				<xs:element minOccurs="0" ref="wdbplus:server"/>
-				<xs:element ref="wdbplus:struct"/>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
+	
+	<!-- Main meta data -->
 	<xs:element name="meta">
+		<xs:annotation>
+			<xs:documentation>
+				Contains the most important meta data of this instance. 
+			</xs:documentation>
+		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="wdbplus:name"/>
@@ -23,6 +29,8 @@
 	</xs:element>
 	<xs:element name="name" type="xs:string"/>
 	<xs:element name="short" type="xs:string"/>
+	
+	<!-- Roles -->
 	<xs:element name="role">
 		<xs:complexType>
 			<xs:sequence>
@@ -40,6 +48,8 @@
 		</xs:simpleType>
 	</xs:element>
 	<xs:element name="peer" type="xs:anyURI"/>
+	
+	<!-- global parameters -->
 	<xs:element name="params">
 		<xs:complexType>
 			<xs:sequence>
@@ -56,25 +66,7 @@
 			</xs:simpleContent>
 		</xs:complexType>
 	</xs:element>
+	
+	<!-- server configuration -->
 	<xs:element name="server" type="xs:anyURI"/>
-	<xs:element name="struct">
-		<xs:complexType>
-			<xs:choice>
-				<xs:element maxOccurs="unbounded" ref="wdbplus:file"/>
-				<xs:element maxOccurs="unbounded" ref="wdbplus:fileGrp"/>
-			</xs:choice>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="fileGrp">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element maxOccurs="unbounded" ref="wdbplus:file"/>
-			</xs:sequence>
-		</xs:complexType>
-	</xs:element>
-	<xs:element name="file">
-		<xs:complexType>
-			<xs:attribute name="mimeType" use="required" type="xs:string"/>
-		</xs:complexType>
-	</xs:element>
 </xs:schema>
