@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+	targetNamespace="https://github.com/dariok/wdbplus" xmlns:wdbplus="https://github.com/dariok/wdbplus"
+	vc:minVersion="1.1" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
+	<xs:element name="config">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbplus:meta"/>
+				<xs:element minOccurs="0" ref="wdbplus:role"/>
+				<xs:element minOccurs="0" ref="wdbplus:params"/>
+				<xs:element minOccurs="0" ref="wdbplus:server"/>
+				<xs:element ref="wdbplus:struct"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="meta">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbplus:name"/>
+				<xs:element ref="wdbplus:short"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="name" type="xs:string"/>
+	<xs:element name="short" type="xs:string"/>
+	<xs:element name="role">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbplus:type"/>
+				<xs:element ref="wdbplus:peer"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="type">
+		<xs:simpleType>
+			<xs:restriction base="xs:token">
+				<xs:enumeration value="workbench"/>
+				<xs:enumeration value="publication"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="peer" type="xs:anyURI"/>
+	<xs:element name="params">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="wdbplus:param"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="param">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:anyURI">
+					<xs:attribute name="name" use="required" type="xs:NCName"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="server" type="xs:anyURI"/>
+	<xs:element name="struct">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element maxOccurs="unbounded" ref="wdbplus:file"/>
+				<xs:element maxOccurs="unbounded" ref="wdbplus:fileGrp"/>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="fileGrp">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" ref="wdbplus:file"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="file">
+		<xs:complexType>
+			<xs:attribute name="mimeType" use="required" type="xs:string"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
