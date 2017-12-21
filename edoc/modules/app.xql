@@ -82,6 +82,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	return map { "fileLoc" := $fil, "xslt" := $xslt, "title" := $title ,
 			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
 			"type" := $type }
+
 	(:return <ul>
 		<li>ID: {$id}</li>
 		<li>Ed: {$ed}</li>
@@ -251,4 +252,14 @@ declare function wdb:getInstanceShort($node as node(), $model as map(*)) {
 (: die vollständige URL zu einer Resource auslesen :)
 declare function wdb:getUrl ( $path as xs:string ) as xs:string {
 	$wdb:edocBaseURL || substring-after($path, $wdb:edocBaseDB)
+};
+
+(: die Rolle der Instanz auslesen :)
+declare function wdb:getRole () as xs:string {
+	normalize-space(doc('../config.xml')/main:config/main:role/main:type)
+};
+
+(: den Peer der Instanz auslesen :)
+declare function wdb:getRolePeer () as xs:string {
+	normalize-space(doc('../config.xml')/main:config/main:role/main:peer)
 };

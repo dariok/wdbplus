@@ -14,7 +14,7 @@
 	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
 	<!-- <role>
 		<type>workbench</type>
-		<other>http://dev2.hab.de/edoc</other>
+		<peer>http://dev2.hab.de/edoc</peer>
 	</role> -->
 	
 	<!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
