@@ -85,6 +85,9 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbmeta:command" maxOccurs="unbounded"/>
+			</xs:sequence>
 			<xs:attribute use="required" name="target" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>
@@ -99,7 +102,8 @@
 			<xs:documentation>
 				A command must at least containt a URI to identify the action to be taken and information as to the type of
 				action that is described. Whether a command matches is determined by evaluating @refs and @regex with respect to
-				the ID supplied for processing.
+				the ID supplied for processing. If neither @refs nor @regex are present, the command will match anything and
+				thus no following commands will ever be executed.
 			</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
@@ -127,7 +131,8 @@
 							</xs:documentation>
 						</xs:annotation>
 					</xs:attribute>
-					<xs:assert test="(@refs and not(@regex)) or (@regex and not(@refs))" />
+					<xs:assert test="(@refs and not(@regex)) or (@regex and not(@refs) or
+						(not(@refs or @regex) and not(following-sibling::wdbmeta:command)))" />
 				</xs:extension>
 			</xs:simpleContent>
 		</xs:complexType>
