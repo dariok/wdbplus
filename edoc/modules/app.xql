@@ -47,29 +47,21 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	let $ed := substring-before(substring(substring-after($pathToFile, $wdb:edocBaseDB), 2), '/')
 
 	(: These can either be read from a mets.xml if present or from wdbmeta.xml :)
-	let $s := console:log($pathToFile)
-	let $r := console:log(substring-after($pathToFile, $wdb:edocBaseDB))
-	let $t := console:log($ed)
 	(: Unterscheiden, woher die Info stammen und schauen, welche Parameter des Model wo verwendet werde :)
 	let $metsLoc := concat($wdb:edocBaseDB, '/', $ed, "/mets.xml")
-	let $mets := doc($metsLoc)
-	let $metsfile := $mets//mets:file[@ID=$id]
-	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-(:	let $fil := concat($wdb:edocBaseDB, '/', $ed, '/', $fileLoc):)
+	let $wdbMetaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
+	
+	(: wdbMeta is the standard, METS a fallback :)
+	let $eval := if (doc-available($wdbMetaFile))
+		then getXslFromWdbMeta($ed)
+		else if (doc-available($metsLoc))
+			then
+				getXslFromMets($metsLoc, $id)
+			else
+				(: throw error :)
+				()
+	
 	let $file := doc($pathToFile)
-
-	(: Das XSLT finden :)
-	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
-	 : damit ist die »spezifischste« ID immer die letzte :)
-	let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
-	(: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
-	let $be := for $s in $structs
-		return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
-	let $behavior := for $b in $be
-		order by local:val($b, $structs, 'HTML')
-		return $b
-	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
-	let $xslt := concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
 	
 	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
 	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
@@ -267,4 +259,21 @@ declare function wdb:getRole () as xs:string {
 (: den Peer der Instanz auslesen :)
 declare function wdb:getRolePeer () as xs:string {
 	normalize-space(doc('../config.xml')/main:config/main:role/main:peer)
+};
+
+declare function getXslFromMets ($metsLoc, $id) {
+	(: Das XSLT finden :)
+	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
+	 : damit ist die »spezifischste« ID immer die letzte :)
+	let $mets := doc($metsLoc)
+	let $metsfile := $mets//mets:file[@ID=$id]
+	let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
+	(: Die behavior stehen hier in einer nicht definierten Reihenfolge (idR Dokumentreihenfolge, aber nicht zwingend) :)
+	let $be := for $s in $structs
+		return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
+	let $behavior := for $b in $be
+		order by local:val($b, $structs, 'HTML')
+		return $b
+	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
+	let $xslt := concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
 };
