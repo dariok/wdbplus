@@ -42,16 +42,21 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as m
 
 declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
-	let $ed := if (contains($id, 'edoc'))
-		then substring-before(substring-after($id, 'edoc_'), '_')
-		else $id
-	
+	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
+	let $pathToFile := base-uri(collection($wdb:edocBaseDB)/id($id)[1])
+	let $ed := substring-before(substring(substring-after($pathToFile, $wdb:edocBaseDB), 2), '/')
+
+	(: These can either be read from a mets.xml if present or from wdbmeta.xml :)
+	let $s := console:log($pathToFile)
+	let $r := console:log(substring-after($pathToFile, $wdb:edocBaseDB))
+	let $t := console:log($ed)
+	(: Unterscheiden, woher die Info stammen und schauen, welche Parameter des Model wo verwendet werde :)
 	let $metsLoc := concat($wdb:edocBaseDB, '/', $ed, "/mets.xml")
 	let $mets := doc($metsLoc)
 	let $metsfile := $mets//mets:file[@ID=$id]
 	let $fileLoc := $metsfile//mets:FLocat/@xlink:href
-	let $fil := concat($wdb:edocBaseDB, '/', $ed, '/', $fileLoc)
-	let $file := doc($fil)
+(:	let $fil := concat($wdb:edocBaseDB, '/', $ed, '/', $fileLoc):)
+	let $file := doc($pathToFile)
 
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
@@ -79,7 +84,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		
 	(: TODO parameter aus config.xml einlesen und übergeben:)
 	
-	return map { "fileLoc" := $fil, "xslt" := $xslt, "title" := $title ,
+	return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "title" := $title ,
 			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
 			"type" := $type }
 
