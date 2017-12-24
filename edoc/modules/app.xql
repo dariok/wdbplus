@@ -12,6 +12,7 @@ declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace main	= "https://github.com/dariok/wdbplus";
+declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 (: get the name of the server, possibly including the port :)
 declare variable $wdb:server := if ( request:get-server-port() != 80 )
@@ -53,13 +54,16 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	
 	(: wdbMeta is the standard, METS a fallback :)
 	let $eval := if (doc-available($wdbMetaFile))
-		then getXslFromWdbMeta($ed)
+	(: TODO target aus der Anfrage ablesen :)
+		then wdb:getXslFromWdbMeta($ed, $id, 'html')
 		else if (doc-available($metsLoc))
 			then
-				getXslFromMets($metsLoc, $id)
+				wdb:getXslFromMets($metsLoc, $id, $ed)
 			else
 				(: throw error :)
 				()
+	let $xslt := $eval
+	let $t := console:log($eval)
 	
 	let $file := doc($pathToFile)
 	
@@ -261,7 +265,7 @@ declare function wdb:getRolePeer () as xs:string {
 	normalize-space(doc('../config.xml')/main:config/main:role/main:peer)
 };
 
-declare function getXslFromMets ($metsLoc, $id) {
+declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
 	 : damit ist die »spezifischste« ID immer die letzte :)
@@ -275,5 +279,26 @@ declare function getXslFromMets ($metsLoc, $id) {
 		order by local:val($b, $structs, 'HTML')
 		return $b
 	let $trans := $behavior[position() = last()]/mets:mechanism/@xlink:href
-	let $xslt := concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
+	return concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
+};
+
+declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $target as xs:string) {
+	let $metaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
+	let $process := doc($metaFile)/meta:process[@target = $target]
+	
+	let $sel := for $c in $process/meta:command
+		return if ($c/@refs)
+			then
+				let $map := tokenize($c/@refs, ' ')
+				return if ($map = $id)
+					then $c
+					else ()
+			else
+				if ($c/@regex and matches($id, $c/@regex))
+					then $c
+					else if (not(@refs or @regex))
+						then $c
+						else ()
+	
+	return $sel[1]
 };
