@@ -53,7 +53,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	let $wdbMetaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
 	
 	(: wdbMeta is the standard, METS a fallback :)
-	let $eval := if (doc-available($wdbMetaFile))
+	let $xslt := if (doc-available($wdbMetaFile))
 	(: TODO target aus der Anfrage ablesen :)
 		then wdb:getXslFromWdbMeta($ed, $id, 'html')
 		else if (doc-available($metsLoc))
@@ -61,9 +61,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 				wdb:getXslFromMets($metsLoc, $id, $ed)
 			else
 				(: throw error :)
-				()
-	let $xslt := $eval
-	let $t := console:log($eval)
+				()37
 	
 	let $file := doc($pathToFile)
 	
