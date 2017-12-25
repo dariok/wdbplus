@@ -284,21 +284,40 @@ declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
 
 declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $target as xs:string) {
 	let $metaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
+	let $fil := doc($metaFile)
 	let $process := doc($metaFile)/meta:process[@target = $target]
+	let $p := console:log("testing for " || $id || " and target " || $target)
+	let $p2 := console:log($metafile)
+	let $p3 := console:log($fil)
+	let $p1 := console:log($process) 
 	
 	let $sel := for $c in $process/meta:command
+		let $q := console:log("command:")
+		let $q1 := console:log($c)
 		return if ($c/@refs)
 			then
+				let $r1 := console:log("@refs")
 				let $map := tokenize($c/@refs, ' ')
 				return if ($map = $id)
-					then $c
-					else ()
+					then 
+						let $r2 := console:log($id || " in " || $map)
+						return $c
+					else
+						let $r4 := console:log($id || " not in " || $map)
+						return ()
 			else
-				if ($c/@regex and matches($id, $c/@regex))
-					then $c
-					else if (not(@refs or @regex))
-						then $c
-						else ()
+				let $r5 := console:log("no @refs")
+				return if ($c/@regex and matches($id, $c/@regex))
+					then
+						let $r := console:log($id || " matches regex " || $c/@regex)
+						return $c
+					else if (not($c/@refs or $c/@regex))
+						then
+							let $r := console:log("default")
+							return $c
+						else 
+							let $r6 := console:log("found nothing??")
+							return ()
 	
 	return $sel[1]
 };
