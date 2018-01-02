@@ -1,16 +1,15 @@
 (: Bearbeiter DK = Dario Kampkaspar, kampkaspar@hab.de :)
 xquery version "3.0";
 
-import module namespace wdba = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
+import module namespace wdba 		= "https://github.com/dariok/wdbplus/auth"	at "modules/auth.xqm";
+import module namespace login		= "http://exist-db.org/xquery/login"				at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace config	= "http://exist-db.org/xquery/apps/config"	at "/db/apps/eXide/modules/config.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
-
-import module namespace login		= "http://exist-db.org/xquery/login"				at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
-import module namespace config	= "http://exist-db.org/xquery/apps/config"	at "/db/apps/eXide/modules/config.xqm";
 
 (: von eXide geklaut :)
 declare function local:user-allowed() {
