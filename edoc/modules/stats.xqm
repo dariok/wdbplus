@@ -18,7 +18,7 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 			<tr>
 				<th>Eintrag</th>
 				<th>Titel</th>
-				<th>METS</th>
+				<th>Metadaten-Datei</th>
 			</tr>
 			
 			{(for $mets in $editionsM
@@ -34,12 +34,12 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 					</tr>,
 				for $w in $editionsW
 					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
-					let $metaFile := document-uri($w)
+					let $metaFile := document-uri(root($w))
 					return
 						<tr>
-							<td style="padding-right: 5px;"></td>
+							<td style="padding-right: 5px;">{wdb:getEd($metaFile)}</td>
 							<td style="padding-right: 5px;">{normalize-space($name)}</td>
-							<td style="padding-right: 5px;">{xs:string($metaFile)}</td>
+							<td style="padding-right: 5px;"><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>
 						</tr>
 				)
 			}
