@@ -11,7 +11,6 @@ declare variable $exist:root external;
 
 import module namespace login		= "http://exist-db.org/xquery/login"				at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace config	= "http://exist-db.org/xquery/apps/config"	at "/db/apps/eXide/modules/config.xqm";
-import module namespace console = "http://exist-db.org/xquery/console";
 
 (: von eXide geklaut :)
 declare function local:user-allowed() {
@@ -29,9 +28,6 @@ declare function local:query-execution-allowed() {
         or
     xmldb:is-admin-user((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
-
-let $t := console:log($exist:path)
-return
 
 if ($exist:path eq '') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
