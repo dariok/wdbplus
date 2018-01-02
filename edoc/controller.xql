@@ -37,18 +37,6 @@ if ($exist:path eq '') then
 else if ($exist:resource = 'login') then
     let $loggedIn := login:set-user("wd", (), false())
     return
-        (:try {
-            util:declare-option("exist:serialize", "method=json"),
-            if (local:user-allowed()) then
-                <status>
-                    <user>{request:get-attribute("wd.user")}</user>
-                    <isAdmin json:literal="true">{ xmldb:is-admin-user((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1]) }</isAdmin>
-                </status>
-            else 
-                (
-                    response:set-status-code(401),
-                    <status>fail</status>
-                ):)
         try {
             if (request:get-parameter('logout', '') = 'logout') then
                 wdba:getAuth(<br/>, map {'res': 'logout'})
@@ -64,50 +52,22 @@ else if ($exist:resource = 'login') then
         }
 else if (ends-with($exist:path, 'start.html')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<!--<view>
-			<forward url="{$exist:controller}/start.html" method="get">
-				<add-parameter name="path" value="{$exist:path}" />
-			</forward>
-			<forward url="{$exist:controller}/modules/view.xql"/>
-		</view>-->
-		<!--<view>-->
 			<forward url="/start.xql">
 				<add-parameter name="path" value="{$exist:path}" />
 			</forward>
 		<!--</view>-->
 		<error-handler>
 			<forward url="{$exist:controller}/error-page.html" method="get"/>
-<!--			<forward url="{$exist:controller}/modules/view.xql"/> -->
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</error-handler>
 	</dispatch>
-(: auch von eXide geklaut :)
-(:  :else if (ends-with($exist:resource, 'query.html')) then
-	let $query := request:get-parameter("query", ())
-    let $base := request:get-parameter("edition", ())
-    let $doLogin := login:set-user("wd", (), false())
-    let $userAllowed := local:query-execution-allowed()
-    return
-        if ($userAllowed) then
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <view>
-                    {login:set-user("wd", (), false())}
-                    <forward url="{$exist:controller}/modules/view.xql"/>
-                </view>
-            </dispatch>
-        else
-            response:set-status-code(401):)
-(: spezifiziert auf view.html; 2016-11-03 DK :)
-(: kann weiter generell bleiben; 2016-11-04 DK :)
 else if (ends-with($exist:resource, ".html")) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 		<view>
-<!--			<forward url="{$exist:controller}/modules/view.xql"/> -->
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</view>
 		<error-handler>
 			<forward url="{$exist:controller}/error-page.html" method="get"/>
-<!--			<forward url="{$exist:controller}/modules/view.xql"/>-->
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</error-handler>
 	</dispatch>
