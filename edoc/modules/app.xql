@@ -3,8 +3,8 @@ xquery version "3.0";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "./config.xqm";
-import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "./transform.xqm";
+import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "config.xqm";
+import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
@@ -45,7 +45,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $pathToFile := base-uri(collection($wdb:edocBaseDB)/id($id)[1])
-	let $ed := substring-before(substring(substring-after($pathToFile, $wdb:edocBaseDB), 2), '/')
+	let $ed := wdb:getEd($pathToFile)
 
 	(: These can either be read from a mets.xml if present or from wdbmeta.xml :)
 	(: Unterscheiden, woher die Info stammen und schauen, welche Parameter des Model wo verwendet werde :)
@@ -292,8 +292,7 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 				return if ($map = $id)
 					then
 						$c
-					else
-						return ()
+					else ()
 			else
 				if ($c/@regex and matches($id, $c/@regex))
 					then $c
@@ -302,4 +301,9 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 						else ()
 	
 	return $sel[1]
+};
+
+declare function wdb:getEd($path as xs:string) {
+	let $pathToFile := wdb:getUrl($path)
+	return substring-before(substring(substring-after($pathToFile, $wdb:edocBaseURL), 2), '/')
 };
