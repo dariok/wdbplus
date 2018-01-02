@@ -5,12 +5,14 @@ module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 import module namespace templates	= "http://exist-db.org/xquery/templates";
 import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
 
-declare namespace mets	= "http://www.loc.gov/METS/";
-declare namespace mods	= "http://www.loc.gov/mods/v3";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace mets		= "http://www.loc.gov/METS/";
+declare namespace mods		= "http://www.loc.gov/mods/v3";
+declare namespace tei			= "http://www.tei-c.org/ns/1.0";
+declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbs:getEd($node as node(), $model as map(*)) {
-	let $editions := collection($wdb:edoc)//mets:mets
+	let $editionsM := collection($wdb:edocBaseDB)//mets:mets
+	let $editionsW := collection($wdb:edocBaseDB)//wdbmeta:projectMD
 	return
 		<table>
 			<tr>
@@ -19,17 +21,27 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 				<th>METS</th>
 			</tr>
 			
-			{for $mets in $editions
-				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]/text()
+			{(for $mets in $editionsM
+				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
 				let $id := substring-after($mets/@OBJID, '/')
 				let $metsFile := document-uri(root($mets))
 				order by $id
 				return
 					<tr>
 						<td style="padding-right: 5px;">{$id}</td>
-						<td style="padding-right: 5px;"><a href="{concat($id, '/start.html')}">{$name}</a></td>
-						<td style="padding-right: 5px;"><a href="{concat($wdb:edocRestBase, $metsFile)}">{$metsFile}</a></td>
-					</tr>
+						<td style="padding-right: 5px;"><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
+						<td style="padding-right: 5px;"><a href="{concat($wdb:edocBaseDB, $metsFile)}">{$metsFile}</a></td>
+					</tr>,
+				for $w in $editionsW
+					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
+					let $metaFile := document-uri($w)
+					return
+						<tr>
+							<td style="padding-right: 5px;"></td>
+							<td style="padding-right: 5px;">{normalize-space($name)}</td>
+							<td style="padding-right: 5px;">{xs:string($metaFile)}</td>
+						</tr>
+				)
 			}
 			</table>
 };
