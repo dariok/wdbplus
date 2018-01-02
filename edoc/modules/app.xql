@@ -61,7 +61,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 				wdb:getXslFromMets($metsLoc, $id, $ed)
 			else
 				(: throw error :)
-				()37
+				()
 	
 	let $file := doc($pathToFile)
 	
