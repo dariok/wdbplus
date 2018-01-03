@@ -11,39 +11,7 @@ declare namespace tei			= "http://www.tei-c.org/ns/1.0";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbs:getEd($node as node(), $model as map(*)) {
-	let $editionsM := collection($wdb:edocBaseDB)//mets:mets
-	let $editionsW := collection($wdb:edocBaseDB)//wdbmeta:projectMD
-	return
-		<table>
-			<tr>
-				<th>Eintrag</th>
-				<th>Titel</th>
-				<th>Metadaten-Datei</th>
-			</tr>
-			
-			{(for $mets in $editionsM
-				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
-				let $id := substring-after($mets/@OBJID, '/')
-				let $metsFile := document-uri(root($mets))
-				order by $id
-				return
-					<tr>
-						<td style="padding-right: 5px;">{$id}</td>
-						<td style="padding-right: 5px;"><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
-						<td style="padding-right: 5px;"><a href="{concat($wdb:edocBaseDB, $metsFile)}">{$metsFile}</a></td>
-					</tr>,
-				for $w in $editionsW
-					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
-					let $metaFile := document-uri(root($w))
-					return
-						<tr>
-							<td style="padding-right: 5px;">{wdb:getEd($metaFile)}</td>
-							<td style="padding-right: 5px;">{normalize-space($name)}</td>
-							<td style="padding-right: 5px;"><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>
-						</tr>
-				)
-			}
-			</table>
+	wdbs:projectList(false())
 };
 
 declare function wdbs:getEE($node as node(), $model as map(*), $edoc as xs:string) {
@@ -75,4 +43,58 @@ declare function wdbs:getEE($node as node(), $model as map(*), $edoc as xs:strin
 						</dl>
 			}
 		</div>
+};
+
+declare function wdbs:projectList($admin as xs:boolean) {
+	let $editionsM := collection($wdb:edocBaseDB)//mets:mets
+	let $editionsW := collection($wdb:edocBaseDB)//wdbmeta:projectMD
+	return
+		<table>
+			<tr>
+				<th>Eintrag</th>
+				<th>Titel</th>
+				{if ($admin = true()) then
+					(
+						<th>Metadaten-Datei</th>,
+						<th>verwalten</th>
+					)
+					else ()
+				}
+			</tr>
+			
+			{(for $mets in $editionsM
+				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
+				let $id := substring-after($mets/@OBJID, '/')
+				let $metsFile := document-uri(root($mets))
+				order by $id
+				return
+					<tr>
+						<td>{$id}</td>
+						<td><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
+						{if ($admin = true()) then
+							(	
+								<td style="padding-right: 5px;"><a href="{concat($wdb:edocBaseDB, $metsFile)}">{$metsFile}</a></td>,
+								<td></td>
+							)
+							else ()
+						}
+					</tr>,
+				for $w in $editionsW
+					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
+					let $metaFile := document-uri(root($w))
+					return
+						<tr>
+							<td>{wdb:getEd($metaFile)}</td>
+							<td>{normalize-space($name)}</td>
+							{if ($admin = true()) then
+								(
+									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
+									<td>admin-link</td>
+								)
+								else ()
+							}
+						</tr>
+				)
+			}
+		</table>
 };
