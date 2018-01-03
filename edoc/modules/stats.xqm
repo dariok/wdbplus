@@ -74,7 +74,7 @@ declare function wdbs:projectList($admin as xs:boolean) {
 						{if ($admin = true()) then
 							(	
 								<td style="padding-right: 5px;"><a href="{concat($wdb:edocBaseDB, $metsFile)}">{$metsFile}</a></td>,
-								<td></td>
+								<td><a href="project.html?ed={$id}">verwalten</a></td>
 							)
 							else ()
 						}
@@ -89,7 +89,7 @@ declare function wdbs:projectList($admin as xs:boolean) {
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td>admin-link</td>
+									<td><a href="projects.html?ed={wdb:getEd($metaFile)}">verwalten</a></td>
 								)
 								else ()
 							}
