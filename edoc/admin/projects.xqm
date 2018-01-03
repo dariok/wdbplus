@@ -9,8 +9,12 @@ import module namespace console	= "http://exist-db.org/xquery/console";
 declare namespace config = "https://github.com/dariok/wdbplus";
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
-	<div id="content">
-		<h3>Liste der Projekte</h3>
-		{wdbs:projectList(true())}
-	</div>
+	let $ed := request:get-parameter('ed', '') 
+	return if ($ed = '') then
+			<div id="content">
+				<h3>Liste der Projekte</h3>
+				{wdbs:projectList(true())}
+			</div>
+		else
+			wdbs:getEE($ed)
 };

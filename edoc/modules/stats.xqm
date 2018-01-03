@@ -14,34 +14,33 @@ declare function wdbs:getEd($node as node(), $model as map(*)) {
 	wdbs:projectList(false())
 };
 
-declare function wdbs:getEE($node as node(), $model as map(*), $edoc as xs:string) {
-	let $ed := collection('/db/edoc/' | $edoc)//tei:TEI/tei:teiHeader
+declare function wdbs:getEE($edoc as xs:string) {
+	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:TEI/tei:teiHeader
 	return
 		<div>
-			<h1>Insgesamt {count($wdb)} EE</h1>
-			
-			{for $fi in $ed
-				let $dates := $fi//tei:date/@when
-				
-				for $date in $dates
-					let $parsed := if (matches($date, '^\d{4}-\d{2}-\d{2}'))
-						then datetime:parse-date($date, 'yyyy-MM-dd')
-						else (if (matches($date, '^\d{4}-\d{2}'))
-							then datetime:parse-date($date, 'yyyy-MM')
-							else (if (matches($date, '^\d{4}'))
-								then datetime:parse-date($date, 'yyyy')
-								else ()))
-					let $cast :=  if ($date castable as xs:date)
-						then $date cast as xs:date
-						else '?'
-					where $parsed lt datetime:parse-date('1900-01-01', 'yyyy-MM-dd')
-					return
-						<dl>
-							<dd>{base-uri($fi)}</dd>
-							<dt>{$date}{$parsed}</dt>
-							<dt>{$cast}</dt>
-						</dl>
-			}
+			<h1>Insgesamt {count($ed)} EE</h1>
+			<table>
+				<tbody>
+					<tr>
+						<th>Nr.</th>
+						<th>Pfad</th>
+						<th>Titel</th>
+						<th>UUID v3</th>
+						<th>Status</th>
+					</tr>
+					{
+						for $doc in $ed
+							return
+								<tr>
+									<td>{$doc/tei:TEI/@n}</td>
+									<td>{base-uri($doc)}</td>
+									<td>{normalize-space($doc//tei:title[1])}</td>
+									<td>{util:uuid($doc)}</td>
+									<td></td>
+								</tr>
+					}
+				</tbody>
+			</table>
 		</div>
 };
 
@@ -97,4 +96,28 @@ declare function wdbs:projectList($admin as xs:boolean) {
 				)
 			}
 		</table>
+};
+
+declare function wdbs:chronologicalOrder($ed) {
+	for $fi in $ed
+				let $dates := $fi//tei:date/@when
+				
+				for $date in $dates
+					let $parsed := if (matches($date, '^\d{4}-\d{2}-\d{2}'))
+						then datetime:parse-date($date, 'yyyy-MM-dd')
+						else (if (matches($date, '^\d{4}-\d{2}'))
+							then datetime:parse-date($date, 'yyyy-MM')
+							else (if (matches($date, '^\d{4}'))
+								then datetime:parse-date($date, 'yyyy')
+								else ()))
+					let $cast :=  if ($date castable as xs:date)
+						then $date cast as xs:date
+						else '?'
+					where $parsed lt datetime:parse-date('1900-01-01', 'yyyy-MM-dd')
+					return
+						<dl>
+							<dd>{base-uri($fi)}</dd>
+							<dt>{$date}{$parsed}</dt>
+							<dt>{$cast}</dt>
+						</dl>
 };
