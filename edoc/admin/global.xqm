@@ -73,7 +73,8 @@ declare function local:roleForm($metaFile) {
 			<input type="hidden" name="job" value="chgRole" />
 			<label>Rolle: 
 				<select name="role">
-					<option>{if ($role = 'workbench') then attribute selected {'selected'} else () }Workbench</option>
+					<option value="standalone">{if ($role = 'standalone') then attribute selected {'selected'} else () }Standalone</option>
+					<option value="workbench">{if ($role = 'workbench') then attribute selected {'selected'} else () }Workbench</option>
 					<option value="publisher">{if ($role = 'publisher') then attribute selected {'selected'} else ()}Publikationsumgebung</option>
 				</select>
 			</label><br />
