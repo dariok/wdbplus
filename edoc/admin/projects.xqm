@@ -16,15 +16,20 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	
 	return
 		if ($job != '') then
-			switch ($job)
+			let $edition := substring-before(substring-after($file, $wdb:edocBaseDB||'/'), '/')
+			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
+			let $relativePath := substring-after($file, $edition||'/')
+			
+			return switch ($job)
 				case 'add' return
-					let $edition := substring-before(substring-after($file, $wdb:edocBaseDB||'/'), '/')
-					let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
-					let $relativePath := substring-after($file, $edition||'/')
-					
-					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" />
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" 
+						date="{xmldb:last-modified($relativePath, local:substring-after-last($file, '/'))}"/>
 					let $up1 := update insert $ins into $metaFile//meta:files
-					let $l1 := console:log($up1)
+					return local:getFileStat($edition, $file)
+					
+				case 'uuid' return
+					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
+					let $up1 := update value $fileEntry/@uuid with xmldb:uuid(doc($file))
 					return local:getFileStat($edition, $file)
 					
 				default return
@@ -78,6 +83,7 @@ declare function local:getFileStat($ed, $file) {
 	let $relativePath := substring-after($file, $ed||'/')
 	let $entry := $metaFile//meta:file[@path = $relativePath]
 	let $uuid := util:uuid($doc)
+	let $date := xmldb:last-modified($subColl, $resource)
 	
 	return
 		<div id="data">
@@ -96,17 +102,28 @@ declare function local:getFileStat($ed, $file) {
 						</tr>
 						<tr>
 							<td>Timestamp</td>
-							<td>{xmldb:last-modified($subColl, $resource)}</td>
+							<td>{$date}</td>
 						</tr>
 						<tr>
 							<td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
 							{
 								if ($entry/@path != '')
-									then if ($entry/@uuid = $uuid)
-										then <td>OK</td>
-										else <td>OK, <a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
-									else
-										<td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
+									then <td>OK</td>
+									else <td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
+							}
+						</tr>
+						<tr>
+							<td>UUID in wdbMeta</td>
+							{if ($entry/@uuid = $uuid)
+										then <td>OK: {$uuid}</td>
+										else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
+							}
+						</tr>
+						<tr>
+							<td>Timestamp in wdbMeta</td>
+							{if ($entry/@date = $date)
+										then <td>OK: {$date}</td>
+										else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$file}')">Timestamp aktualisieren</a></td>
 							}
 						</tr>
 					</tbody>
