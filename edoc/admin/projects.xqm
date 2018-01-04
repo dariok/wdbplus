@@ -6,13 +6,31 @@ import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"		at "../
 import module namespace wdbs		= "https://github.com/dariok/wdbplus/stats"	at "../modules/stats.xqm";
 import module namespace console	= "http://exist-db.org/xquery/console";
 
-declare namespace config = "https://github.com/dariok/wdbplus";
-declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $ed := request:get-parameter('ed', '')
 	let $file := request:get-parameter('file', '')
-	return if ($ed = '' and $file = '') then
+	let $job := request:get-parameter('job', '')
+	
+	return
+		if ($job != '') then
+			switch ($job)
+				case 'add' return
+					let $edition := substring-before(substring-after($file, $wdb:edocBaseDB||'/'), '/')
+					let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
+					let $relativePath := substring-after($file, $edition||'/')
+					
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" />
+					let $up1 := update insert $ins into $metaFile//meta:files
+					let $l1 := console:log($up1)
+					return local:getFileStat($edition, $file)
+					
+				default return
+					<div id="data"><div><h3>Strange Error</h3></div></div>
+					
+		else if ($ed = '' and $file = '') then
 			<div id="content">
 				<h3>Liste der Projekte</h3>
 				{wdbs:projectList(true())}
@@ -24,7 +42,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 };
 
 declare function local:getFiles($edoc as xs:string) {
-	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:TEI/tei:teiHeader
+	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:teiHeader
 	return
 		<div id="content">
 			<h1>Insgesamt {count($ed)} EE</h1>
@@ -56,9 +74,9 @@ declare function local:getFileStat($ed, $file) {
 	let $doc := doc($file)
 	let $subColl := local:substring-before-last($file, '/')
 	let $resource := local:substring-after-last($file, '/')
-	let $metaFile := doc($ed || '/wdbmeta.xml')
+	let $metaFile := doc($wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml')
 	let $relativePath := substring-after($file, $ed||'/')
-	let $entry := $metaFile/config:config/config:files//config:file[@path = $relativePath]
+	let $entry := $metaFile//meta:file[@path = $relativePath]
 	let $uuid := util:uuid($doc)
 	
 	return
@@ -86,9 +104,9 @@ declare function local:getFileStat($ed, $file) {
 								if ($entry/@path != '')
 									then if ($entry/@uuid = $uuid)
 										then <td>OK</td>
-										else <td>OK, <a href="projects.html?uuid">UUID aktualisieren</a></td>
+										else <td>OK, <a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
 									else
-										<td>fehlt <a href="projects.html?add">hinzufügen</a></td>
+										<td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
 							}
 						</tr>
 					</tbody>
