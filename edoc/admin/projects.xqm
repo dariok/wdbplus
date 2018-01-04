@@ -19,6 +19,8 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			let $edition := substring-before(substring-after($file, $wdb:edocBaseDB||'/'), '/')
 			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
 			let $relativePath := substring-after($file, $edition||'/')
+			let $subColl := local:substring-before-last($file, '/')
+			let $resource := local:substring-after-last($file, '/')
 			
 			return switch ($job)
 				case 'add' return
@@ -30,6 +32,11 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 				case 'uuid' return
 					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
 					let $up1 := update value $fileEntry/@uuid with xmldb:uuid(doc($file))
+					return local:getFileStat($edition, $file)
+					
+				case 'date' return
+					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
+					let $up1 := update value $fileEntry/@date with xmldb:last-modified($subColl, $resource)
 					return local:getFileStat($edition, $file)
 					
 				default return
