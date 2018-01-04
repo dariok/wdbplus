@@ -14,7 +14,6 @@ function rightSide ( url ) {
 			cache: false,
 			success: function ( data ) {
 					var result = $('<div/>').append( data ).find( '#data' ).html();
-					console.log( result );
 					$( '#rightSide' ).html( result );
 				}
 		});
