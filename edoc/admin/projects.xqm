@@ -53,6 +53,13 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			local:getFileStat($ed, $file)
 };
 
+declare function wdbPL:head ($node as node(), $model as map(*)) {
+	let $ed := request:get-parameter('ed', '')
+	return if ($ed = '')
+		then <h1>Projekte</h1>
+		else <h1>Projekt {$ed}</h1>
+};
+
 declare function local:getFiles($edoc as xs:string) {
 	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:teiHeader
 	return
