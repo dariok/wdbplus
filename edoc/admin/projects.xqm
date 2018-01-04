@@ -31,7 +31,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 					
 				case 'uuid' return
 					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
-					let $up1 := update value $fileEntry/@uuid with xmldb:uuid(doc($file))
+					let $up1 := update value $fileEntry/@uuid with util:uuid(doc($file))
 					return local:getFileStat($edition, $file)
 					
 				case 'date' return
