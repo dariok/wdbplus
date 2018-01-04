@@ -25,7 +25,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			return switch ($job)
 				case 'add' return
 					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" 
-						date="{xmldb:last-modified($relativePath, local:substring-after-last($file, '/'))}"/>
+						date="{xmldb:last-modified(local:substring-before-last($file, '/'), local:substring-after-last($file, '/'))}"/>
 					let $up1 := update insert $ins into $metaFile//meta:files
 					return local:getFileStat($edition, $file)
 					
