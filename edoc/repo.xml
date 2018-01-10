@@ -10,5 +10,5 @@
     <target>/db/apps/edoc</target>
     <prepare>pre-install.xql</prepare>
     <finish/>
-    <permissions user="kampkaspar" password="21Ec2020-3AEA" group="dba" mode="rw-rw-r--"/>
+    <permissions user="wdb" password="wdb" group="wdb" mode="rw-rw-r--"/>
 </meta>
