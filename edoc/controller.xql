@@ -52,7 +52,7 @@ else if ($exist:resource = 'login') then
 (: Projekt-Startseite :)
 else if (ends-with($exist:path, 'start.html')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="/start.xql">
+			<forward url="{$exist:controller}/modules/start.xql">
 				<add-parameter name="path" value="{$exist:path}" />
 			</forward>
 		<error-handler>
