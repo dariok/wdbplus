@@ -52,11 +52,11 @@ else if ($exist:resource = 'login') then
 (: Projekt-Startseite :)
 else if (ends-with($exist:path, 'start.html')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<forward url="{$exist:controller}/modules/start.xql">
-				<add-parameter name="path" value="{$exist:path}" />
-			</forward>
+		<forward url="{$exist:controller}/modules/start.xql">
+			<add-parameter name="path" value="{$exist:path}" />
+		</forward>
 		<error-handler>
-			<forward url="{$exist:controller}/error-page.html" method="get"/>
+			<forward url="{$exist:controller}/templates/error-page.html" method="get"/>
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</error-handler>
 	</dispatch>
@@ -67,7 +67,7 @@ else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/'
 			<forward url="{$exist:controller}/admin/view.xql"/>
 		</view>
 		<error-handler>
-			<forward url="{$exist:controller}/error-page.html" method="get"/>
+			<forward url="{$exist:controller}/templates/error-page.html" method="get"/>
 			<forward url="{$exist:controller}/admin/view.xql"/>
 		</error-handler>
 	</dispatch>
@@ -78,7 +78,7 @@ else if (ends-with($exist:resource, ".html")) then
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</view>
 		<error-handler>
-			<forward url="{$exist:controller}/error-page.html" method="get"/>
+			<forward url="{$exist:controller}/templates/error-page.html" method="get"/>
 			<forward url="{$exist:controller}/modules/view.xql"/>
 		</error-handler>
 	</dispatch>
@@ -89,11 +89,11 @@ else if (contains($exist:path, "/$shared/")) then
 		</forward>
 	</dispatch>
 else if (ends-with($exist:path, ".xql")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        {login:set-user("wd", (), false())}
-        <set-header name="Cache-Control" value="no-cache"/>
-        <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
-    </dispatch>
+	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    {login:set-user("wd", (), false())}
+    <set-header name="Cache-Control" value="no-cache"/>
+    <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
+	</dispatch>
 else
 	(: everything else is passed through :)
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
