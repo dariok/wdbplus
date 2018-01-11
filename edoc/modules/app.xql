@@ -178,7 +178,7 @@ declare function wdb:EEbody($node as node(), $model as map(*)) {
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
 	let $ti := string ($model("shortTitle"))
-	return <title>WDB {string($model("title")/@n)} – {$ti}</title>
+	return <title>{normalize-space($wdb:configFile//main:short)} {string($model("title")/@n)} – {$ti}</title>
 };
 
 declare function wdb:footer($node as node(), $model as map(*)) {
