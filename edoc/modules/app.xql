@@ -16,9 +16,6 @@ declare namespace main	= "https://github.com/dariok/wdbplus";
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 (: VARIABLES :)
-(: the config file :)
-declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
-
 (: get the name of the server, possibly including the port :)
 declare variable $wdb:server := if ( request:get-server-port() != 80 )
 	then request:get-scheme() || '://' || request:get-server-name() || ':' || request:get-server-port()
@@ -27,6 +24,9 @@ declare variable $wdb:server := if ( request:get-server-port() != 80 )
 
 (: get the base of this instance within the db (i.e. relative to /db) :)
 declare variable $wdb:edocBaseDB := $config:app-root;
+
+(: the config file :)
+declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
 
 (: get the base URI either from the data of the last call or from the configuration :)
 declare variable $wdb:edocBaseURL :=
@@ -60,58 +60,42 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as m
 	return $m
 };
 
+(:~
+ : Populate the model with the most important global settings when displaying a file
+ : 
+ : @param $id the id for the file to be displayed
+ : @return a map; in case of debugging, a list
+ :)
 declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $pathToFile := base-uri(collection($wdb:edocBaseDB)/id($id)[1])
-	let $ed := wdb:getEdPath($pathToFile)
+	let $pathToEd := wdb:getEdPath($pathToFile, true())
+	let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 
-	(: These can either be read from a mets.xml if present or from wdbmeta.xml :)
-	(: Unterscheiden, woher die Info stammen und schauen, welche Parameter des Model wo verwendet werde :)
-	let $metsLoc := concat($wdb:edocBaseDB, '/', $ed, "/mets.xml")
-	let $wdbMetaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
+	(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+	let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
+        then $pathToEd || '/wdbmeta.xml'
+        else if (doc-available($pathToEd || '/mets.xml'))
+            then $pathToEd || '/mets.xml'
+            else
+			    (: throw error :)
+			    ()
 	
-	(: wdbMeta is the standard, METS a fallback :)
-	let $xslt := if (doc-available($wdbMetaFile))
-	(: TODO target aus der Anfrage ablesen :)
-		then wdb:getXslFromWdbMeta($ed, $id, 'html')
-		else if (doc-available($metsLoc))
-			then
-				wdb:getXslFromMets($metsLoc, $id, $ed)
-			else
-				(: throw error :)
-				()
-	
-	let $file := doc($pathToFile)
-	
-	let $authors := $file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
-	let $shortTitle := ($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type])[1]
-	let $nr := $file/tei:TEI/@n
-	let $title := element tei:title {
-		$nr,
-		$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')]/node()
-	}
-	let $type := if (contains($id, 'transcr'))
-		then "transcript"
-		else "introduction"
+	let $xslt := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+		then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
+		else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
 		
-	(: TODO parameter aus config.xml einlesen und übergeben:)
-	
-	return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "title" := $title ,
-			"shortTitle" := $shortTitle, "authors" := $authors, "ed" := $ed, "metsLoc" := $metsLoc,
-			"type" := $type }
+	(: TODO parameter aus config.xml einlesen und übergeben? :)
+    return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEd, "infoFileLoc" := $infoFileLoc }
 
-	(:return <ul>
-		<li>ID: {$id}</li>
-		<li>Ed: {$ed}</li>
-		<li>metsLoc: {$metsLoc}; existiert? {doc-available($metsLoc)}</li>
-		<li>metsfile: {$metsfile}</li>
-		<li>fileloc: {string($fileLoc)}</li>
-		<li>file: {$fil}; existiert? {doc-available($fil)}</li>
-		<li>structId: {string($behavior[position() = last()]/@ID)}</li>
-		<li>xslt: {$xslt}; existiert? {doc-available($xslt)}</li>
-		<li>title (@n, title): {string($nr)}, {string($file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type or @type='main')])}</li>
-	</ul>:)
+	(:return <table>
+	    <tr><td>ID:</td><td>{$id}</td></tr>
+	    <tr><td>pathToFile:</td><td>{$pathToFile}; existiert? {doc-available($pathToFile)}</td></tr>
+	    <tr><td>pathToEd:</td><td>{$pathToEd}</td></tr>
+	    <tr><td>infoFileLoc:</td><td>{$infoFileLoc}; existiert? {doc-available($infoFileLoc)}</td></tr>
+		<tr><td>xslt:</td><td>{$xslt}; existiert? {doc-available($xslt)}</td></tr>
+	</table>:)
 };
 
 (: Finden der korrekten behavior
@@ -183,13 +167,17 @@ declare function wdb:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdb:footer($node as node(), $model as map(*)) {
-	let $xml := substring-after($model("fileLoc"), '/db')
-	let $xsl := substring-after($model("xslt"), '/db')
+let $t3 := console:log($model("fileLoc"))
+let $t4 := console:log($model("xslt"))
+	let $xml := wdb:getUrl($model("fileLoc"))
+	let $xsl := wdb:getUrl($model("xslt"))
+	let $t1 := console:log($xml)
+	let $t2 := console:log($xsl)
 	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
 	return
 	<div class="footer">
-		<div class="footerEntry">XML: <a href="{wdb:getUrl($model("fileLoc"))}">{wdb:getUrl($model("fileLoc"))}</a></div>
-		<div class="footerEntry">XSLT: <a href="{wdb:getUrl($model('xslt'))}">{wdb:getUrl($model('xslt'))}</a></div>
+		<div class="footerEntry">XML: <a href="{$xml}">{$xml}</a></div>
+		<div class="footerEntry">XSLT: <a href="{$xsl}">{$xsl}</a></div>
 	</div>
 };
 
@@ -332,9 +320,18 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
 	let $pathToFile := wdb:getUrl($path)
 	
+	let $relPath := substring-after($pathToFile, $wdb:edocBaseURL||'/')
+	let $tok := tokenize($relPath, '/')
+	
+	let $path := for $i in 1 to count($tok)
+        let $p := '/db/apps/edoc/' || string-join ($tok[position() < $i+1], '/')
+        let $p1 := $p || '/wdbmeta.xml'
+	    let $p2 := $p || '/mets.xml'
+	    return if (doc-available($p1) or doc-available($p2)) then $p else ()
+    
 	return if ($absolute)
-		then xstring:substring-before-last($pathToFile, '/')
-		else substring-after(xstring:substring-before-last($pathToFile, '/'), $wdb:edocBaseURL||'/')
+		then $path[1]
+		else substring-after($path[1], $wdb:edocBaseDB||'/')
 };
 
 (:~
