@@ -1,0 +1,6 @@
+[submodule "edoc/include/xstring"]
+	path = edoc/include/xstring
+	url = https://github.com/dariok/XStringUtils
+[submodule "edoc/include/wdbmeta"]
+	path = edoc/include/wdbmeta
+	url = https://github.com/dariok/wdbmeta
