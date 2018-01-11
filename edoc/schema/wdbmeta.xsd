@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" targetNamespace="https://github.com/dariok/wdbplus/wdbmeta"
+	xmlns:wdbmeta="https://github.com/dariok/wdbplus/wdbmeta"
+	elementFormDefault="qualified" vc:minVersion="1.1">
+	
+	<xs:element name="projectMD">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="1" ref="wdbmeta:projectID" />
+				<xs:element maxOccurs="1" ref="wdbmeta:titleData" />
+				<xs:element maxOccurs="1" ref="wdbmeta:files" />
+				<xs:element minOccurs="1" ref="wdbmeta:process" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- title and related data -->
+	<xs:element name="titleData">
+		<xs:annotation>
+			<xs:documentation>
+				Contains the most important metadata for this project. These might be used for cataloguing, citation etc.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" ref="wdbmeta:title" />
+				<xs:element minOccurs="1" ref="wdbmeta:person" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="title">
+		<xs:annotation>
+			<xs:documentation>
+				Contains the title(s) of the project.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="type" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								May be used to give the type of the title. Suggested values are 'main' and 'sub'.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="projectID" type="xs:ID" />
+	<xs:element name="person">
+		<xs:annotation>
+			<xs:documentation>
+				Contains names and all other relevant information about people involved in this project
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="role" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								Describes the role a person played in the project
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="ref" type="xs:anyURI">
+						<xs:annotation>
+							<xs:documentation>
+								Contains a reference to additional information, preferably an authority file.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- "behaviours" -->
+	<xs:element name="process">
+		<xs:annotation>
+			<xs:documentation>
+				A process groups together commands which process the data within the edition. It is mandatory to specify the
+				processing target. At least one command needs to be specified. Commands are evaluated from the top and the
+				first with matching condition(s) is considered the one to be used for processing. 
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbmeta:command" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute use="required" name="target" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>
+						Specifies the processing target; this should be a file format or mime type.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="command">
+		<xs:annotation>
+			<xs:documentation>
+				A command must at least containt a URI to identify the action to be taken and information as to the type of
+				action that is described. Whether a command matches is determined by evaluating @refs and @regex with respect to
+				the ID supplied for processing or by matching @group to a group of entries within the same file. If neither
+				@refs, @regex nor @group are present, the command will match anything and thus no following command will ever
+				be executed.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:anyURI">
+					<xs:attribute name="type" use="required" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								Gives the type of processing that is specified, e.g. 'xsl', 'xquery', 'ant'.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="refs" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								Contains a whitespace separated sequence of ID values to be checked. If a supplied ID exactly matches
+								any of these values, this criterion matches as a whole.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="regex" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>
+								Contains one regular expression against which a supplied ID value is tested.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="group" type="xs:IDREFS">
+						<xs:annotation>
+							<xs:documentation>
+								Points to one or more IDs of groups within the same file, e.g. defined by a file/group/@id.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:assert test="(@refs and not(@regex)) or (@regex and not(@refs) or
+						(not(@refs or @regex) and not(following-sibling::wdbmeta:command)))" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	
+	<!-- files and grouping -->
+	<xs:element name="files">
+		<xs:annotation>
+			<xs:documentation>
+				Contains a list of all files that belong to the project. These files may be grouped together but not repeated.
+				This grouping may e.g. be used for processing (cf. process/command/@group).
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="wdbmeta:file" maxOccurs="unbounded" minOccurs="1" />
+				<xs:element ref="wdbmeta:filegroup" maxOccurs="unbounded" minOccurs="1" />
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="file">
+		<xs:annotation>
+			<xs:documentation>
+				Contains information about one file within the project.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="uuid" type="xs:string" use="required">
+				<xs:annotation>
+					<xs:documentation>
+						Contains the UUID v3 generated for the file.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="path" type="xs:anyURI" use="required">
+				<xs:annotation>
+					<xs:documentation>
+						Contains the (relative) path to the file
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="date" type="xs:dateTimeStamp" use="required">
+				<xs:annotation>
+					<xs:documentation>
+						Contains the timestamp of when the file was last modified.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="mime">
+				<xs:annotation>
+					<xs:documentation>
+						May contain the MIME type of the file if it is not abvious e.g. from the extension.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="status">
+				<xs:annotation>
+					<xs:documentation>
+						Contains the status of the file; default is "public".
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="public" />
+						<xs:enumeration value="beta" />
+						<xs:enumeration value="inProgress" />
+						<xs:enumeration value="internal" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="filegroup">
+		<xs:annotation>
+			<xs:documentation>
+				Groups together files within the project.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="wdbmeta:file" minOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
