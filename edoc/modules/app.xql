@@ -16,7 +16,7 @@ declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 (: VARIABLES :)
 (: the config file :)
-declare variable $configFile := doc($wdb:edocBaseDB || '/config.xml');
+declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
 
 (: get the name of the server, possibly including the port :)
 declare variable $wdb:server := if ( request:get-server-port() != 80 )
@@ -29,8 +29,8 @@ declare variable $wdb:edocBaseDB := $config:app-root;
 
 (: get the base URI either from the data of the last call or from the configuration :)
 declare variable $wdb:edocBaseURL :=
-	if ( $configFile/main:config/main:server )
-	then normalize-space(doc($wdb:edocBaseDB|| '/config.xml')/main:config/main:server)
+	if ( $wdb:configFile/main:config/main:server )
+	then normalize-space($wdb:configFile/main:config/main:server)
 	else
 		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
 		let $url := substring-after($wdb:edocBaseDB, 'db/')
@@ -39,15 +39,15 @@ declare variable $wdb:edocBaseURL :=
 
 (: the server role :)
 declare variable $wdb:role :=
-	if ($configFile/main:role/main:type != '')
-		then $configFile/main:role/main:type
+	if ($wdb:configFile/main:role/main:type != '')
+		then $wdb:configFile/main:role/main:type
 		else "standalone"
 ;
 
 (: the peer :)
 declare variable $wdb:peer :=
 	if ($wdb:role != "standalone")
-		then $configFile/main:role/main:peer
+		then $wdb:configFile/main:role/main:peer
 		else ""
 ;
 
