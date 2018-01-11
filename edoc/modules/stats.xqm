@@ -11,7 +11,7 @@ declare namespace tei			= "http://www.tei-c.org/ns/1.0";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbs:getEd($node as node(), $model as map(*)) {
-	wdbs:projectList(false())
+	wdbs:projectList(xmldb:is-admin-user())
 };
 
 declare function wdbs:projectList($admin as xs:boolean) {
