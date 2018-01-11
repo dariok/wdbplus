@@ -142,6 +142,18 @@ declare function local:getFileStat($ed, $file) {
 						</tr>
 					</tbody>
 				</table>
+				{
+					if ($role = 'workbench') then
+						<table>
+							<tbody>
+								<tr>
+									<td>Peer Server</td>
+									<td>{$wdb:peer}</td>
+								</tr>
+							</tbody>
+						</table>
+					else ()
+				}
 			</div>
 		</div>
 };
