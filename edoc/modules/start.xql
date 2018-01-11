@@ -1,7 +1,7 @@
 xquery version "3.0";
 
-import module namespace wdbm	= "https://github.com/dariok/wdbplus/mets"	at "modules/mets.xqm";
-import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "modules/app.xql";
+import module namespace wdbm	= "https://github.com/dariok/wdbplus/mets"	at "mets.xqm";
+import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
 
 declare namespace match 	= "http://www.w3.org/2005/xpath-functions";
 declare namespace mets		= "http://www.loc.gov/METS/";
