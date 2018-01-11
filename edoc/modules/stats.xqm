@@ -33,13 +33,13 @@ declare function wdbs:projectList($admin as xs:boolean) {
 			
 			{(for $mets in $editionsM
 				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
-				let $id := substring-after($mets/@OBJID, '/')
 				let $metsFile := document-uri(root($mets))
+				let $id := wdb:getEdPath($metsFile)
 				order by $id
 				return
 					<tr>
 						<td>{$id}</td>
-						<td><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
+						<td><a href="{$id || '/start.html'}">{normalize-space($name)}</a></td>
 						{if ($admin = true()) then
 							(	
 								<td style="padding-right: 5px;"><a href="{concat($wdb:edocBaseDB, $metsFile)}">{$metsFile}</a></td>,
@@ -51,14 +51,16 @@ declare function wdbs:projectList($admin as xs:boolean) {
 				for $w in $editionsW
 					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
 					let $metaFile := document-uri(root($w))
+					let $id := wdb:getEdPath($metaFile)
+					
 					return
 						<tr>
-							<td>{wdb:getEd($metaFile)}</td>
-							<td>{normalize-space($name)}</td>
+							<td>{$id}</td>
+							<td><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td><a href="projects.html?ed={wdb:getEd($metaFile)}">verwalten</a></td>
+									<td><a href="projects.html?ed={wdb:getEdPath($metaFile)}">verwalten</a></td>
 								)
 								else ()
 							}
