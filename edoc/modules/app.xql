@@ -6,6 +6,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "config.xqm";
 import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
+import module namespace xstring		= "https://github.com/dariok/XStringUtils"				at "../include/xstring/string-pack.xql";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
@@ -63,7 +64,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $pathToFile := base-uri(collection($wdb:edocBaseDB)/id($id)[1])
-	let $ed := wdb:getEd($pathToFile)
+	let $ed := wdb:getEdPath($pathToFile)
 
 	(: These can either be read from a mets.xml if present or from wdbmeta.xml :)
 	(: Unterscheiden, woher die Info stammen und schauen, welche Parameter des Model wo verwendet werde :)
@@ -321,7 +322,27 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 	return $sel[1]
 };
 
-declare function wdb:getEd($path as xs:string) {
+(:~
+	: Return the (relative) path to the project
+	:
+	: @param $path a path to a file within the project, usually wdbmeta.xml or mets.xml
+	: @param $absolute (optional) if true(), return an absolute URL
+	: @return the path (relative) to the app root
+	:)
+declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
 	let $pathToFile := wdb:getUrl($path)
-	return substring-before(substring(substring-after($pathToFile, $wdb:edocBaseURL), 2), '/')
+	
+	return if ($absolute)
+		then xstring:substring-before-last($pathToFile, '/')
+		else substring-after(xstring:substring-before-last($pathToFile, '/'), $wdb:edocBaseURL||'/')
+};
+
+(:~
+	: Return the relative path to the project
+	:
+	: @param $path a path to a file within the project, usually wdbmeta.xml or mets.xml
+	: @return the path relative to the app root
+	:)
+declare function wdb:getEdPath($path as xs:string) as xs:string {
+	wdb:getEdPath($path, false())
 };
