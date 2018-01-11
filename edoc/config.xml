@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="schema/config.rnc" type="application/relax-ng-compact-syntax"?>
-<config xmlns="https://github.com/dariok/wdbplus">
+<?xml-model href="schema/config.xsd" type="application/xml-schema"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="https://github.com/dariok/wdbplus schema/config.xsd" xmlns="https://github.com/dariok/wdbplus">
 	<!-- General meta data -->
 	<!-- name and short are mandatory -->
 	<meta>
 		<!-- long name -->
-		<name>Wien[n]erisches Diarium digital</name>
+		<name>W. digitale Bibliothek</name>
 		<!-- short title -->
-		<short>Digitarium</short>
+		<short>W.DB</short>
 		<!-- a logo -->
 		<!-- <logo>http://mydomain.tld/logo.png</logo> -->
 	</meta>
