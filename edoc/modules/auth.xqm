@@ -5,10 +5,11 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
     let $current := xmldb:get-current-user()
     return
     	if ($current = 'guest' or $model('res') = 'logout') then
-            <span id="login">
+            <span id="auth">
                 <form
                     enctype="multipart/form-data"
-                    method="post">
+                    method="post"
+                    id="login">
                     <input
                         type="text"
                         id="user"/>
@@ -16,8 +17,7 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
                         type="password"
                         id="password"/>
                     <input
-                        type="submit"
-                        value="login"/>
+                        type="submit"/>
                     <input
                         type="hidden"
                         name="query"
@@ -29,7 +29,7 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
                 </form>
             </span>
         else
-            <span id="logout">
-                User: <a id="logout-button" alt="Click to logout" href="#">{$current}</a>
+            <span id="auth">
+                User: <a id="logout" alt="Click to logout" href="javascript:void(0)">{$current}</a>
             </span>
 };

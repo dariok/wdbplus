@@ -292,6 +292,7 @@ function switchlayer(Layer_Name) {
 // url: '/edoc/modules/auth.xql',
 $(document).ready(function(){
 	$('#login').submit(function(e){
+	    console.log('login request');
 		$.ajax({
 		    url: 'login',
 		    method: 'post',
@@ -301,7 +302,7 @@ $(document).ready(function(){
 			},
 			success: function(data) {
 				try {
-				    $('#login').html(data);
+				    $('#auth').replaceWith(data);
 					console.log('logged in');
 					console.log(data);
 				}
@@ -316,15 +317,17 @@ $(document).ready(function(){
 		e.preventDefault();
 	});
 })
+$(document).ready($('#user').change(console.log('click')))
 $(document).ready(function(){
-    $('#logout-button').click(function(e){
+    $('#logout').click(function(e){
+        console.log('logout request');
         $.ajax({
             url: 'login',
             method: 'post',
             data: {logout: 'logout'},
             success: function(data) { 
                 try {
-                	$('#logout').html(data);
+                	$('#auth').replaceWith(data);
                 	console.log('trying to log off' + data);
                 }
                 catch (e) {
