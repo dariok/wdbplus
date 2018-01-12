@@ -3,15 +3,16 @@ xquery version "3.0";
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
+import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
+import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets		= "http://www.loc.gov/METS/";
 declare namespace mods		= "http://www.loc.gov/mods/v3";
-declare namespace tei			= "http://www.tei-c.org/ns/1.0";
+declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbs:getEd($node as node(), $model as map(*)) {
-	wdbs:projectList(xmldb:is-admin-user())
+	wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()))
 };
 
 declare function wdbs:projectList($admin as xs:boolean) {
