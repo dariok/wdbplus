@@ -44,7 +44,7 @@ declare function wdbs:projectList($admin as xs:boolean) {
 						{if ($admin = true()) then
 							(	
 								<td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
-								<td><a href="project.html?ed={$id}">verwalten</a></td>
+								<td><a href="admin/projects.html?ed={$id}">verwalten</a></td>
 							)
 							else ()
 						}
@@ -61,7 +61,7 @@ declare function wdbs:projectList($admin as xs:boolean) {
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td><a href="projects.html?ed={wdb:getEdPath($metaFile)}">verwalten</a></td>
+									<td><a href="admin/projects.html?ed={wdb:getEdPath($metaFile)}">verwalten</a></td>
 								)
 								else ()
 							}
