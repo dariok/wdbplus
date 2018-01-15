@@ -7,7 +7,7 @@ import module namespace wdbs		= "https://github.com/dariok/wdbplus/stats"	at "..
 import module namespace console	= "http://exist-db.org/xquery/console";
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $ed := request:get-parameter('ed', '')
@@ -23,6 +23,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			let $relativePath := substring-after($file, $edition||'/')
 			let $subColl := local:substring-before-last($file, '/')
 			let $resource := local:substring-after-last($file, '/')
+			let $fileEntry := $metaFile//meta:file[@path = $relativePath]
 			
 			return switch ($job)
 				case 'add' return
@@ -30,17 +31,20 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 						date="{xmldb:last-modified(local:substring-before-last($file, '/'), local:substring-after-last($file, '/'))}"/>
 					let $up1 := update insert $ins into $metaFile//meta:files
 					return local:getFileStat($edition, $file)
-					
+				
 				case 'uuid' return
-					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
 					let $up1 := update value $fileEntry/@uuid with util:uuid(doc($file))
 					return local:getFileStat($edition, $file)
-					
+				
 				case 'date' return
-					let $fileEntry := $metaFile//meta:file[@path = $relativePath]
 					let $up1 := update value $fileEntry/@date with xmldb:last-modified($subColl, $resource)
 					return local:getFileStat($edition, $file)
-					
+				
+				case 'id' return
+					let $id := normalize-space(doc($file)/tei:TEI/@xml:id)
+					let $upd1 := update value $fileEntry/@xml:id with $id
+					return local:getFileStat($edition, $file)
+				
 				default return
 					<div id="data"><div><h3>Strange Error</h3></div></div>
 					
@@ -105,6 +109,7 @@ declare function local:getFileStat($ed, $file) {
 	let $entry := $metaFile//meta:file[@path = $relativePath]
 	let $uuid := util:uuid($doc)
 	let $date := xmldb:last-modified($subColl, $resource)
+	let $id := normalize-space($doc/tei:TEI/@xml:id)
 	
 	return
 		<div id="data">
@@ -127,24 +132,30 @@ declare function local:getFileStat($ed, $file) {
 						</tr>
 						<tr>
 							<td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
-							{
-								if ($entry/@path != '')
-									then <td>OK</td>
-									else <td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
+							{if ($entry/@path != '')
+								then <td>OK</td>
+								else <td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
 							}
 						</tr>
 						<tr>
 							<td>UUID in wdbMeta</td>
 							{if ($entry/@uuid = $uuid)
-										then <td>OK: {$uuid}</td>
-										else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
+								then <td>OK: {$uuid}</td>
+								else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
 							}
 						</tr>
 						<tr>
 							<td>Timestamp in wdbMeta</td>
 							{if ($entry/@date = $date)
-										then <td>OK: {$date}</td>
-										else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$file}')">Timestamp aktualisieren</a></td>
+								then <td>OK: {$date}</td>
+								else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$file}')">Timestamp aktualisieren</a></td>
+							}
+						</tr>
+						<tr>
+							<td><code>@xml:id</code> in wdbMeta</td>
+							{if ($entry/@xml:id = $id)
+								then <td>OK: {$id}</td>
+								else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$file}')">ID aktualisieren</a></td>
 							}
 						</tr>
 					</tbody>
