@@ -2,9 +2,10 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"		at "../modules/app.xql";
-import module namespace wdbs		= "https://github.com/dariok/wdbplus/stats"	at "../modules/stats.xqm";
+import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"	at "../modules/app.xql";
+import module namespace wdbs	= "https://github.com/dariok/wdbplus/stats"	at "../modules/stats.xqm";
 import module namespace console	= "http://exist-db.org/xquery/console";
+import module namespace xstring	= "https://github.com/dariok/XStringUtils"	at "../include/xstring/string-pack.xql";
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
@@ -21,14 +22,14 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			let $edition := wdb:getEdPath($file)
 			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
 			let $relativePath := substring-after($file, $edition||'/')
-			let $subColl := local:substring-before-last($file, '/')
-			let $resource := local:substring-after-last($file, '/')
+			let $subColl := xstring:substring-before-last($file, '/')
+			let $resource := xstring:substring-after-last($file, '/')
 			let $fileEntry := $metaFile//meta:file[@path = $relativePath]
 			
 			return switch ($job)
 				case 'add' return
 					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" 
-						date="{xmldb:last-modified(local:substring-before-last($file, '/'), local:substring-after-last($file, '/'))}"/>
+						date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"/>
 					let $up1 := update insert $ins into $metaFile//meta:files
 					return local:getFileStat($edition, $file)
 				
@@ -102,8 +103,8 @@ declare function local:getFiles($edoc as xs:string) {
 
 declare function local:getFileStat($ed, $file) {
 	let $doc := doc($file)
-	let $subColl := local:substring-before-last($file, '/')
-	let $resource := local:substring-after-last($file, '/')
+	let $subColl := xstring:substring-before-last($file, '/')
+	let $resource := xstring:substring-after-last($file, '/')
 	let $metaFile := doc($wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml')
 	let $relativePath := substring-after($file, $ed||'/')
 	let $entry := $metaFile//meta:file[@path = $relativePath]
@@ -174,12 +175,4 @@ declare function local:getFileStat($ed, $file) {
 				}
 			</div>
 		</div>
-};
-
-declare function local:substring-before-last($s, $c) {
-	string-join(tokenize(normalize-space($s), $c)[not(position() = last())], $c)
-};
-
-declare function local:substring-after-last($s, $c) {
-	tokenize(normalize-space($s), $c)[last()]
 };
