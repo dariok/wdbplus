@@ -15,7 +15,9 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $job := request:get-parameter('job', '')
 	
 	return
-		if ($job != '') then
+		if (xmldb:get-current-user() != 'admin')
+			then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
+		else if ($job != '') then
 			let $edition := wdb:getEdPath($file)
 			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
 			let $relativePath := substring-after($file, $edition||'/')
@@ -62,9 +64,14 @@ declare function wdbPL:head ($node as node(), $model as map(*)) {
 
 declare function local:getFiles($edoc as xs:string) {
 	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:teiHeader
-	return
+	return 
 		<div id="content">
 			<h1>Insgesamt {count($ed)} EE</h1>
+			{
+				if (not(doc-available($wdb:edocBaseDB || '/' || $edoc || '/wdbmeta.xml')))
+					then <p>keine <code>wdbmeta.xml</code> vorhanden!</p>
+					else ()
+			}
 			<table class="noborder">
 				<tbody>
 					<tr>
