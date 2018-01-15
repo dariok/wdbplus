@@ -317,28 +317,28 @@ $(document).ready(function(){
 		e.preventDefault();
 	});
 })
-$(document).ready($('#user').change(console.log('click')))
+
 $(document).ready(function(){
-    $('#logout').click(function(e){
-        console.log('logout request');
-        $.ajax({
-            url: 'login',
-            method: 'post',
-            data: {logout: 'logout'},
-            success: function(data) { 
-                try {
-                	$('#auth').replaceWith(data);
-                	console.log('trying to log off' + data);
-                }
-                catch (e) {
-                    console.log('logging out, tried to replace #logout with:');
-                    console.log(data);
-                    console.log(e);
-                }},
-            dataType: 'text'}
-        );
-    });
+    $('#logout').click(doLogout());
 });
+function doLogout (){
+    console.log('logout request');
+    $.ajax({
+        url: 'login',
+        method: 'post',
+        data: {logout: 'logout'},
+        success: function(data) { 
+            try {
+                $('#auth').replaceWith(data);
+                console.log('trying to log off' + data);
+            }
+            catch (e) {
+                console.log('logging out, tried to replace #logout with:');
+                console.log(data);
+            }},
+        dataType: 'text'}
+    );
+}
 
 // Parallel view
 $(document).ready(function(){

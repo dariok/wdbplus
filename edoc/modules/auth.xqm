@@ -30,6 +30,6 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
             </span>
         else
             <span id="auth">
-                User: <a id="logout" alt="Click to logout" href="javascript:void(0)">{$current}</a>
+                User: <a id="logout" alt="Click to logout" href="javascript:doLogout()">{$current}</a>
             </span>
 };
