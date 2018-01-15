@@ -143,7 +143,7 @@ declare function local:getFileStat($ed, $file) {
 					</tbody>
 				</table>
 				{
-					if ($role = 'workbench') then
+					if ($wdb:role = 'workbench') then
 						<table>
 							<tbody>
 								<tr>
