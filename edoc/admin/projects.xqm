@@ -65,7 +65,7 @@ declare function local:getFiles($edoc as xs:string) {
 	return
 		<div id="content">
 			<h1>Insgesamt {count($ed)} EE</h1>
-			<table>
+			<table class="noborder">
 				<tbody>
 					<tr>
 						<th>Nr.</th>
