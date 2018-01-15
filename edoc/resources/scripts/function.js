@@ -318,9 +318,6 @@ $(document).ready(function(){
 	});
 })
 
-$(document).ready(function(){
-    $('#logout').click(doLogout());
-});
 function doLogout (){
     console.log('logout request');
     $.ajax({
