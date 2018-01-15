@@ -16,7 +16,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	
 	return
 		if ($job != '') then
-			let $edition := substring-before(substring-after($file, $wdb:edocBaseDB||'/'), '/')
+			let $edition := wdb:getEdPath($file)
 			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
 			let $relativePath := substring-after($file, $edition||'/')
 			let $subColl := local:substring-before-last($file, '/')
