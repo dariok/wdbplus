@@ -7,7 +7,7 @@
 	
 	<xsl:output omit-xml-declaration="yes" indent="yes"/>
 	
-	<xsl:param name="wdbView" />
+	<xsl:param name="wdb" />
 	
 	<xsl:template match="/">
 		<xsl:apply-templates select="wdbmeta:projectMD/wdbmeta:struct" />
@@ -36,7 +36,7 @@
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
 		<li>
-			<a href="{$wdbView}?id={@file}">
+			<a href="{$wdb}?id={@file}">
 				<xsl:value-of select="normalize-space(@label)"/>
 			</a>
 		</li>
