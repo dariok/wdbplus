@@ -25,7 +25,7 @@ let $t1 := console:log($path)
 let $model := if (doc-available($path || '/wdbmeta.xml'))
 	then
 		let $id := $metaFile//wdbmeta:projectID
-		let $title := $metaFile//wdbmeta:title[@type="main"]
+		let $title := $metaFile//wdbmeta:title[1]
 		return map { "id" := $id, "title" := $title, "metaFile" := $path || '/wdbmeta.xml' }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
@@ -38,7 +38,7 @@ return
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		{wdbm:pageTitle($bogus, $model)}
+		<title>{$model("title")}</title>
 		<link rel="stylesheet" type="text/css" href="$shared/css/start.css" />
 		<script src="http://code.jquery.com/jquery-3.1.0.js" type="text/javascript" />
 		<script src="$shared/scripts/function.js" type="text/javascript" />
