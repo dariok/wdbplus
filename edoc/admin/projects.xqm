@@ -138,27 +138,32 @@ declare function local:getFileStat($ed, $file) {
 								else <td>fehlt <a href="javascript:job('add', '{$file}')">hinzufügen</a></td>
 							}
 						</tr>
-						<tr>
-							<td>UUID in wdbMeta</td>
-							{if ($entry/@uuid = $uuid)
-								then <td>OK: {$uuid}</td>
-								else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
-							}
-						</tr>
-						<tr>
-							<td>Timestamp in wdbMeta</td>
-							{if ($entry/@date = $date)
-								then <td>OK: {$date}</td>
-								else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$file}')">Timestamp aktualisieren</a></td>
-							}
-						</tr>
-						<tr>
-							<td><code>@xml:id</code> in wdbMeta</td>
-							{if ($entry/@xml:id = $id)
-								then <td>OK: {$id}</td>
-								else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$file}')">ID aktualisieren</a></td>
-							}
-						</tr>
+						{if ($entry/@path != '')
+							then (
+								<tr>
+									<td>UUID in wdbMeta</td>
+									{if ($entry/@uuid = $uuid)
+										then <td>OK: {$uuid}</td>
+										else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
+									}
+								</tr>,
+								<tr>
+									<td>Timestamp in wdbMeta</td>
+									{if ($entry/@date = $date)
+										then <td>OK: {$date}</td>
+										else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$file}')">Timestamp aktualisieren</a></td>
+									}
+								</tr>,
+								<tr>
+									<td><code>@xml:id</code> in wdbMeta</td>
+									{if ($entry/@xml:id = $id)
+										then <td>OK: {$id}</td>
+										else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$file}')">ID aktualisieren</a></td>
+									}
+								</tr>
+							)
+							else ()
+						}
 					</tbody>
 				</table>
 				{
