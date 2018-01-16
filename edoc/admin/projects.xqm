@@ -25,16 +25,18 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			let $subColl := xstring:substring-before-last($file, '/')
 			let $resource := xstring:substring-after-last($file, '/')
 			let $fileEntry := $metaFile//meta:file[@path = $relativePath]
+			let $xml := doc($file)
 			
 			return switch ($job)
 				case 'add' return
-					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid(doc($file))}" 
-						date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"/>
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid($xml)}" 
+						date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"
+						xml:id="{$xml/tei:TEI/@xml:id}" />
 					let $up1 := update insert $ins into $metaFile//meta:files
 					return local:getFileStat($edition, $file)
 				
 				case 'uuid' return
-					let $up1 := update value $fileEntry/@uuid with util:uuid(doc($file))
+					let $up1 := update value $fileEntry/@uuid with util:uuid($xml)
 					return local:getFileStat($edition, $file)
 				
 				case 'date' return
@@ -42,7 +44,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 					return local:getFileStat($edition, $file)
 				
 				case 'id' return
-					let $id := normalize-space(doc($file)/tei:TEI/@xml:id)
+					let $id := normalize-space($xml/tei:TEI/@xml:id)
 					let $upd1 := update value $fileEntry/@xml:id with $id
 					return local:getFileStat($edition, $file)
 				
