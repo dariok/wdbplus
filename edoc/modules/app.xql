@@ -260,16 +260,6 @@ declare function wdb:getUrl ( $path as xs:string ) as xs:string {
 	$wdb:edocBaseURL || substring-after($path, $wdb:edocBaseDB)
 };
 
-(: die Rolle der Instanz auslesen :)
-declare function wdb:getRole () as xs:string {
-	normalize-space(doc('../config.xml')/main:config/main:role/main:type)
-};
-
-(: den Peer der Instanz auslesen :)
-declare function wdb:getRolePeer () as xs:string {
-	normalize-space(doc('../config.xml')/main:config/main:role/main:peer)
-};
-
 declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
