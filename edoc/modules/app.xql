@@ -87,7 +87,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
 		else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
 	
-	let $title := (doc($pathToFile)//tei:title)[1]
+	let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 		
 	(: TODO parameter aus config.xml einlesen und übergeben? :)
     return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEd, "infoFileLoc" := $infoFileLoc,
@@ -166,7 +166,7 @@ declare function wdb:EEbody($node as node(), $model as map(*)) {
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
-	let $ti := string ($model("title"))
+	let $ti := $model("title")
 	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
 };
 
