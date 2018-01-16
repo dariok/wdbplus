@@ -173,14 +173,60 @@ declare function local:getFileStat($ed, $file) {
 				</table>
 				{
 					if ($wdb:role = 'workbench') then
-						<table>
-							<tbody>
-								<tr>
-									<td>Peer Server</td>
-									<td>{$wdb:peer}</td>
-								</tr>
-							</tbody>
-						</table>
+						let $remoteMetaFile := try {
+							 doc($wdb:peer || '/' || $ed || '/wdbmeta.xml')
+						} catch * {
+							console:log("Peer meta file not found: " || $wdb:peer || '/' || $ed || '/wdbmeta.xml --' ||
+								'e: ' ||	$err:code || ': ' || $err:description || ' @ ' || $err:line-number ||':'||$err:column-number || '
+								c: ' || $err:value || ' in ' || $err:module || '
+								a: ' || $err:additional)
+						}
+						let $remoteEntry := $remoteMetaFile//meta:file[@path = $relativePath]
+						
+						return (
+							<h3>Peer Info</h3>,
+							<table style="width: 100%;">
+								<tbody>
+									<tr>
+										<td>Peer Server</td>
+										<td>{$wdb:peer}</td>
+									</tr>
+									<tr>
+										<td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
+										{if ($remoteEntry/@path != '')
+											then <td>OK</td>
+											else <td>fehlt</td>
+										}
+									</tr>
+									{if ($remoteEntry/@path != '')
+										then (
+											<tr>
+												<td>UUID in wdbMeta</td>
+												{if ($remoteEntry/@uuid = $uuid)
+													then <td>OK: {$uuid}</td>
+													else <td>Diff: {normalize-space($remoteEntry/@uuid)}</td>
+												}
+											</tr>,
+											<tr>
+												<td>Timestamp in wdbMeta</td>
+												{if ($remoteEntry/@date = $date)
+													then <td>OK: {$date}</td>
+													else <td>Diff: {normalize-space($remoteEntry/@date)}</td>
+												}
+											</tr>,
+											<tr>
+												<td><code>@xml:id</code> in wdbMeta</td>
+												{if ($remoteEntry/@xml:id = $id)
+													then <td>OK: {$id}</td>
+													else <td>Diff: {normalize-space($remoteEntry/@xml:id)}</td>
+												}
+											</tr>
+										)
+										else ()
+									}
+								</tbody>
+							</table>
+						)
 					else ()
 				}
 			</div>
