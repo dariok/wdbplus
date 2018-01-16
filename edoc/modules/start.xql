@@ -25,11 +25,11 @@ let $t1 := console:log($path)
 let $model := if (doc-available($path || '/wdbmeta.xml'))
 	then
 		let $id := $metaFile//wdbmeta:projectID
-		let $title := $metaFile//wdbmeta:title[1]
+		let $title := normalize-space($metaFile//wdbmeta:title[1])
 		return map { "id" := $id, "title" := $title, "metaFile" := $path || '/wdbmeta.xml' }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
-		let $title := ($metaFile//mods:title)[1]/text()
+		let $title := normalize-space(($metaFile//mods:title)[1])
 		return map { "id" := $id, "title" := $title , "metaFile" := $path || '/mets.xml' }
 
 let $bogus := <void></void>
