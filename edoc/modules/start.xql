@@ -56,7 +56,6 @@ return
 			<div id="content">
 				{wdbm:getLeft($bogus, $model)}
 			</div>
-			<!-- <div id="footer" data-template="habm:footer"/> -->
 		</div>
 	</body>
 </html>
