@@ -3,15 +3,15 @@ xquery version "3.0";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace config		= "https://github.com/dariok/wdbplus/config" 		at "config.xqm";
-import module namespace wdbt			= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
+import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at "config.xqm";
+import module namespace wdbt		= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
-import module namespace xstring		= "https://github.com/dariok/XStringUtils"			at "../include/xstring/string-pack.xql";
+import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
 declare namespace xlink	= "http://www.w3.org/1999/xlink";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 declare namespace main	= "https://github.com/dariok/wdbplus";
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -69,7 +69,8 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as m
 declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
-	let $pathToFile := base-uri(collection($wdb:edocBaseDB)/id($id)[1])
+	let $files := collection($wdb:edocBaseDB)/id($id)
+	let $pathToFile := base-uri($files[not(contains(base-uri(), 'mets') or contains(base-uri(), 'meta'))])
 	let $pathToEd := wdb:getEdPath($pathToFile, true())
 	let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 
@@ -167,12 +168,8 @@ declare function wdb:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdb:footer($node as node(), $model as map(*)) {
-let $t3 := console:log($model("fileLoc"))
-let $t4 := console:log($model("xslt"))
 	let $xml := wdb:getUrl($model("fileLoc"))
 	let $xsl := wdb:getUrl($model("xslt"))
-	let $t1 := console:log($xml)
-	let $t2 := console:log($xsl)
 	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
 	return
 	<div class="footer">
