@@ -30,8 +30,8 @@ declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
 
 (: get the base URI either from the data of the last call or from the configuration :)
 declare variable $wdb:edocBaseURL :=
-	if ( $wdb:configFile/main:config/main:server )
-	then normalize-space($wdb:configFile/main:config/main:server)
+	if ( $wdb:configFile//main:server )
+	then normalize-space($wdb:configFile//main:server)
 	else
 		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
 		let $url := substring-after($wdb:edocBaseDB, 'db/')
@@ -40,15 +40,15 @@ declare variable $wdb:edocBaseURL :=
 
 (: the server role :)
 declare variable $wdb:role :=
-	if ($wdb:configFile/main:role/main:type != '')
-		then $wdb:configFile/main:role/main:type
+	if ($wdb:configFile//main:role/main:type != '')
+		then $wdb:configFile//main:role/main:type
 		else "standalone"
 ;
 
 (: the peer :)
 declare variable $wdb:peer :=
 	if ($wdb:role != "standalone")
-		then $wdb:configFile/main:role/main:peer
+		then $wdb:configFile//main:role/main:peer
 		else ""
 ;
 
@@ -247,12 +247,12 @@ declare function wdb:getAuth($node as node(), $model as map(*)) {
 
 (: Den Instanznamen ausgeben :)
 declare function wdb:getInstanceName($node as node(), $model as map(*)) {
-	<h1>{normalize-space(doc('../config.xml')/main:config/main:meta/main:name)}</h1>
+	<h1>{normalize-space(doc('../config.xml')//main:meta/main:name)}</h1>
 };
 
 (: Den Kurznamen ausgeben :)
 declare function wdb:getInstanceShort($node as node(), $model as map(*)) {
-	<span>{normalize-space(doc('../config.xml')/main:config/main:meta/main:short)}</span>
+	<span>{normalize-space(doc('../config.xml')//main:meta/main:short)}</span>
 };
 
 (: die vollständige URL zu einer Resource auslesen :)
