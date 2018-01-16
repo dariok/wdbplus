@@ -36,16 +36,19 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 					return local:getFileStat($edition, $file)
 				
 				case 'uuid' return
-					let $up1 := update value $fileEntry/@uuid with util:uuid($xml)
+					let $ins := <wdbmeta:file uuid="{util:uuid($xml)}"/>
+					let $up1 := update insert $ins/@uuid into $fileEntry
 					return local:getFileStat($edition, $file)
 				
 				case 'date' return
-					let $up1 := update value $fileEntry/@date with xmldb:last-modified($subColl, $resource)
+					let $ins := <wdbmeta:file date="{xmldb:last-modified($subColl, $resource)}" />
+					let $up1 := update insert $ins/@date into $fileEntry
 					return local:getFileStat($edition, $file)
 				
 				case 'id' return
 					let $id := normalize-space($xml/tei:TEI/@xml:id)
-					let $upd1 := update value $fileEntry/@xml:id with $id
+					let $ins := <wdbmeta:file xml:id="{$id}" />
+					let $upd1 := update insert $ins/@xml:id into $fileEntry
 					return local:getFileStat($edition, $file)
 				
 				default return
