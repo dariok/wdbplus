@@ -10,22 +10,28 @@
 	<xsl:param name="wdb" />
 	
 	<xsl:template match="/">
-		<xsl:apply-templates select="wdbmeta:projectMD/wdbmeta:struct" />
+		<div class="toc_content">
+			<!-- TODO Übersetzungen ermöglichen -->
+			<h2>Inhalt</h2>
+			<xsl:apply-templates select="wdbmeta:projectMD/wdbmeta:struct" />
+		</div>
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:struct[not(parent::wdbmeta:struct)]">
-		<ul>
-			<xsl:apply-templates>
-				<xsl:sort select="@order" />
-			</xsl:apply-templates>
-		</ul>
+		<div  style="border: 1px solid gray;padding-right:5px;">
+			<ul>
+				<xsl:apply-templates>
+					<xsl:sort select="@order" />
+				</xsl:apply-templates>
+			</ul>
+		</div>
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
 		<xsl:variable name="id" select="generate-id()"/>
 		<li>
-			<a href="javascript:$('#'||{$id}).toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
-			<ul id="{$id}">
+			<a href="javascript:$('#{$id}').toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
+			<ul id="{$id}" style="display:none;">
 				<xsl:apply-templates>
 					<xsl:sort select="@order"></xsl:sort>
 				</xsl:apply-templates>
