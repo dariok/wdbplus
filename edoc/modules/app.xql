@@ -202,7 +202,7 @@ declare function wdb:getCSS($node as node(), $model as map(*)) {
 	    else if (doc-available(concat($ed, "layout/common.css")))
 	        then concat($ed, "layout/common.css")
 	        else "/edoc/resources/css/common.css":)
-	let $path := concat($ed, "/scripts/project.css")
+	let $path := wdb:getUrl(concat($ed, "/scripts/project.css"))
 	
 	return (<link rel="stylesheet" type="text/css" href="resources/css/{$f}" />,
 		<link rel="stylesheet" type="text/css" href="{$path}" />
@@ -216,7 +216,7 @@ declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string
 
 (: neu für das Laden projektspezifischer JS; 2016-11-02 DK :)
 declare function wdb:getJS($node as node(), $model as map(*)) {
-	let $path := concat($model("ed"), "/scripts/project.js")
+	let $path := wdb:getUrl(concat($model("ed"), "/scripts/project.js"))
 	return <script src="{$path}" type="text/javascript" />
 };
 
