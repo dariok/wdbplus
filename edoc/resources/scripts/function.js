@@ -357,6 +357,7 @@ function displayImage(href) {
 	$('#fac').html('<iframe id="facsimile"></iframe>');
 	$('#facsimile').attr('src', href);
 	$('#facsimile').css('display', 'block');
+	$('#facsimile').css('width', '100%').css('height', '100%');
 }
 
 /* toggle rightSide visibility */
