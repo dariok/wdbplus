@@ -18,24 +18,28 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
 	let $t1 := console:log($model)
-	let $xml := doc($model("infoFileLoc"))
+	let $xml := $model("infoFileLoc")
 	
 	let $xsl := if (contains($model("infoFileLoc"), 'wdbmeta'))
 		then if (doc-available(concat($model("ed"), '/wdbmeta.xsl')))
-			then doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/wdbmeta.xsl'))
-			else doc($wdb:edocBaseDB || '/resources/wdbmeta.xsl')
+			then $model("ed") || '/wdbmeta.xsl'
+			else $wdb:edocBaseDB || '/resources/wdbmeta.xsl'
 		else if (doc-available(concat($model("ed"), '/mets.xsl')))
-			then doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/mets.xsl'))
-			else doc($wdb:edocBaseDB || '/resources/mets.xsl')
+			then $model("ed") || '/mets.xsl'
+			else $wdb:edocBaseDB || '/resources/mets.xsl'
+			
+	let $t2 := console:log($xml)
+	let $t3 := console:log($xsl)
 	
 	let $param := <parameters>
-					<param name="footerXML" value="{wdb:getUrl(base-uri($xml))}" />
-					<param name="footerXSL" value="{wdb:getUrl(base-uri($xsl))}" />
+					<param name="footerXML" value="{wdb:getUrl($xml)}" />
+					<param name="footerXSL" value="{wdb:getUrl($xsl)}" />
 					<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
+					<param name="role" value="{$wdb:role}" />
 				</parameters>
 				
 	return
-		transform:transform($xml, $xsl, $param)
+		transform:transform(doc($xml), doc($xsl), $param)
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
