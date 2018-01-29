@@ -24,13 +24,13 @@ let $t1 := console:log($path)
 
 let $model := if (doc-available($path || '/wdbmeta.xml'))
 	then
-		let $id := $metaFile//wdbmeta:projectID
+		let $id := $metaFile//wdbmeta:projectID/text()
 		let $title := normalize-space($metaFile//wdbmeta:title[1])
-		return map { "id" := $id, "title" := $title, "metaFile" := $path || '/wdbmeta.xml' }
+		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := $path }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
 		let $title := normalize-space(($metaFile//mods:title)[1])
-		return map { "id" := $id, "title" := $title , "metaFile" := $path || '/mets.xml' }
+		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := $path }
 
 let $bogus := <void></void>
 

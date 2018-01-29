@@ -17,14 +17,15 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $xml := doc($model("metaFile"))
+	let $t1 := console:log($model)
+	let $xml := doc($model("infoFileLoc"))
 	
-	let $xsl := if (contains($model("metaFile"), 'wdbmeta'))
-		then if (doc-available(concat($model("id"), '/wdbmeta.xsl')))
-			then doc(concat($wdb:edocBaseDB, '/', $model("id"), '/wdbmeta.xsl'))
+	let $xsl := if (contains($model("infoFileLoc"), 'wdbmeta'))
+		then if (doc-available(concat($model("ed"), '/wdbmeta.xsl')))
+			then doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/wdbmeta.xsl'))
 			else doc($wdb:edocBaseDB || '/resources/wdbmeta.xsl')
-		else if (doc-available(concat($model("id"), '/mets.xsl')))
-			then doc(concat($wdb:edocBaseDB, '/', $model("id"), '/mets.xsl'))
+		else if (doc-available(concat($model("ed"), '/mets.xsl')))
+			then doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/mets.xsl'))
 			else doc($wdb:edocBaseDB || '/resources/mets.xsl')
 	
 	let $param := <parameters>

@@ -91,7 +91,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		
 	(: TODO parameter aus config.xml einlesen und übergeben? :)
     return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEd, "infoFileLoc" := $infoFileLoc,
-    		"title" := $title }
+    		"title" := $title, "id" := $id }
 
 	(:return <table>
 	    <tr><td>ID:</td><td>{$id}</td></tr>
@@ -100,6 +100,13 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 	    <tr><td>infoFileLoc:</td><td>{$infoFileLoc}; existiert? {doc-available($infoFileLoc)}</td></tr>
 		<tr><td>xslt:</td><td>{$xslt}; existiert? {doc-available($xslt)}</td></tr>
 	</table>:)
+};
+
+(:~
+ : Return HTML Meta Tag to easily identify the project
+ :)
+declare function wdb:getId($node as node(), $model as map(*)) {
+	<meta name="id" content="{$model('id')}"/>
 };
 
 (: Finden der korrekten behavior
@@ -297,7 +304,7 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 						then $c
 						else ()
 	
-	return $sel[1]
+	return $sel[1]/text()
 };
 
 (:~
