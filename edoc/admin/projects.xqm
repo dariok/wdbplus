@@ -53,6 +53,16 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 					let $upd1 := update insert $ins/@xml:id into $fileEntry
 					return local:getFileStat($edition, $file)
 				
+				case 'private' return
+					let $id := normalize-space($xml/tei:TEI/@xml:id)
+					let $view := ($metaFile//meta:view[@file = $id])[1]
+					let $upd := if ($view/@private = 'true')
+						then update value $view/@private with 'false'
+						else if ($view/@private = 'false')
+							then update value $view/@private with 'true'
+							else update insert attribute private {'true'} into $view
+					return local:getFileStat($edition, $file)
+				
 				default return
 					<div id="data"><div><h3>Strange Error</h3></div></div>
 					
@@ -246,7 +256,13 @@ declare function local:getFileStat($ed, $file) {
 								<tbody>
 									<tr>
 										<td>Status</td>
-										<td>{$status}</td>
+										<td>{
+											if ($status = 'Kein Struktureintrag') then
+												$status
+											else
+												let $link := <a href="javascript:job('private', '{$file}')">umschalten</a>
+												return ($status, <br/>, $link)
+										}</td>
 									</tr>
 								</tbody>
 							</table>
