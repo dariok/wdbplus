@@ -15,6 +15,8 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $file := request:get-parameter('file', '')
 	let $job := request:get-parameter('job', '')
 	
+	let $t1 := console:log($job)
+	
 	return
 		if (xmldb:get-current-user() != 'admin')
 			then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
@@ -36,18 +38,18 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 					return local:getFileStat($edition, $file)
 				
 				case 'uuid' return
-					let $ins := <wdbmeta:file uuid="{util:uuid($xml)}"/>
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" uuid="{util:uuid($xml)}"/>
 					let $up1 := update insert $ins/@uuid into $fileEntry
 					return local:getFileStat($edition, $file)
 				
 				case 'date' return
-					let $ins := <wdbmeta:file date="{xmldb:last-modified($subColl, $resource)}" />
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" date="{xmldb:last-modified($subColl, $resource)}" />
 					let $up1 := update insert $ins/@date into $fileEntry
 					return local:getFileStat($edition, $file)
 				
 				case 'id' return
 					let $id := normalize-space($xml/tei:TEI/@xml:id)
-					let $ins := <wdbmeta:file xml:id="{$id}" />
+					let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="{$id}" />
 					let $upd1 := update insert $ins/@xml:id into $fileEntry
 					return local:getFileStat($edition, $file)
 				
