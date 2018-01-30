@@ -40,7 +40,7 @@
 	
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
 		<xsl:variable name="id" select="generate-id()"/>
-		<xsl:if test="$role = 'publication')">
+		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))">
 			<li>
 				<a href="javascript:$('#{$id}').toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
 				<ul id="{$id}" style="display:none;">
@@ -54,7 +54,7 @@
 	
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
-		<xsl:if test="$role = 'publication')">
+		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))">
 			<li>
 				<a href="{$wdb}?id={@file}">
 					<xsl:value-of select="normalize-space(@label)"/>
