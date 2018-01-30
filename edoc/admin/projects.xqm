@@ -231,6 +231,28 @@ declare function local:getFileStat($ed, $file) {
 						)
 					else ()
 				}
+				{
+					if ($wdb:role = 'standalone') then
+						let $status := if ($metaFile//meta:view[@file = $id])
+							then
+								let $view := ($metaFile//meta:view[@file = $id])[1]
+								return if ($view/@private = true())
+									then 'intern'
+									else 'sichtbar'
+							else 'Kein Struktureintrag'
+						return (
+							<h3>Verwaltung</h3>,
+							<table>
+								<tbody>
+									<tr>
+										<td>Status</td>
+										<td>{$status}</td>
+									</tr>
+								</tbody>
+							</table>
+						)
+					else ()
+				}
 			</div>
 		</div>
 };
