@@ -10,6 +10,7 @@
 	<xsl:param name="wdb" />
 	<xsl:param name="footerXML" />
 	<xsl:param name="footerXSL" />
+	<xsl:param name="role" />
 	
 	<xsl:template match="/">
 		<div class="toc_content">
@@ -39,22 +40,26 @@
 	
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
 		<xsl:variable name="id" select="generate-id()"/>
-		<li>
-			<a href="javascript:$('#{$id}').toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
-			<ul id="{$id}" style="display:none;">
-				<xsl:apply-templates>
-					<xsl:sort select="@order"></xsl:sort>
-				</xsl:apply-templates>
-			</ul>
-		</li>
+		<xsl:if test="$role = 'publication')">
+			<li>
+				<a href="javascript:$('#{$id}').toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
+				<ul id="{$id}" style="display:none;">
+					<xsl:apply-templates>
+						<xsl:sort select="@order"></xsl:sort>
+					</xsl:apply-templates>
+				</ul>
+			</li>
+		</xsl:if>
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
-		<li>
-			<a href="{$wdb}?id={@file}">
-				<xsl:value-of select="normalize-space(@label)"/>
-			</a>
-		</li>
+		<xsl:if test="$role = 'publication')">
+			<li>
+				<a href="{$wdb}?id={@file}">
+					<xsl:value-of select="normalize-space(@label)"/>
+				</a>
+			</li>
+		</xsl:if>
 	</xsl:template>
 </xsl:stylesheet>
