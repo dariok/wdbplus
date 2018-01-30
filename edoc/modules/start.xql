@@ -20,8 +20,6 @@ let $metaFile := if (doc-available($path || '/wdbmeta.xml'))
 	then doc($path || '/wdbmeta.xml')
 	else doc($path || '/mets.xml')
 
-let $t1 := console:log($path)
-
 let $model := if (doc-available($path || '/wdbmeta.xml'))
 	then
 		let $id := $metaFile//wdbmeta:projectID/text()

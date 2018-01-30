@@ -5,6 +5,7 @@ module namespace wdbm = "https://github.com/dariok/wdbplus/mets";
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb 		= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 import module namespace console		= "http://exist-db.org/xquery/console";
+import module namespace sm			= "http://exist-db.org/xquery/securitymanager";
 
 declare namespace mets		= "http://www.loc.gov/METS/";
 declare namespace mods		= "http://www.loc.gov/mods/v3";
@@ -17,7 +18,6 @@ declare function wdbm:pageTitle($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $t1 := console:log($model)
 	let $xml := $model("infoFileLoc")
 	
 	let $xsl := if (contains($model("infoFileLoc"), 'wdbmeta'))
@@ -27,15 +27,13 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 		else if (doc-available(concat($model("ed"), '/mets.xsl')))
 			then $model("ed") || '/mets.xsl'
 			else $wdb:edocBaseDB || '/resources/mets.xsl'
-			
-	let $t2 := console:log($xml)
-	let $t3 := console:log($xsl)
 	
 	let $param := <parameters>
 					<param name="footerXML" value="{wdb:getUrl($xml)}" />
 					<param name="footerXSL" value="{wdb:getUrl($xsl)}" />
 					<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
 					<param name="role" value="{$wdb:role}" />
+					<param name="access" value="{sm:has-access($model('ed'), 'w')}" />
 				</parameters>
 				
 	return

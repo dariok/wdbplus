@@ -11,6 +11,7 @@
 	<xsl:param name="footerXML" />
 	<xsl:param name="footerXSL" />
 	<xsl:param name="role" />
+	<xsl:param name="access" />
 	
 	<xsl:template match="/">
 		<div class="toc_content">
@@ -40,9 +41,10 @@
 	
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
 		<xsl:variable name="id" select="generate-id()"/>
-		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))">
+		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))
+				or ($role = 'standalone' and $access = true())">
 			<li>
-				<a href="javascript:$('#{$id}').toggle()"><xsl:value-of select="normalize-space(@label)" /></a>
+				<a onclick="$('#{$id}').toggle();" style="cursor: pointer;"><xsl:value-of select="normalize-space(@label)" /></a>
 				<ul id="{$id}" style="display:none;">
 					<xsl:apply-templates>
 						<xsl:sort select="@order"></xsl:sort>
@@ -54,7 +56,8 @@
 	
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
-		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))">
+		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true())
+				or ($role = 'standalone' and $access = true()))">
 			<li>
 				<a href="{$wdb}?id={@file}">
 					<xsl:value-of select="normalize-space(@label)"/>
