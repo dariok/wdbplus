@@ -19,7 +19,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $user := sm:id()
 	
 	return
-		if (not($user//group = 'dba'))
+		if (not($user//sm:group = 'dba'))
 			then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
 		else if ($job != '') then
 			let $edition := wdb:getEdPath($file)
