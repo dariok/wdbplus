@@ -38,7 +38,7 @@ return
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>{normalize-space($model("title"))}</title>
 		<link rel="stylesheet" type="text/css" href="$shared/css/start.css" />
-		<script src="http://code.jquery.com/jquery-3.1.0.js" type="text/javascript" />
+		<script src="$shared/scripts/jquery.min.js" type="text/javascript" />
 		<script src="$shared/scripts/function.js" type="text/javascript" />
 	</head>
 	<body>
