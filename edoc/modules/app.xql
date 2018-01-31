@@ -157,19 +157,28 @@ declare function wdb:EEbody($node as node(), $model as map(*)) {
 	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
 	let $file := $model("fileLoc")
 	let $xslt := $model("xslt")
-	let $params := <parameters><param name="server" value="eXist"/>
-	<param name="exist:stop-on-warn" value="yes" /><param name="exist:stop-on-error" value="yes" /></parameters>
+	let $params :=
+		<parameters>
+			<param name="server" value="eXist"/>
+			<param name="exist:stop-on-warn" value="yes" />
+			<param name="exist:stop-on-error" value="yes" />
+		</parameters>
 	(: ambiguous rule match soll nicht zum Abbruch führen :)
 	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
-(:    let $attr := ():)
 	
 	let $re :=
 		try { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
-		catch * { console:log('f: ' || $file || 'x:' || $xslt || 'p: ' || $params || 'a: ' || $attr ||
-				$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number || 'a: ' || $err:additional)
+		catch * { console:log(
+			<report>
+				<file>{$file}</file>
+				<xslt>{$xslt}</xslt>
+				{$params}
+				<attributes>{$attr}</attributes>
+				<error>{$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number}</error>
+				<additional>{$err:additional}</additional>
+			</report>)
 		}
 		return $re
-(:		return doc($file):)
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
@@ -328,7 +337,8 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 	:
 	: @param $path a path to a file within the project, usually wdbmeta.xml or mets.xml
 	: @param $absolute (optional) if true(), return an absolute URL
-	: @return the path (relative) to the app root
+	:
+	: @returns the path (relative) to the app root
 	:)
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
 	let $pathToFile := wdb:getUrl($path)
