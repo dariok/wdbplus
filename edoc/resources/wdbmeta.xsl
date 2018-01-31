@@ -42,7 +42,7 @@
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
 		<xsl:variable name="id" select="generate-id()"/>
 		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true()))
-				or ($role = 'standalone' and $access = true())">
+				or ($role = 'standalone' and $access = true()) or ($role = 'workbench' and $access = true())">
 			<li>
 				<a onclick="$('#{$id}').toggle();" style="cursor: pointer;"><xsl:value-of select="normalize-space(@label)" /></a>
 				<ul id="{$id}" style="display:none;">
@@ -57,7 +57,7 @@
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
 		<xsl:if test="$role = 'publication' or ($role = 'standalone' and not(@private = true())
-				or ($role = 'standalone' and $access = true()))">
+				or ($role = 'standalone' and $access = true()) or ($role = 'workbench' and $access = true()))">
 			<li>
 				<a href="{$wdb}?id={@file}">
 					<xsl:value-of select="normalize-space(@label)"/>
