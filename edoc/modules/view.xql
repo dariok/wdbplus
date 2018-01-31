@@ -10,12 +10,12 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdbm			= "https://github.com/dariok/wdbplus/mets"		at "mets.xqm";
-import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"			at "app.xql";
-import module namespace wdbs			= "https://github.com/dariok/wdbplus/stats"		at "stats.xqm";
-import module namespace wdbe			= "https://github.com/dariok/wdbplus/entity"	at "entity.xqm";
-import module namespace wdbpq			= "https://github.com/dariok/wdbplus/pquery"	at "pquery.xqm";
-import module namespace wdba			= "https://github.com/dariok/wdbplus/auth"		at "auth.xqm";
+import module namespace wdbm		= "https://github.com/dariok/wdbplus/mets"		at "mets.xqm";
+import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
+import module namespace wdbs		= "https://github.com/dariok/wdbplus/stats"		at "stats.xqm";
+import module namespace wdbe		= "https://github.com/dariok/wdbplus/entity"	at "entity.xqm";
+import module namespace wdbpq		= "https://github.com/dariok/wdbplus/pquery"	at "pquery.xqm";
+import module namespace wdba		= "https://github.com/dariok/wdbplus/auth"		at "auth.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 

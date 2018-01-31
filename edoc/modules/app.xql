@@ -284,26 +284,42 @@ declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
 	return concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
 };
 
+(:~
+ : Evaluate wdbmeta.xml to get the process used for transformation
+ :
+ : @param $ed The (relative) path to the project
+ : @param $id The ID of the file to be processed
+ : @param $target The processing target to be used
+ :
+ : @returns The path to the XSLT
+:)
 declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $target as xs:string) {
 	let $metaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
 	let $fil := doc($metaFile)
-	let $process := doc($metaFile)//meta:process[@target = $target]
+	
+	let $process := if (not(doc($metaFile)//meta:process[@target = $target]))
+		then
+			(: no process for this target: use first process :)
+			doc($metaFile)//meta:process[1]
+		else doc($metaFile)//meta:process[@target = $target]
 	
 	let $sel := for $c in $process/meta:command
 		return if ($c/@refs)
 			then
+				(: if a list of IDREFS is given, this command matches if $id is part of that list :)
 				let $map := tokenize($c/@refs, ' ')
 				return if ($map = $id)
-					then
-						$c
-					else ()
-			else
-				if ($c/@regex and matches($id, $c/@regex))
 					then $c
-					else if (not($c/@refs or $c/@regex))
-						then $c
-						else ()
+					else ()
+			else if ($c/@regex and matches($id, $c/@regex))
+				(: if a regex is given and $id matches that regex, the command matches :)
+				then $c
+			else if (not($c/@refs or $c/@regex))
+				(: if no selection method is given, the command is considered the default :)
+				then $c
+				else () (: neither refs nor regex match and no default given :)
 	
+	(: As we check from most specific to default, the first command in the sequence is the right one :)
 	return $sel[1]/text()
 };
 
