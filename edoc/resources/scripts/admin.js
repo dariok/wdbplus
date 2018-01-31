@@ -18,3 +18,8 @@ function rightSide ( url ) {
 				}
 		});
 }
+
+/** fixed div at top of page: body needs offset for correct scrolling */
+$(document).ready(function() {
+	$('body').css('margin-top', $('#navBar').innerHeight());
+});
