@@ -16,7 +16,7 @@ declare namespace main	= "https://github.com/dariok/wdbplus";
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 (: VARIABLES :)
-(: get the name of the server, possibly including the port :)
+(: get the name of the server, possibly including the port :)	
 declare variable $wdb:server := if ( request:get-server-port() != 80 )
 	then request:get-scheme() || '://' || request:get-server-name() || ':' || request:get-server-port()
 	else request:get-scheme() || '://' || request:get-server-name()
@@ -173,7 +173,7 @@ declare function wdb:EEbody($node as node(), $model as map(*)) {
 				<file>{$file}</file>
 				<xslt>{$xslt}</xslt>
 				{$params}
-				<attributes>{$attr}</attributes>
+				{$attr}
 				<error>{$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number}</error>
 				<additional>{$err:additional}</additional>
 			</report>)
@@ -211,14 +211,8 @@ declare function wdb:getCSS($node as node(), $model as map(*)) {
 	let $f := if ($model("type") = "transcript")
 			then "transcr.css"
 			else "intro.css"
-			
-	(: verschiedene Varianten ausprobieren; 2017-02-20 DK :)
-	(:let $path := if (doc-available(concat($ed, "layout/project.css")))
-	    then concat($ed, "layout/project.css")
-	    else if (doc-available(concat($ed, "layout/common.css")))
-	        then concat($ed, "layout/common.css")
-	        else "/edoc/resources/css/common.css":)
-	let $path := wdb:getUrl(concat($ed, "/scripts/project.css"))
+	
+	let $path := wdb:getEdPath($model("fileLoc")) || "/scripts/project.css"
 	
 	return (<link rel="stylesheet" type="text/css" href="resources/css/{$f}" />,
 		<link rel="stylesheet" type="text/css" href="{$path}" />
@@ -232,7 +226,7 @@ declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string
 
 (: neu für das Laden projektspezifischer JS; 2016-11-02 DK :)
 declare function wdb:getJS($node as node(), $model as map(*)) {
-	let $path := wdb:getUrl(concat($model("ed"), "/scripts/project.js"))
+	let $path := wdb:getEdPath($model("fileLoc")) || "/scripts/project.js"
 	return <script src="{$path}" type="text/javascript" />
 };
 
