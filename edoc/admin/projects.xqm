@@ -6,6 +6,7 @@ import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"	at "../mo
 import module namespace wdbs	= "https://github.com/dariok/wdbplus/stats"	at "../modules/stats.xqm";
 import module namespace console	= "http://exist-db.org/xquery/console";
 import module namespace xstring	= "https://github.com/dariok/XStringUtils"	at "../include/xstring/string-pack.xql";
+import module namespace sm		= "http://exist-db.org/xquery/securitymanager";
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
@@ -15,10 +16,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $file := request:get-parameter('file', '')
 	let $job := request:get-parameter('job', '')
 	
-	let $t1 := console:log($job)
+	let $user := sm:id()
 	
 	return
-		if (xmldb:get-current-user() != 'admin')
+		if (not($user//group = 'dba'))
 			then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
 		else if ($job != '') then
 			let $edition := wdb:getEdPath($file)
