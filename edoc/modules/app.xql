@@ -335,17 +335,17 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 	: @returns the path (relative) to the app root
 	:)
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
-	let $pathToFile := wdb:getUrl($path)
+	let $tok := tokenize($path, '/')
 	
-	let $relPath := substring-after($pathToFile, $wdb:edocBaseURL||'/')
-	let $tok := tokenize($relPath, '/')
+	let $pa := for $i in 1 to count($tok)
+		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
+		return xmldb:match-collection($t)
 	
-	let $path := for $i in 1 to count($tok)
-        let $p := '/db/apps/edoc/' || string-join ($tok[position() < $i+1], '/')
-        let $p1 := $p || '/wdbmeta.xml'
-	    let $p2 := $p || '/mets.xml'
-	    return if (doc-available($p1) or doc-available($p2)) then $p else ()
-    
+	let $path := for $p in $pa
+		let $p1 := $p || '/wdbmeta.xml'
+		let $p2 := $p || '/mets.xml'
+		return if (doc-available($p1) or doc-available($p2)) then $p else ()
+	
 	return if ($absolute)
 		then $path[1]
 		else substring-after($path[1], $wdb:edocBaseDB||'/')
