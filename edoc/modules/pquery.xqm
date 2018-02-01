@@ -27,7 +27,7 @@ declare function wdbpq:body($node as node(), $model as map(*)) {
 	let $path := wdb:getEdPath($model("ed"), true())  || '/' || $model("query")
 	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
 	
-	return util:eval("wdbq:query()", xs:boolean('false'), (xs:QName('map'), $model))
+	return util:eval("wdbq:query($map)", xs:boolean('false'), (xs:QName('map'), $model))
 };
 
 (: gibt das h2 für die navbar aus; neu 2017-03-27 DK :)
