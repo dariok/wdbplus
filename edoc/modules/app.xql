@@ -335,7 +335,7 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 	: @returns the path (relative) to the app root
 	:)
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
-	let $tok := tokenize($path, '/')
+		let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
 	
 	let $pa := for $i in 1 to count($tok)
 		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
