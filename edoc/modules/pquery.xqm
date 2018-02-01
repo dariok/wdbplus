@@ -12,7 +12,7 @@ import module namespace console 	= "http://exist-db.org/xquery/console";
 declare %templates:default("q", "") %templates:default("q2", "")
 	function wdbpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string, $q2 as xs:string) as map(*) {
 	
-	map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition }
+	map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition, "edPath" := wdb:getEdPath($edition, true()) }
 };
 
 declare function wdbpq:pageTitle ($node as node(), $model as map(*)) {
