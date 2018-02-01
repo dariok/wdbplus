@@ -24,7 +24,7 @@ declare function wdbpq:pageTitle ($node as node(), $model as map(*)) {
 (: Wir nehmen grundsätzlich an, daß die Skripte im Unterverzeichnis scripts innerhalb des Projektordners liegen
 		(vgl. Mail Thomas 2017-01-04T12:05) :)
 declare function wdbpq:body($node as node(), $model as map(*)) {
-	let $path := wdb:getEdPath($model("ed") || '/' || $model("query"), true())  || '/' || $model("query")
+	let $path := wdb:getEdPath($model("ed"), true())  || '/' || $model("query")
 	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
 	
 	return util:eval("wdbq:query()", xs:boolean('false'), (xs:QName('map'), $model))
@@ -32,7 +32,7 @@ declare function wdbpq:body($node as node(), $model as map(*)) {
 
 (: gibt das h2 für die navbar aus; neu 2017-03-27 DK :)
 declare function wdbpq:getTask($node as node(), $model as map(*)) {
-	let $path := wdb:getEdPath($model("ed") || '/' || $model("query"), true())  || '/' || $model("query")
+	let $path := wdb:getEdPath($model("ed"), true())  || '/' || $model("query")
 	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
 	
 	return util:eval("wdbq:getTask()", xs:boolean('false'), (xs:QName('map'), $model))
