@@ -9,16 +9,6 @@
         <div class="startImage">
             <xsl:apply-templates select="//tei:div"/>
         </div>
-        <div>
-            <xsl:call-template name="footer">
-                <xsl:with-param name="footerXML">
-                    <xsl:value-of select="$footerXML"/>
-                </xsl:with-param>
-                <xsl:with-param name="footerXSL">
-                    <xsl:value-of select="$footerXSL"/>
-                </xsl:with-param>
-            </xsl:call-template>
-        </div>
     </xsl:template>
     <xsl:template match="tei:div">
         <div>
