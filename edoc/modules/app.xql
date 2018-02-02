@@ -41,7 +41,7 @@ declare variable $wdb:edocBaseURL :=
 		let $path := if (string-length($local) > 0)
 		    then xstring:substring-before($dir, $local) (: there is a local part, e.g. 'admin' :)
 		    else $dir (: no local part, e.g. for view.html in app root :)
-
+		
 		return $wdb:server || $path
 ;
 
