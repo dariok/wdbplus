@@ -117,6 +117,50 @@ declare function wdb:getId($node as node(), $model as map(*)) {
 	<meta name="id" content="{$model('id')}"/>
 };
 
+(: ~
+ : Create the head for HTML files served via the templating system
+ : @created 2018-02-02 DK
+ :)
+declare function wdb:getHead ( $node as node(), $model as map(*) ) {
+    <head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<!-- Kurztitel als title; 2016-05-24 DK -->
+		<meta name="wdb-template" content="templates/layout.html" />
+		<meta name="id" content="{$model('id')}"/>
+		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
+		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
+		<link rel="stylesheet" type="text/css" href="resources/css/common.css" /> 
+		{wdb:getProjectFiles($node, $model, 'css')}
+		<script src="resources/scripts/jquery.min.js" type="text/javascript"></script>
+		<script src="resources/scripts/function.js" type="text/javascript"></script>
+		{wdb:getProjectFiles($node, $model, 'js')}
+	</head>
+};
+
+(:~
+ : Try ro load project specific XQuery to import CSS and JS
+ : @created 2018-02-02 DK
+ :)
+declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
+    let $location := $model('ed')||'/project.xqm'
+    
+    let $files := if (util:binary-doc-available($location))
+        then
+            (: Project has its own definition to find files :)
+            let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+            return util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+    	else
+    	    (: no specific function available, so we assume stanards :)
+    	    (
+                <link rel="stylesheet" type="text/css" href="{$model('ed')}/scripts/project.css" />,
+                <script type="text/javascript" src="{$model('ed')}/scripts/project.js" />
+            )
+            
+    return if ($type = 'css')
+        then $files[self::*:link]
+        else $files[self::*:script]
+};
+
 (: Finden der korrekten behavior
  : $test: zu bewertende mets:behavior
  : $seqStruct: sequence von mets:div/@ID, spezifischste zuletzt
