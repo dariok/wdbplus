@@ -258,28 +258,9 @@ declare function wdb:authors($node as node(), $model as map(*)) {
 		return concat($t, $auth)
 };
 
-declare function wdb:getCSS($node as node(), $model as map(*)) {
-	let $ed := $model("ed")
-	let $f := if ($model("type") = "transcript")
-			then "transcr.css"
-			else "intro.css"
-	
-	let $path := wdb:getEdPath($model("fileLoc")) || "/scripts/project.css"
-	
-	return (<link rel="stylesheet" type="text/css" href="resources/css/{$f}" />,
-		<link rel="stylesheet" type="text/css" href="{$path}" />
-	)
-};
-
 declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
 	let $ee := substring-before(substring-after($id, 'edoc_'), '_')
 	return <meta name="edition" content="{$ee}" />
-};
-
-(: neu für das Laden projektspezifischer JS; 2016-11-02 DK :)
-declare function wdb:getJS($node as node(), $model as map(*)) {
-	let $path := wdb:getEdPath($model("fileLoc")) || "/scripts/project.js"
-	return <script src="{$path}" type="text/javascript" />
 };
 
 (: Anmeldeinformationen oder Login anzeigen; 2017-05-0 DK :)
