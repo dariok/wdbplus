@@ -28,15 +28,23 @@ declare variable $wdb:edocBaseDB := $config:app-root;
 (: the config file :)
 declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
 
-(: get the base URI either from the data of the last call or from the configuration :)
+(:~
+ : get the base URI either from the data of the last call or from the configuration
+ :)
 declare variable $wdb:edocBaseURL :=
 	if ( $wdb:configFile//main:server )
 	then normalize-space($wdb:configFile//main:server)
 	else
 		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
 		let $url := substring-after($wdb:edocBaseDB, 'db/')
-		return $wdb:server || substring-before($dir, $url) || $url
+		let $local := xstring:substring-after($dir, $url)
+		let $path := if (string-length($local) > 0)
+		    then xstring:substring-before($dir, $local) (: there is a local part, e.g. 'admin' :)
+		    else $dir (: no local part, e.g. for view.html in app root :)
+
+		return $wdb:server || $path
 ;
+
 
 (: the server role :)
 declare variable $wdb:role :=
@@ -335,7 +343,7 @@ declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $targ
 	: @returns the path (relative) to the app root
 	:)
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
-		let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
+	let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
 	
 	let $pa := for $i in 1 to count($tok)
 		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
