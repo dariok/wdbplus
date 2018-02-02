@@ -1,6 +1,6 @@
 <!-- Stand: 17.03.2012 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0">
-    <xsl:import href="http://diglib.hab.de/rules/styles/param.xsl"/>
+<!--    <xsl:import href="http://diglib.hab.de/rules/styles/param.xsl"/>-->
     <xsl:output method="html" encoding="UTF-8" indent="yes" doctype-public="-//W3C//DTD HTML 4.0 Transitional//EN"/>
     <xsl:strip-space elements="*"/>
     <xsl:param name="footerXML"/>
