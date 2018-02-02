@@ -23,7 +23,8 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 			then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
 		else if ($job != '') then
 			let $edition := wdb:getEdPath($file)
-			let $metaFile := doc($wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml')
+			let $metaPath := $wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml'
+			let $metaFile := doc($metaPath)
 			let $relativePath := substring-after($file, $edition||'/')
 			let $subColl := xstring:substring-before-last($file, '/')
 			let $resource := xstring:substring-after-last($file, '/')
@@ -86,7 +87,7 @@ declare function wdbPL:head ($node as node(), $model as map(*)) {
 };
 
 declare function local:getFiles($edoc as xs:string) {
-	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:teiHeader
+	let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:TEI
 	return 
 		<div id="content">
 			<h1>Insgesamt {count($ed)} EE</h1>
@@ -108,9 +109,9 @@ declare function local:getFiles($edoc as xs:string) {
 							let $docUri := base-uri($doc)
 							return
 								<tr>
-									<td>{$doc/tei:TEI/@n}</td>
+									<td>{$doc/@n}</td>
 									<td>{$docUri}</td>
-									<td>{normalize-space($doc//tei:title[1])}</td>
+									<td><a href="../view.html?id={$doc/@xml:id}">{string-join($doc//tei:titleStmt/*, ' - ')}</a></td>
 									<td><a href="javascript:show('{$edoc}', '{$docUri}')">anzeigen</a></td>
 								</tr>
 					}
@@ -123,7 +124,8 @@ declare function local:getFileStat($ed, $file) {
 	let $doc := doc($file)
 	let $subColl := xstring:substring-before-last($file, '/')
 	let $resource := xstring:substring-after-last($file, '/')
-	let $metaFile := doc($wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml')
+	let $metaPath := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
+	let $metaFile := doc($metaPath)
 	let $relativePath := substring-after($file, $ed||'/')
 	let $entry := $metaFile//meta:file[@path = $relativePath]
 	let $uuid := util:uuid($doc)
@@ -148,6 +150,14 @@ declare function local:getFileStat($ed, $file) {
 						<tr>
 							<td>Timestamp</td>
 							<td>{$date}</td>
+						</tr>
+						<tr>
+							<td>Metadaten-Datei</td>
+							<td>{$metaPath}</td>
+						</tr>
+						<tr>
+							<td>relativer Pfad zur Datei</td>
+							<td>{$relativePath}</td>
 						</tr>
 						<tr>
 							<td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
