@@ -1,47 +1,7 @@
-/* Karlstadt: common */
-/* erstellt 2016-05-23 */
-/* DK - Dario Kampkaspar <kampkaspar@hab.de> */
-
-@font-face {
-	font-family:'mufi'; 
-	src: url('Junicode.woff') format('woff');
-}
-
-/** --- Body --- **/
-body {
-	margin-left: 2.5em;
-	margin-right: 2.5em;
-	margin-top: 0;
-	margin-bottom: 1em;
-	font-family: mufi;
-	font-size: 1rem;
-	line-height: 1.4rem;
-	min-width: 30rem;
-	/*max-width: 80rem; width: 80%; /* (Maximale) Breite nur bei #content sinnvoll; 2016-06-28 DK */
-}
-
-/* auf Druckern darf die Schrift durchaus etwas kleiner werden; Ränder können angepaßt werden; 2016-05-24 DK */
-@media print {
-	body {
-		font-size: 0.75rem;
-		margin-left: 25mm;
-		margin-right: 40mm;
-	}
-}
-
-/* Inhalt */
-#container {
-	width: 50%;
-}
-#content {
-	text-align: justify;
-	/*overflow: auto;*/
-	/* neu 2016-06-28 DK */
-	/* Breite jetzt 100%, da container auf 50% reduziert */
-	width: calc(100% - 1em);
-	min-width: 20rem;
-	max-width: 60rem;
-}
+/* wdbPlus: basic element layout
+ * created: 2018-02-06
+ * creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://github.com/dariok/wdbplus */
 
 /** --- Links --- **/
 a{
@@ -191,7 +151,7 @@ ul#nav li ul {
 /* * ENDE Navigation * */
 
 /* Spezialbereich rechts */
-#rightSide {
+/* #rightSide {
 	/* flex wegen toggle-div */
 	display: flex;
 	/*width: 46%;*/
@@ -201,7 +161,7 @@ ul#nav li ul {
 	position: fixed;
 	right: 2.5em;
 	background-color:white;
-}
+}*/
 
 /* eingeblendete Informationen, Fußnoten etc. */
 .info {

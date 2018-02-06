@@ -1,0 +1,57 @@
+/* wdbPlus: main CSS
+ * created: 2018-02-06
+ * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://www.github.com/dariok/wdbplus */
+ 
+@font-face {
+	font-family:'mufi'; 
+	src: url('Junicode.woff') format('woff');
+}
+
+/* Main layout: wide header, rest below, each scrolling on its own */
+
+body {
+	margin-left: 2.5em;
+	margin-right: 2.5em;
+	margin-top: 0;
+	margin-bottom: 0;
+	
+	min-width: 30rem;
+	max-height: 100vh;
+	
+	font-family: mufi;
+	font-size: 1rem;
+	line-height: 1.4rem;
+	
+	display: flex;
+	flex-direction: column;
+}
+
+header {
+	flex: 0 0 auto;
+	background-color: white;
+}
+
+main {
+	display: flex;
+	flex: 1 1 auto;
+}
+
+#wdbRight {
+	background-color: white;
+	overflow-y: auto;
+	flex: 1 1 auto;
+}
+
+#wdbShowHide {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	margin-top: 0;
+	padding-top: 45vh;
+}
+
+#wdbContent {
+	overflow-y: auto;
+	flex: 1 1 auto;
+	display: flex;
+}
