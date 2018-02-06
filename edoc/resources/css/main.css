@@ -55,3 +55,8 @@ main {
 	flex: 1 1 auto;
 	display: flex;
 }
+
+span.dispOpts {
+	float: right;
+	font-size: 0.8em;
+}

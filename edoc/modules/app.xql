@@ -14,6 +14,7 @@ declare namespace xlink	= "http://www.w3.org/1999/xlink";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 declare namespace main	= "https://github.com/dariok/wdbplus";
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 
 (: VARIABLES :)
 (: get the name of the server, possibly including the port :)	
@@ -59,8 +60,6 @@ declare variable $wdb:peer :=
 		then $wdb:configFile//main:role/main:peer
 		else ""
 ;
-
-(:  :declare option exist:serialize "expand-xincludes=no";:)
 
 declare %templates:wrap
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as map(*) {:)
@@ -129,6 +128,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<meta name="id" content="{$model('id')}"/>
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
+		<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
 		<link rel="stylesheet" type="text/css" href="resources/css/common.css" /> 
 		{wdb:getProjectFiles($node, $model, 'css')}
 		<script src="resources/scripts/jquery.min.js" type="text/javascript"></script>
@@ -159,6 +159,62 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     return if ($type = 'css')
         then $files[self::*:link]
         else $files[self::*:script]
+};
+
+(:~
+ : return the header - if there is a project specific function, use it
+ :)
+declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
+	let $location := $model('ed')||'/project.xqm'
+    let $projectFileAvailable := util:binary-doc-available($location)
+    
+    let $functionAvailable := if ($projectFileAvailable = true())
+    	then system:function-available(xs:QName("wdbPF:getHeader"), 1)
+    	else false()
+    
+    return
+    	<header>{
+    		if ($functionAvailable = true())
+    			then util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
+    			else
+    				<h1>{$model("title")}</h1>
+    		}
+    		<span class="dispOpts">[<a id="liSB" href="javascript:toggleSidebar();">Navigation
+					einblenden</a>]</span>
+    		<hr/>
+    	</header>
+};
+
+(:~
+ : return the body
+ :)
+declare function wdb:getContent($node as node(), $model as map(*)) {
+	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
+	let $file := $model("fileLoc")
+	let $xslt := $model("xslt")
+	let $params :=
+		<parameters>
+			<param name="server" value="eXist"/>
+			<param name="exist:stop-on-warn" value="yes" />
+			<param name="exist:stop-on-error" value="yes" />
+		</parameters>
+	(: ambiguous rule match soll nicht zum Abbruch führen :)
+	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
+	
+	let $re :=
+		try { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
+		catch * { console:log(
+			<report>
+				<file>{$file}</file>
+				<xslt>{$xslt}</xslt>
+				{$params}
+				{$attr}
+				<error>{$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number}</error>
+				<additional>{$err:additional}</additional>
+			</report>)
+		}
+		return 
+			<div id="wdbContent">{$re}</div>
 };
 
 (: Finden der korrekten behavior
@@ -203,34 +259,6 @@ declare function wdb:EEpart($node as node(), $model as map(*)) as xs:string {
 			default
 				return string($model("type"))}
 	</h2>
-};
-
-declare function wdb:EEbody($node as node(), $model as map(*)) {
-	(: von populateModel wird jetzt der komplette Pfad übergeben; 2017-05-22 DK :)
-	let $file := $model("fileLoc")
-	let $xslt := $model("xslt")
-	let $params :=
-		<parameters>
-			<param name="server" value="eXist"/>
-			<param name="exist:stop-on-warn" value="yes" />
-			<param name="exist:stop-on-error" value="yes" />
-		</parameters>
-	(: ambiguous rule match soll nicht zum Abbruch führen :)
-	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
-	
-	let $re :=
-		try { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
-		catch * { console:log(
-			<report>
-				<file>{$file}</file>
-				<xslt>{$xslt}</xslt>
-				{$params}
-				{$attr}
-				<error>{$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number}</error>
-				<additional>{$err:additional}</additional>
-			</report>)
-		}
-		return $re
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {

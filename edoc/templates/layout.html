@@ -1,14 +1,16 @@
 <html data-template="wdb:getEE">
 	<head data-template="wdb:getHead"/>
-	<body><!-- TODO navBar ausblendbar machen --><!-- TODO navBar um Ansichtsoptionen und Link zu weiteren Ausgabevarianten erweitern -->
-		<div id="sideBar"></div>
-		<div id="rightSide">
-			<div id="rDis">
+	<body>
+		<header data-template="wdb:getHeader"/>
+		<main>
+			<div id="wdbContent" data-template="wdb:getContent" />
+			<div id="wdbShowHide">
 				<a href="javascript:toggleRightside();event.preventDefault()">»</a>
 			</div>
-			<div id="ann"></div>
-			<div id="fac"></div>
-		</div>
-		<div id="container"></div>
+			<aside id="wdbRight">
+				<div id="ann" />
+				<div id="fac" />
+			</aside>
+		</main>
 	</body>
 </html>
