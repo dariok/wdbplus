@@ -179,7 +179,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
     			else
     				<h1>{$model("title")}</h1>
     		}
-    		<span class="dispOpts">[<a id="liSB" href="javascript:toggleSidebar();">Navigation
+    		<span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation
 					einblenden</a>]</span>
     		<hr/>
     	</header>

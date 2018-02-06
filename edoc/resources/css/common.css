@@ -100,52 +100,6 @@ h3 {
 	color: #900129;
 }
 
-/** --- feste Navigation am Kopf --- **/
-#navBar {
-	position: fixed;
-	background-color: white;
-	top: 0;
-	z-index: 99;
-	/* 5em: Breite der Ränder; neu 2016-07-01 DK */
-	width: 90%;
-	width: calc(100% - 5em);
-}
-#navBar hr {
-	margin-top: 0;
-}
-
-/** Projektnavigation links **/
-#sideBar {
-/*	max-width: 30%;*/
-	max-height: calc(100% - 150px);
-	padding: 4px;
-	overflow: auto;
-	z-index: 99;
-	position:fixed;
-	background-color: white;
-	border: 1px solid;
-	display: none;
-}
-ul#nav {
-	margin-bottom: 0;
-	margin-top: 8px;
-	padding-left: calc(1em + 4px);
-}
-ul#nav li {
-	text-indent: 0;
-	margin-left: 0;
-	padding-left: 0;
-	list-style: circle;
-}
-ul#nav > li {
-	list-style: disc;
-}
-ul#nav li ul {
-	padding-left: calc(1em + 4px);
-}
-
-/* * ENDE Navigation * */
-
 /* Spezialbereich rechts */
 /* #rightSide {
 	/* flex wegen toggle-div */

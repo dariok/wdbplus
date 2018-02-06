@@ -239,21 +239,21 @@ function sprung (event) {
 }
 
 /** fixed div at top of page: body needs offset for correct scrolling */
-$(document).ready(function() {
+/* $(document).ready(function() {
 	$('body').css('margin-top', $('#navBar').innerHeight());
-});
+});*/
 //$(window).on('resize', function() {
 //	$('#navBar').innerWidth($('body').innerWidth());
 //});
 
-/** Navigation sidebar **/
-function toggleSidebar() {
-	if ($('#sideBar').css('display') == 'none')
-		$('#liSB').text('Navigation ausblenden');
-	else $('#liSB').text('Navigation einblenden');
+/** Navigation **/
+function toggleNavigation() {
+	if ($('nav').css('display') == 'none')
+		$('#showNavLink').text('Navigation ausblenden');
+	else $('#showNavLink').text('Navigation einblenden');
 	
-	if($('#sideBar').text() === '') {
-		$('#sideBar').text('lädt...');
+	if($('nav').text() === '') {
+		$('nav').text('lädt...');
 		var id = $('meta[name="id"]').attr('content');
 		var res = $.get('modules/mets.xql?id=' + id, '',
 				function(data) { $('#sideBar').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },

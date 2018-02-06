@@ -35,6 +35,17 @@ header {
 main {
 	display: flex;
 	flex: 1 1 auto;
+	/*height: 90vh; /\* there seems to be a problem in FireDrecks that makes main higher than its parent *\/*/
+}
+
+nav {
+	/*position: fixed;
+	background-color: white;
+	top: 0;
+	z-index: 99;
+	/\* 5em: Breite der Ränder; neu 2016-07-01 DK *\/
+	width: 90%;
+	width: calc(100% - 5em);*/
 }
 
 #wdbRight {
