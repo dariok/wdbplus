@@ -47,6 +47,11 @@ nav {
 	position: fixed;
 	background-color: white;
 	z-index: 99;
+	border: 0.1px solid;
+	padding: .5em;
+}
+nav ul {
+	margin: 0;
 }
 
 #wdbRight {

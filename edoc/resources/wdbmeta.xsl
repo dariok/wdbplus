@@ -19,14 +19,14 @@
 			<h2>Inhalt</h2>
 			<xsl:apply-templates select="wdbmeta:projectMD/wdbmeta:struct" />
 		</div>
-		<div style="background-color:#EEE;margin:1em 0.5em 1em 0.5em;padding:0.2em;font-size:0.7em">
+		<!--<div style="background-color:#EEE;margin:1em 0.5em 1em 0.5em;padding:0.2em;font-size:0.7em">
 			<div style="margin:0.5em 0.5em 0.1em 0.5em;padding:0;">XML: 
 				<a style="margin:0; padding:0;" href="{$footerXML}" target="_blank"><xsl:value-of select="$footerXML" /></a>
 			</div>
 			<div style="margin:0.2em 0.5em 0.5em 0.5em;padding:0;">XSLT: 
 				<a style="margin:0; padding:0;" href="{$footerXSL}" target="_blank"><xsl:value-of select="$footerXSL" /></a>
 			</div>
-		</div>
+		</div>-->
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:struct[not(parent::wdbmeta:struct)]">

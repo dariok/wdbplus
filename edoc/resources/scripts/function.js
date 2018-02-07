@@ -256,7 +256,7 @@ function toggleNavigation() {
 		$('nav').text('lädt...');
 		var id = $('meta[name="id"]').attr('content');
 		var res = $.get('modules/mets.xql?id=' + id, '',
-				function(data) { $('#sideBar').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },
+				function(data) { $('nav').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },
 				'html');
 	}
 	$('nav').slideToggle();
