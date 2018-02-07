@@ -259,7 +259,7 @@ function toggleNavigation() {
 				function(data) { $('#sideBar').html($('div > ul', data).attr('id', 'nav')).prepend($('<h2>Navigation</h2>')); },
 				'html');
 	}
-	$('#sideBar').slideToggle();
+	$('nav').slideToggle();
 }
 
 /*function pView(target) {

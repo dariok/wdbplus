@@ -44,13 +44,9 @@ main {
 }
 
 nav {
-	/*position: fixed;
+	position: fixed;
 	background-color: white;
-	top: 0;
 	z-index: 99;
-	/\* 5em: Breite der Ränder; neu 2016-07-01 DK *\/
-	width: 90%;
-	width: calc(100% - 5em);*/
 }
 
 #wdbRight {

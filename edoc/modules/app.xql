@@ -183,6 +183,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
     		<span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation
 					einblenden</a>]</span>
     		<hr/>
+    		<nav style="display:none;" />
     	</header>
 };
 
