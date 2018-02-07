@@ -18,10 +18,11 @@ declare namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 
 (: VARIABLES :)
 (: get the name of the server, possibly including the port :)	
-declare variable $wdb:server := if ( request:get-server-port() != 80 )
+declare variable $wdb:server := request:get-header("Origin");
+(:if ( request:get-server-port() != 80 )
 	then request:get-scheme() || '://' || request:get-server-name() || ':' || request:get-server-port()
 	else request:get-scheme() || '://' || request:get-server-name()
-;
+;:)
 
 (: get the base of this instance within the db (i.e. relative to /db) :)
 declare variable $wdb:edocBaseDB := $config:app-root;
