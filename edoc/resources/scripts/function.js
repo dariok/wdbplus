@@ -4,9 +4,8 @@ function marginPos (){
     
 	var mRefs = $("a.mref");
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
-		//$('#content').css('width', '79.5%');					 // changed values due to changed layout; 2016-07-25 DK
-		$('#content').css('width', 'calc(80% - 0.15em)');
-		$('#content').css('padding-left', '20%');
+		$('#content').css('width', 'calc(80% - 1em)');
+		$('#content').css('padding-left', '1em');
 		$('#marginalia_container').height($('#content').height())
 		navbarHeight = $('#navBar').height();
 		mRefs.each(positionMarginalia);
@@ -17,14 +16,14 @@ function marginPos (){
 };
 function positionMarginalia (index, element){
 	var mRefs = $("a.mref");
-	var thisRefPos = $(element)[0].offsetTop;
+	var thisRefPos = $(element).offset().top;
 	var thisRefID = $(element).attr('id');
 	var targetMargID = "#text_" + thisRefID;
 	
 	if (index > 0) {											  // the first element can in any case stay where it is
 		var prevRefID = mRefs.eq(index-1).attr('id');
 		var prevMargID = "#text_" + prevRefID;
-		var prevMargTop = $(prevMargID)[0].offsetTop;
+		var prevMargTop = $(prevMargID).offset().top
 		var prevMargHeight = $(prevMargID)[0].offsetHeight;
 	}
 	else {
@@ -38,7 +37,9 @@ function positionMarginalia (index, element){
 		var targetTop = prevMargTop + prevMargHeight + 1;
 	}
 	
-	$(targetMargID)[0].style.top = targetTop - navbarHeight + 'px';
+	offset = { top: targetTop - $('header').height(), left: 0 }
+	//console.log(targetMargID, ': ' + offset.top);
+	$(targetMargID).offset(offset);
 };
 
 var loaded = false;
