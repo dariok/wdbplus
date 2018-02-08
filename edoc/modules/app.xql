@@ -257,11 +257,6 @@ declare function wdb:footer($node as node(), $model as map(*)) {
 	</div>
 };
 
-declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
-	let $ee := substring-before(substring-after($id, 'edoc_'), '_')
-	return <meta name="edition" content="{$ee}" />
-};
-
 (: Anmeldeinformationen oder Login anzeigen; 2017-05-0 DK :)
 declare function wdb:getAuth($node as node(), $model as map(*)) {
     let $current := xmldb:get-current-user()
