@@ -24,10 +24,6 @@ declare %templates:default("q", "") %templates:default("q2", "")
 	return map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition, "edPath" := $edPath, "title" := $title }
 };
 
-declare function wdbpq:pageTitle ($node as node(), $model as map(*)) {
-	<title>{$wdb:configFile//*:short}</title>
-};
-
 (: die angegebene Datei laden. Die Eingangsfunktion muß gegeben sein; 2016-11-03 DK :)
 (: TODO geht das auch anders? :)
 (: Wir nehmen grundsätzlich an, daß die Skripte im Unterverzeichnis scripts innerhalb des Projektordners liegen
