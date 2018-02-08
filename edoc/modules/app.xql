@@ -257,31 +257,6 @@ declare function wdb:footer($node as node(), $model as map(*)) {
 	</div>
 };
 
-(: Anmeldeinformationen oder Login anzeigen; 2017-05-0 DK :)
-declare function wdb:getAuth($node as node(), $model as map(*)) {
-    let $current := xmldb:get-current-user()
-    let $user := request:get-parameter('user', '')
-    return
-        if ($user != '') then
-            <div>{$user}</div>
-        else
-        if ($current = 'guest') then
-            <div>
-                <form enctype="multipart/form-data" method="post" action="auth.xql">
-    				<input type="text" name="user"/>
-    				<input type="password" name="password" />
-    				<input type="submit" value="login"/>
-    				<input type="hidden" name="query" value="{request:get-parameter('query', '')}" />
-    				<input type="hidden" name="edition" value="{request:get-parameter('edition', '')}" />
-    			</form>
-    			<p>{$current}</p>
-            </div>
-        else
-            <div>
-                User: <a>{$current}</a>
-            </div>
-};
-
 (: Den Instanznamen ausgeben :)
 declare function wdb:getInstanceName($node as node(), $model as map(*)) {
 	<h1>{normalize-space(doc('../config.xml')//main:meta/main:name)}</h1>
