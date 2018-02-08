@@ -8,6 +8,7 @@ module namespace wdbpq = "https://github.com/dariok/wdbplus/pquery";
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
+import module namespace wdba		= "https://github.com/dariok/wdbplus/auth" at "auth.xqm";
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -52,7 +53,7 @@ declare function wdbpq:getTask($node as node(), $model as map(*)) {
 declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
     <header>
     	<h1>{$model("title")}</h1>
-    	<h2 data-template="wdba:getAuth"/>
+    	{wdba:getAuth($node, $model)}
     	<span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation
 				einblenden</a>]</span>
     	<hr/>
