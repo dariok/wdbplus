@@ -9,10 +9,18 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
+declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
+
 declare %templates:default("q", "") %templates:default("q2", "")
-	function wdbpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string, $q2 as xs:string) as map(*) {
+	function wdbpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string,
+		$q2 as xs:string) as map(*) {
 	
-	map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition, "edPath" := wdb:getEdPath($edition, true()) }
+	let $edPath := wdb:getEdPath($edition, true())
+	
+	let $metaFile := doc($edPath||'/wdbmeta.xml')
+	let $title := $metaFile//meta:title/text()
+	
+	return map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition, "edPath" := $edPath, "title" := $title }
 };
 
 declare function wdbpq:pageTitle ($node as node(), $model as map(*)) {
@@ -36,4 +44,18 @@ declare function wdbpq:getTask($node as node(), $model as map(*)) {
 	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
 	
 	return util:eval("wdbq:getTask()", xs:boolean('false'), (xs:QName('map'), $model))
+};
+
+(:~
+ : return the header
+ :)
+declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
+    <header>
+    	<h1>{$model("title")}</h1>
+    	<h2 data-template="wdba:getAuth"/>
+    	<span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation
+				einblenden</a>]</span>
+    	<hr/>
+    	<nav style="display:none;" />
+    </header>
 };

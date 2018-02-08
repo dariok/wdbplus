@@ -241,11 +241,6 @@ declare function local:val($test, $seqStruct, $type) {
     return $vS + $vID
 };
 
-declare function wdb:getEdTitle($node as node(), $model as map(*)) as element() {
-	let $name := doc($model("metsLoc"))//mods:mods/mods:titleInfo/mods:title
-	return <h1>{string($name)}</h1>
-};
-
 declare function wdb:EEtitle($node as node(), $model as map(*)) as xs:string {
 	let $title := wdbt:transform($model("title"))
 	return string-join($title, '|')
