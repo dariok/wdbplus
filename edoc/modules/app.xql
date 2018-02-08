@@ -241,18 +241,6 @@ declare function local:val($test, $seqStruct, $type) {
     return $vS + $vID
 };
 
-declare function wdb:EEpart($node as node(), $model as map(*)) as xs:string {
-	<h2>{
-		switch ($model("type"))
-			case "introduction"
-				return string("Einleitung")
-			case "transcript"
-				return string("Text")
-			default
-				return string($model("type"))}
-	</h2>
-};
-
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
 	let $ti := $model("title")
 	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
