@@ -40,7 +40,6 @@ main {
 	display: flex;
 	flex: 1 1 auto;
 	overflow-y: scroll;
-	/*height: 90vh; /\* there seems to be a problem in FireDrecks that makes main higher than its parent *\/*/
 }
 
 nav {
@@ -71,6 +70,7 @@ nav ul {
 	overflow-y: auto;
 	flex: 0 1 auto;
 	display: flex;
+	padding-right: .5em;
 }
 
 span.dispOpts {
