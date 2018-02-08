@@ -241,11 +241,6 @@ declare function local:val($test, $seqStruct, $type) {
     return $vS + $vID
 };
 
-declare function wdb:EEtitle($node as node(), $model as map(*)) as xs:string {
-	let $title := wdbt:transform($model("title"))
-	return string-join($title, '|')
-};
-
 declare function wdb:EEpart($node as node(), $model as map(*)) as xs:string {
 	<h2>{
 		switch ($model("type"))
