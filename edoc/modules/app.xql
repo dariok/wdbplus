@@ -257,15 +257,6 @@ declare function wdb:footer($node as node(), $model as map(*)) {
 	</div>
 };
 
-declare function wdb:authors($node as node(), $model as map(*)) {
-	let $max := count($model("authors"))
-	for $auth at $i in $model("authors")
-		let $t := if ($i > 1 and $i < max)
-			then ", "
-			else if ($i > 1) then " und " else ""
-		return concat($t, $auth)
-};
-
 declare function wdb:getEENr($node as node(), $model as map(*), $id as xs:string) as node() {
 	let $ee := substring-before(substring-after($id, 'edoc_'), '_')
 	return <meta name="edition" content="{$ee}" />
