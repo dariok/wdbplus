@@ -287,3 +287,7 @@ span[lang=he] {
 #fac {
 	width: calc(100% - 0.75em);
 }
+
+#auth form {
+	display: inline-block;
+}
