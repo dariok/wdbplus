@@ -132,8 +132,8 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" /> 
 		{wdb:getProjectFiles($node, $model, 'css')}
-		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" type="text/javascript"></script>
-		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" type="text/javascript"></script>
+		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
 		{wdb:getProjectFiles($node, $model, 'js')}
 	</head>
 };
@@ -154,7 +154,7 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     	    (: no specific function available, so we assume stanards :)
     	    (
                 <link rel="stylesheet" type="text/css" href="{$model('ed')}/scripts/project.css" />,
-                <script type="text/javascript" src="{$model('ed')}/scripts/project.js" />
+                <script src="{$model('ed')}/scripts/project.js" />
             )
             
     return if ($type = 'css')
