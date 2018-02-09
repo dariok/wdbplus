@@ -63,29 +63,7 @@ span.footnoteText{
 }
 
 /** --- Überschriften --- **/
-/* Nr., Titel der EE */
-h1 {
-	font-size: 1.1em;
-	text-align: center;
-	letter-spacing: 0.09em;
-	color: #900129;
-	margin-bottom: 0.5em;
-}
-/* Titel des Teils (Einleitung, Text, Beilage) */
-h2 {
-	letter-spacing: 0.3em;
-	font-size: 1em;
-	padding: 0;
-	margin: 0;
-	font-weight: normal;
-	display: inline-block;
-}
-h2 + hr {
-	margin: 0;
-	margin-bottom: 0.5em;
-	padding: 0;
-	height: 1px;
-}
+
 p.editors {
 	text-align: center;
 	margin-bottom: 2em;

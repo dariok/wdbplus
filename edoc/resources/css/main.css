@@ -37,12 +37,13 @@ header {
 }
 
 header h1 {
-	font-size: 1.1em;
+	font-size: 1em;
 	text-align: center;
 	letter-spacing: 0.09em;
 	color: #900129;
 	margin-bottom: 0.5em;
 	margin-top: 0;
+	min-width: 30em;
 }
 /* Titel des Teils (Einleitung, Text, Beilage) */
 header h2 {
