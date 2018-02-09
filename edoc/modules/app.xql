@@ -129,11 +129,11 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<meta name="id" content="{$model('id')}"/>
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
-		<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
-		<link rel="stylesheet" type="text/css" href="resources/css/common.css" /> 
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" /> 
 		{wdb:getProjectFiles($node, $model, 'css')}
-		<script src="resources/scripts/jquery.min.js" type="text/javascript"></script>
-		<script src="resources/scripts/function.js" type="text/javascript"></script>
+		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" type="text/javascript"></script>
+		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" type="text/javascript"></script>
 		{wdb:getProjectFiles($node, $model, 'js')}
 	</head>
 };
