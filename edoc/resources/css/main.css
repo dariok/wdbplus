@@ -39,7 +39,7 @@ header {
 main {
 	display: flex;
 	flex: 1 1 auto;
-	overflow-y: scroll;
+	overflow-y: hidden;
 }
 
 nav {
