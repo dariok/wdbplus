@@ -62,12 +62,21 @@ main {
 
 /* Navigation */
 nav {
-	position: fixed;
 	background-color: white;
-	z-index: 99;
 	border: 0.1px solid;
 	padding: .5em;
+	overflow-y: auto;
 }
+header nav {
+	position: fixed;
+	z-index: 99;
+	max-height: 75%;
+}
+div nav {
+	min-width: 30em;
+	max-height: 100%;
+}
+
 nav ul {
 	margin: 0;
 }
@@ -79,7 +88,6 @@ nav h1 {
 	color: #900129;
 	margin-bottom: 0.5em;
 	margin-top: 0;
-	min-width: 30em;
 }
 /* Titel des Teils (Einleitung, Text, Beilage) */
 nav h2 {
@@ -110,6 +118,7 @@ h2 + hr {
 	padding-right: 0.5em;
 	margin-top: 0;
 	padding-top: 45vh;
+	width: 0.5em;
 }
 
 #wdbContent {

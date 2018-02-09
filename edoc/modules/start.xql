@@ -24,36 +24,45 @@ let $model := if (doc-available($path || '/wdbmeta.xml'))
 	then
 		let $id := $metaFile//wdbmeta:projectID/text()
 		let $title := normalize-space($metaFile//wdbmeta:title[1])
-		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := $path }
+		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := $path,
+			"pathToEd" := $path }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
 		let $title := normalize-space(($metaFile//mods:title)[1])
-		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := $path }
+		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := $path,
+			"pathToEd" := $path }
 
+let $t := console:log($model("pathToEd"))
 let $bogus := <void></void>
-
+(: <link rel="stylesheet" type="text/css" href="$shared/css/start.css" /> :)
 return 
 <html>
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>{normalize-space($model("title"))}</title>
-		<link rel="stylesheet" type="text/css" href="$shared/css/start.css" />
-		<script src="$shared/scripts/jquery.min.js" type="text/javascript" />
-		<script src="$shared/scripts/function.js" type="text/javascript" />
+		<meta name="path" content="{$model("pathToEd")}" />
+		<meta name="template" content="start.xql" />
+		{wdb:getHead($bogus, $model)}
 	</head>
 	<body>
-		<div id="sideBar" />
-		<div id="rightSide">
-			{wdbm:getRight($bogus, $model)}
-		</div>
-		<div id="container">
-			<div id="navBar">
-				<h1>{$model("title")}</h1>
-				<hr />
+		<header>
+			<h1>{$model("title")}</h1>
+			<hr/>
+		</header>
+		<main>
+			<div style="width:50%;">
+				<nav>
+					<h1>Inhalt</h1>
+					{wdbm:getLeft($bogus, $model)}
+				</nav>
 			</div>
-			<div id="content">
-				{wdbm:getLeft($bogus, $model)}
+			<div id="wdbShowHide">
+				<a href="javascript:toggleRightside();">»</a>
 			</div>
-		</div>
+			<aside id="wdbRight">
+				<div id="ann" />
+				<div id="fac">
+					{wdbm:getRight($bogus, $model)}
+				</div>
+			</aside>
+		</main>
 	</body>
 </html>
