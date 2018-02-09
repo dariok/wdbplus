@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:wdbmeta="https://github.com/dariok/wdbplus/wdbmeta"
-	exclude-result-prefixes="xs"
+	exclude-result-prefixes="#all"
 	version="2.0">
 	
 	<xsl:output omit-xml-declaration="yes" indent="yes"/>
@@ -14,29 +14,17 @@
 	<xsl:param name="access" />
 	
 	<xsl:template match="/">
-		<div class="toc_content">
-			<!-- TODO Übersetzungen ermöglichen -->
-			<h2>Inhalt</h2>
+		<div>
 			<xsl:apply-templates select="wdbmeta:projectMD/wdbmeta:struct" />
 		</div>
-		<!--<div style="background-color:#EEE;margin:1em 0.5em 1em 0.5em;padding:0.2em;font-size:0.7em">
-			<div style="margin:0.5em 0.5em 0.1em 0.5em;padding:0;">XML: 
-				<a style="margin:0; padding:0;" href="{$footerXML}" target="_blank"><xsl:value-of select="$footerXML" /></a>
-			</div>
-			<div style="margin:0.2em 0.5em 0.5em 0.5em;padding:0;">XSLT: 
-				<a style="margin:0; padding:0;" href="{$footerXSL}" target="_blank"><xsl:value-of select="$footerXSL" /></a>
-			</div>
-		</div>-->
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:struct[not(parent::wdbmeta:struct)]">
-		<div  style="border: 1px solid gray;padding-right:5px;">
-			<ul>
-				<xsl:apply-templates>
-					<xsl:sort select="@order" />
-				</xsl:apply-templates>
-			</ul>
-		</div>
+		<ul>
+			<xsl:apply-templates>
+				<xsl:sort select="@order" />
+			</xsl:apply-templates>
+		</ul>
 	</xsl:template>
 	
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct]">
