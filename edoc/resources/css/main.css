@@ -42,7 +42,7 @@ header h1 {
 	letter-spacing: 0.09em;
 	color: #900129;
 	margin-bottom: 0.5em;
-	margin-top: 0;
+	margin-top: 0.5em;
 }
 /* Titel des Teils (Einleitung, Text, Beilage) */
 header h2 {
