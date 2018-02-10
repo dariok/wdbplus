@@ -31,7 +31,7 @@ function positionMarginalia (index, element){
 	
 	// offset is relative to the document, so the header has to be substracted if top is set via
 	// CSS - which is necessary because setting the offset will change position and left
-	$(targetMargID).css('left', '2.5em').css('top', targetTop);
+	$(targetMargID).css('top', targetTop);
 };
 function getPosition(el) {
   var xPos = 0;
