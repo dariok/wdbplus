@@ -6,8 +6,6 @@ function marginPos (){
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
 		$('#content').css('width', 'calc(80% - 1em)');
 		$('#content').css('padding-left', '1em');
-		$('#marginalia_container').height($('#content').height())
-		navbarHeight = $('#navBar').height();
 		mRefs.each(positionMarginalia);
 		$('#marginalia_container').show();
 	}
@@ -15,32 +13,51 @@ function marginPos (){
 	window.location.hash = tar;
 };
 function positionMarginalia (index, element){
-	var mRefs = $("a.mref");
-	var thisRefPos = $(element).offset().top;
-	var thisRefID = $(element).attr('id');
-	var targetMargID = "#text_" + thisRefID;
+	thisRefID = $(element).attr('id');
+	thisRefPos = getPosition(document.getElementById(thisRefID)).y;
+	targetMargID = "#text_" + thisRefID;
 	
-	if (index > 0) {											  // the first element can in any case stay where it is
-		var prevRefID = mRefs.eq(index-1).attr('id');
-		var prevMargID = "#text_" + prevRefID;
-		var prevMargTop = $(prevMargID).offset().top
-		var prevMargHeight = $(prevMargID)[0].offsetHeight;
-	}
-	else {
-		prevMargTop = 0;
-		prevMargHeight = 0;
-	}
+	marginalie = $(targetMargID);
+	previous = marginalie.prev();
+	pid = previous.attr('id');
 	
-	if (thisRefPos > (prevMargTop + prevMargHeight))
-		var targetTop = thisRefPos;
-	else {
-		var targetTop = prevMargTop + prevMargHeight + 1;
+	if (previous.length == 0) {
+	    targetTop = thisRefPos - $('header').height();
+	} else {
+	    if (Math.floor(thisRefPos - $('header').height()) == previous.css('top').match(/^\d+/)) {
+	        targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + 1em)';
+	    } else { targetTop = thisRefPos - $('header').height(); }
 	}
 	
-	offset = { top: targetTop - $('header').height(), left: 0 }
-	//console.log(targetMargID, ': ' + offset.top);
-	$(targetMargID).offset(offset);
+	// offset is relative to the document, so the header has to be substracted if top is set via
+	// CSS - which is necessary because setting the offset will change position and left
+	$(targetMargID).css('left', '2.5em').css('top', targetTop);
 };
+function getPosition(el) {
+  var xPos = 0;
+  var yPos = 0;
+ 
+  while (el) {
+    if (el.tagName == "BODY") {
+      // deal with browser quirks with body/window/document and page scroll
+      var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
+      var yScroll = el.scrollTop || document.documentElement.scrollTop;
+ 
+      xPos += (el.offsetLeft - xScroll + el.clientLeft);
+      yPos += (el.offsetTop - yScroll + el.clientTop);
+    } else {
+      // for all other non-BODY elements
+      xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+      yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+    }
+ 
+    el = el.offsetParent;
+  }
+  return {
+    x: xPos,
+    y: yPos
+  };
+}
 
 var loaded = false;
 $(document).ready(function() {
@@ -48,11 +65,11 @@ $(document).ready(function() {
 });
 
 var timer;
-$(window).on('load resize', function() {
+$(window).on('load resize', function(event) {
 	//if (!loaded) return;
 	
 	clearTimeout(timer);
-	timer = setTimeout(marginPos, 250);
+	timer = setTimeout(marginPos, 500);
 });
 
 // Für Hervorhebung einer Abfolge von Elementen
