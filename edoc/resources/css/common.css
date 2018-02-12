@@ -102,10 +102,6 @@ h3 {
 	display: none;
 }
 
-/* Faksimile im Spezialbereich */
-#facsimile {
-	display: none;
-}
 
 /* Work-in-progress oder Versionshinweise etc. */
 #wip {
@@ -261,9 +257,6 @@ span[lang=he] {
 #rDis a {
 	display: table-cell;
 	vertical-align: middle;
-}
-#fac {
-	width: calc(100% - 0.75em);
 }
 
 #auth form {

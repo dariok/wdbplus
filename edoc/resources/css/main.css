@@ -106,13 +106,19 @@ h2 + hr {
 }
 
 /* The parts with content */
-
+/* Right side */
 #wdbRight {
 	background-color: white;
 	overflow-y: auto;
 	flex: 1 1 auto;
+	display: flex;
+	flex-wrap: wrap;
+}
+#fac {
+	flex: 1 1 auto;
 }
 
+/* Show/hide bar */
 #wdbShowHide {
 	padding-left: 0.5em;
 	padding-right: 0.5em;
@@ -121,6 +127,7 @@ h2 + hr {
 	width: 0.5em;
 }
 
+/* Content on the left */
 #wdbContent {
 	overflow-y: auto;
 	flex: 0 1 auto;
@@ -128,6 +135,7 @@ h2 + hr {
 	padding-right: .5em;
 }
 
+/* spans within header */
 span.dispOpts {
 	float: right;
 	font-size: 0.8em;
