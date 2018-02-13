@@ -58,10 +58,7 @@ return
 				<a href="javascript:toggleRightside();">»</a>
 			</div>
 			<aside id="wdbRight">
-				<div id="ann" />
-				<div id="fac">
-					{wdbm:getRight($bogus, $model)}
-				</div>
+				{wdbm:getRight($bogus, $model)}
 			</aside>
 		</main>
 	</body>

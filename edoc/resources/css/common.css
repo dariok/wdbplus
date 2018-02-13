@@ -269,3 +269,11 @@ span[lang=he] {
 	background-color: white;
 	padding-right: 2.5em;
 }
+
+.start {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	height: 100%;
+	overflow-y: auto;
+}

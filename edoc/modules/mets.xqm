@@ -49,7 +49,7 @@ declare function wdbm:getRight($node as node(), $model as map(*)) {
 		else $wdb:edocBaseDB || '/resources/start.xsl'
 	
 	return
-		<div style="display: flex; flex-wrap: wrap;">
+		<div class="start">
 			{transform:transform(doc($xml), doc($xsl), ())}
 			{wdb:getFooter($xml, $xsl)}
 		</div>
