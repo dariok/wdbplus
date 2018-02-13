@@ -42,12 +42,15 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/start.xml'))
+	let $xml := concat($model("ed"), '/start.xml')
 	
 	let $xsl := if (doc-available(concat($model("ed"), '/start.xsl')))
 		then $model("ed") || '/start.xsl'
-		else $wdb:edocBaseDB || '/resources/wdbmeta.xsl'
+		else $wdb:edocBaseDB || '/resources/start.xsl'
 	
 	return
-		transform:transform($xml, $xsl, ())
+		<div style="display: flex; flex-wrap: wrap;">
+			{transform:transform(doc($xml), doc($xsl), ())}
+			{wdb:getFooter($xml, $xsl)}
+		</div>
 };
