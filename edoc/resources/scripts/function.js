@@ -372,10 +372,10 @@ $(document).ready(function(){
 });
 
 function displayImage(href) {
-	$('#fac').html('<iframe id="facsimile"></iframe>');
+	$('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
 	$('#facsimile').attr('src', href);
 	$('#facsimile').css('display', 'block');
-	$('#facsimile').css('width', '100%').css('height', '100%');
+	//$('#facsimile').css('width', '100%').css('height', '100%');
 }
 
 /* toggle rightSide visibility */
@@ -388,5 +388,15 @@ function toggleRightside() {
 		$('#wdbRight').width('calc(50% - 3em)');
 		$('#wdbShowHide > a').html('»');
 		//$('#container').width('50%');
+	}
+}
+function close() {
+	link = $('#fac span a');
+	if (link.text() == '[x]') {
+		$('#facsimile').css('display', 'none');
+		link.text('[« Digitalisat zeigen]');
+	} else {
+		$('#facsimile').css('display', 'block');
+		link.text('[x]');
 	}
 }

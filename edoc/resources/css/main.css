@@ -110,12 +110,18 @@ h2 + hr {
 #wdbRight {
 	background-color: white;
 	overflow-y: auto;
+	overflow: hidden;
 	flex: 1 1 auto;
-	display: flex;
-	flex-wrap: wrap;
 }
 #fac {
 	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+#facsimile {
+	flex: 1 1 auto;
+	width: 100%;
 }
 
 /* Show/hide bar */
