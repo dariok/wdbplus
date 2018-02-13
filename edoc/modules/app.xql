@@ -229,10 +229,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 	return 
 		<div id="wdbContent">
 			{$re}
-			<footer>
-				<span>XML: <a href="{$xml}">{$xml}</a></span>
-				<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
-			</footer>
+			{wdb:getFooter($xml, $xsl)}
 		</div>
 };
 
@@ -367,4 +364,11 @@ declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as x
 	:)
 declare function wdb:getEdPath($path as xs:string) as xs:string {
 	wdb:getEdPath($path, false())
+};
+
+declare function wdb:getFooter($xml as xs:string, $xsl as xs:string) {
+	<footer>
+		<span>XML: <a href="{$xml}">{$xml}</a></span>
+		<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
+	</footer>
 };
