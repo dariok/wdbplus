@@ -18,11 +18,18 @@ declare namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 
 (: VARIABLES :)
 (: get the name of the server, possibly including the port :)	
-declare variable $wdb:server := request:get-header("Origin");
-(:if ( request:get-server-port() != 80 )
-	then request:get-scheme() || '://' || request:get-server-name() || ':' || request:get-server-port()
-	else request:get-scheme() || '://' || request:get-server-name()
-;:)
+declare variable $wdb:server :=
+	if (string-length(request:get-header("Origin")) = 0)
+		then 
+			let $scheme := if (request:get-header-names() = 'X-Forwarded-Proto')
+				then normalize-space(request:get-header('X-Forwarded-Proto'))
+				else normalize-space(request:get-scheme())
+			
+			return if ( request:get-server-port() != 80 )
+				then $scheme || '://' || request:get-server-name() || ':' || request:get-server-port()
+				else $scheme || '://' || request:get-server-name()
+		else request:get-header("Origin")
+;
 
 (: get the base of this instance within the db (i.e. relative to /db) :)
 declare variable $wdb:edocBaseDB := $config:app-root;
@@ -122,6 +129,8 @@ declare function wdb:getId($node as node(), $model as map(*)) {
  : @created 2018-02-02 DK
  :)
 declare function wdb:getHead ( $node as node(), $model as map(*) ) {
+let $t := console:log(request:get-header('X-Forwarded-Proto'))
+return
     <head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<!-- Kurztitel als title; 2016-05-24 DK -->
@@ -215,8 +224,15 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 				<additional>{$err:additional}</additional>
 			</report>)
 		}
-		return 
-			<div id="wdbContent">{$re}</div>
+	
+	return 
+		<div id="wdbContent">
+			{$re}
+			<footer>
+				<span>XML: {wdb:getUrl($model("fileLoc"))}</span>
+				<span>XSL: {wdb:getUrl($model("xslt"))}</span>
+			</footer>
+		</div>
 };
 
 (: Finden der korrekten behavior
@@ -244,17 +260,6 @@ declare function local:val($test, $seqStruct, $type) {
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
 	let $ti := $model("title")
 	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
-};
-
-declare function wdb:footer($node as node(), $model as map(*)) {
-	let $xml := wdb:getUrl($model("fileLoc"))
-	let $xsl := wdb:getUrl($model("xslt"))
-	(: Model beinhaltet die vollständigen Pfade; 2017-05-22 DK :)
-	return
-	<div class="footer">
-		<div class="footerEntry">XML: <a href="{$xml}">{$xml}</a></div>
-		<div class="footerEntry">XSLT: <a href="{$xsl}">{$xsl}</a></div>
-	</div>
 };
 
 (: Den Instanznamen ausgeben :)

@@ -137,8 +137,20 @@ h2 + hr {
 #wdbContent {
 	overflow-y: auto;
 	flex: 0 1 auto;
+	flex-wrap: wrap;
+	flex-direction: column;
 	display: flex;
 	padding-right: .5em;
+}
+footer {
+	background-color: lightgrey;
+	padding: 1em;
+	margin-top: 2.5em;
+	display: inline;
+	flex: 1 1 auto;
+}
+footer span {
+	display: block;
 }
 
 /* spans within header */
