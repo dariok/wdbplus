@@ -381,11 +381,13 @@ function displayImage(href) {
 /* toggle rightSide visibility */
 function toggleRightside() {
 	if ($('#wdbShowHide > a').html() == '»') {
-		$('#wdbRight').width('1em');
+		//$('#wdbRight').width('1em');
+		$('#wdbContent').css('max-width', '75%');
 		$('#wdbShowHide > a').html('«');
 		//$('#container').width('calc(100% - 1.5em)');
 	} else {
-		$('#wdbRight').width('calc(50% - 3em)');
+		//$('#wdbRight').width('calc(50% - 3em)');
+		$('#wdbContent').css('max-width', 'calc(50% - 3em)');
 		$('#wdbShowHide > a').html('»');
 		//$('#container').width('50%');
 	}

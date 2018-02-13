@@ -138,12 +138,13 @@ h2 + hr {
 	overflow-y: auto;
 	flex: 0 1 auto;
 	flex-wrap: wrap;
-	flex-direction: column;
+	flex-direction: row;
 	display: flex;
 	padding-right: .5em;
+	max-width: 50%;
 }
 footer {
-	background-color: lightgrey;
+	background-color: #EEE;
 	padding: 1em;
 	margin-top: 2.5em;
 	display: inline;
