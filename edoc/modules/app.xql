@@ -129,8 +129,6 @@ declare function wdb:getId($node as node(), $model as map(*)) {
  : @created 2018-02-02 DK
  :)
 declare function wdb:getHead ( $node as node(), $model as map(*) ) {
-let $t := console:log(request:get-header('X-Forwarded-Proto'))
-return
     <head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<!-- Kurztitel als title; 2016-05-24 DK -->

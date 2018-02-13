@@ -28,24 +28,25 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			then $model("ed") || '/mets.xsl'
 			else $wdb:edocBaseDB || '/resources/mets.xsl'
 	
-	let $param := <parameters>
-					<param name="footerXML" value="{wdb:getUrl($xml)}" />
-					<param name="footerXSL" value="{wdb:getUrl($xsl)}" />
-					<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
-					<param name="role" value="{$wdb:role}" />
-					<param name="access" value="{sm:has-access($model('ed'), 'w')}" />
-				</parameters>
+	let $param := 
+		<parameters>
+			<param name="footerXML" value="{wdb:getUrl($xml)}" />
+			<param name="footerXSL" value="{wdb:getUrl($xsl)}" />
+			<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
+			<param name="role" value="{$wdb:role}" />
+			<param name="access" value="{sm:has-access($model('ed'), 'w')}" />
+		</parameters>
 				
 	return
 		transform:transform(doc($xml), doc($xsl), $param)
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := doc(concat($wdb:edocBaseDB, '/', $model("id"), '/start.xml'))
+	let $xml := doc(concat($wdb:edocBaseDB, '/', $model("ed"), '/start.xml'))
 	
-(:	TODO eigene start.xsl benutzen, falls vorhanden:)
-(:	let $xsl := doc(concat('xmldb:exist:///db/edoc/', $model("id"), '/start.xsl')):)
-    let $xsl := doc('../resources/start.xsl')
+	let $xsl := if (doc-available(concat($model("ed"), '/start.xsl')))
+		then $model("ed") || '/start.xsl'
+		else $wdb:edocBaseDB || '/resources/wdbmeta.xsl'
 	
 	return
 		transform:transform($xml, $xsl, ())
