@@ -225,12 +225,15 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 			</report>)
 		}
 	
+	let $xml := wdb:getUrl($model("fileLoc"))
+	let $xsl := wdb:getUrl($model("xslt"))
+	
 	return 
 		<div id="wdbContent">
 			{$re}
 			<footer>
-				<span>XML: {wdb:getUrl($model("fileLoc"))}</span>
-				<span>XSL: {wdb:getUrl($model("xslt"))}</span>
+				<span>XML: <a href="{$xml}">{$xml}</a></span>
+				<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
 			</footer>
 		</div>
 };
