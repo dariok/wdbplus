@@ -218,7 +218,8 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 				<xslt>{$xslt}</xslt>
 				{$params}
 				{$attr}
-				<error>{$err:code || ': ' || $err:description || $err:line-number ||':'||$err:column-number}</error>
+				<error>{$err:code || ': ' || $err:description}</error>
+				<error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
 				<additional>{$err:additional}</additional>
 			</report>)
 		}
