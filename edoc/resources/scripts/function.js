@@ -182,7 +182,7 @@ function sprung (event) {
 	highlightAll ( startMarker, endMarker );
 }
 
-function highlightAll ( startMarker, endMarker) {
+function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 	cA = $(commonAncestor(startMarker, endMarker));
 	
 	// Step 1: highlight all »startMarker/following-sibling::node()« 
@@ -196,7 +196,8 @@ function highlightAll ( startMarker, endMarker) {
 	startMarker.nextAll().addBack().each(function() {
 		if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return;
 		else {
-			$(this).css("background-color", "#FFEF19");
+			$(this).css("background-color", color);
+			if (alt != '') $(this).attr('title', alt);
 		}
 	});
 	
@@ -216,7 +217,8 @@ function highlightAll ( startMarker, endMarker) {
 					has_returned = true;
 					return;
 				} else {
-					$(this).css("background-color", "#FFEF19");
+					$(this).css("background-color", color);
+					if (alt != '') $(this).attr('title', alt);
 				}
 			});
 		});
@@ -235,7 +237,8 @@ function highlightAll ( startMarker, endMarker) {
 				|| $(this).nextAll().has(startMarker)
 		) return;
 		else {
-			$(this).css("background-color", "#FFEF19");
+			$(this).css("background-color", color);
+			if (alt != '') $(this).attr('title', alt);
 		}
 	});
 	
@@ -253,7 +256,8 @@ function highlightAll ( startMarker, endMarker) {
 					done = true;
 					return;
 				} else {
-					$(this).css("background-color", "#FFEF19");
+					$(this).css("background-color", color);
+					if (alt != '') $(this).attr('title', alt);
 				}
 			});
 		});
