@@ -8,8 +8,8 @@ function anno(){
         start = selection.focusNode.wholeText.trim() == '' ? selection.focusNode.nextElementSibling.id
             : selection.focusNode.parentNode.id;
         
-        console.log('a: ' + start + ': ' + selection.anchorNode.wholeText);
-        console.log('f: ' + end + ': ' + selection.focusNode.wholeText);
+        /*console.log('a: ' + start + ': ' + selection.anchorNode.wholeText);
+        console.log('f: ' + end + ': ' + selection.focusNode.wholeText);*/
     } else {
         start = selection.anchorNode.wholeText.trim() == '' ? selection.anchorNode.nextElementSibling.id
             : selection.anchorNode.parentNode.id;
@@ -33,6 +33,11 @@ function anno(){
         {file: id},
         function(data){ console.log(data); }
     );
+    
+    startElem = $('#' + start);
+    endElem = $('#' + end);
+    
+    highlightAll(startElem, endElem, 'red', annoText);
 }
 
 $(document).ready(function() {
@@ -41,12 +46,10 @@ $(document).ready(function() {
         "return.xql",
         {file: id},
         function(data){
-            console.log(data);
             $.each(
                 data.entry,
                 function( index, value ) {
                     if (index > 0) {
-	                    console.log(value.range);
 	                    start = $('#' + value.range["from"]);
 	                    end = $('#' + value.range["to"]);
 	                    cat = value.cat;
