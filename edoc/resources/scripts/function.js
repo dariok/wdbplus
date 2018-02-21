@@ -179,7 +179,11 @@ function sprung (event) {
 	// only go through this, if there actually is an end marker
 	if (endMarker.length == 0) return;
 	
-	var cA = $(commonAncestor(startMarker, endMarker));
+	highlightAll ( startMarker, endMarker );
+}
+
+function highlightAll ( startMarker, endMarker) {
+	cA = $(commonAncestor(startMarker, endMarker));
 	
 	// Step 1: highlight all »startMarker/following-sibling::node()« 
 	// 1a: Wrap all of its siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -188,7 +192,7 @@ function sprung (event) {
 	}).wrap("<span></span>");
 	
 	// 1b: Colour its later siblings if they dont have the end point marker
-	var done = false;
+	done = false;
 	startMarker.nextAll().addBack().each(function() {
 		if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return;
 		else {
@@ -198,11 +202,11 @@ function sprung (event) {
 	
 	// Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
 	// 2a: Get startMarker's parents up to the common ancestor
-	var parentsList = startMarker.parentsUntil(cA);
+	parentsList = startMarker.parentsUntil(cA);
 	
 	if (parentsList.has(endMarker).length === 0) {
 		// go through each of these and access later siblings
-		var has_returned = false;
+		has_returned = false;
 		parentsList.each(function() {
 			$(this).nextAll().each(function() {
 				if (has_returned) return;
@@ -255,6 +259,7 @@ function sprung (event) {
 		});
 	}
 }
+
 
 /** fixed div at top of page: body needs offset for correct scrolling */
 /* $(document).ready(function() {
