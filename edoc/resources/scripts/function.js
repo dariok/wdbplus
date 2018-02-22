@@ -160,8 +160,8 @@ function detach (id) {
 }
 
 function commonAncestor (e1, e2) {
-	var p1 = e1.parents().get().reverse();
-	var p2 = e2.parents().get().reverse();
+	var p1 = e1.parents().add(e1).get();
+	var p2 = e2.parents().add(e2).get();
 	
 	for (var i = 0; i < p1.length; i++) {
 		if (p1[i] != p2[i]) return p1[i - 1];
@@ -183,84 +183,91 @@ function sprung (event) {
 }
 
 function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
-	cA = $(commonAncestor(startMarker, endMarker));
-	
-	// Step 1: highlight all »startMarker/following-sibling::node()« 
-	// 1a: Wrap all of its siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
-	startMarker.parent().contents().filter(function() {
-		return this.nodeType === 3;
-	}).wrap("<span></span>");
-	
-	// 1b: Colour its later siblings if they dont have the end point marker
-	done = false;
-	startMarker.nextAll().addBack().each(function() {
-		if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return;
-		else {
-			$(this).css("background-color", color);
-			if (alt != '') $(this).attr('title', alt);
-		}
-	});
-	
-	// Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
-	// 2a: Get startMarker's parents up to the common ancestor
-	parentsList = startMarker.parentsUntil(cA);
-	
-	if (parentsList.has(endMarker).length === 0) {
-		// go through each of these and access later siblings
-		has_returned = false;
-		parentsList.each(function() {
-			$(this).nextAll().each(function() {
-				if (has_returned) return;
-				
-				// we need to handle the endMarker's parent differently
-				if ($(this).has(endMarker).length > 0) {
-					has_returned = true;
-					return;
-				} else {
-					$(this).css("background-color", color);
-					if (alt != '') $(this).attr('title', alt);
-				}
-			});
-		});
-	};
-	
-	// Step 3: as step 1	
-	// 3a: Wrap alls of endMarker's siblings in a span
-	endMarker.parent().contents().filter(function() {
-		return this.nodeType === 3;
-	}).wrap("<span></span>");
-	
-	//3b: Colour its earlier siblings if they dont have start marker
-	$(endMarker.prevAll().addBack().get().reverse()).each(function() {
-		if ($(this).has(startMarker).length > 0
-				|| $(this).is(startMarker)
-				|| $(this).nextAll().has(startMarker)
-		) return;
-		else {
-			$(this).css("background-color", color);
-			if (alt != '') $(this).attr('title', alt);
-		}
-	});
-	
-	// Step 4: colour all ancestors to the common ancestor
-	// Get parents up until common ancestor
-	var parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
-	if (parentsListEnd.has(startMarker).length === 0) {
-		// Go through each of these and access earlier siblings
+	if (startMarker.attr('id') == endMarker.attr('id')) {
+		startMarker.css("background-color", color);
+		if (alt != '') $(this).attr('title', alt);
+	} else {
+	    console.log('n. identisch: ' + startMarker.attr('id') + ' - ' + endMarker.attr('id'));
+		cA = $(commonAncestor(startMarker, endMarker));
+		console.log(cA);
+		
+		// Step 1: highlight all »startMarker/following-sibling::node()« 
+		// 1a: Wrap all of its siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
+		startMarker.parent().contents().filter(function() {
+			return this.nodeType === 3;
+		}).wrap("<span></span>");
+		
+		// 1b: Colour its later siblings if they dont have the end point marker
 		done = false;
-		parentsListEnd.each(function() {
-			$(this).prevAll().each(function() {
-				if (done) return;
-				
-				if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
-					done = true;
-					return;
-				} else {
-					$(this).css("background-color", color);
-					if (alt != '') $(this).attr('title', alt);
-				}
-			});
+		startMarker.nextAll().addBack().each(function() {
+			if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return;
+			else {
+				$(this).css("background-color", color);
+				if (alt != '') $(this).attr('title', alt);
+			}
 		});
+		
+		// Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
+		// 2a: Get startMarker's parents up to the common ancestor
+		parentsList = startMarker.parentsUntil(cA);
+		
+		if (parentsList.has(endMarker).length === 0) {
+			// go through each of these and access later siblings
+			has_returned = false;
+			parentsList.each(function() {
+				$(this).nextAll().each(function() {
+					if (has_returned) return;
+					
+					// we need to handle the endMarker's parent differently
+					if ($(this).has(endMarker).length > 0) {
+						has_returned = true;
+						return;
+					} else {
+						$(this).css("background-color", color);
+						if (alt != '') $(this).attr('title', alt);
+					}
+				});
+			});
+		};
+		
+		// Step 3: as step 1	
+		// 3a: Wrap alls of endMarker's siblings in a span
+		endMarker.parent().contents().filter(function() {
+			return this.nodeType === 3;
+		}).wrap("<span></span>");
+		
+		//3b: Colour its earlier siblings if they dont have start marker
+		$(endMarker.prevAll().addBack().get().reverse()).each(function() {
+			if ($(this).has(startMarker).length > 0
+					|| $(this).is(startMarker)
+					|| $(this).nextAll().has(startMarker)
+			) return;
+			else {
+				$(this).css("background-color", color);
+				if (alt != '') $(this).attr('title', alt);
+			}
+		});
+		
+		// Step 4: colour all ancestors to the common ancestor
+		// Get parents up until common ancestor
+		var parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
+		if (parentsListEnd.has(startMarker).length === 0) {
+			// Go through each of these and access earlier siblings
+			done = false;
+			parentsListEnd.each(function() {
+				$(this).prevAll().each(function() {
+					if (done) return;
+					
+					if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
+						done = true;
+						return;
+					} else {
+						$(this).css("background-color", color);
+						if (alt != '') $(this).attr('title', alt);
+					}
+				});
+			});
+		}
 	}
 }
 
