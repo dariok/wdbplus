@@ -3,8 +3,7 @@ xquery version "3.0";
 
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
-import module namespace config	= "https://github.com/dariok/wdbplus/config"	at "config.xqm";
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"			at "app.xql";
+import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
 
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
@@ -142,7 +141,7 @@ declare function wdbe:listBiblBibl($node, $model) {
 	if ($node/@ref) then
 		let $id := substring-after($node/@ref, '#')
 		let $entry := collection(concat('/db/', $model('ed')))/id($id)
-		let $ln := concat($wdb:edocBase, '/entity.html?id=', $id)
+		let $ln := concat($wdb:edocBaseURL, '/entity.html?id=', $id)
 		return <li><a href="{$ln}">{wdbe:passthrough($entry/tei:abbr, $model)}</a>{string($node)}</li>
 	else
 		let $link := $node/tei:ref/@target
