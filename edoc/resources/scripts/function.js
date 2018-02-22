@@ -228,7 +228,7 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 			}
 		});
 		
-		/*// Step 2: highlight »(startMarker/parent::*\/parent::* intersect endMarker/parent::*\/parent::*)/\**)«
+		// Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
 		// 2a: Get startMarker's parents up to the common ancestor
 		parentsList = startMarker.parentsUntil(cA);
 		
@@ -259,9 +259,10 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 		
 		//3b: Colour its earlier siblings if they dont have start marker
 		$(endMarker.prevAll().addBack().get().reverse()).each(function() {
+		    console.log($(this).nextAll().has(startMarker).length > 0);
 			if ($(this).has(startMarker).length > 0
 					|| $(this).is(startMarker)
-					|| $(this).nextAll().has(startMarker)
+					|| $(this).nextAll().has(startMarker).length > 0
 			) return;
 			else {
 				$(this).css("background-color", color);
@@ -288,7 +289,7 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 					}
 				});
 			});
-		}*/
+		}
 	}
 }
 
