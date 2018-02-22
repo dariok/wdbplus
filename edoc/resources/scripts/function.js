@@ -183,16 +183,37 @@ function sprung (event) {
 }
 
 function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
-	if (startMarker.attr('id') == endMarker.attr('id')) {
+	if (startMarker.is(endMarker)) {
+	    // just one element selected
 		startMarker.css("background-color", color);
 		if (alt != '') $(this).attr('title', alt);
+	} else if (startMarker.parent().is(endMarker.parent())) {
+	    // both elements have the same parent
+	    // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
+		startMarker.parent().contents().filter(function() {
+			return this.nodeType === 3;
+		}).wrap("<span></span>");
+		
+		// Colour and info for the start marker
+		$(startMarker).css("background-color", color);
+		if (alt != '') $(startMarker).attr('title', alt);
+		
+		// Colour and info for the siblings until the end marker
+		sib = $(startMarker).nextUntil(endMarker);
+		sib.css("background-color", color);
+		if (alt != '') sib.attr('title', alt);
+		
+		// Colour and info for the end marker
+		$(endMarker).css("background-color", color);
+		if (alt != '') $(endMarker).attr('title', alt);
+		//DONE
 	} else {
-	    console.log('n. identisch: ' + startMarker.attr('id') + ' - ' + endMarker.attr('id'));
+	    // check further down the ancestry
 		cA = $(commonAncestor(startMarker, endMarker));
 		console.log(cA);
 		
 		// Step 1: highlight all »startMarker/following-sibling::node()« 
-		// 1a: Wrap all of its siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
+		// 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
 		startMarker.parent().contents().filter(function() {
 			return this.nodeType === 3;
 		}).wrap("<span></span>");
@@ -207,7 +228,7 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 			}
 		});
 		
-		// Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
+		/*// Step 2: highlight »(startMarker/parent::*\/parent::* intersect endMarker/parent::*\/parent::*)/\**)«
 		// 2a: Get startMarker's parents up to the common ancestor
 		parentsList = startMarker.parentsUntil(cA);
 		
@@ -267,7 +288,7 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 					}
 				});
 			});
-		}
+		}*/
 	}
 }
 
