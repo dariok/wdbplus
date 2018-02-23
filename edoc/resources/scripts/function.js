@@ -186,7 +186,7 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 	if (startMarker.is(endMarker)) {
 	    // just one element selected
 		startMarker.css("background-color", color);
-		if (alt != '') $(this).attr('title', alt);
+		if (alt != '') startMarker.attr('title', alt);
 	} else if (startMarker.parent().is(endMarker.parent())) {
 	    // both elements have the same parent
 	    // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -259,7 +259,6 @@ function highlightAll ( startMarker, endMarker, color='#FFEF19', alt='' ) {
 		
 		//3b: Colour its earlier siblings if they dont have start marker
 		$(endMarker.prevAll().addBack().get().reverse()).each(function() {
-		    console.log($(this).nextAll().has(startMarker).length > 0);
 			if ($(this).has(startMarker).length > 0
 					|| $(this).is(startMarker)
 					|| $(this).nextAll().has(startMarker).length > 0
