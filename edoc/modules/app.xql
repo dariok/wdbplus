@@ -70,8 +70,8 @@ declare variable $wdb:peer :=
 ;
 
 declare %templates:wrap
-function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as map(*) {:)
-	let $m := wdb:populateModel($id)
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) { (:as map(*) {:)
+	let $m := wdb:populateModel($id, $view)
 	return $m
 };
 
@@ -81,7 +81,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string) { (:as m
  : @param $id the id for the file to be displayed
  : @return a map; in case of debugging, a list
  :)
-declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
+declare function wdb:populateModel($id as xs:string, $view as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $files := collection($wdb:edocBaseDB)/id($id)
@@ -106,7 +106,7 @@ declare function wdb:populateModel($id as xs:string) { (:as map(*) {:)
 		
 	(: TODO parameter aus config.xml einlesen und übergeben? :)
     return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEd, "infoFileLoc" := $infoFileLoc,
-    		"title" := $title, "id" := $id }
+    		"title" := $title, "id" := $id, "view" := $view }
 
 	(:return <table>
 	    <tr><td>ID:</td><td>{$id}</td></tr>
@@ -206,6 +206,11 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 			<param name="server" value="eXist"/>
 			<param name="exist:stop-on-warn" value="yes" />
 			<param name="exist:stop-on-error" value="yes" />
+			{
+				if ($model("view") != '')
+					then <param name="view" value="{$model("view")}" />
+					else ()
+			}
 		</parameters>
 	(: ambiguous rule match soll nicht zum Abbruch führen :)
 	let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
