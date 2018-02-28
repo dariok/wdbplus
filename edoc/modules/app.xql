@@ -69,7 +69,7 @@ declare variable $wdb:peer :=
 		else ""
 ;
 
-declare %templates:wrap
+declare %templates:wrap %templates:default("view", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) { (:as map(*) {:)
 	let $m := wdb:populateModel($id, $view)
 	return $m
