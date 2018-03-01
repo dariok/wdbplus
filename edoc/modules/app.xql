@@ -206,6 +206,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 			<param name="server" value="eXist"/>
 			<param name="exist:stop-on-warn" value="yes" />
 			<param name="exist:stop-on-error" value="yes" />
+			<param name="projectDir" value="{$model('ed')}" />
 			{
 				if ($model("view") != '')
 					then <param name="view" value="{$model("view")}" />
