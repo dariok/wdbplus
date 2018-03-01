@@ -81,6 +81,17 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @param $id the id for the file to be displayed
  : @return a map; in case of debugging, a list
  :)
+declare function wdb:populateModel($id as xs:string) {
+	wdb:populateModel($id, '')
+};
+
+(:~
+ : Populate the model with the most important global settings when displaying a file
+ : 
+ : @param $id the id for the file to be displayed
+ : @param $view a string to be passed to the processing XSLT
+ : @return a map; in case of debugging, a list
+ :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string) { (:as map(*) {:)
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
