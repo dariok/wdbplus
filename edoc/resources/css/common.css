@@ -12,9 +12,7 @@ a.upRef {
 	float: right;
 	font-style: normal;
 }
-h4 a.upRef {
-	margin-right: -0.75em; /* neu 2016-07-11 DK */
-}
+
 /* Hervorheben von Sprungzielen */
 :target {
 	background-color: #FFEF19;
