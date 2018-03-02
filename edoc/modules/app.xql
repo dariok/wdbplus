@@ -365,6 +365,7 @@ declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as x
 		return xmldb:match-collection($t)
 	
 	let $path := for $p in $pa
+		order by string-length($p) descending
 		let $p1 := $p || '/wdbmeta.xml'
 		let $p2 := $p || '/mets.xml'
 		return if (doc-available($p1) or doc-available($p2)) then $p else ()
