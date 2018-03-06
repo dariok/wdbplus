@@ -4,18 +4,19 @@ xquery version "3.0";
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
 import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
+import module namespace console	= "http://exist-db.org/xquery/console";
 
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
 (: 	$id		ID-String der Entität (z.B. URI der GND)
-		$ed		edoc-Nummer der Edition (dient ggfs. der Wiedergabe nur editionsspezifischer Informationen
-		$reg	Register-Datei, falls editionsspezifische Datei vorhanden ist :)
-declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:string, $ed as xs:string?) as map(*) {
+	$ed		edoc-Nummer der Edition (dient ggfs. der Wiedergabe nur editionsspezifischer Informationen
+	$reg	Register-Datei, falls editionsspezifische Datei vorhanden ist :)
+declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:string, $ed as xs:string?, $reg as xs:string?, $xsl as xs:string?) as map(*) {
 	(: für die Recherche nur nötig ID und ggfs. Nr. der Edition; 2016-08-17 DK :)
 	(: TODO falls XML und XSLT übergeben werden, diese verwenden :)
 	
 	(: da die ID innerhalb der Edition einzigartig sein muß, reicht eine Abfrage innerhalb der Edition :)
-	let $entryEd := collection(concat('/db/', $ed))/id($id)
+	let $entryEd := doc($reg)/id($id)
 	(: TODO: wenn hier nicht gefunden, im zentralen Register suchen :)
 	
 	return map { "entry" := $entryEd, "id" := $id, "ed" := $ed }
