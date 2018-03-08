@@ -53,11 +53,12 @@ declare function wdbs:projectList($admin as xs:boolean) {
 					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
 					let $metaFile := document-uri(root($w))
 					let $id := wdb:getEdPath($metaFile)
-					
+					let $padding := count(tokenize($id, '/')) + 0.2
+					order by $id
 					return
 						<tr>
 							<td>{$id}</td>
-							<td><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
+							<td style="padding-left: {$padding}em;"><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
