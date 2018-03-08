@@ -139,7 +139,7 @@
 		
 		<xsl:choose>
 			<xsl:when test="$res/wdbmeta:struct/wdbmeta:import">
-				<xsl:variable name="pFile" select="xstring:substring-before-last($parentFile, '/')|| '/' || $res/wdbmeta:struct/wdbmeta:import/@file"/>
+				<xsl:variable name="pFile" select="xstring:substring-before-last($parentFile, '/')|| '/' || $res/wdbmeta:struct/wdbmeta:import/@path"/>
 				<xsl:sequence select="wdbmeta:rec($res/wdbmeta:struct, $pFile, $base)"/>
 			</xsl:when>
 			<xsl:otherwise>
