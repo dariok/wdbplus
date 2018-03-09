@@ -3,11 +3,7 @@
 
 @import "common.css";
 
-#container {
-	width: 100%;
-}
-
-#content {
+main {
 	width: 70%;
 	padding-left: 15%;
 }
