@@ -12,11 +12,13 @@ import module namespace wdba		= "https://github.com/dariok/wdbplus/auth" at "aut
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
-declare %templates:default("q", "") %templates:default("q2", "")
+declare %templates:default("q", "") %templates:default("q2", "") %templates:default("query", "") %templates:default("edition", "")
 	function wdbpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string,
 		$q2 as xs:string) as map(*) {
 	
-	let $edPath := wdb:getEdPath($edition, true())
+	let $edPath := if ($edition = "")
+	    then ""
+	    else wdb:getEdPath($edition, true())
 	
 	let $metaFile := doc($edPath||'/wdbmeta.xml')
 	let $title := $metaFile//meta:title/text()
