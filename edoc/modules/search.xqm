@@ -17,7 +17,12 @@ import module namespace kwic="http://exist-db.org/xquery/kwic";
  :)
 declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
     <header>
-    	<h1>{$model("title")}</h1>
+    	<h1>{
+    	    if ($model("title") = "")
+    	        then ""
+    	        else $model("title")
+    	}</h1>
+    	<h2>Suche</h2>
     	<span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation
 				einblenden</a>]</span>
     	<hr/>
@@ -36,8 +41,21 @@ declare %templates:default("query", "") %templates:default("edition", "")
                     <input type="submit" />
                 </form>
             else 
-                (:for $hit in collection($model("ed"))//tei:div[ft:query(., $model("query"))]
-                return kwic:summarize($hit, <config width="50" />):)
-                <p>{$model("query")}</p>
+                <table>{
+                    for $hit in collection($wdb:edocBaseDB||'/'||$model("ed"))//tei:div[ft:query(., $model("query"))]
+                        let $res := kwic:summarize($hit, <config width="200" />)[1]
+                        let $file := base-uri($hit)
+                        order by $file
+                        group by $file
+                        let $fileID := normalize-space(doc($file)/tei:TEI/@xml:id)
+                        return
+                            <tr>
+                                <td><a href="view.html?id={$fileID}">{$file}</a></td>
+                                <td><ul>{for $r in distinct-values($res)
+                                    let $id := normalize-space($hit/ancestor-or-self::*[@xml:id][1]/@xml:id)
+                                    return <li><a href="view.html?id={$fileID}#{$id}">{$r}</a></li>
+                                }</ul></td>
+                            </tr>
+                }</table>
     }</div>
 };
