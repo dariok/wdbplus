@@ -16,7 +16,6 @@ a.upRef {
 /* Hervorheben von Sprungzielen */
 :target {
 	background-color: #FFEF19;
-/*	background-color: #14A0CC;*/
 }
 
 /** --- Apparat --- **/
@@ -278,4 +277,9 @@ span[lang=he] {
 	flex-direction: row;
 	height: 100%;
 	overflow-y: auto;
+}
+
+/* search results */
+#wdbSearch .hi {
+    background-color: #FFEF19;
 }

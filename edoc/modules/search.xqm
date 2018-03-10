@@ -54,7 +54,7 @@ declare
                                 <td><a href="view.html?id={$fileID}">{$file}</a></td>
                                 <td><ul>{for $r in distinct-values($res)
                                     let $id := normalize-space($hit/ancestor-or-self::*[@xml:id][1]/@xml:id)
-                                    return <li><a href="view.html?id={$fileID}#{$id}">{$r}</a></li>
+                                    return <li><a href="view.html?id={$fileID}#{$id}">{$res}</a></li>
                                 }</ul></td>
                             </tr>
                 }</table>)
