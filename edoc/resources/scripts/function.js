@@ -327,15 +327,20 @@ function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
 	var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
 	console.log(q);
-	
-	$.ajaxSetup({ cache: false });
-	var res = $.get(q, '', function(data, textStatus, jqXHR) { 
-        var ins = $('<div></div>');
-        ins.append($(data).find("#navBar").html());
-        ins.append($(data).find(".content").html());
-        ins.append('<a href="javascript:clear();">[x]</a>');
-        $('#ann').html(ins.html());
-	}, 'html');
+    
+	$.ajax({
+	    url: q,
+	    method: 'get',
+	    success: function(data){
+	        var ins = $('<div/>');
+	        var res = $.parseHTML(data);
+	        ins.html(data);
+	        $('#ann').append(ins.find('div'));
+	        $('#ann').append('<a href="javascript:clear();">[x]</a>');
+            /*$('#ann').html(ins.html());*/
+	    },
+	    dataType: 'html'
+	});
 }
 
 function switchlayer(Layer_Name) {
