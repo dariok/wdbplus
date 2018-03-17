@@ -42,19 +42,20 @@ declare
                 </form>
             else (
                 <h3>Ergebnisse in {$model("ed")}</h3>,
-                <table>{
+                <table class="search">{
                     for $hit in collection($model("ed"))//tei:div[ft:query(., $model("query"))]
                         let $res := kwic:summarize($hit, <config width="200" />)[1]
-                        let $file := base-uri($hit)
+                        group by $file := base-uri($hit)
                         order by $file
-                        group by $file
                         let $fileID := normalize-space(doc($file)/tei:TEI/@xml:id)
                         return
                             <tr>
-                                <td><a href="view.html?id={$fileID}">{$file}</a></td>
-                                <td><ul>{for $r in distinct-values($res)
-                                    let $id := normalize-space($hit/ancestor-or-self::*[@xml:id][1]/@xml:id)
-                                    return <li><a href="view.html?id={$fileID}#{$id}">{$res}</a></li>
+                                <td class="file"><a href="view.html?id={$fileID}">{$file}</a></td>
+                                <td><ul>{for $r in ($res)
+                                    group by $r
+                                    let $idt := normalize-space($hit/ancestor-or-self::*[@xml:id][1]/@xml:id)
+                                    let $id := if ($idt = $fileID) then '' else '#'||$idt
+                                    return <li><a href="view.html?id={$fileID}{$id}">{$r/*}</a></li>
                                 }</ul></td>
                             </tr>
                 }</table>)

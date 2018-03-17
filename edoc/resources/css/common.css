@@ -278,8 +278,3 @@ span[lang=he] {
 	height: 100%;
 	overflow-y: auto;
 }
-
-/* search results */
-#wdbSearch .hi {
-    background-color: #FFEF19;
-}
