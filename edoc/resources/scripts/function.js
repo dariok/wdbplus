@@ -145,8 +145,14 @@ function mouseIn (event) {
 	fn.outerWidth(fWidth);*/
 }
 
-function clear () {
-	$('#ann').html('');
+function clear (id) {
+    if (id == '' || id == null) {
+        $('#ann').html('');
+        console.log('close all');
+    } else {
+        $('#' + id).detach();
+        console.log('close ' + id);
+    }
 }
 
 function mouseOut (event) {
@@ -323,21 +329,31 @@ function toggleNavigation() {
 	disp.toggle();
 }*/
 
+internalUniqueId = 0;
+function getUniqueId() {
+    return 'd' + internalUniqueId++;
+}
+
 function show_annotation (dir, xml, xsl, ref, height, width) {
 	var info = $('<div class="info"></div>');
 	var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
 	console.log(q);
+	var uid = getUniqueId();
     
 	$.ajax({
 	    url: q,
 	    method: 'get',
 	    success: function(data){
 	        var ins = $('<div/>');
+	        var wrap = $('<div/>');
+	        wrap.attr('id', uid);
 	        var res = $.parseHTML(data);
 	        ins.html(data);
-	        $('#ann').append(ins.find('div'));
-	        $('#ann').append('<a href="javascript:clear();">[x]</a>');
-            /*$('#ann').html(ins.html());*/
+	        wrap.append(ins.find('div'));
+	        wrap.append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>');
+	        wrap.append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
+	        $('#ann').append(wrap);
+	        
 	    },
 	    dataType: 'html'
 	});
