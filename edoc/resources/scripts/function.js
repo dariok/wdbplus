@@ -1,16 +1,20 @@
 function marginPos (){
-    var tar = window.location.hash;
-    window.location.hash = '#';
-    
 	var mRefs = $("a.mref");
 	if (mRefs.length > 0) {										   // Show margin container only if any are to be shown
+        var tar = window.location.hash;
+        if (tar !== '' && tar !== 'undefined') {
+            window.location.hash = '#';
+        }
+	
 		$('#content').css('width', 'calc(80% - 1em)');
 		$('#content').css('padding-left', '1em');
 		mRefs.each(positionMarginalia);
 		$('#marginalia_container').show();
+		
+		if (tar !== '' && tar !== 'undefined') {
+		    window.location.hash = tar;
+		}
 	}
-	
-	window.location.hash = tar;
 };
 function positionMarginalia (index, element){
 	thisRefID = $(element).attr('id');
