@@ -9,6 +9,7 @@ let $file := request:get-parameter('file', '')
 
 let $anno :=
     <entry xmlns="annotate">
+        <id>{util:uuid($file||$from)}</id>
         <file>{$file}</file>
         <range from="{$from}" to="{$to}" />
         <cat>{$cat}</cat>
