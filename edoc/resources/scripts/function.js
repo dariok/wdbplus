@@ -84,23 +84,21 @@ $(document).ready(function() {
         var scrollto = $('#' + from).offset().top - $('#navBar').innerHeight(); // minus fixed header height
         console.log($('#' + from).offset().top);
         $('html, body').animate({scrollTop:scrollto}, 0);
+        
+        var pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
+	    displayImage(pb.attr('href'));
     }
 });
 $(window).bind('hashchange', function() {
 	var target = $(':target')
 	if (!(target === undefined)) {
-		var offset = $(':target').offset();
-		console.log(offset);
-        if ($('#navBar').innerHeight() > 0) {
-            var scrollto = offset.top - $('#navBar').innerHeight(); // minus fixed header height
-        } else {
-            var scrollto = offset.top;
-        }
-        console.log(scrollto);
-		
-		$('html, body').animate({scrollTop:scrollto}, 0);
-
-		if (window.location.hash) sprung();
+		if ( target.attr('class') == 'pagebreak' ) {
+		    console.log($(':target > a').attr('href'));
+		    displayImage($(':target > a').attr('href'));
+		} else {
+		    var pb = target.parents().has('.pagebreak').first().find('.pagebreak a');
+		    displayImage(pb.attr('href'));
+		}
 	} else {
 		console.log('no target - logout?')
 	}
@@ -175,7 +173,6 @@ function commonAncestor (e1, e2) {
 }
 
 function sprung (event) {
-    console.log(event);
 	var targ = window.location.hash.substring(1);
 	var startMarker = $(".anchorRef#" + targ);
 	if (startMarker.length == 0) return;
