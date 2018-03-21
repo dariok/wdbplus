@@ -49,9 +49,12 @@ $(document).ready(function() {
             $.each(
                 data.entry,
                 function( index, value ) {
-                    if (index > 0) {
+                    if (index > 0 && value.range["from"] != '') {
+                        console.log(value);
 	                    start = $('#' + value.range["from"]);
-	                    end = $('#' + value.range["to"]);
+	                    if (value.range["to"] == '')
+	                        end = start;
+	                        else end = $('#' + value.range["to"]);
 	                    cat = value.cat;
 	                    
 	                    highlightAll(start, end, 'red', cat);
