@@ -16,6 +16,7 @@
             <inline qname="tei:hi" />
             <inline qname="tei:lb" />
             <inline qname="tei:pb" />
+            <ignore qname="pc" />
         </lucene>
         <range>
             <create qname="@ref" type="xs:string"/>
