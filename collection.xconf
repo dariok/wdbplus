@@ -9,6 +9,12 @@
             <text qname="tei:table" analyzer="std"/>
             <text qname="tei:list" analyzer="std"/>
             <text qname="tei:quote" analyzer="std"/>
+            <inline qname="tei:unclear" />
+            <inline qname="tei:supplied" />
+            <inline qname="tei:ex" />
+            <inline qname="tei:hi" />
+            <inline qname="tei:lb" />
+            <inline qname="tei:pb" />
         </lucene>
         <range>
             <create qname="@ref" type="xs:string"/>
