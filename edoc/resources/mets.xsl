@@ -420,7 +420,7 @@
                             <xsl:value-of select="$number"/>
                         </xsl:attribute>
                         <xsl:attribute name="style">display:none;</xsl:attribute>
-                    	<xsl:choose>
+                    	<!--<xsl:choose>
                     		<xsl:when test="@ORDER">
                     			<xsl:for-each select="mets:div">
                     				<xsl:sort select="@ORDER"/>
@@ -430,7 +430,10 @@
                     		<xsl:otherwise>
                     			<xsl:apply-templates/>
                     		</xsl:otherwise>
-                    	</xsl:choose>
+                    	</xsl:choose>-->
+                        <xsl:apply-templates>
+                            <xsl:sort select="@ORDER" />
+                        </xsl:apply-templates>
                     </ul>
                 </li>
             </xsl:when><!--  Menuefunktionen Ende #####################################################  --><!-- Darstellung von Dateien ###############################################################--><!--   Dateien,  die nicht per XML und XSL generiert werden --><!-- @TYPE = 'facsimile' or @TYPE = 'URL' als Steuerung deprecated, wird ueber MIMETYPE gesteuert --><!-- im zugehoerigen Filesegment muss stets ein absoluter Pfad (URL) stehen; interne Links (localhost, diglib.hab.de) werden im Frame, 
