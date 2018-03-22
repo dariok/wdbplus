@@ -43,19 +43,22 @@ declare
             else (
                 <h3>Ergebnisse in {$model("ed")}</h3>,
                 <table class="search">{
-                    for $hit in collection($model("ed"))//tei:div[ft:query(., $model("query"))]
-                        let $res := kwic:summarize($hit, <config width="200" />)[1]
+                    for $hit in (collection($model("ed"))//tei:p[ft:query(., $model("query"))]
+                            | collection($model("ed"))//tei:table[ft:query(., $model("query"))]
+                            | collection($model("ed"))//tei:list[ft:query(., $model("query"))])
                         group by $file := base-uri($hit)
                         order by $file
+                        
                         let $fileID := normalize-space(doc($file)/tei:TEI/@xml:id)
+                        
                         return
                             <tr>
-                                <td class="file"><a href="view.html?id={$fileID}">{$file}</a></td>
-                                <td><ul>{for $r in ($res)
-                                    group by $r
-                                    let $idt := normalize-space($hit/ancestor-or-self::*[@xml:id][1]/@xml:id)
-                                    let $id := if ($idt = $fileID) then '' else '#'||$idt
-                                    return <li><a href="view.html?id={$fileID}{$id}">{$r/*}</a></li>
+                                <td class="file">{$file}</td>
+                                <td><ul>{for $h in $hit
+                                        let $idt := normalize-space($h/ancestor-or-self::*[@xml:id][1]/@xml:id)
+                                        let $id := if ($idt = $fileID) then '' else '#'||$idt
+                                        
+                                        return <li><a href="view.html?id={$fileID}{$id}">{kwic:summarize($h, <config width="100"/>)}</a></li>
                                 }</ul></td>
                             </tr>
                 }</table>)
