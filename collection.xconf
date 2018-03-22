@@ -11,6 +11,7 @@
             <text qname="tei:quote" analyzer="std"/>
             <inline qname="tei:unclear" />
             <inline qname="tei:supplied" />
+            <inline qname="tei:gap" />
             <inline qname="tei:ex" />
             <inline qname="tei:hi" />
             <inline qname="tei:lb" />
