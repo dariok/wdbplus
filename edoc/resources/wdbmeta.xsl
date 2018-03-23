@@ -24,7 +24,7 @@
 			<xsl:choose>
 				<xsl:when test="wdbmeta:import">
 					<xsl:variable name="base" select="xstring:substring-before-last($footerXML, '/')"/>
-					<xsl:variable name="structs" select="wdbmeta:rec(., wdbmeta:import/@file, $base)"/>
+					<xsl:variable name="structs" select="wdbmeta:rec(., wdbmeta:import/@path, $base)"/>
 					<xsl:variable name="md">
 						<wdbmeta:projectMD>
 							<xsl:sequence select="//wdbmeta:files"/>
