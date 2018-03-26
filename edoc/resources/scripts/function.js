@@ -471,3 +471,9 @@ function close() {
         link.text('[x]');
     }
 }
+
+/* toggle TOC level visibility */
+function switchlayer(Layer_Name) {	
+	var target = '#' + Layer_Name.replace( /(,|:|\.|\[|\])/g, "\\$1" );	
+	$(target).toggle();	
+}
