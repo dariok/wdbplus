@@ -24,7 +24,7 @@ div.footnotes {
 	font-size: 0.9em;
 	line-height: 1em;
 	text-align: justify;
-	padding-bottom: 1.5mm
+	margin-bottom: 1.5mm
 }
 
 #kritApp, #FußnotenApparat {
@@ -75,7 +75,7 @@ h3 {
 	font-style: italic;
 	font-size: 1em;
 	text-align: center;
-	padding-top: 0.75em;
+	margin-top: 0.75em;
 	color: #900129;
 	width: 100%;
 }
