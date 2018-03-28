@@ -52,9 +52,11 @@ $(document).ready(function() {
                     if (index > 0 && value.range["from"] != '') {
                         console.log(value);
 	                    start = $('#' + value.range["from"]);
-	                    if (value.range["to"] == '')
+	                    if (value.range["to"] == '' || value.range["to"] == 'undefined')
 	                        end = start;
 	                        else end = $('#' + value.range["to"]);
+	                    if (end.length == 0)
+	                        end = start;
 	                    cat = value.cat;
 	                    
 	                    highlightAll(start, end, 'red', cat);
