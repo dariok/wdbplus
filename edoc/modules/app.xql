@@ -171,8 +171,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     	else
     	    (: no specific function available, so we assume stanards :)
     	    (
-                <link rel="stylesheet" type="text/css" href="{substring-after($model('ed'), '/db')}/scripts/project.css" />,
-                <script src="{substring-after($model('ed'), '/db')}/scripts/project.js" />
+                <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.css" />,
+                <script src="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.js" />
             )
             
     return if ($type = 'css')
