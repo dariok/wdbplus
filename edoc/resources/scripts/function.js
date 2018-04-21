@@ -286,7 +286,10 @@ function sprung (event) {
     
     highlightAll (startMarker, endMarker);
 }
-function highlightAll (startMarker, endMarker, color = '#FFEF19', alt = '') {
+function highlightAll (startMarker, endMarker, color, alt) {
+	color = (color === 'undefined') ? '#FFEF19' : color;
+	color = (alt === 'undefined') ? '' : alt;
+	
     if (startMarker.is(endMarker)) {
         // just one element selected
         startMarker.css("background-color", color);
