@@ -48,7 +48,7 @@ return
 			<hr/>
 		</header>
 		<main>
-			<div style="width:50%;">
+			<div>
 				<nav>
 					<h1>Inhalt</h1>
 					{wdbm:getLeft($bogus, $model)}
