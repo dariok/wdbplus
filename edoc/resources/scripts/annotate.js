@@ -57,7 +57,7 @@ $(document).ready(function() {
 	                        else end = $('#' + value.range["to"]);
 	                    if (end.length == 0)
 	                        end = start;
-	                    cat = value.cat;
+	                    cat = value.range["from"] + "–" + value.range["to"] + ": " + value.cat;
 	                    
 	                    highlightAll(start, end, 'red', cat);
 	                }
