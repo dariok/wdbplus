@@ -96,7 +96,8 @@ declare function wdb:populateModel($id as xs:string, $view as xs:string) { (:as 
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $files := collection($wdb:edocBaseDB)/id($id)
-	let $pathToFile := base-uri($files[not(contains(base-uri(), 'mets') or contains(base-uri(), 'meta'))])
+	(: TODO: throw error if there are more than 1 :)
+	let $pathToFile := base-uri($files[self::tei:TEI][1])
 	let $pathToEd := wdb:getEdPath($pathToFile, true())
 	let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 
