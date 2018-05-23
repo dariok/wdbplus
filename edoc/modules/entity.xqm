@@ -142,7 +142,9 @@ declare function wdbe:listBiblBibl($node, $model) {
 	if ($node/@ref) then
 		let $id := substring-after($node/@ref, '#')
 		let $entry := collection(concat('/db/', $model('ed')))/id($id)
-		let $ln := concat($wdb:edocBaseURL, '/entity.html?id=', $id)
+(:		let $ln := $wdb:edocBaseURL || '/entity.html?id=' || $id || '&amp;ed=' || $model('ed'):)
+    let $ln := "javascript:show_annotation('" || $model('ed') || "', '/db/" || $model('ed') || "/register/bibliography.xml', '"
+      || $wdb:edocBaseDB || "/resource/bibl.xsl', '" || $id || "', 0, 0);"
 		return <li><a href="{$ln}">{wdbe:passthrough($entry/tei:abbr, $model)}</a>{string($node)}</li>
 	else
 		let $link := $node/tei:ref/@target
