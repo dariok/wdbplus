@@ -44,13 +44,18 @@ $(window).bind('hashchange', function () {
 });
 // when loading; or load p. 1 when no target is present
 $(document).ready(function () {
-    var target = $('.pagebreak > a').first().attr('href');
-    var tar = window.location.hash;
-    
-    if (tar !== '' && tar !== 'undefined') {
-        loadTargetImage();
+    if($('.pagebreak').size > 0) {
+		var target = $('.pagebreak > a').first().attr('href');
+	    var tar = window.location.hash;
+	    
+	    if (tar !== '' && tar !== 'undefined') {
+	        loadTargetImage();
+	    } else {
+	        displayImage(target);
+	    }
     } else {
-        displayImage(target);
+    	// TODO Text oder Image, wenn kein pb vorhanden
+    	// TODO ggf. getrennt für "verschollen"
     }
 });
 
