@@ -44,7 +44,7 @@ $(window).bind('hashchange', function () {
 });
 // when loading; or load p. 1 when no target is present
 $(document).ready(function () {
-    if($('.pagebreak').size > 0) {
+    if($('.pagebreak').length > 0) {
 		var target = $('.pagebreak > a').first().attr('href');
 	    var tar = window.location.hash;
 	    
