@@ -30,8 +30,7 @@ declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
     </header>
 };
 
-declare
-    function wdbSearch:search($node as node(), $model as map(*)) {
+declare function wdbSearch:search($node as node(), $model as map(*)) {
     <div id="wdbSearch">{
         if ($model("query") = '')
             then
@@ -40,6 +39,26 @@ declare
                     <input type="text" name="query" />
                     <input type="submit" />
                 </form>
+            else if ($model('q') = 'rs') then (
+                <h3>Ergebnisse in {$model("ed")}</h3>,
+                <table class="search">{
+                  for $hit in collection($model("ed"))//tei:rs[@ref='#'||$model("query")]
+                    group by $file := base-uri($hit)
+                    order by $file
+                    let $fileID := $hit[1]/ancestor::tei:TEI/@xml:id
+                    let $title := normalize-space($hit[1]/ancestor::tei:TEI//tei:titleStmt/tei:title[@type='short'])
+                    
+                    return
+                    <tr>
+                        <td class="file">{$title}</td>
+                        <td><ul>{for $h in $hit
+                                let $idt := normalize-space(($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id)
+                                let $id := if ($idt = $fileID) then '' else '#'||$idt
+                                
+                                return <li><a href="view.html?id={$fileID}{$id}">{normalize-space($h)}</a></li>
+                        }</ul></td>
+                    </tr>
+                }</table>)
             else (
                 <h3>Ergebnisse in {$model("ed")}</h3>,
                 <table class="search">{
@@ -49,13 +68,13 @@ declare
                         group by $file := base-uri($hit)
                         order by $file
                         
-                        let $fileID := normalize-space(doc($file)/tei:TEI/@xml:id)
+                        let $fileID := $hit[1]/ancestor::tei:TEI/@xml:id
                         
                         return
                             <tr>
                                 <td class="file">{$file}</td>
                                 <td><ul>{for $h in $hit
-                                        let $idt := normalize-space($h/ancestor-or-self::*[@xml:id][1]/@xml:id)
+                                        let $idt := normalize-space($h/ancestor-or-self::*[@xml:id][last()]/@xml:id)
                                         let $id := if ($idt = $fileID) then '' else '#'||$idt
                                         
                                         return <li><a href="view.html?id={$fileID}{$id}">{kwic:summarize($h, <config width="100"/>)}</a></li>
