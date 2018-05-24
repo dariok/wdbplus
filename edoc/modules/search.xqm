@@ -50,9 +50,9 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                     
                     return
                     <tr>
-                        <td class="file">{$title}</td>
+                        <td class="file">{$file}<br/>{$title}</td>
                         <td><ul>{for $h in $hit
-                                let $idt := normalize-space(($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id)
+                                let $idt := ($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id
                                 let $id := if ($idt = $fileID) then '' else '#'||$idt
                                 
                                 return <li><a href="view.html?id={$fileID}{$id}">{normalize-space($h)}</a></li>
@@ -69,12 +69,13 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                         order by $file
                         
                         let $fileID := $hit[1]/ancestor::tei:TEI/@xml:id
+                        let $title := normalize-space($hit[1]/ancestor::tei:TEI//tei:titleStmt/tei:title[@type='short'])
                         
                         return
                             <tr>
-                                <td class="file">{$file}</td>
+                                <td class="file">{$file}<br/>{$title}</td>
                                 <td><ul>{for $h in $hit
-                                        let $idt := normalize-space($h/ancestor-or-self::*[@xml:id][last()]/@xml:id)
+                                        let $idt := ($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id
                                         let $id := if ($idt = $fileID) then '' else '#'||$idt
                                         
                                         return <li><a href="view.html?id={$fileID}{$id}">{kwic:summarize($h, <config width="100"/>)}</a></li>
