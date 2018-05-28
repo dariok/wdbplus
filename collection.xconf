@@ -14,9 +14,9 @@
             <inline qname="tei:gap" />
             <inline qname="tei:ex" />
             <inline qname="tei:hi" />
-            <inline qname="tei:lb" />
+            <ignore qname="tei:lb" />
             <inline qname="tei:pb" />
-            <ignore qname="pc" />
+            <ignore qname="tei:pc" />
         </lucene>
         <range>
             <create qname="@ref" type="xs:string"/>
