@@ -33,12 +33,14 @@ declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
 declare function wdbSearch:search($node as node(), $model as map(*)) {
     <div id="wdbSearch">{
         if ($model("query") = '')
-            then
+            then (
                 <form action="search.html">
                     <input type="hidden" name="edition" value="{$model('ed')}" />
                     <input type="text" name="query" />
                     <input type="submit" />
-                </form>
+                </form>,
+                <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <pre>/[k|K][e|a].+/</pre></p>
+                )
             else if ($model('q') = 'rs') then (
                 <h3>Ergebnisse in {$model("ed")}</h3>,
                 <table class="search">{
