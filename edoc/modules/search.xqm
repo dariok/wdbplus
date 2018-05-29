@@ -36,13 +36,18 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
             then (
                 <form action="search.html">
                     <input type="hidden" name="edition" value="{$model('ed')}" />
-                    <input type="text" name="query" />
+                    <label for="global">Über alle Projekte suchen? </label><input type="checkbox" name="global" /><br/>
+                    <label for="query">Suchbegriff(e) / RegEx: </label><input type="text" name="query" />
                     <input type="submit" />
                 </form>,
-                <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <pre>/[k|K][e|a].+/</pre></p>
+                <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
                 )
-            else if ($model('q') = 'rs') then (
-                <h3>Ergebnisse in {$model("ed")}</h3>,
+            else if ($model('q') = 'rs') then let $coll := if ($model("global") = 'on')
+                    then $wdb:edocBaseDB
+                    else $model("ed")
+                return (
+                <h3>Ergebnisse in {$coll}</h3>,
+                <p>Suchstring: {$model("query")}</p>,
                 <table class="search">{
                   for $hit in collection($model("ed"))//tei:rs[@ref='#'||$model("query")]
                     group by $file := base-uri($hit)
@@ -61,12 +66,17 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                         }</ul></td>
                     </tr>
                 }</table>)
-            else (
-                <h3>Ergebnisse in {$model("ed")}</h3>,
+            else
+                let $coll := if ($model("global") = 'on')
+                    then $wdb:edocBaseDB
+                    else $model("ed")
+                return (
+                <h3>Ergebnisse in {$coll}</h3>,
+                <p>Suchstring: {$model("query")}</p>,
                 <table class="search">{
-                    for $hit in (collection($model("ed"))//tei:p[ft:query(., $model("query"))]
-                            | collection($model("ed"))//tei:table[ft:query(., $model("query"))]
-                            | collection($model("ed"))//tei:list[ft:query(., $model("query"))])
+                    for $hit in (collection($coll)//tei:p[ft:query(., $model("query"))]
+                            | collection($coll)//tei:table[ft:query(., $model("query"))]
+                            | collection($coll)//tei:list[ft:query(., $model("query"))])
                         group by $file := base-uri($hit)
                         order by $file
                         
