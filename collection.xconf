@@ -9,6 +9,7 @@
             <text qname="tei:table" analyzer="std"/>
             <text qname="tei:list" analyzer="std"/>
             <text qname="tei:quote" analyzer="std"/>
+            <text qname="tei:w" analyzer="std" />
             <inline qname="tei:unclear" />
             <inline qname="tei:supplied" />
             <inline qname="tei:gap" />
