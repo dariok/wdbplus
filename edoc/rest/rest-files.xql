@@ -48,7 +48,7 @@ function wdbRf:getFileFragmentJSON ($fileID as xs:string, $fragment as xs:string
 (: export options for ingest into (No)SkE :)
 declare
     %rest:GET
-    %rest:path("/edoc/file/ske/{$fileID}")
+    %rest:path("/edoc/file/tok/ske/{$fileID}")
     %rest:produces("application/xml")
 function wdbRf:getFileSke ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
@@ -60,4 +60,24 @@ function wdbRf:getFileSke ($fileID as xs:string) {
                 return <p>{normalize-space($s)}</p>
         }</doc>
     </xml>
+};
+
+(: produce ACDH tokenization :)
+declare
+    %rest:GET
+    %rest:path("/edoc/file/tok/acdh/{$fileID}")
+    %rest:produces("application/json")
+    %output:method("json")
+function wdbRf:getFileACDHJSON ($fileID as xs:string) {
+    let $file := $wdbRf:collection/id($fileID)
+    let $t := $file//tei:text
+    let $arr := for $f in $t//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))] (:($t//tei:w, $t//tei:pc[not(parent::tei:w)]):)
+        return map {"tokenId": normalize-space($f/@xml:id), "value": normalize-space($f)}
+    
+    return map {
+        "tokenArray": [
+            $arr
+        ],
+        "language": "german"
+    }
 };
