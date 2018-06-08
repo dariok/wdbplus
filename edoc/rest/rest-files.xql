@@ -61,6 +61,18 @@ function wdbRf:getFileSke ($fileID as xs:string) {
         }</doc>
     </xml>
 };
+declare
+    %rest:GET
+    %rest:path("/edoc/file/tok/ske/{$fileID}")
+    %rest:produces("text/plain")
+    %output:method("text")
+function wdbRf:getFileText ($fileID as xs:string) {
+    let $file := $wdbRf:collection/id($fileID)
+    let $t := $file//tei:text
+    return for $f in $t//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
+        return normalize-space($f) || "
+"
+};
 
 (: produce ACDH tokenization :)
 declare
