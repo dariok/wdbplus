@@ -4,8 +4,9 @@ module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
 import module namespace json = "http://www.json.org";
 
-declare namespace rest   ="http://exquery.org/ns/restxq";
-declare namespace output ="http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare variable $wdbRf:collection := collection('/db/apps/edoc/data');
 
@@ -42,4 +43,21 @@ declare
 function wdbRf:getFileFragmentJSON ($fileID as xs:string, $fragment as xs:string) {
     let $f := $wdbRf:collection/id($fileID)/id($fragment)
     return json:xml-to-json($f)
+};
+
+(: export options for ingest into (No)SkE :)
+declare
+    %rest:GET
+    %rest:path("/edoc/file/ske/{$fileID}")
+    %rest:produces("application/xml")
+function wdbRf:getFileSke ($fileID as xs:string) {
+    let $file := $wdbRf:collection/id($fileID)
+    let $t := $file//tei:text
+    return
+    <xml>
+        <doc author="Digitarium" title="{$file//tei:title[@type='num']}">{
+            for $s in $t//tei:p | $t//tei:titlePart | $t//tei:list | $t//tei:table
+                return <p>{normalize-space($s)}</p>
+        }</doc>
+    </xml>
 };
