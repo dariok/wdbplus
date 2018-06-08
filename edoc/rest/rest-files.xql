@@ -9,14 +9,24 @@ declare namespace output ="http://www.w3.org/2010/xslt-xquery-serialization";
 
 declare variable $wdbRf:collection := collection('/db/apps/edoc/data');
 
+(: export a complete file, cradle and all :)
 declare
     %rest:GET
     %rest:path("/edoc/file/{$fileID}")
-    %output:media-type("application/xml")
+    %rest:produces("application/xml")
 function wdbRf:getFile($fileID as xs:string) {
     $wdbRf:collection/id($fileID)
 };
+declare
+    %rest:GET
+    %rest:path("/edoc/file/{$fileID}")
+    %rest:produces("application/json")
+    %output:method("json")
+function wdbRf:getFileJSON($fileID as xs:string) {
+    json:xml-to-json($wdbRf:collection/id($fileID))
+};
 
+(: export a fragment from a file :)
 declare
     %rest:GET
     %rest:path("/edoc/file/{$fileID}/{$fragment}")
@@ -24,7 +34,6 @@ declare
 function wdbRf:getFileFragmentXML ($fileID as xs:string, $fragment as xs:string) {
     $wdbRf:collection/id($fileID)/id($fragment)
 };
-
 declare
     %rest:GET
     %rest:path("/edoc/file/{$fileID}/{$fragment}")
