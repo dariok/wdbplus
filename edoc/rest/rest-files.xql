@@ -3,13 +3,14 @@ xquery version "3.1";
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
 import module namespace json = "http://www.json.org";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare variable $wdbRf:server := "https://diarium-reporting-exist.eos.arz.oeaw.ac.at";
-declare variable $wdbRf:collection := collection('/db/apps/edoc/data');
+declare variable $wdbRf:server := $wdb:server;
+declare variable $wdbRf:collection := $wdb:data;
 
 (: export a complete file, cradle and all :)
 declare

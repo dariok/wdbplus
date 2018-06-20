@@ -2,14 +2,14 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace json = "http://www.json.org";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare variable $wdbRc:server := "https://diarium-reporting-exist.eos.arz.oeaw.ac.at";
-declare variable $wdbRc:collection := '/db/apps/edoc/data';
+declare variable $wdbRc:server := $wdb:server;
+declare variable $wdbRc:collection := $wdb:data;
 
 (: List collection contents :)
 declare
