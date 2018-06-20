@@ -15,9 +15,23 @@ declare variable $wdbRf:collection := collection('/db/apps/edoc/data');
 declare
     %rest:GET
     %rest:path("/edoc/file/{$fileID}")
+    %rest:produces("text/plain")
+    %output:method("text")
+function wdbRf:getFileText ($fileID as xs:string) {
+    let $file := $wdbRf:collection/id($fileID)[self::tei:TEI]
+    
+    return for $p in $file//*[tei:w]
+        let $text := $p/*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
+        
+        return "
+" || $text
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/file/{$fileID}")
     %rest:produces("application/xml")
 function wdbRf:getFile($fileID as xs:string) {
-    $wdbRf:collection/id($fileID)
+    $wdbRf:collection/id($fileID)[self::tei:TEI]
 };
 declare
     %rest:GET
@@ -25,7 +39,13 @@ declare
     %rest:produces("application/json")
     %output:method("json")
 function wdbRf:getFileJSON($fileID as xs:string) {
-    json:xml-to-json($wdbRf:collection/id($fileID))
+    json:xml-to-json($wdbRf:collection/id($fileID)[self::tei:TEI])
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/file/{$fileID}")
+function wdbRf:getFileDefault ($fileID as xs:string) {
+    wdbRf:getFile($fileID)
 };
 
 (: export a fragment from a file :)
@@ -93,6 +113,30 @@ function wdbRf:getFileACDHJSON ($fileID as xs:string) {
         ],
         "language": "german"
     }
+};
+
+(: produce verticalised XML with minimal structure :)
+declare
+	%rest:GET
+	%rest:path("/edoc/file/tok/acdh/{$fileID}")
+	%rest:produces("application/xml")
+	%output:method("xml")
+function wdbRf:getFileACDH ($fileID as xs:string) {
+	let $file := $wdbRf:collection/id($fileID)
+    let $t := $file//tei:text
+    
+    return
+    	<doc id="{$fileID}">{
+    		for $s in $t//tei:p | $t//tei:titlePart | $t//tei:list | $t//tei:table
+                return
+<p>
+				{"
+",
+                	for $w in $s//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))] return
+                		normalize-space($w) || "	" || $w/@xml:id || "
+"
+                }</p>
+    	}</doc>
 };
 
 (: produce a IIIF manifest :)
