@@ -31,6 +31,14 @@ function wdbRc:getCollection ($collection as xs:string, $subcoll1 as xs:string, 
 	wdbRc:formatCollection($collection||'/'||$subcoll1||'/'||$subcoll2)
 };
 
+(: global list :)
+declare
+	%rest:GET
+	%rest:path("/edoc/collections")
+function wdbRc:getCollection() {
+	wdbRc:formatCollection('')
+};
+
 declare %private function wdbRc:formatCollection ($collection as xs:string) {
 	<collection name="{$collection}">{
 		for $coll in  xmldb:get-child-collections($wdbRc:collection||'/'||$collection)
