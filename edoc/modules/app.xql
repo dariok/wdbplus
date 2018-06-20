@@ -17,9 +17,23 @@ declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 
 (: VARIABLES :)
-(: get the name of the server, possibly including the port :)	
+
+(: get the base of this instance within the db (i.e. relative to /db) :)
+declare variable $wdb:edocBaseDB := $config:app-root;
+
+(: the config file :)
+declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
+
+(: the data collection :)
+declare variable $wdb:data := wdb:getDataCollection();
+
+(: get the name of the server, possibly including the port
+	: Admins REALLY SHOULD NOT rely on the resolution but set the
+	: value in config.xml instead :)
 declare variable $wdb:server :=
-	if (string-length(request:get-header("Origin")) = 0)
+	if ($wdb:configFile//config:server) then
+		$wdb:configFile//config:server
+	else if (string-length(request:get-header("Origin")) = 0)
 		then 
 			let $scheme := if (request:get-header-names() = 'X-Forwarded-Proto')
 				then normalize-space(request:get-header('X-Forwarded-Proto'))
@@ -30,12 +44,6 @@ declare variable $wdb:server :=
 				else $scheme || '://' || request:get-server-name()
 		else request:get-header("Origin")
 ;
-
-(: get the base of this instance within the db (i.e. relative to /db) :)
-declare variable $wdb:edocBaseDB := $config:app-root;
-
-(: the config file :)
-declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
 
 (:~
  : get the base URI either from the data of the last call or from the configuration
@@ -392,4 +400,18 @@ declare function wdb:getFooter($xml as xs:string, $xsl as xs:string) {
 		<span>XML: <a href="{$xml}">{$xml}</a></span>
 		<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
 	</footer>
+};
+
+(: Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
+	: in the Collection that contains all projects :)
+declare function wdb:getDataCollection () {
+	let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
+	
+	let $paths := for $f in $editionsW
+    	let $path := base-uri($f)
+    	where contains($path, '.xml')
+    	order by string-length($path)
+    	return $path
+    
+    return xstring:substring-before-last($paths[1], '/')
 };
