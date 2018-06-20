@@ -19,12 +19,18 @@ declare
     %output:method("text")
 function wdbRf:getFileText ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)[self::tei:TEI]
+    let $title := $file//tei:title[@type = 'main']
+    let $t := $file//tei:text
     
-    return for $p in $file//*[tei:w]
-        let $text := $p/*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
-        
-        return "
-" || $text
+    return (
+    	$title || "
+",
+    	for $s in $t//tei:p | $t//tei:titlePart | $t//tei:list | $t//tei:table
+	        (:let $text := $p/*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]:)
+	        let $text := normalize-space($s)
+	        
+	        return "
+" || $text)
 };
 declare
     %rest:GET
@@ -87,7 +93,7 @@ declare
     %rest:path("/edoc/file/tok/ske/{$fileID}")
     %rest:produces("text/plain")
     %output:method("text")
-function wdbRf:getFileText ($fileID as xs:string) {
+function wdbRf:getFileSkeText ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
     let $t := $file//tei:text
     return for $f in $t//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
@@ -115,7 +121,9 @@ function wdbRf:getFileACDHJSON ($fileID as xs:string) {
     }
 };
 
-(: produce verticalised XML with minimal structure :)
+(:~
+	: produce verticalised XML with minimal structure
+:)
 declare
 	%rest:GET
 	%rest:path("/edoc/file/tok/acdh/{$fileID}")
