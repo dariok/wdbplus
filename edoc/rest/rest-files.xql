@@ -2,15 +2,18 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace json = "http://www.json.org";
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
+import module namespace json    = "http://www.json.org";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace xstring = "https://github.com/dariok/XStringUtils" at "../include/xstring/string-pack.xql";
 
-declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace http   = "http://expath.org/ns/http-client";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare variable $wdbRf:server := $wdb:server;
-declare variable $wdbRf:collection := $wdb:data;
+declare variable $wdbRf:collection := collection($wdb:data);
 
 (: export a complete file, cradle and all :)
 declare
@@ -158,22 +161,22 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
     let $title := normalize-space($file//tei:title[@type='main'])
     let $num := normalize-space($file//tei:title[@type='num'])
+    let $map := wdb:populateModel($fileID)
+    let $meta := doc($map("infoFileLoc"))
     
     let $canv:= for $fa in $file//tei:facsimile
         let $page := substring-after($fa/@xml:id, '_')
         
         return map {
-            "@context": "http://iiif.io/api/presentation/2/context.json",
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
-            "@type": "sc:canvas",
+            "@type": "sc:Canvas",
             "label": "S. " || $page,
             "height": xs:int($fa/tei:surface/@lry),
             "width": xs:int($fa/tei:surface/@lrx),
             "images": [
                 map{
-                    "@context": "http://iiif.io/api/presentation/2/context.json",
                     "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
-                    "@type": "oa:annotation",
+                    "@type": "oa:Annotation",
                     "motivation": "sc:painting",
                     "resource": map {
                         "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa//tei:graphic/@url, ':'),
@@ -189,7 +192,6 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
             ],
             "otherContent": [
                 map {
-                    "@context" : "http://iiif.io/api/presentation/2/context.json",
                     "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/list/" || $page,
                     "@type": "sc:AnnotationList",
                     "resources": [
@@ -208,74 +210,77 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
             ]
         }
     
-    let $seq := map {
-        "@context": "http://iiif.io/api/presentation/2/context.json",
-        "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/sequence/normal",
-        "@type": "sc:sequence",
-        "startCanvas": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p1",
-        "canvases": [$canv]
-    }
+    let $md := (
+    	map { "label": "ID", "value": $fileID },
+        map { "label": [
+        		map {"@value": "Title", "@language": "en" },
+        		map {"@value": "Titel", "@language": "de" }
+        	],
+        	"value": $title },
+        if ($meta//meta:type) then map {
+	            "label": [ map {"@value": "Type", "@language": "en"}, map {"@value": "Typ", "@language": "de"}],
+	            "value": [ map {"@value": normalize-space($meta//meta:type), "@language": "en"}]
+	        } else (),
+        if ($file//tei:teiHeader//tei:sourceDesc/tei:place) then
+	        map {
+	            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
+	            "value": "<a href='" || $file//tei:teiHeader//tei:place/@ref || "'>" || $file//tei:teiHeader//tei:place || "</a>"
+	        } else if ($meta//meta:place) then
+	        map {
+	            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
+	            "value": "<a href='" || $meta//meta:place/@ref || "'>" || $meta//meta:place || "</a>"
+	        } else (),
+        if ($file//tei:teiHeader//tei:sourceDesc/tei:date) then
+	        map {
+	            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
+	            "value": normalize-space($file//tei:teiHeader//tei:sourceDesc/tei:date[1]/@when)
+	        } else if ($meta//meta:titleData/meta:date) then
+	        map {
+	            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
+	            "value": normalize-space($meta//meta:titleData/meta:date[1])
+	        } else (),
+        if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
+	        map {
+	            "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
+	            "value": "<a href='" || $wdbRf:server || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
+	        } else (),
+        if ($meta//meta:language) then 
+	        map {
+	            "label": [ map {"@value": "Languages", "@language": "en"}, map {"@value": "Sprachen", "@language": "de"}],
+	            "value": for $l in $meta//meta:language return xs:string($l)
+	        } else ()
+    )
     
-    return map {
+    return (
+    <rest:response>
+	    <http:response>
+	        <http:header name="Access-Control-Allow-Origin" value="*"/>
+	    </http:response>
+	</rest:response>,
+    map {
         "@context": "http://iiif.io/api/presentation/2/context.json",
         "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/manifest",
-        "@type": "sc:manifest",
+        "@type": "sc:Manifest",
         "label": $num,
-        "description": $title,
+        "description": [map{
+        	"@value": $title,
+        	"@language": xstring:substring-before($meta//meta:language[1], '-')
+        }],
         "viewingDirection": "left-to-right",
         "viewingHint": "paged",
-        "license": "http://creativecommons.org/publicdomain/mark/4.0/",
         "license": "https://creativecommons.org/licenses/by-sa/4.0/legalcode",
-        "attribution": [
-            map {
-                "@value" : "Austrian National Library",
-                "@language" : "en"
-            },
-            map {
-                "@value" : "Österreichische Nationalbibliothek",
-                "@language" : "de"
-            }
-        ],
-        "attribution": [
-            map {
+        "attribution": map {
                 "@value" : "Austrian Academy of Sciences, Austrian Centre for Digital Humanities",
                 "@language" : "en"
             },
-            map {
-                "@value" : "Österreichische Akademie der Wissenschaften, Austrian Centre for Digital Humanities",
-                "@language" : "de"
-            }
-        ],
-        "metadata": [
-            map {
-                "label": [ map {"@value": "Id", "@language": "en"}, map {"@value": "Id", "@language": "de"}],
-                "value": $fileID
-            },
-            map {
-                "label": [ map {"@value": "Title", "@language": "en"}, map {"@value": "Titel", "@language": "de"}],
-                "value": $title
-            },
-            map {
-                "label": [ map {"@value": "Type", "@language": "en"}, map {"@value": "Typ", "@language": "de"}],
-                "value": [ map {"@value": "newspaper", "@language": "en"}, map {"@value": "Zeitung", "@language": "de"}]
-            },
-            map {
-                "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
-                "value": "<a href='http://d-nb.info/gnd/4066009-6'>Wien</a>"
-            },
-            map {
-                "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
-                "value": substring-after($fileID, 'wd_')
-            },
-            map {
-                "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
-                "value": "<a href='" || $wdbRf:server || "'>Wien[n]erisches Diarium digital</a>"
-            },
-            map {
-                "label": [ map {"@value": "Languages", "@language": "en"}, map {"@value": "Sprachen", "@language": "de"}],
-                "value": [ "de-Goth-AT", "la", "fr", "it" ]
-            }
-        ],
-        "sequences": $seq
-    } 
+        "metadata": $md,
+        "sequences": [
+        	map {
+				"@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/sequence/normal",
+				"@type": "sc:Sequence",
+				"startCanvas": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p1",
+				"canvases": $canv
+			}
+		]
+    })
 };
