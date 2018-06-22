@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
-	targetNamespace="https://github.com/dariok/wdbplus" xmlns:wdbplus="https://github.com/dariok/wdbplus"
+	targetNamespace="https://github.com/dariok/wdbplus/config" xmlns:wdbplus="https://github.com/dariok/wdbplus/config"
 	vc:minVersion="1.1" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
 	<xs:element name="config">
 		<xs:complexType>
