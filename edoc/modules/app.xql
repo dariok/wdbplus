@@ -197,7 +197,9 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
     let $projectFileAvailable := util:binary-doc-available($location)
     
     let $functionAvailable := if ($projectFileAvailable = true())
-    	then system:function-available(xs:QName("wdbPF:getHeader"), 1)
+    	then
+    		let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+    		return system:function-available(xs:QName("wdbPF:getHeader"), 1)
     	else false()
     
     return
