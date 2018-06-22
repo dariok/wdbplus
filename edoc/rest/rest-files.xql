@@ -11,6 +11,7 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 
 declare variable $wdbRf:server := $wdb:server;
 declare variable $wdbRf:collection := collection($wdb:data);
@@ -164,8 +165,22 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
     let $map := wdb:populateModel($fileID)
     let $meta := doc($map("infoFileLoc"))
     
+    let $location := $map('ed')||'/project.xqm'
+    let $projectFileAvailable := util:binary-doc-available($location)
+    let $functionAvailable := if ($projectFileAvailable = true())
+    	then
+    		let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+    		return system:function-available(xs:QName("wdbPF:getImages"), 2)
+    	else false()
+    
     let $canv:= for $fa in $file//tei:facsimile
         let $page := substring-after($fa/@xml:id, '_')
+        let $resource := if ($functionAvailable)
+            	then util:eval("wdbPF:getImages($fileID, $page)", false(), ($fileID, $page))
+            	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa//tei:graphic/@url, ':')
+        let $sid := if ($projectFileAvailable = true())
+    	then substring-before($resource, '/full')
+    	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
         
         return map {
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
@@ -173,23 +188,21 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
             "label": "S. " || $page,
             "height": xs:int($fa/tei:surface/@lry),
             "width": xs:int($fa/tei:surface/@lrx),
-            "images": [
-                map{
-                    "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
-                    "@type": "oa:Annotation",
-                    "motivation": "sc:painting",
-                    "resource": map {
-                        "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa//tei:graphic/@url, ':'),
-                        "@type": "dctypes:Image",
-                        "service": map{
-                             "@context" : "http://iiif.io/api/image/2/context.json",
-                             "@id" : $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page,
-                             "profile" : "http://iiif.io/api/image/2/level2.json"
-                        }
-                    },
-                    "on": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page
-                }
-            ],
+            "images": [map{
+                "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
+                "@type": "oa:Annotation",
+                "motivation": "sc:painting",
+                "resource": map {
+                    "@id": $resource,
+                    "@type": "dctypes:Image",
+                    "service": map{
+                         "@context" : "http://iiif.io/api/image/2/context.json",
+                         "@id" : $sid,
+                         "profile" : "http://iiif.io/api/image/2/level2.json"
+                    }
+                },
+                "on": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page
+            }],
             "otherContent": [
                 map {
                     "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/list/" || $page,
