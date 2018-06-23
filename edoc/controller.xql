@@ -1,4 +1,4 @@
-(: Bearbeiter DK = Dario Kampkaspar, kampkaspar@hab.de :)
+(: Bearbeiter DK = Dario Kampkaspar :)
 xquery version "3.0";
 
 import module namespace wdba 		= "https://github.com/dariok/wdbplus/auth"	at "modules/auth.xqm";

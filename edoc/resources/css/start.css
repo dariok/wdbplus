@@ -1,9 +1,8 @@
 /* CSS für index- und andere breite Seiten in eXist */
-/* 2016-07-20 Dario Kampkaspar (DK) – kampkaspar@hab.de */
+/* 2016-07-20 Dario Kampkaspar (DK) */
 
 @import "common.css";
 
-/* basiert auf diglib.hab.de/navigator2.css */
 #toc_title {
 	background-color: #EEE;
 	padding: 0.5em;

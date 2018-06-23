@@ -16,13 +16,12 @@
 	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
 	<!--<role>
 		<type>workbench</type>
-		<peer>http://dev2.hab.de/edoc</peer>
+		<peer>http://my.domain.tld/edoc</peer>
 	</role>-->
 	
 	<!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
 	<!--<params>
 		<param name="vd16">http://gateway-bayern.de/VD16+</param>
-		<param name="hab">http://diglib.hab.de</param>
 	</params>-->
 	
 	<!-- if the base address cannot be correctly extracted, a value – full URI to the instance's root, possibly including

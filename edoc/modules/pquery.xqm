@@ -1,5 +1,5 @@
 (: kontrolliert die Verarbeitung von projektspezifischen XQuery;
- : Bearbeiter:DK Dario Kampkaspar kampkaspar@hab.de
+ : Bearbeiter:DK Dario Kampkaspar
  : erstellt 2016-11-03 DK :)
 xquery version "3.0";
 

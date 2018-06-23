@@ -1,5 +1,5 @@
 xquery version "3.0";
-(: erstellt 2016-07-26 Bearbeiter:DK Dario Kampkaspar – kampkaspar@hab.de :)
+(: erstellt 2016-07-26 Bearbeiter:DK Dario Kampkaspar :)
 
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
