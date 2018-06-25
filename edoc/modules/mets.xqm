@@ -13,14 +13,12 @@ declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace match		= "http://www.w3.org/2005/xpath-functions";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
-declare function wdbm:pageTitle($node as node(), $model as map(*)) {
-	<title>{$model("title")}</title>
-};
-
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $xml := $model("infoFileLoc")
+	let $xml := if (doc-available($model('ed')||'/wdbmeta.xml'))
+		then ($model('ed')||'/wdbmeta.xml')
+		else ($model('ed')||'/mets.xml')
 	
-	let $xsl := if (contains($model("infoFileLoc"), 'wdbmeta'))
+	let $xsl := if (contains($xml,'wdbmeta'))
 		then if (doc-available(concat($model("ed"), '/wdbmeta.xsl')))
 			then $model("ed") || '/wdbmeta.xsl'
 			else $wdb:edocBaseDB || '/resources/wdbmeta.xsl'
@@ -36,7 +34,7 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			<param name="role" value="{$wdb:role}" />
 			<param name="access" value="{sm:has-access($model('ed'), 'w')}" />
 		</parameters>
-				
+	
 	return
 		transform:transform(doc($xml), doc($xsl), $param)
 };

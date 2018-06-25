@@ -4,7 +4,7 @@ xquery version "3.0";
 import module namespace wdbm	= "https://github.com/dariok/wdbplus/mets" at "mets.xqm";
 import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 
-let $model := wdb:populateModel(request:get-parameter('id', ''))
+let $model := map {"ed": request:get-parameter('id', '')}
 let $bogus := <void></void>
 
 return
