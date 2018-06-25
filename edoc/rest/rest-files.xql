@@ -102,7 +102,7 @@ function wdbRf:getFileSkeText ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
     let $t := $file//tei:text
     return for $f in $t//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
-        return normalize-space($f) || "
+        return wdbRf:wtoken($f) || "
 "
 };
 
@@ -116,7 +116,7 @@ function wdbRf:getFileACDHJSON ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
     let $t := $file//tei:text
     let $arr := for $f in $t//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))] (:($t//tei:w, $t//tei:pc[not(parent::tei:w)]):)
-        return map {"tokenId": normalize-space($f/@xml:id), "value": normalize-space($f)}
+        return map {"tokenId": normalize-space($f/@xml:id), "value": wdbRf:wtoken($f)}
     
     return map {
         "tokenArray": [
@@ -145,9 +145,13 @@ function wdbRf:getFileACDH ($fileID as xs:string) {
 <p>{
                 	for $w in $s//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
                 		return "
-" || normalize-space($w) || "	" || $w/@xml:id}
+" || wdbRf:wtoken($w) || "	" || $w/@xml:id}
 </p>
     	}</doc>
+};
+declare %private function wdbRf:wtoken($elem) as xs:string {
+	let $parts := for $node in $elem/node() return normalize-space($node)
+	return string-join($parts, '')
 };
 
 (: produce a IIIF manifest :)
