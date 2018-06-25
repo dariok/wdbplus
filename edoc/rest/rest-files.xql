@@ -142,13 +142,11 @@ function wdbRf:getFileACDH ($fileID as xs:string) {
     	<doc id="{$fileID}">{
     		for $s in $t//tei:p | $t//tei:titlePart | $t//tei:list | $t//tei:table
                 return
-<p>
-				{"
-",
-                	for $w in $s//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))] return
-                		normalize-space($w) || "	" || $w/@xml:id || "
-"
-                }</p>
+<p>{
+                	for $w in $s//*[@xml:id and (self::tei:w or (self::tei:pc and not(parent::tei:w)))]
+                		return "
+" || normalize-space($w) || "	" || $w/@xml:id}
+</p>
     	}</doc>
 };
 
