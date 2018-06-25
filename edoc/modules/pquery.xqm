@@ -59,3 +59,10 @@ declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
     	<nav style="display:none;" />
     </header>
 };
+
+(:~
+ : return html:meta to identify the project
+ :)
+declare function wdbpq:getEd ($node as node(), $model as map(*)) {
+	<meta name="id" content="{$model('ed')}"/>
+};
