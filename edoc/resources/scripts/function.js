@@ -293,7 +293,7 @@ function sprung (event) {
 }
 function highlightAll (startMarker, endMarker, color, alt) {
 	color = (color === 'undefined') ? '#FFEF19' : color;
-	color = (alt === 'undefined') ? '' : alt;
+	alt = (alt === 'undefined') ? '' : alt;
 	
     if (startMarker.is(endMarker)) {
         // just one element selected
