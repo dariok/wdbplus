@@ -14,16 +14,20 @@ declare namespace match		= "http://www.w3.org/2005/xpath-functions";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $xml := if (doc-available($model('ed')||'/wdbmeta.xml'))
-		then ($model('ed')||'/wdbmeta.xml')
-		else ($model('ed')||'/mets.xml')
+	let $targetCollection := if(collection($wdb:data)/id($model("ed")))
+		then wdb:getEdPath(base-uri((collection($wdb:data)/id($model("ed")))[1]), true())
+		else $model("ed")
+		
+	let $xml := if (doc-available($targetCollection||'/wdbmeta.xml'))
+		then ($targetCollection||'/wdbmeta.xml')
+		else ($targetCollection||'/mets.xml')
 	
 	let $xsl := if (contains($xml,'wdbmeta'))
-		then if (doc-available(concat($model("ed"), '/wdbmeta.xsl')))
-			then $model("ed") || '/wdbmeta.xsl'
+		then if (doc-available($targetCollection || '/wdbmeta.xsl'))
+			then $targetCollection || '/wdbmeta.xsl'
 			else $wdb:edocBaseDB || '/resources/wdbmeta.xsl'
-		else if (doc-available(concat($model("ed"), '/mets.xsl')))
-			then $model("ed") || '/mets.xsl'
+		else if (doc-available($targetCollection || '/mets.xsl'))
+			then $targetCollection || '/mets.xsl'
 			else $wdb:edocBaseDB || '/resources/mets.xsl'
 	
 	let $param := 
@@ -32,7 +36,7 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			<param name="footerXSL" value="{wdb:getUrl($xsl)}" />
 			<param name="wdb" value="{$wdb:edocBaseURL || '/view.html'}" />
 			<param name="role" value="{$wdb:role}" />
-			<param name="access" value="{sm:has-access($model('ed'), 'w')}" />
+			<param name="access" value="{sm:has-access($targetCollection, 'w')}" />
 		</parameters>
 	
 	return
