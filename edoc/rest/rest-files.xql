@@ -175,11 +175,11 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
     		return system:function-available(xs:QName("wdbPF:getImages"), 2)
     	else false()
     
-    let $canv:= for $fa in $file//tei:facsimile
+    let $canv:= for $fa in $file//tei:surface
         let $page := substring-after($fa/@xml:id, '_')
         let $resource := if ($functionAvailable)
             	then util:eval("wdbPF:getImages($fileID, $page)", false(), ($fileID, $page))
-            	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa//tei:graphic/@url, ':')
+            	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
         let $sid := if ($projectFileAvailable = true())
     	then substring-before($resource, '/full')
     	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
@@ -188,8 +188,8 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
             "@type": "sc:Canvas",
             "label": "S. " || $page,
-            "height": xs:int($fa/tei:surface/@lry),
-            "width": xs:int($fa/tei:surface/@lrx),
+            "height": xs:int($fa/@lry),
+            "width": xs:int($fa/@lrx),
             "images": [map{
                 "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
                 "@type": "oa:Annotation",
