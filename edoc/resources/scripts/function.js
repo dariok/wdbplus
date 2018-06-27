@@ -408,7 +408,7 @@ function toggleNavigation() {
     if ($('nav').text() === '') {
         $('nav').text('lädt...');
         var id = $('meta[name="id"]').attr('content');
-        var res = $. get ('modules/mets.xql?id=' + id, '',
+        var res = $. get ('modules/nav.xql?id=' + id, '',
         function (data) {
             $('nav').html($('ul', data).first()).prepend($('<h2>Navigation</h2>'));
         },

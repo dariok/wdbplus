@@ -1,6 +1,6 @@
 xquery version "3.0";
 
-module namespace wdbm = "https://github.com/dariok/wdbplus/mets";
+module namespace wdbm = "https://github.com/dariok/wdbplus/nav";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb 		= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
