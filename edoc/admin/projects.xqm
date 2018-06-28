@@ -81,9 +81,20 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 
 declare function wdbPL:head ($node as node(), $model as map(*)) {
 	let $ed := request:get-parameter('ed', '')
-	return if ($ed = '')
-		then <h1>Projekte</h1>
-		else <h1>Projekt {$ed}</h1>
+	let $title := if (ends-with(request:get-uri(), 'admin.html'))
+		then "Admin-Seite"
+		else if (ends-with(request:get-uri(), 'global.html'))
+		then "Globale Einstellungen"
+		else if ($ed = '')
+		then "Projekte"
+		else "Projekt " || $ed
+	
+	let $opts := if (request:get-parameter('job', '') != '')
+		then <span class="dispOpts">[<a href="global.html">globale Optionen</a>]</span>
+		else ()
+		
+	return (<h1>{$title}</h1>,
+		$opts)
 };
 
 declare function local:getFiles($edoc as xs:string) {
