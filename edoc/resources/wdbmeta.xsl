@@ -36,7 +36,7 @@
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:apply-templates>
-						<xsl:sort select="@order"/>
+						<xsl:sort select="xs:integer(@order)"/>
 					</xsl:apply-templates>
 				</xsl:otherwise>
 			</xsl:choose>
