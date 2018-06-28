@@ -14,9 +14,9 @@ declare namespace match		= "http://www.w3.org/2005/xpath-functions";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
-	let $targetCollection := if(collection($wdb:data)/id($model("ed")))
-		then wdb:getEdPath(base-uri((collection($wdb:data)/id($model("ed")))[1]), true())
-		else $model("ed")
+	let $targetCollection := if(collection($wdb:data)/id($model("id")))
+		then wdb:getEdPath(base-uri((collection($wdb:data)/id($model("id")))[1]), true())
+		else $model("pathToEd")
 		
 	let $xml := if (doc-available($targetCollection||'/wdbmeta.xml'))
 		then ($targetCollection||'/wdbmeta.xml')
@@ -38,16 +38,16 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			<param name="role" value="{$wdb:role}" />
 			<param name="access" value="{sm:has-access($targetCollection, 'w')}" />
 		</parameters>
-	
-	return
-		transform:transform(doc($xml), doc($xsl), $param)
+	let $t := console:log($xml || ' – ' || $xsl)
+    let $t1 := console:log($param)
+	return  transform:transform(doc($xml), doc($xsl), $param)
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
-	let $xml := concat($model("ed"), '/start.xml')
+	let $xml := concat($model("pathToEd"), '/start.xml')
 	
 	let $xsl := if (doc-available(concat($model("ed"), '/start.xsl')))
-		then $model("ed") || '/start.xsl'
+		then $model("pathToEd") || '/start.xsl'
 		else $wdb:edocBaseDB || '/resources/start.xsl'
 	
 	return

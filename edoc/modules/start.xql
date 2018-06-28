@@ -14,25 +14,32 @@ declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
-let $path := wdb:getEdPath($wdb:edocBaseDB || request:get-parameter('path', ''), true())
+let $pPath := request:get-parameter('path', '')
+let $pEd := request:get-parameter('id', '')
 
-let $metaFile := if (doc-available($path || '/wdbmeta.xml'))
+let $path := if ($pEd != '')
+	then wdb:getEdPath(base-uri(collection($wdb:data)/id($pEd)), true())
+	else wdb:getEdPath($wdb:edocBaseDB || $pPath, true())
+
+let $metaFile := if ($pEd != '')
+	then collection($wdb:data)/id($pEd)
+	else if (doc-available($path || '/wdbmeta.xml'))
 	then doc($path || '/wdbmeta.xml')
 	else doc($path || '/mets.xml')
 
-let $model := if (doc-available($path || '/wdbmeta.xml'))
+let $model := if ($metaFile/wdbmeta:*)
 	then
 		let $id := $metaFile//wdbmeta:projectID/text()
 		let $title := normalize-space($metaFile//wdbmeta:title[1])
-		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := $path,
+		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := substring-after($path, $wdb:data),
 			"pathToEd" := $path, "fileLoc" := "start.xql" }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
 		let $title := normalize-space(($metaFile//mods:title)[1])
-		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := $path,
+		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := substring-after($path, $wdb:data),
 			"pathToEd" := $path, "fileLoc" := "start.xql" }
 
-let $t := console:log($model("pathToEd"))
+let $t := console:log($model)
 let $bogus := <void></void>
 (: <link rel="stylesheet" type="text/css" href="$shared/css/start.css" /> :)
 return 
