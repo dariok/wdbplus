@@ -172,6 +172,8 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
     let $location := $model('ed')||'/project.xqm'
     
+    (: use function projectFUnction for this :)
+    
     let $files := if (util:binary-doc-available($location))
         then
             (: Project has its own definition to find files :)
@@ -195,6 +197,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
 	let $location := $model('ed')||'/project.xqm'
     let $projectFileAvailable := util:binary-doc-available($location)
+    
+    (: use function below to check :)
     
     let $functionAvailable := if ($projectFileAvailable = true())
     	then
@@ -404,8 +408,10 @@ declare function wdb:getFooter($xml as xs:string, $xsl as xs:string) {
 	</footer>
 };
 
-(: Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
-	: in the Collection that contains all projects :)
+(:~
+ : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
+ : in the Collection that contains all projects
+ :)
 declare function wdb:getDataCollection () {
 	let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
 	
@@ -416,4 +422,26 @@ declare function wdb:getDataCollection () {
     	return $path
     
     return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
+};
+
+(:~ 
+ : Look up $function the given project's project.xqm if it exists
+ : This involves registering the module: if the function is available, it can
+ : immediately be used by the calling script.
+ : The scope is the project as given in $model("pathToEd")
+ : 
+ : @param $model a map of parameters that conforms to the global structure
+ : @param $name the (local) name of the function to be looked for
+ : @param $arity the arity (i.e. number of arguments) of said function
+ : @return true() if project.xqm exists for the project and contains a function
+ : with the given parameters; else() otherwise.
+ :)
+declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
+    let $location := $model("pathToEd") || '/project.xqm'
+    
+    return if (not(util:binary-doc-available($location)))
+        then false()
+        else
+            let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+            return system:function-available(xs:QName("wdbPF:" || $name), $arity)
 };
