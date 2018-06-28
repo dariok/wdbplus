@@ -415,5 +415,5 @@ declare function wdb:getDataCollection () {
     	order by string-length($path)
     	return $path
     
-    return xstring:substring-before-last($paths[1], '/')
+    return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
 };
