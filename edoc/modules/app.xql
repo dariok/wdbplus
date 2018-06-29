@@ -126,9 +126,13 @@ try {
 					    (: throw error :)
 					    ()
 			
-			let $xslt := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
 				then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
 				else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+			
+			let $xslt := if (doc-available($xsl))
+				then $xsl
+				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0002'))
 			
 			let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 				
