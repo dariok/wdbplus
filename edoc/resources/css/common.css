@@ -40,19 +40,6 @@ h3 {
 	width: 100%;
 }
 
-/* Spezialbereich rechts */
-/* #rightSide {
-	/* flex wegen toggle-div */
-	display: flex;
-	/*width: 46%;*/
-	width: calc(50% - 3em);
-	/*height: 98%;*/
-	height: calc(100% - 150px);
-	position: fixed;
-	right: 2.5em;
-	background-color:white;
-}*/
-
 /* eingeblendete Informationen, Fußnoten etc. */
 .info {
 	background-color: yellow;
