@@ -170,17 +170,10 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
  : @created 2018-02-02 DK
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
-    let $location := $model('ed')||'/project.xqm'
-    
-    (: use function projectFUnction for this :)
-    
-    let $files := if (util:binary-doc-available($location))
-        then
-            (: Project has its own definition to find files :)
-            let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
-            return util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+    let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
+        then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
     	else
-    	    (: no specific function available, so we assume stanards :)
+    	    (: no specific function available, so we assume standards :)
     	    (
                 <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.css" />,
                 <script src="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.js" />
@@ -195,15 +188,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
  : return the header - if there is a project specific function, use it
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
-	let $location := $model('ed')||'/project.xqm'
-    let $projectFileAvailable := util:binary-doc-available($location)
-    
-    (: use function below to check :)
-    
-    let $functionAvailable := if ($projectFileAvailable = true())
-    	then
-    		let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
-    		return system:function-available(xs:QName("wdbPF:getHeader"), 1)
+	let $functionAvailable := if (wdb:findProjectFunction($model, 'getHeader', 1))
+    	then system:function-available(xs:QName("wdbPF:getHeader"), 1)
     	else false()
     
     return
