@@ -125,16 +125,11 @@ declare function wdb:populateModel($id as xs:string, $view as xs:string) { (:as 
 	let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 		
 	(: TODO parameter aus config.xml einlesen und übergeben? :)
-    return map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEd, "infoFileLoc" := $infoFileLoc,
-    		"title" := $title, "id" := $id, "view" := $view }
-
-	(:return <table>
-	    <tr><td>ID:</td><td>{$id}</td></tr>
-	    <tr><td>pathToFile:</td><td>{$pathToFile}; existiert? {doc-available($pathToFile)}</td></tr>
-	    <tr><td>pathToEd:</td><td>{$pathToEd}</td></tr>
-	    <tr><td>infoFileLoc:</td><td>{$infoFileLoc}; existiert? {doc-available($infoFileLoc)}</td></tr>
-		<tr><td>xslt:</td><td>{$xslt}; existiert? {doc-available($xslt)}</td></tr>
-	</table>:)
+    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
+    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+    let $t := console:log($map)
+    
+    return $map
 };
 
 (:~
