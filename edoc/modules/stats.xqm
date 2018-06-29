@@ -11,13 +11,18 @@ declare namespace mods		= "http://www.loc.gov/mods/v3";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
-declare function wdbs:getEd($node as node(), $model as map(*)) {
-	wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()))
+declare
+%templates:default('ed', '')
+function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
+	wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()), $ed)
 };
 
-declare function wdbs:projectList($admin as xs:boolean) {
-	let $editionsM := collection($wdb:edocBaseDB)//mets:mets
-	let $editionsW := collection($wdb:edocBaseDB)//wdbmeta:projectMD
+declare function wdbs:projectList($admin as xs:boolean, $ed) {
+	let $project := if ($ed = '')
+		then $wdb:edocBaseDB
+		else $wdb:data || '/' || $ed
+	let $editionsM := collection($project)//mets:mets
+	let $editionsW := collection($project)//wdbmeta:projectMD
 	return
 		<table>
 			<tr>
