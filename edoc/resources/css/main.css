@@ -147,7 +147,7 @@ footer {
 	background-color: #EEE;
 	padding: 1em;
 	margin-top: 2.5em;
-	display: inline;
+	display: block;
 	flex: 1 1 auto;
 }
 footer span {
