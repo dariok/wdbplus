@@ -398,11 +398,19 @@ declare function wdb:getEdPath($path as xs:string) as xs:string {
 	wdb:getEdPath($path, false())
 };
 
-declare function wdb:getFooter($xml as xs:string, $xsl as xs:string) {
-	<footer>
-		<span>XML: <a href="{$xml}">{$xml}</a></span>
-		<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
-	</footer>
+declare function wdb:getFooter($xm as xs:string, $xs as xs:string) {
+	let $xml := if (starts-with($xm, 'http'))
+		then $xm
+		else wdb:getUrl($xm)
+	let $xsl := if (starts-with($xs, 'http'))
+		then $xs
+		else wdb:getUrl($xs)
+	
+	return
+		<footer>
+			<span>XML: <a href="{$xml}">{$xml}</a></span>
+			<span>XSL: <a href="{$xsl}">{$xsl}</a></span>
+		</footer>
 };
 
 (:~
