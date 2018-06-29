@@ -427,7 +427,7 @@ declare function wdb:getDataCollection () {
 (:~ 
  : Look up $function the given project's project.xqm if it exists
  : This involves registering the module: if the function is available, it can
- : immediately be used by the calling script.
+ : immediately be used by the calling script if this lookup is within the caller's scope
  : The scope is the project as given in $model("pathToEd")
  : 
  : @param $model a map of parameters that conforms to the global structure

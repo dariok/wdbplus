@@ -10,6 +10,7 @@ declare namespace mods		= "http://www.loc.gov/mods/v3";
 declare namespace tei		= "http://www.tei-c.org/ns/1.0";
 declare namespace output	= "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbPF		= "https://github.com/dariok/wdbplus/projectFiles";
 
 declare option output:method "html5";
 declare option output:media-type "text/html";
@@ -65,7 +66,13 @@ return
 				<a href="javascript:toggleRightside();">»</a>
 			</div>
 			<aside id="wdbRight">
-				{wdbm:getRight($bogus, $model)}
+				{
+				if (wdb:findProjectFunction($model, 'getStart', 1))
+					then
+						let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', xs:anyURI($model('pathToEd')||'/project.xqm'))
+						return util:eval('wdbPF:getStart($model)', false(), (xs:QName('map'), $model))
+					else wdbm:getRight($bogus, $model)
+				}
 			</aside>
 		</main>
 	</body>
