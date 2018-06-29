@@ -18,46 +18,6 @@ a.upRef {
 	background-color: #FFEF19;
 }
 
-/** --- Apparat --- **/
-/* Container */
-div.footnotes {
-	font-size: 0.9em;
-	line-height: 1em;
-	text-align: justify;
-	margin-bottom: 1.5mm
-}
-
-#kritApp, #FußnotenApparat {
-    width: 100%;
-}
-/* Fußnotenlinie ausschalten, falls keine Anmerkungen vorhanden */
-hr.fnRule:only-child {
-	display: none;
-}
-/* Fußnotennummer im Text */
-a.fn_number {
-	font-size: 0.7em;
-	vertical-align: super;
-	line-height: 0;					/* verhindert, daß die umliegende Zeile höher wird */
-}
-/* Fußnotennummer im Apparat */
-.fn_number_app {
-	color: #098AB2;
-	display: block;
-	float: left;
-	position: relative;
-}
-/* Fußnotentext im Apparat */
-span.footnoteText{
-	display: block;
-	text-align: justify;
-}
-
-#FußnotenApparat + hr {
-	height: 1px;
-	margin: 1em 0 1em 0;
-}
-
 /** --- fremdsprachliche Teile --- **/
 [lang=grc], [lang=he] {
 	font-family: calibri;

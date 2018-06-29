@@ -1,0 +1,45 @@
+/* wdbPlus: basic element layout
+ * created: 2018-06-29
+ * creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://github.com/dariok/wdbplus */
+ 
+/** --- Apparatus --- **/
+/* Container */
+div.footnotes {
+	font-size: 0.9em;
+	line-height: 1em;
+	text-align: justify;
+	margin-bottom: 1.5mm
+}
+
+#kritApp, #FußnotenApparat, #critApp, #apparatus {
+    width: 100%;
+}
+/* show footnote line only if notes are actually present */
+hr.fnRule:only-child {
+	display: none;
+}
+/* footnote number within text */
+a.fn_number {
+	font-size: 0.7em;
+	vertical-align: super;
+	line-height: 0;
+}
+/* footnote number within apparatus */
+.fn_number_app {
+	color: #098AB2;
+	display: block;
+	float: left;
+	position: relative;
+}
+/* footnote text */
+span.footnoteText{
+	display: block;
+	text-align: justify;
+}
+
+#FußnotenApparat + hr, #apparatus + hr {
+	height: 1px;
+	margin: 1em 0 1em 0;
+}
+ 
