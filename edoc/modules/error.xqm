@@ -12,7 +12,7 @@ declare function wdbErr:error ($data as map (*)) {
 		default return "Ein unbekannter Fehler ist aufgetreten: " || $data("code")
 
 	let $content :=
-			<div id="content" data-template="templates:surround" data-template-with="templates/page2.html" data-template-at="container">
+			<div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
 				<h1>Es ist leider ein Fehler aufgetreten</h1>
 			    <p>{$error}</p>
 			    <p>{$data("additional")}</p>
@@ -27,6 +27,16 @@ declare function wdbErr:error ($data as map (*)) {
 	    }
 	}
 	
-
-	return templates:process($content, $data("model"))
+	return (
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="wdb-template" content="(error page)" />
+		<title>ERROR</title>
+		<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
+		<!-- this one is being called from app root, so no ..! -->
+		<script src="resources/scripts/jquery.min.js"/>
+		<script src="resources/scripts/function.js"/>
+	</head>,
+	templates:process($content, $data("model"))
+	)
 };
