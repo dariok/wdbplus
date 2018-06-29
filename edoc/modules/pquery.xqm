@@ -12,19 +12,19 @@ import module namespace wdba		= "https://github.com/dariok/wdbplus/auth" at "aut
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
-declare %templates:default("q", "") %templates:default("q2", "") %templates:default("query", "") %templates:default("edition", "")
+declare %templates:default("q", "") %templates:default("q2", "") %templates:default("query", "") %templates:default("ed", "")
     %templates:default("global", "")
-	function wdbpq:start($node as node(), $model as map(*), $edition as xs:string, $query as xs:string, $q as xs:string,
+	function wdbpq:start($node as node(), $model as map(*), $ed as xs:string, $query as xs:string, $q as xs:string,
 		$q2 as xs:string, $global as xs:string) as map(*) {
 	
-	let $edPath := if ($edition = "")
+	let $edPath := if ($ed = "")
 	    then ""
-	    else wdb:getEdPath($edition, true())
+	    else wdb:getEdPath($ed, true())
 	
 	let $metaFile := doc($edPath||'/wdbmeta.xml')
 	let $title := $metaFile//meta:title/text()
 	
-	return map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $edition, "edPath" := $edPath, "title" := $title, "global" := $global }
+	return map{ "query" := $query, "q" := $q, "q2" := $q2, "ed" := $ed, "edPath" := $edPath, "title" := $title, "global" := $global }
 };
 
 (: die angegebene Datei laden. Die Eingangsfunktion muß gegeben sein; 2016-11-03 DK :)

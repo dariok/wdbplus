@@ -35,7 +35,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
         if ($model("query") = '')
             then (
                 <form action="search.html">
-                    <input type="hidden" name="edition" value="{$model('ed')}" />
+                    <input type="hidden" name="ed" value="{$model('ed')}" />
                     <label for="global">Über alle Projekte suchen? </label><input type="checkbox" name="global" /><br/>
                     <label for="query">Suchbegriff(e) / RegEx: </label><input type="text" name="query" />
                     <input type="submit" />

@@ -26,8 +26,8 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
                         value="{request:get-parameter('query', '')}"/>
                     <input
                         type="hidden"
-                        name="edition"
-                        value="{request:get-parameter('edition', '')}"/>
+                        name="ed"
+                        value="{request:get-parameter('ed', '')}"/>
                 </form>
             </span>
         else
