@@ -71,7 +71,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 		else if ($ed = '' and $file = '') then
 			<div id="content">
 				<h3>Liste der Projekte</h3>
-				{wdbs:projectList(true())}
+				{wdbs:projectList(true(), $wdb:data)}
 			</div>
 		else if ($ed != '' and $file = '') then
 			local:getFiles($ed)
