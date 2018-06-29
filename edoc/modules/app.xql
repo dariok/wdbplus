@@ -7,6 +7,7 @@ import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at
 import module namespace wdbt		= "https://github.com/dariok/wdbplus/transform" at "transform.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
+import module namespace wdbErr		= "https://github.com/dariok/wdbErr"			at "error.xqm";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
@@ -79,7 +80,7 @@ declare variable $wdb:peer :=
 
 declare %templates:wrap %templates:default("view", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) { (:as map(*) {:)
-	let $m := wdb:populateModel($id, $view)
+	let $m := wdb:populateModel($id, $view, $model)
 	return $m
 };
 
@@ -90,7 +91,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @return a map; in case of debugging, a list
  :)
 declare function wdb:populateModel($id as xs:string) {
-	wdb:populateModel($id, '')
+	wdb:populateModel($id, '', map{})
 };
 
 (:~
@@ -100,36 +101,47 @@ declare function wdb:populateModel($id as xs:string) {
  : @param $view a string to be passed to the processing XSLT
  : @return a map; in case of debugging, a list
  :)
-declare function wdb:populateModel($id as xs:string, $view as xs:string) { (:as map(*) {:)
+declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) { (:as map(*) {:)
+try {
 	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
 	let $files := collection($wdb:edocBaseDB)/id($id)
-	(: TODO: throw error if there are more than 1 :)
-	let $pathToFile := base-uri($files[self::tei:TEI][1])
-	let $pathToEd := wdb:getEdPath($pathToFile, true())
-	let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-
-	(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-	let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
-        then $pathToEd || '/wdbmeta.xml'
-        else if (doc-available($pathToEd || '/mets.xml'))
-            then $pathToEd || '/mets.xml'
-            else
-			    (: throw error :)
-			    ()
 	
-	let $xslt := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-		then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
-		else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-	
-	let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+	return if (count($files) = 0)
+		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+		else if (count($files[self::tei:TEI]) > 1)
+		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+		else
+			(: TODO: throw error if there are more than 1 :)
+			let $pathToFile := base-uri($files[self::tei:TEI][1])
+			let $pathToEd := wdb:getEdPath($pathToFile, true())
+			let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 		
-	(: TODO parameter aus config.xml einlesen und übergeben? :)
-    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
-    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
-    let $t := console:log($map)
-    
-    return $map
+			(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+			let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
+		        then $pathToEd || '/wdbmeta.xml'
+		        else if (doc-available($pathToEd || '/mets.xml'))
+		            then $pathToEd || '/mets.xml'
+		            else
+					    (: throw error :)
+					    ()
+			
+			let $xslt := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+				then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
+				else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+			
+			let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+				
+			(: TODO parameter aus config.xml einlesen und übergeben? :)
+		    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
+		    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+		    let $t := console:log($map)
+		    
+		    return $map
+	}
+	catch * {
+		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model })
+	}
 };
 
 (:~
