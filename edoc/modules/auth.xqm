@@ -6,7 +6,7 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
     return
     	if ($current = 'guest' or $model('res') = 'logout') then
             <span id="auth">
-            	<a href="javascript:$('#login').toggle();">Login: </a>
+            	<a href="javascript: void(0);" onclick="javascript:$('#login').toggle();">Login: </a>
                 <form
                     enctype="multipart/form-data"
                     method="post"
@@ -32,6 +32,6 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
             </span>
         else
             <span id="auth">
-                User: <a id="logout" alt="Click to logout" href="javascript:doLogout()">{$current}</a>
+                User: <a id="logout" alt="Click to logout" href="javascript: void(0);" onclick="javascript:doLogout()">{$current}</a>
             </span>
 };
