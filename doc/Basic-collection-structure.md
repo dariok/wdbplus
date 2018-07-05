@@ -25,10 +25,10 @@ The default setup install the app into the collection `/db/apps/edoc` of eXist. 
 * `resources` contains global resources such as default XSLTs, global CSS and JavaScript. **No user changes should be made here.**
 * `rest` contains scripts for the RESTful interface. While it is possible for users to change these scripts, it is recommended to instead add scripts instead of changing existing ones.
 * `schema` contains schema files for global files other than `wdbmeta.xml` (currently, this is only `config.xml`).
-* `templates` contains the rump HTML files used for the templating system. While it is possible to change these files, most changes can better be done by using [[project specific files and setting|project-specifics]]. The standard files here may be overwritten by an update.
+* `templates` contains the rump HTML files used for the templating system. While it is possible to change these files, most changes can better be done by using [[project specific layout and functions|project-specifics]]. The standard files here may be overwritten by an update.
 * `annotation` and `doc` are not in use yet but are to be considered 'reserved' as they will be used for internal functions in upcoming releases.
 
-There are several subcollections where no changes are recommended: all changes may be overwritten by an update or upgrade. Instead, use the [[configuration options|global-configuration]] and [[project specific files|project-specifics]] to adapt functions and layout to your needs.
+There are several subcollections where no changes are recommended: all changes may be overwritten by an update or upgrade. Instead, use the [[configuration options|global-configuration]] and [[project specific layout and functions|project-specifics]] to adapt functions and layout to your needs.
 Should you really require a change in one of these subcollections, consider opening an issue instead so this can be changed to an option that can be set on a project or instance level.
 
 ## Non-default structures
