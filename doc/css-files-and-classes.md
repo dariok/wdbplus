@@ -6,10 +6,10 @@ All these files define global CSS rules. While it is possible to change them dir
 |--|--|
 |[[resources/css/common.css\|css-files-and-classes#commoncss]]| basic layout of any main page|
 |[[resources/css/footnotes.css\|css-files-and-classes#footnotescss]]| additional layout for footnotes|
-|[[resources/css/function.css\|#function]]| additional layout for function pages (e.g. search)|
-|[[resources/css/index.css\|#index]]| additional layout for `index.html` and other wide pages – includes `common.css`|
+|resources/css/function.css| additional layout for function pages (e.g. search)|
+|resources/css/index.css| additional layout for `index.html` and other wide pages – includes `common.css`|
 |[[resources/css/main.css\|css-files-and-classes#maincss]]| main layout file for _header_, _nav_, _main_ and _aside_ in an HTML page|
-|[[resources/css/start.css\|#start]]| additional layout for `start.html` – includes `common.css`|
+|[[resources/css/start.css\|css-files-and-classes#startcss]]| additional layout for `start.html` – includes `common.css`|
 
 ## overview of classes
 ### common.css
