@@ -6,7 +6,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at "config.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
-import module namespace wdbErr		= "https://github.com/dariok/wdbplus/wdbErr"	at "error.xqm";
+import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
 
 declare namespace mets	= "http://www.loc.gov/METS/";
 declare namespace mods	= "http://www.loc.gov/mods/v3";
