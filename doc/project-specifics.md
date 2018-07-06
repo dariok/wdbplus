@@ -12,7 +12,7 @@ A file called `project.css` or `project.js`, respectively, located in `{$project
 Keep in mind, though, that if you override any of these, especially the JavaScript functions, you are responsible to implement their functionality yourself should you want to keep it.<sup id="a2">[2](#f2)</sup>
 
 ## Complex extensions
-If the selection of a CSS or JS is more complex than the method above, e.g. you need different stylesheets for introductions and transcriptions, you can select these by means of an XQuery function in [[project.xqm|main-files#project.xqm]].
+If the selection of a CSS or JS is more complex than the method above, e.g. you need different stylesheets for introductions and transcriptions, you can select these by means of an XQuery function in [[project.xqm]].
 The files loaded by this method will be loaded last, meaning you can override any definition you made in `project.css` or `project.js`.
 
 This mechanism should give you sufficient freedom to adapt the layout of any project to the specific needs.
