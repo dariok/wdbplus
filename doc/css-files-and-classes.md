@@ -60,6 +60,7 @@ All these files define global CSS rules. While it is possible to change them dir
 |#wdbContent|container for text in _main_|
 |footer|the footer below a text (container)|
 |span.dispOpts|options in the header (usually to the right)|
+|#marginalia_container|container for marginalia|
 
 ### start.css
 |class / rule / id|intended for|
