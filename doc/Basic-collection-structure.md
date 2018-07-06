@@ -19,7 +19,7 @@ The default setup install the app into the collection `/db/apps/edoc` of eXist. 
     |-(doc)
 
 * `admin`, as the name suggests, contains a few scripts to help admins keep an overview of the projects within this installation (more are to be added in later versions).
-* `data` is where the different projects go as subcollections. While it can be empty, it may contain [[start.xml|main-files#start]] and [[wdbmeta.xml|main-files#wdbmeta]] to give a global start page or set global metadata
+* `data` is where the different projects go as subcollections. While it can be empty, it may contain [[start.xml|main-files#start]] and should contain [[wdbmeta.xml]] to give a global start page or set global metadata.
 * `include` contains recent versions of related projects, namely the schema for [[wdbmeta.xml|main-files#wdbmeta]] and a collection of XSL/XQuery functions to deal with strings (extending the normal XPath string functions). **No user changes should be made here.**
 * `modules` is where the main global scripts go. **No user changes should be made here.**
 * `resources` contains global resources such as default XSLTs, global CSS and JavaScript. **No user changes should be made here.**
