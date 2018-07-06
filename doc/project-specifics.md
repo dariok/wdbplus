@@ -17,6 +17,12 @@ The files loaded by this method will be loaded last, meaning you can override an
 
 This mechanism should give you sufficient freedom to adapt the layout of any project to the specific needs.
 
+## Queries with templating
+In order to easily use templating with any XQuery within a project, queries can be called via `query.html`.
+Such an XQuery script must be a module in [[namespace `wdbq`|list-of-namespaces]] and implement a function `wdbq:query($map as map(*))` and should implement `wdbq:getTask()`.
+
+The URL should look like this: `query.html?ed={$pathToEd}&query={$pathToQueryWithinProject}&q={$firstParameter}&q2={$secondParameter}`.
+Parameters `q` and `q2` can be accessed via `$model` by `wdbq:query($model)`.
 
 ---
 
