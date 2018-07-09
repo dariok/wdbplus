@@ -23,6 +23,7 @@ Such an XQuery script must be a module in [[namespace `wdbq`|list-of-namespaces]
 
 The URL should look like this: `query.html?ed={$pathToEd}&query={$pathToQueryWithinProject}&q={$firstParameter}&q2={$secondParameter}`.
 Parameters `q` and `q2` can be accessed via `$model` by `wdbq:query($model)`.
+It is also possible to add more parameters to the URL; these can be accessed by the standard `request:get-parameter` function.
 
 ---
 
