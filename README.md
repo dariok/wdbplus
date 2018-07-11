@@ -6,8 +6,29 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Installation
 The final version will be available as an installable .xar package for eXist.
+
+### eXgit
 Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to clone the current version directly into a running eXist instance.
-For now, use the manual approach:
+
+1. Install eXgit as stated in the repo.
+1. (optional) create a user for the framework and log in under that name
+1. (optional) create the target collection as this user
+1. run the following XQuery:
+
+    xquery version "3.1";
+    
+    import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
+    
+    let $cl := exgit:clone("https://github.com/dariok/wdbplus", "/home/dario/test/wdbplus")
+    let $ie := exgit:import("/home/dario/test/wdbplus/edoc", "/db/apps/edoc")
+    let $ic := exgit:import("/home/dario/test/wdbplus/config", "/db/system/config/db/apps")
+    
+    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/insert.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/return.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'))
+    
+    return ($cl, $ie, $ic, $chmod)
 
 ### manual installation
 1. clone this repo
