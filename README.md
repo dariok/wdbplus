@@ -1,12 +1,12 @@
 # W. Digitale Bibliothek (wdbplus)
 
-An extensible framework for digital Editions for the [eXist XML database|https://github.com/eXist-db].
+An extensible framework for digital Editions for the [eXist XML database](https://github.com/eXist-db).
 
 This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Installation
 The final version will be available as an installable .xar package for eXist.
-Additionally, it is possible to use [eXgit|https://github.com/dariok/exgit] to clone the current version directly into a running eXist instance.
+Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to clone the current version directly into a running eXist instance.
 For now, use the manual approach:
 
 ### manual installation
