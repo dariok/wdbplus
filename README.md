@@ -34,8 +34,8 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 ### manual installation
 1. clone this repo
 1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
+1. import the configuration files into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
 1. Set execute rights on .xql files
-1. add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
 1. create a file `wdbmeta.xml` in that directory:
 
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
@@ -55,11 +55,13 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
         </struct>
     </projectMD>
 
-1. The file is now available to view under `http://yourserver/exist/apps/edoc/view.html?id=xml-id`
+### post-installation
+1. add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
+1. The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
 
 ----
 
-Currently used in these projects:
+##Currently used in these projects:
 
 * HAB Wolfenbüttel
   * Editionsprojekt Karlstadt
