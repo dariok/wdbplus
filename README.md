@@ -27,6 +27,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
             sm:chmod(xs:anyURI('/db/apps/edoc/return.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
             sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
             sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'))
+    let $reindex := xmldb:reindex('/db/apps/edoc/data')
     
     return ($cl, $ie, $ic, $chmod)
 ```
@@ -35,9 +36,14 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. clone this repo
 1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
 1. import the configuration files into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
+1. apply the configuration
 1. Set execute rights on .xql files
-1. create a file `wdbmeta.xml` in that directory:
 
+### post-installation
+1. add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
+1. create a file `wdbmeta.xml` in that collection:
+1. 
+```XML
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
     xml:id="yourProjectID">
         <projectID>yourProjectID</projectID>
@@ -54,9 +60,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
             <view file="xml-id" label="Title of File" />
         </struct>
     </projectMD>
-
-### post-installation
-1. add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
+```
 1. The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
 
 ----
