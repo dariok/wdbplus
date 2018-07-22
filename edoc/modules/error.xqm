@@ -7,9 +7,12 @@ import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"		at "app
 
 declare function wdbErr:error ($data as map (*)) {
 	let $error := switch (xs:string($data("code")))
-		case "wdbErr:wdb0000" return "Keine Datei zu dieser ID gefunden"
-		case "wdbErr:wdb0001" return "Zu viele Dateien zu dieser ID gefunden"
-		case "wdbErr:wdb0002" return "FÜr diese Anzeige wurde keine passende Transformation gefunden"
+		case "wdbErr:wdb0000"
+		case "wdb0000" return "Keine Datei zu dieser ID gefunden"
+		case "wdbErr:wdb0001"
+		case "wdb0001" return "Zu viele Dateien zu dieser ID gefunden"
+		case "wdbErr:wdb0002"
+		case "wdb0002" return "FÜr diese Anzeige wurde keine passende Transformation gefunden"
 		default return "Ein unbekannter Fehler ist aufgetreten: " || $data("code")
 
 	let $content :=
