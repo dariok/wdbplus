@@ -5,8 +5,7 @@ module namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xql";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
-declare %private 
-    function wdbPF:getProjectFiles ( $model as map(*) ) as node()* {
+declare function wdbPF:getProjectFiles ( $model as map(*) ) as node()* {
     (
         <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/scripts/project.css" />,
         <script src="{$wdb:edocBaseURL}/data/scripts/project.js" />,
@@ -14,8 +13,7 @@ declare %private
     )
 };
 
-declare %private 
-    function wdbPF:getHeader ( $model as map(*) ) as node()* {
+declare function wdbPF:getHeader ( $model as map(*) ) as node()* {
 	
 	return (
 		<h1>{$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type = 'main']/text()}</h1>,
@@ -24,14 +22,12 @@ declare %private
 	)
 };
 
-declare %private
-    function wdbPF:getImages ($id as xs:string, $page as xs:string) as xs:string {
+declare function wdbPF:getImages ($id as xs:string, $page as xs:string) as xs:string {
 	
 	return()
 };
 
-declare %private
-    function wdbPF:getStart ($model as map(*)) {
+declare function wdbPF:getStart ($model as map(*)) {
 	transform:transform(doc($wdb:data||'/resources/start.xml'), doc($wdb:data||'/resources/start.xsl'), ()),
 	wdb:getFooter($wdb:data||'/resources/start.xml', $wdb:data||'/resources/start.xsl')
 };
