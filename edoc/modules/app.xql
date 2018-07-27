@@ -3,23 +3,24 @@ xquery version "3.0";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at "config.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
 import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
 
-declare namespace mets	= "http://www.loc.gov/METS/";
-declare namespace mods	= "http://www.loc.gov/mods/v3";
-declare namespace xlink	= "http://www.w3.org/1999/xlink";
-declare namespace tei	= "http://www.tei-c.org/ns/1.0";
-declare namespace main	= "https://github.com/dariok/wdbplus";
-declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
+declare namespace mets	    = "http://www.loc.gov/METS/";
+declare namespace mods	    = "http://www.loc.gov/mods/v3";
+declare namespace xlink	    = "http://www.w3.org/1999/xlink";
+declare namespace tei	    = "http://www.tei-c.org/ns/1.0";
+declare namespace main	    = "https://github.com/dariok/wdbplus";
+declare namespace meta	    = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles";
+declare namespace xConf     = "http://exist-db.org/xquery/apps/config";
+declare namespace config	= "https://github.com/dariok/wdbplus/config";
 
 (: VARIABLES :)
 
 (: get the base of this instance within the db (i.e. relative to /db) :)
-declare variable $wdb:edocBaseDB := $config:app-root;
+declare variable $wdb:edocBaseDB := $xConf:app-root;
 
 (: the config file :)
 declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
@@ -49,8 +50,8 @@ declare variable $wdb:server :=
  : get the base URI either from the data of the last call or from the configuration
  :)
 declare variable $wdb:edocBaseURL :=
-	if ( $wdb:configFile//main:server )
-	then normalize-space($wdb:configFile//main:server)
+	if ( $wdb:configFile//config:server )
+	then normalize-space($wdb:configFile//config:server)
 	else
 		let $dir := string-join(tokenize(normalize-space(request:get-uri()), '/')[not(position() = last())], '/')
 		let $url := substring-after($wdb:edocBaseDB, 'db/')
