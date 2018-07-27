@@ -17,7 +17,7 @@ declare function wdbErr:error ($data as map (*)) {
 
 	let $content :=
 			<div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
-				<h1>Es ist leider ein Fehler aufgetreten</h1>
+				<h1>Something has gone wrong...</h1>
 			    <p>{$error}</p>
 			    <p>{$data("additional")}</p>
 			    <p>{$data("pathToEd")}</p>
