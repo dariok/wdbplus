@@ -83,8 +83,7 @@ declare variable $wdb:peer :=
 :)
 declare %templates:wrap %templates:default("view", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) { (:as map(*) {:)
-	let $m := wdb:populateModel($id, $view, $model)
-	return $m
+	wdb:populateModel($id, $view, $model)
 };
 
 (:~
@@ -137,13 +136,6 @@ try {
 	catch * {
 		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model })
 	}
-};
-
-(:~
- : Return HTML Meta Tag to easily identify the project
- :)
-declare function wdb:getId($node as node(), $model as map(*)) {
-	<meta name="id" content="{$model('id')}"/>
 };
 
 (: ~
