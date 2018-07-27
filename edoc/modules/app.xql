@@ -77,6 +77,9 @@ declare variable $wdb:peer :=
 		else ""
 ;
 
+(:~
+ : Templating function; called from layout.html
+:)
 declare %templates:wrap %templates:default("view", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) { (:as map(*) {:)
 	let $m := wdb:populateModel($id, $view, $model)
@@ -111,7 +114,6 @@ try {
 		else if (count($files[self::tei:TEI]) > 1)
 		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
 		else
-			(: TODO: throw error if there are more than 1 :)
 			let $pathToFile := base-uri($files[self::tei:TEI][1])
 			let $pathToEd := wdb:getEdPath($pathToFile, true())
 			let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
@@ -122,8 +124,7 @@ try {
 		        else if (doc-available($pathToEd || '/mets.xml'))
 		            then $pathToEd || '/mets.xml'
 		            else
-					    (: throw error :)
-					    ()
+					    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0003'))
 			
 			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
 				then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')

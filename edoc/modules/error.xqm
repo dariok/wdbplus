@@ -13,6 +13,8 @@ declare function wdbErr:error ($data as map (*)) {
 		case "wdb0001" return "Multiple files were found for the ID supplied. Unable to determine which one to display."
 		case "wdbErr:wdb0002"
 		case "wdb0002" return "No transformation was found to display the file."
+		case "wdbErr:wdb0003"
+		case "wdb0003" return "No metadata file could be found for the project."
 		default return "An unknown error has occurred: " || $data("code")
 
 	let $content :=
