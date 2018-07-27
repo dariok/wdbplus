@@ -19,7 +19,7 @@ import module namespace wdbPL		= "https://github.com/dariok/wdbplus/ProjectList"
  : The following modules provide functions which will be called by the 
  : templating.
  :)
-import module namespace config		= "https://github.com/dariok/wdbplus/config" 	at "config.xqm";
+import module namespace config		= "http://exist-db.org/xquery/apps/config" 	at "config.xqm";
 
 let $config := map {
     $templates:CONFIG_APP_ROOT := $config:app-root,
