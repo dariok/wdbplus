@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="schema/config.xsd" type="application/xml-schema"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="https://github.com/dariok/wdbplus schema/config.xsd" xmlns="https://github.com/dariok/wdbplus">
+	xsi:schemaLocation="https://github.com/dariok/wdbplus/config schema/config.xsd" xmlns="https://github.com/dariok/wdbplus/config">
 	<!-- General meta data -->
 	<!-- name and short are mandatory -->
 	<meta>
