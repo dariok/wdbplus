@@ -164,7 +164,7 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
     let $file := $wdbRf:collection/id($fileID)
     let $title := normalize-space($file//tei:title[@type='main'])
     let $num := normalize-space($file//tei:title[@type='num'])
-    let $map := wdb:populateModel($fileID)
+    let $map := wdb:populateModel($fileID, '', map{})
     let $meta := doc($map("infoFileLoc"))
     
     let $location := $map('ed')||'/project.xqm'
