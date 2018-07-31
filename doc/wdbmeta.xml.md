@@ -3,7 +3,7 @@
 A fully detailed description of `wdbmeta.xml` is available in the XML Schema available in `{$approot}/include/wdbmeta`.
 This documentation will cover the most important parts and how the file is evaluated in the app.
 
-Evey project should have a `wdbmeta.xml` file. This is also true about the main data collection.
+Every project should have a `wdbmeta.xml` file. This is also true about the main data collection!
 `wdbmeta.xml` is intended to replace `mets.xml` with a less verbose format while maintaining its functionality as a table of contents for a project.
 While it is possible to solely rely on a `mets.xml`, the app is designed with `wdbmeta.xml` in mind.
 Especially when it comes to rules for processing files, `wdbmeta.xml` is a lot easier to work with than a `mets.xml`.

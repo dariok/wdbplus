@@ -19,7 +19,7 @@ The default setup install the app into the collection `/db/apps/edoc` of eXist. 
     |-(doc)
 
 * `admin`, as the name suggests, contains a few scripts to help admins keep an overview of the projects within this installation (more are to be added in later versions).
-* `data` is where the different projects go as subcollections. While it can be empty, it may contain [[start.xml|main-files#start]] and should contain [[wdbmeta.xml]] to give a global start page or set global metadata.
+* `data` is where the different projects go as subcollections. While it can be empty, it may contain [[start.xml|main-files#start]] and **has to contain [[wdbmeta.xml]]** to give a global start page or set global metadata.
 * `include` contains recent versions of related projects, namely the schema for [[wdbmeta.xml|main-files#wdbmeta]] and a collection of XSL/XQuery functions to deal with strings (extending the normal XPath string functions). **No user changes should be made here.**
 * `modules` is where the main global scripts go. **No user changes should be made here.**
 * `resources` contains global resources such as default XSLTs, global CSS and JavaScript. **No user changes should be made here.**
@@ -29,7 +29,7 @@ The default setup install the app into the collection `/db/apps/edoc` of eXist. 
 * `annotation` and `doc` are not in use yet but are to be considered 'reserved' as they will be used for internal functions in upcoming releases.
 
 There are several subcollections where no changes are recommended: all changes may be overwritten by an update or upgrade. Instead, use the [[configuration options|global-configuration]] and [[project specific layout and functions|project-specifics]] to adapt functions and layout to your needs.
-Should you really require a change in one of these subcollections, consider opening an issue instead so this can be changed to an option that can be set on a project or instance level.
+Should you really require a change in one of these subcollections, consider [[opening an issue|https://github.com/dariok/wdbplus/issues]] instead so this can be changed to an option that can be set on a project or instance level.
 
 ## Non-default structures
 
