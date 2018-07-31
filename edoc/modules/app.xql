@@ -6,6 +6,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
 import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
+import module namespace xConf       = "http://exist-db.org/xquery/apps/config"      at "config.xqm";
 
 declare namespace mets	    = "http://www.loc.gov/METS/";
 declare namespace mods	    = "http://www.loc.gov/mods/v3";
@@ -14,7 +15,6 @@ declare namespace tei	    = "http://www.tei-c.org/ns/1.0";
 declare namespace main	    = "https://github.com/dariok/wdbplus";
 declare namespace meta	    = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles";
-declare namespace xConf     = "http://exist-db.org/xquery/apps/config";
 declare namespace config	= "https://github.com/dariok/wdbplus/config";
 
 (: VARIABLES :)
@@ -117,8 +117,8 @@ try {
 					    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0003'))
 			
 			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-				then wdb:getXslFromWdbMeta($pathToEdRel, $id, 'html')
-				else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+				then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
+				else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
 			
 			let $xslt := if (doc-available($xsl))
 				then $xsl
@@ -212,8 +212,8 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 	let $params :=
 		<parameters>
 			<param name="server" value="eXist"/>
-			<param name="exist:stop-on-warn" value="yes" />
-			<param name="exist:stop-on-error" value="yes" />
+			<param name="exist:stop-on-warn" value="no" />
+			<param name="exist:stop-on-error" value="no" />
 			<param name="projectDir" value="{$model('ed')}" />
 			{
 				if ($model("view") != '')
@@ -226,7 +226,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 	
 	let $re :=
 		try { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
-		catch * { console:log(
+		catch * { (console:log(
 			<report>
 				<file>{$file}</file>
 				<xslt>{$xslt}</xslt>
@@ -235,16 +235,14 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 				<error>{$err:code || ': ' || $err:description}</error>
 				<error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
 				<additional>{$err:additional}</additional>
-			</report>)
+			</report>),
+			wdbErr:error(map{"code" := "wdbErr:wdb1001", "model" := $model, "additional" := $params}))
 		}
-	
-	let $xml := wdb:getUrl($model("fileLoc"))
-	let $xsl := wdb:getUrl($model("xslt"))
 	
 	return 
 		<div id="wdbContent">
 			{$re}
-			{wdb:getFooter($xml, $xsl)}
+			{wdb:getFooter($file, $xslt)}
 		</div>
 };
 
@@ -253,7 +251,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
  : $seqStruct: sequence von mets:div/@ID, spezifischste zuletzt
  : $type: gesuchter Ausgabetyp
  : returns: einen gewichteten Wert für den Rang der behavior :)
-declare function local:val($test, $seqStruct, $type) {
+declare %private function local:val($test, $seqStruct, $type) {
     let $vIDt := for $s at $i in $seqStruct
         return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
             then math:exp10($i)
@@ -290,7 +288,7 @@ declare function wdb:getUrl ( $path as xs:string ) as xs:string {
 	$wdb:edocBaseURL || substring-after($path, $wdb:edocBaseDB)
 };
 
-declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
+declare %private function local:getXslFromMets ($metsLoc, $id, $ed) {
 	(: Das XSLT finden :)
 	(: Die Ausgabe sollte hier in Dokumentreihenfolge erfolgen und innerhalb der sequence stabil sein;
 	 : damit ist die »spezifischste« ID immer die letzte :)
@@ -316,7 +314,7 @@ declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
  :
  : @returns The path to the XSLT
 :)
-declare function wdb:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $target as xs:string) {
+declare %private function local:getXslFromWdbMeta($ed as xs:string, $id as xs:string, $target as xs:string) {
 	let $metaFile := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
 	let $fil := doc($metaFile)
 	
