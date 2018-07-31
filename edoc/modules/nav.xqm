@@ -38,8 +38,6 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			<param name="role" value="{$wdb:role}" />
 			<param name="access" value="{sm:has-access($targetCollection, 'w')}" />
 		</parameters>
-	let $t := console:log($xml || ' – ' || $xsl)
-    let $t1 := console:log($param)
 	return  transform:transform(doc($xml), doc($xsl), $param)
 };
 
