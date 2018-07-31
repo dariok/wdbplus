@@ -2,8 +2,8 @@ xquery version "3.1";
 
 module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors";
 
-import module namespace templates	= "http://exist-db.org/xquery/templates"		at "templates.xql";
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
+import module namespace templates	= "http://exist-db.org/xquery/templates";
+import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare function wdbErr:error ($data as map (*)) {
 	let $error := switch (xs:string($data("code")))
@@ -15,15 +15,17 @@ declare function wdbErr:error ($data as map (*)) {
 		case "wdb0002" return "No transformation was found to display the file."
 		case "wdbErr:wdb0003"
 		case "wdb0003" return "No metadata file could be found for the project."
+		case "wdbErr:wdb1001"
+		case "wdb1001" return "An error occurred while applying the transformation."
 		default return "An unknown error has occurred: " || $data("code")
 
 	let $content :=
-			<div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
-				<h1>Something has gone wrong...</h1>
-			    <p>{$error}</p>
-			    <p>{$data("additional")}</p>
-			    <p>{$data("pathToEd")}</p>
-			</div>  
+		<div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
+			<h1>Something has gone wrong...</h1>
+		    <p>{$error}</p>
+		    <p>{$data("additional")}</p>
+		    <p>{$data("pathToEd")}</p>
+		</div>
 	
 	let $lookup := function($functionName as xs:string, $arity as xs:int) {
 	    try {
@@ -32,6 +34,8 @@ declare function wdbErr:error ($data as map (*)) {
 	        ()
 	    }
 	}
+	
+	let $t := console:log($error)
 	
 	return (
 	<head>
