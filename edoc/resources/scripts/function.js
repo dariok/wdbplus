@@ -108,8 +108,8 @@ $(document).ready(function () {
 /* OTHER FUNCTIONS */
 /* autoloading of images */
 function loadTargetImage () {
-    var target = $(':target')
-    if (!(target === undefined)) {
+    var target = $(':target');
+    if (target.length > 0) {
         if (target.attr('class') == 'pagebreak') {
             console.log($(':target > a').attr('href'));
             displayImage($(':target > a').attr('href'));
@@ -118,7 +118,7 @@ function loadTargetImage () {
             displayImage(pb.attr('href'));
         }
     } else {
-        console.log('no target - logout?')
+        console.log('no target - logout?');
     }
 }
 
