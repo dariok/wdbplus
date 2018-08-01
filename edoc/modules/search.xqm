@@ -69,7 +69,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
             else
                 let $coll := if ($model("global") = 'on')
                     then $wdb:edocBaseDB
-                    else $model("ed")
+                    else $wdb:edocBaseDB||'/'||$model("ed")
                 return (
                 <h3>Ergebnisse in {$coll}</h3>,
                 <p>Suchstring: {$model("query")}</p>,
