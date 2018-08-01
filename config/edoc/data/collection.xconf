@@ -7,7 +7,7 @@
             <text qname="tei:div" analyzer="std"/>
             <text qname="tei:p" analyzer="std"/>
             <text qname="tei:table" analyzer="std"/>
-            <text qname="tei:list" analyzer="std"/>
+            <text qname="tei:item" analyzer="std"/>
             <text qname="tei:quote" analyzer="std"/>
             <text qname="tei:w" analyzer="std" />
             <inline qname="tei:unclear" />

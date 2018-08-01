@@ -76,7 +76,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                 <table class="search">{
                     for $hit in (collection($coll)//tei:p[ft:query(., $model("query"))]
                             | collection($coll)//tei:table[ft:query(., $model("query"))]
-                            | collection($coll)//tei:list[ft:query(., $model("query"))])
+                            | collection($coll)//tei:item[ft:query(., $model("query"))])
                         group by $file := base-uri($hit)
                         order by $file
                         
