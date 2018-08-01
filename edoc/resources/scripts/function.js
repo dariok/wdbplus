@@ -118,6 +118,7 @@ function loadTargetImage () {
             displayImage(pb.attr('href'));
         }
     } else {
+        
         console.log('no target - logout?');
     }
 }
