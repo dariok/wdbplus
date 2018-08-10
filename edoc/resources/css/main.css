@@ -141,7 +141,8 @@ h2 + hr {
 	flex-direction: row;
 	display: flex;
 	padding-right: .5em;
-	max-width: 50%;
+	width: 50%;
+	resize: horizontal;
 }
 footer {
 	background-color: #EEE;
