@@ -8,6 +8,25 @@
 				<a href="javascript:toggleRightside();">»</a>
 			</div>
 			<aside id="wdbRight">
+				<div id="annotationForm" style="display: none;" title="Annotationen">
+					<p style="text-align: center;"><i id="annText"></i> (<span id="annFrom"/> <span id="annTo" />)</p>
+					<form id="fta">
+						<label>Volltextanmerkung</label>
+						<input type="text" id="ftaText" />
+						<input type="submit" />
+					</form>
+					<hr/>
+					<form id="la">
+						<label>Layout anpassen</label>
+						<select id="layout">
+							<option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
+							<option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
+							<option value="findent">Liste: 1. Zeile eingezogen, wie Absatz („findent“)</option>
+						</select>
+						<input type="submit" />
+					</form>
+					<hr/>
+				</div>
 				<div id="ann" />
 				<div id="fac" />
 			</aside>
