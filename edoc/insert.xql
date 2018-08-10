@@ -2,6 +2,8 @@ xquery version "3.1";
 
 declare namespace anno = "annotate";
 
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "modules/app.xql";
+
 let $from := request:get-parameter('from', '')
 let $to := request:get-parameter('to', '')
 let $cat := request:get-parameter('cat', '')
@@ -15,6 +17,6 @@ let $anno :=
         <cat>{$cat}</cat>
     </entry>
 
-let $u := update insert $anno into doc('/db/apps/edoc/anno.xml')/anno:anno
+let $u := update insert $anno into doc($wdb:edocBaseDB || '/anno.xml')/anno:anno
 
 return $u
