@@ -12,7 +12,10 @@
 |wdbSearch|https://github.com/dariok/wdbplus/wdbs | `modules/search.xqm`| |
 |wdbs|https://github.com/dariok/wdbplus/stats | `modules/stats.xqm`| |
 |wdbPF|https://github.com/dariok/wdbplus/projectFiles | `{$projectDir}/project.xqm`|* |
+|wdbRa|https://github.com/dariok/wdbplus/RestAnnotations| `rest/rest-anno.xql`| |
 |wdbRc|https://github.com/dariok/wdbplus/RestCollections | `rest/rest-coll.xql`| |
 |wdbRf|https://github.com/dariok/wdbplus/RestFiles | `rest/rest-files.xql`| |
+|--|--|--|--|
+|anno|https://github.com/dariok/wdbplus/annotations | `anno//*`| |
 
 Namespaces that have an asterisk in the “user” column are to be extended for [[project specifics|project-specifics]].
