@@ -30,3 +30,13 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
 		{doc($wdb:edocBaseDB || '/anno.xml')//anno:file[. = $fileID]/parent::anno:entry}
 	</anno:anno>
 };
+
+(: insert a new annotation :)
+declare
+    %rest:POST("{$body}")
+    %rest:path("/edoc/anno/{$fileID}")
+    %rest:consumes("application/json")
+function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
+    let $data := parse-json(util:base64-decode($body))
+    return $data('text')
+};

@@ -6,13 +6,17 @@ $( function() {
         annoText = $('#ftaText').val();
         dialog.dialog("close");
         
-        put = $.get("insert.xql", 
-            {
-                file: id,
+        put = $.ajax({
+            method: "post",
+            url: "../restxq/edoc/anno/" + id,
+            data: JSON.stringify({
                 from: start,
                 to: end,
-                cat: annoText
-            });
+                text: annoText
+            }),
+            contentType: "application/json; charset=UTF-8",
+            dataType: 'json'
+        });
             
         get = $.getJSON(
             "return.xql",
