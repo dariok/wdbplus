@@ -122,6 +122,8 @@ try {
 			
 			let $xslt := if (doc-available($xsl))
 				then $xsl
+				else if (doc-available($pathToEd || '/' || $xsl))
+				then $pathToEd || '/' || $xsl
 				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
 			
 			let $title := normalize-space((doc($pathToFile)//tei:title)[1])
