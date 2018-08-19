@@ -234,8 +234,15 @@ function mouseOut (event) {
     console.log(id);
     setTimeout($(id).detach(), 2000, id);
 }
-// show annotation in right div
+
+// for backwards compatibility
+// TODO remove
 function show_annotation (dir, xml, xsl, ref, height, width) {
+    show_annotation (ref, xml, dir);
+}
+
+// show annotation in right div
+function show_annotation (ref, xml, dir) {
     var info = $('<div class="info"></div>');
     var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
     console.log(q);
