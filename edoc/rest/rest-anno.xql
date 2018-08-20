@@ -38,5 +38,13 @@ declare
     %rest:consumes("application/json")
 function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
     let $data := parse-json(util:base64-decode($body))
-    return $data('text')
+    let $ann := 
+        <entry xmlns="https://github.com/dariok/wdbplus/annotations">
+            <id>{util:uuid($data)}</id>
+            <file>{$fileID}</file>
+            <range from="{$data('from')}" to="{$data('to')}" />
+            <cat>{$data('text')}</cat>
+        </entry>
+    
+    return update insert $ann into doc($wdb:edocBaseDB||'/anno.xml')/anno:anno
 };
