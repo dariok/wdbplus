@@ -103,8 +103,15 @@ try {
 		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0000'))
 		else if (count($files[self::tei:TEI]) > 1)
 		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0001'))
-		else
-			let $pathToFile := base-uri($files[self::tei:TEI][1])
+		else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
+		then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
+		else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
+		(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
+		then
+		    let $p := base-uri($files[1])
+		    return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
+		else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+	
 			let $pathToEd := wdb:getEdPath($pathToFile, true())
 			let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 		
@@ -115,6 +122,7 @@ try {
 		            then $pathToEd || '/mets.xml'
 		            else
 					    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+        else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 			
 			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
 				then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
