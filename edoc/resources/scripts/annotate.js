@@ -85,7 +85,7 @@ function anno(){selection = window.getSelection();
 $(document).ready(function() {
     id = $("meta[name='id']").attr("content");
     get = $.getJSON(
-        "return.xql",
+        "../restxq/edoc/anno/" + id,
         {file: id},
         function(data){
             $.each(
