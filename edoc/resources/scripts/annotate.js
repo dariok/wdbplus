@@ -12,15 +12,15 @@ $( function() {
             data: JSON.stringify({
                 from: start,
                 to: end,
-                text: annoText
+                text: annoText,
+                public: $('#public').val()
             }),
             contentType: "application/json; charset=UTF-8",
             dataType: 'json'
             });
             
         get = $.getJSON(
-            "return.xql",
-            {file: id},
+            "../restxq/edoc/anno/" + id,
             function(data){ console.log(data); }
         );
         
