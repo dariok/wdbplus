@@ -33,7 +33,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 ```
 
 ### manual installation
-1. clone this repo
+1. clone this repo including its submodules
 1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
 1. import the configuration files into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
 1. apply the configuration
