@@ -100,9 +100,9 @@ try {
 	let $files := collection($wdb:edocBaseDB)/id($id)
 	
 	return if (count($files) = 0)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0000'))
 		else if (count($files[self::tei:TEI]) > 1)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0001'))
 		else
 			let $pathToFile := base-uri($files[self::tei:TEI][1])
 			let $pathToEd := wdb:getEdPath($pathToFile, true())
@@ -114,7 +114,7 @@ try {
 		        else if (doc-available($pathToEd || '/mets.xml'))
 		            then $pathToEd || '/mets.xml'
 		            else
-					    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0003'))
+					    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 			
 			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
 				then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
@@ -122,7 +122,9 @@ try {
 			
 			let $xslt := if (doc-available($xsl))
 				then $xsl
-				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0002'))
+				else if (doc-available($pathToEd || '/' || $xsl))
+				then $pathToEd || '/' || $xsl
+				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
 			
 			let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 				
@@ -134,7 +136,7 @@ try {
 		    return $map
 	}
 	catch * {
-		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model })
+		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
 	}
 };
 
@@ -152,9 +154,12 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
-		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" /> 
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" />
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.css" />
 		{wdb:getProjectFiles($node, $model, 'css')}
 		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
 		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
 		{wdb:getProjectFiles($node, $model, 'js')}
 	</head>

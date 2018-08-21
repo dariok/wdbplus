@@ -4,8 +4,10 @@ module namespace wdbGS = "https://github.com/dariok/wdbplus/GlobalSettings";
 
 import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
+import module namespace wdbAU = "https://github.com/dariok/wdbplus/admin/update" at "update.xqm";
 
 declare namespace config = "https://github.com/dariok/wdbplus";
+declare namespace exgit = "http://exist-db.org/xquery/exgit";
 
 declare function wdbGS:body ( $node as node(), $model as map(*) ) {
 	let $param := request:get-parameter('job', 'main')
@@ -18,6 +20,9 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
 				<ul>
 					<li><a href="global.html?job=title">Titeldaten verändern</a></li>
 					<li><a href="global.html?job=role">Rolle verändern</a></li>
+					{if (system:function-available(xs:QName("exgit:import"), 2))
+					    then <li><a href="global.html?job=lsUpdate">nach Updates suchen</a></li>
+					    else()}
 				</ul>
 			</div>
 			
@@ -40,6 +45,13 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
 			let $u1 := update replace $metaFile/config:config/config:role/config:other
 					with <other xmlns="https://github.com/dariok/wdbplus">{request:get-parameter('other', '')}</other>
 			return local:roleForm($metaFile)
+		
+		case 'lsUpdate' return
+		    wdbAU:lsUpdates()
+	    
+	    case 'doUpdate' return
+	        (<h1>Updating...</h1>,
+	        wdbAU:update(request:get-parameter('rev', '')))
 		
 		default return
 			<div>

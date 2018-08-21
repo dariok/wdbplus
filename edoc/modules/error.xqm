@@ -25,6 +25,13 @@ declare function wdbErr:error ($data as map (*)) {
 		    <p>{$error}</p>
 		    <p>{$data("additional")}</p>
 		    <p>{$data("pathToEd")}</p>
+		    {
+		    let $model := $data('model')
+		    return for-each(map:keys($model), function($key) {
+		            <p><b>{$key}:</b> {$data($key)}</p>
+		        })
+		    }
+		    <p><b>{$data("value")//label}:</b> {$data('value')//item}</p>
 		</div>
 	
 	let $lookup := function($functionName as xs:string, $arity as xs:int) {
