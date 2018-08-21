@@ -68,13 +68,16 @@ $(document).ready(function () {
 // url: '/edoc/modules/auth.xql',
 $(document).ready(function () {
     $('#login').submit(function (e) {
+        username = $('#user').val();
+        password = $('#password').val();
         console.log('login request');
+        
         $.ajax({
             url: 'login',
             method: 'post',
             data: {
-                user: $('#user').val(),
-                password: $('#password').val(),
+                user: username,
+                password: password,
                 edition: $('#edition').val()
             },
             success: function (data) {
@@ -92,6 +95,7 @@ $(document).ready(function () {
             dataType: 'text'
         });
         e.preventDefault();
+        Cookies.set('wdbplus', btoa(username + ':' + password));
     });
 })
 
@@ -433,6 +437,7 @@ function getUniqueId() {
 /* logout */
 function doLogout () {
     console.log('logout request');
+    Cookies.remove('wdbplus');
     $.ajax({
         url: 'login',
         method: 'post',

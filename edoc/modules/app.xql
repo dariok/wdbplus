@@ -159,6 +159,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		{wdb:getProjectFiles($node, $model, 'css')}
 		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
 		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
 		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
 		{wdb:getProjectFiles($node, $model, 'js')}
 	</head>
