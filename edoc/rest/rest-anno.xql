@@ -14,6 +14,7 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace sm     = "http://exist-db.org/xquery/securitymanager";
+declare namespace session= "http://exist-db.org/xquery/session";
 (:declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";:)
 
@@ -27,9 +28,18 @@ declare
     %rest:produces("application/json")
     %output:method("json")
 function wdbRa:getFileAnno ($fileID as xs:string) {
+    let $username := xs:string(sm:id()//sm:real/sm:username)
+    let $file := $wdbRa:collection/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+    let $annCollName := $wdb:edocBaseDB || '/annotations/' || substring-before(substring-after(base-uri($file), 'data/'), '.xml')
+    let $public := doc($annCollName || '/anno.xml')
+    let $private := doc($annCollName || '/' || $username || '.xml')
+    
+    return
     <anno:anno>
-		<anno:entry><anno:range from="" to=""/></anno:entry>
-		{doc($wdb:edocBaseDB || '/anno.xml')//anno:file[. = $fileID]/parent::anno:entry}
+		<anno:entry><anno:collection>{$annCollName}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
+		{for $entry in ($public//anno:entry, $private//anno:entry)
+		    return $entry
+		}
 	</anno:anno>
 };
 
@@ -53,7 +63,7 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
     else
     let $ann := 
         <entry xmlns="https://github.com/dariok/wdbplus/annotations">
-            <id>{util:uuid($data)}</id>
+            <id>{util:uuid()}</id>
             <file>{$fileID}</file>
             <range from="{$data('from')}" to="{$data('to')}" />
             <cat>{$data('text')}</cat>
