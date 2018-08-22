@@ -364,7 +364,8 @@ declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as x
 		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
 		return xmldb:match-collection($t)
 	
-	let $path := for $p in $pa
+	let $path := if (count($pa) = 0) then wdbErr:error(map{"code" := "wdbErr:wdb2001", "additional" := <additional><path>{$path}</path></additional>})
+	else for $p in $pa
 		order by string-length($p) descending
 		let $p1 := $p || '/wdbmeta.xml'
 		let $p2 := $p || '/mets.xml'
