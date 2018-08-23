@@ -23,9 +23,10 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
     let $ie := exgit:import("{$whereToClone}/wdbplus/edoc", "/db/apps/edoc")
     let $ic := exgit:import("{$whereToClone}/wdbplus/config", "/db/system/config/db/apps")
     
-    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/insert.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/return.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
+    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
             sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'))
     let $reindex := xmldb:reindex('/db/apps/edoc/data')
     
