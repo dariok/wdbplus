@@ -111,40 +111,39 @@ try {
 		    let $p := base-uri($files[1])
 		    return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
 		else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
-	
-	let $pathToEd := wdb:getEdPath($pathToFile, true())
-	let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-    
-	(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-	let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
-        then $pathToEd || '/wdbmeta.xml'
-        else if (doc-available($pathToEd || '/mets.xml'))
-        then $pathToEd || '/mets.xml'
-        else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
-    
-	let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-		then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
-		else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-	
-	let $xslt := if (doc-available($xsl))
-		then $xsl
-		else if (doc-available($pathToEd || '/' || $xsl))
-		then $pathToEd || '/' || $xsl
-		else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
-	
-	let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 		
-	(: TODO parameter aus config.xml einlesen und übergeben? :)
-    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
-    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
-    let $t := console:log($map)
-    
-    return $map
+		let $pathToEd := wdb:getEdPath($pathToFile, true())
+		let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
+		
+		(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+		let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
+	        then $pathToEd || '/wdbmeta.xml'
+	        else if (doc-available($pathToEd || '/mets.xml'))
+	            then $pathToEd || '/mets.xml'
+	            else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+		
+		let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+			then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
+			else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+		
+		let $xslt := if (doc-available($xsl))
+			then $xsl
+			else if (doc-available($pathToEd || '/' || $xsl))
+			then $pathToEd || '/' || $xsl
+			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
+		
+		let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+			
+		(: TODO parameter aus config.xml einlesen und übergeben? :)
+	    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
+	    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+	    let $t := console:log($map)
+	    
+	    return $map
 }
 catch * {
 	wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
 }
-
 };
 
 (: ~
