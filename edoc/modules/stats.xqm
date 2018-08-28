@@ -57,7 +57,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 				for $w in $editionsW
 					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
 					let $metaFile := document-uri(root($w))
-					let $id := wdb:getEdPath($metaFile)
+					let $id := substring-before($metaFile, 'wdbmeta')
 					let $padding := count(tokenize($id, '/')) + 0.2
 					order by $id
 					return
@@ -67,7 +67,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={wdb:getEdPath($metaFile)}">verwalten</a></td>
+									<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
 								)
 								else ()
 							}
