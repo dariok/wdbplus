@@ -486,3 +486,9 @@ function switchlayer(Layer_Name) {
 	var target = '#' + Layer_Name.replace( /(,|:|\.|\[|\])/g, "\\$1" );	
 	$(target).toggle();	
 }
+
+/* preparations to show some loading animation while doing AJAX requests */
+$(document).bind({
+	ajaxStart: function() { $("body").addClass("loading"); },
+	ajaxStop: function() { $("body").removeClass("loading"); }
+});
