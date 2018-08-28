@@ -68,13 +68,16 @@ $(document).ready(function () {
 // url: '/edoc/modules/auth.xql',
 $(document).ready(function () {
     $('#login').submit(function (e) {
+        username = $('#user').val();
+        password = $('#password').val();
         console.log('login request');
+        
         $.ajax({
             url: 'login',
             method: 'post',
             data: {
-                user: $('#user').val(),
-                password: $('#password').val(),
+                user: username,
+                password: password,
                 edition: $('#edition').val()
             },
             success: function (data) {
@@ -92,6 +95,7 @@ $(document).ready(function () {
             dataType: 'text'
         });
         e.preventDefault();
+        Cookies.set('wdbplus', btoa(username + ':' + password));
     });
 })
 
@@ -234,8 +238,15 @@ function mouseOut (event) {
     console.log(id);
     setTimeout($(id).detach(), 2000, id);
 }
-// show annotation in right div
+
+// for backwards compatibility
+// TODO remove
 function show_annotation (dir, xml, xsl, ref, height, width) {
+    show_annotation (ref, xml, dir);
+}
+
+// show annotation in right div
+function show_annotation (ref, xml, dir) {
     var info = $('<div class="info"></div>');
     var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
     console.log(q);
@@ -426,6 +437,7 @@ function getUniqueId() {
 /* logout */
 function doLogout () {
     console.log('logout request');
+    Cookies.remove('wdbplus');
     $.ajax({
         url: 'login',
         method: 'post',

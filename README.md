@@ -23,9 +23,10 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
     let $ie := exgit:import("{$whereToClone}/wdbplus/edoc", "/db/apps/edoc")
     let $ic := exgit:import("{$whereToClone}/wdbplus/config", "/db/system/config/db/apps")
     
-    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/insert.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/return.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'), sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
+    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'),
+            sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
             sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'))
     let $reindex := xmldb:reindex('/db/apps/edoc/data')
     
@@ -33,7 +34,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 ```
 
 ### manual installation
-1. clone this repo
+1. clone this repo including its submodules
 1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
 1. import the configuration files into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
 1. apply the configuration

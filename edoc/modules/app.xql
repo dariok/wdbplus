@@ -144,6 +144,7 @@ try {
 catch * {
 	wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
 }
+
 };
 
 (: ~
@@ -160,9 +161,12 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
-		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" /> 
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" />
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.css" />
 		{wdb:getProjectFiles($node, $model, 'css')}
 		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.js" />
+		<script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
 		<script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
 		{wdb:getProjectFiles($node, $model, 'js')}
 	</head>
@@ -367,7 +371,8 @@ declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as x
 		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
 		return xmldb:match-collection($t)
 	
-	let $path := for $p in $pa
+	let $path := if (count($pa) = 0) then wdbErr:error(map{"code" := "wdbErr:wdb2001", "additional" := <additional><path>{$path}</path></additional>})
+	else for $p in $pa
 		order by string-length($p) descending
 		let $p1 := $p || '/wdbmeta.xml'
 		let $p2 := $p || '/mets.xml'
