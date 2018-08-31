@@ -6,7 +6,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
 import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
-import module namespace xConf       = "http://exist-db.org/xquery/apps/config"      at "config.xqm";
+import module namespace xConf			= "http://exist-db.org/xquery/apps/config"	at "config.xqm";
 
 declare namespace mets	    = "http://www.loc.gov/METS/";
 declare namespace mods	    = "http://www.loc.gov/mods/v3";
@@ -94,56 +94,56 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @return a map; in case of debugging, a list
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) { (:as map(*) {:)
-try {
-	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
-	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
-	let $files := collection($wdb:edocBaseDB)/id($id)
-    
-	let $pathToFile := if (count($files) = 0)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
-		else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-		else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
-		then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-		else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
-		(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
-		then
-		    let $p := base-uri($files[1])
-		    return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-		else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+	try {
+		(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
+		(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
+		let $files := collection($wdb:edocBaseDB)/id($id)
 		
-		let $pathToEd := wdb:getEdPath($pathToFile, true())
-		let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-		
-		(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-		let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
-	        then $pathToEd || '/wdbmeta.xml'
-	        else if (doc-available($pathToEd || '/mets.xml'))
-	            then $pathToEd || '/mets.xml'
-	            else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
-		
-		let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-			then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
-			else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-		
-		let $xslt := if (doc-available($xsl))
-			then $xsl
-			else if (doc-available($pathToEd || '/' || $xsl))
-			then $pathToEd || '/' || $xsl
-			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
-		
-		let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+		let $pathToFile := if (count($files) = 0)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
+			then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
+			else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
+			(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
+			then
+			    let $p := base-uri($files[1])
+			    return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
+			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
 			
-		(: TODO parameter aus config.xml einlesen und übergeben? :)
-	    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
-	    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
-	    let $t := console:log($map)
-	    
-	    return $map
-}
-catch * {
-	wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
-}
+			let $pathToEd := wdb:getEdPath($pathToFile, true())
+			let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
+			
+			(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+			let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
+				then $pathToEd || '/wdbmeta.xml'
+				else if (doc-available($pathToEd || '/mets.xml'))
+				then $pathToEd || '/mets.xml'
+				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+			
+			let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+				then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
+				else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+			
+			let $xslt := if (doc-available($xsl))
+				then $xsl
+				else if (doc-available($pathToEd || '/' || $xsl))
+				then $pathToEd || '/' || $xsl
+				else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
+			
+			let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+				
+			(: TODO parameter aus config.xml einlesen und übergeben? :)
+		    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
+		    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+		    let $t := console:log($map)
+		    
+		    return $map
+	}
+	catch * {
+		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
+	}
 };
 
 (: ~

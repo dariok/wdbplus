@@ -17,6 +17,8 @@ declare function wdbErr:error ($data as map (*)) {
 		case "wdb0003" return "No metadata file could be found for the project."
 		case "wdbErr:wdb1001"
 		case "wdb1001" return "An error occurred while applying the transformation."
+		case "wdbErr:wdb2001" return "Module not found."
+		case "wdbErr:wdb2002" return "Error executing wdbq:body($map as map(*))"
 		default return "An unknown error has occurred: " || $data("code")
 
 	let $content :=

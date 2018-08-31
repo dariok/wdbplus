@@ -9,6 +9,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace wdba		= "https://github.com/dariok/wdbplus/auth" at "auth.xqm";
+import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
 
 declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -33,9 +34,18 @@ declare %templates:default("q", "") %templates:default("q2", "") %templates:defa
 		(vgl. Mail Thomas 2017-01-04T12:05) :)
 declare function wdbpq:body($node as node(), $model as map(*)) {
 	let $path := $model("edPath")  || '/' || $model("query")
-	let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
+	let $module := try {
+		util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
+	} catch * {
+		wdbErr:error(map {"code" := fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2001'),
+			"path" := $model("path"), "model" := $model, "err" := $err:value })
+	}
 	
-	return util:eval("wdbq:query($map)", xs:boolean('false'), (xs:QName('map'), $model))
+	return try { util:eval("wdbq:query($map)", xs:boolean('false'), (xs:QName('map'), $model))
+	} catch * {
+		wdbErr:error(map {"code" := fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2002'),
+			"path" := $model("path"), "model" := $model, "err" := $err:value, "module" := $module })
+	}
 };
 
 (: gibt das h2 für die navbar aus; neu 2017-03-27 DK :)
