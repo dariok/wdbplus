@@ -23,15 +23,7 @@ declare function wdbErr:error ($data as map (*)) {
 		<div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
 			<h1>Something has gone wrong...</h1>
 		    <p>{$error}</p>
-		    <p>{$data("additional")}</p>
-		    <p>{$data("pathToEd")}</p>
-		    {
-		    let $model := $data('model')
-		    return for-each(map:keys($model), function($key) {
-		            <p><b>{$key}:</b> {$data($key)}</p>
-		        })
-		    }
-		    <p><b>{$data("value")//label}:</b> {$data('value')//item}</p>
+		    {local:get($data, '')}
 		</div>
 	
 	let $lookup := function($functionName as xs:string, $arity as xs:int) {
@@ -56,4 +48,16 @@ declare function wdbErr:error ($data as map (*)) {
 	</head>,
 	templates:process($content, $data("model"))
 	)
+};
+
+declare function local:get($map as map(*), $prefix as xs:string) {
+	for $key in map:keys($map)
+	    let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
+		return try {
+			let $s := map:size($map($key))
+			return local:get($map($key), $pr)
+		} catch * {
+			let $value := try { xs:string($map($key)) } catch * { "err" }
+			return <p><b>{$pr}: </b> {$value}</p>
+		}
 };
