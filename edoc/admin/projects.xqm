@@ -2,8 +2,8 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
-import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"	at "../modules/app.xql";
-import module namespace wdbs	= "https://github.com/dariok/wdbplus/stats"	at "../modules/stats.xqm";
+import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"			at "../modules/app.xql";
+import module namespace wdbs	= "https://github.com/dariok/wdbplus/stats"		at "../modules/stats.xqm";
 import module namespace console	= "http://exist-db.org/xquery/console";
 import module namespace xstring	= "https://github.com/dariok/XStringUtils"	at "../include/xstring/string-pack.xql";
 import module namespace sm		= "http://exist-db.org/xquery/securitymanager";
@@ -12,7 +12,7 @@ declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
-	let $ed := request:get-parameter('ed', '')
+	let $ed := xstring:substring-before-if-ends(request:get-parameter('ed', ''), '/')
 	let $file := request:get-parameter('file', '')
 	let $job := request:get-parameter('job', '')
 	
@@ -122,7 +122,11 @@ declare function local:getFiles($edoc as xs:string) {
 								<tr>
 									<td>{$doc/@n}</td>
 									<td>{$docUri}</td>
-									<td><a href="../view.html?id={$doc/@xml:id}">{string-join($doc//tei:titleStmt/*, ' - ')}</a></td>
+									<td>
+										<a href="../view.html?id={$doc/@xml:id}">
+											{substring(string-join($doc//tei:titleStmt/*, ' - '), 1, 100)}
+										</a>
+									</td>
 									<td><a href="javascript:show('{$edoc}', '{$docUri}')">anzeigen</a></td>
 								</tr>
 					}

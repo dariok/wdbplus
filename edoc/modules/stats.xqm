@@ -3,12 +3,12 @@ xquery version "3.0";
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
+import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets		= "http://www.loc.gov/METS/";
 declare namespace mods		= "http://www.loc.gov/mods/v3";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace tei			= "http://www.tei-c.org/ns/1.0";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare
@@ -45,7 +45,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 				return
 					<tr>
 						<td>{$id}</td>
-						<td><a href="{$id || '/start.html'}">{normalize-space($name)}</a></td>
+						<td><a href="{$wdb:edocBaseURL || $id || '/start.html'}">{normalize-space($name)}</a></td>
 						{if ($admin = true()) then
 							(	
 								<td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
@@ -57,17 +57,19 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 				for $w in $editionsW
 					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
 					let $metaFile := document-uri(root($w))
-					let $id := substring-before($metaFile, 'wdbmeta')
+					let $id := substring-before(substring-after($metaFile, $wdb:edocBaseDB), 'wdbmeta')
 					let $padding := count(tokenize($id, '/')) + 0.2
 					order by $id
 					return
 						<tr>
 							<td>{$id}</td>
-							<td style="padding-left: {$padding}em;"><a href="{concat($id, '/start.html')}">{normalize-space($name)}</a></td>
+							<td style="padding-left: {$padding}em;">
+								<a href="{$wdb:edocBaseURL || $id || 'start.html'}">{normalize-space($name)}</a>
+							</td>
 							{if ($admin = true()) then
 								(
 									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
+									<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={substring-after($id, '/')}">verwalten</a></td>
 								)
 								else ()
 							}
