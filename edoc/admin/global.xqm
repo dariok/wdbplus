@@ -4,7 +4,6 @@ module namespace wdbGS = "https://github.com/dariok/wdbplus/GlobalSettings";
 
 import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 import module namespace console 	= "http://exist-db.org/xquery/console";
-import module namespace wdbAU = "https://github.com/dariok/wdbplus/admin/update" at "update.xqm";
 
 declare namespace config = "https://github.com/dariok/wdbplus";
 declare namespace exgit = "http://exist-db.org/xquery/exgit";
@@ -47,11 +46,15 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
 			return local:roleForm($metaFile)
 		
 		case 'lsUpdate' return
-		    wdbAU:lsUpdates()
-	    
-	    case 'doUpdate' return
-	        (<h1>Updating...</h1>,
-	        wdbAU:update(request:get-parameter('rev', '')))
+			let $import := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/admin/update"), "wdbAU", xs:anyURI("update.xqm"))
+			let $fn := function-lookup(xs:QName("wdbau:lsUpdates"), 0)
+			return $fn
+		
+		case 'doUpdate' return
+			let $import := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/admin/update"), "wdbAU", xs:anyURI("update.xqm"))
+			let $fn := function-lookup(xs:QName("wdbAU:update"), 1)
+			return (<h1>Updating...</h1>,
+				$fn(request:get-parameter('rev', '')))
 		
 		default return
 			<div>
