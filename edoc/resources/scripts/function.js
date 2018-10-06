@@ -137,10 +137,10 @@ function marginPos () {
             window.location.hash = '#';
         }
         
-        $('#content').css('width', 'calc(80% - 1em)');
-        $('#content').css('padding-left', '1em');
+        //$('#content').css('width', 'calc(80% - 1em)');
+        //$('#content').css('padding-left', '1em');
         mRefs.each(positionMarginalia);
-        $('#marginalia_container').show();
+        $('#marginalia_container').children('span').css('visibility', 'visible');
         
         if (tar !== '' && tar !== 'undefined') {
             window.location.hash = tar;
@@ -159,13 +159,20 @@ function positionMarginalia (index, element) {
     if (previous.length == 0) {
         targetTop = thisRefPos - $('header').height();
     } else {
-        if (Math.floor(thisRefPos - $('header').height()) == previous.css('top').match(/^\d+/)) {
-            targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + 1em)';
+        pHeight = parseFloat(previous.height());
+        pTop = parseFloat(previous.css('top').match(/^\d+/));
+        hHeight = $('header').height();
+        mTop = pHeight + pTop;
+        console.log(previous.css('top'));
+        console.log(thisRefID + ": pT: " + pTop + "; pH: " + pHeight + "; mTop: " + mTop + "; preTop: " + previous.position().top);
+        if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
+            //targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + ' + pHeight + 'px)';
+            targetTop = (pTop + pHeight) + "px";
         } else {
-            targetTop = thisRefPos - $('header').height();
+            targetTop = thisRefPos - hHeight;
         }
     }
-    
+    console.log(thisRefID + ': ' + targetTop);
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
     $(targetMargID).css('top', targetTop);
