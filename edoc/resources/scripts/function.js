@@ -64,40 +64,62 @@ $(document).ready(function () {
     $('.fn_number').hover(mouseIn, mouseOut);
 });
 
-/** AJAX functions to enable login in NavBar **/
-// url: '/edoc/modules/auth.xql',
+/* Login and logout */
+// url: 'edoc/modules/auth.xql'
 $(document).ready(function () {
-    $('#login').submit(function (e) {
-        username = $('#user').val();
-        password = $('#password').val();
-        console.log('login request');
-        
-        $.ajax({
-            url: 'login',
-            method: 'post',
-            data: {
-                user: username,
-                password: password,
-                edition: $('#edition').val()
-            },
-            success: function (data) {
-                try {
-                    $('#auth').replaceWith(data);
-                    console.log('logged in');
-                    console.log(data);
-                }
-                catch (e) {
-                    console.log('logged in, tried to replace #login with:');
-                    console.log(data);
-                    console.log(e);
-                }
-            },
-            dataType: 'text'
-        });
-        e.preventDefault();
-        Cookies.set('wdbplus', btoa(username + ':' + password));
-    });
+	$('#login').submit(function (e) { login(e) });
 })
+function login (e) {
+	e.preventDefault();
+	username = $('#user').val();
+	password = $('#password').val();
+	console.log('login request');
+	
+	$.ajax({
+		url: 'login',
+		method: 'post',
+		data: {
+			user: username,
+			password: password,
+			edition: $('#edition').val()
+		},
+		success: function (data) {
+			try {
+				$('#auth').replaceWith(data);
+				console.log('logged in');
+				console.log(data);
+			} catch (e) {
+				console.log('logged in, tried to replace #login with:');
+				console.log(data);
+				console.log(e);
+			}
+		},
+		dataType: 'text'
+	});
+	Cookies.set('wdbplus', btoa(username + ':' + password));
+}
+function doLogout () {
+	console.log('logout request');
+	Cookies.remove('wdbplus');
+	$.ajax({
+		url: 'login',
+		method: 'post',
+		data: {
+			logout: 'logout'
+		},
+		success: function (data) {
+			try {
+				$('#auth').replaceWith(data);
+				console.log('trying to log off' + data);
+			} catch (e) {
+				console.log('logging out, tried to replace #logout with:');
+				console.log(data);
+			}
+		},
+		dataType: 'text'
+	});
+}
+/* END login and logout */
 
 // load image in right div when clicking on a page number
 $(document).ready(function () {
@@ -441,29 +463,7 @@ function getUniqueId() {
     return 'd' + internalUniqueId++;
 }
 
-/* logout */
-function doLogout () {
-    console.log('logout request');
-    Cookies.remove('wdbplus');
-    $.ajax({
-        url: 'login',
-        method: 'post',
-        data: {
-            logout: 'logout'
-        },
-        success: function (data) {
-            try {
-                $('#auth').replaceWith(data);
-                console.log('trying to log off' + data);
-            }
-            catch (e) {
-                console.log('logging out, tried to replace #logout with:');
-                console.log(data);
-            }
-        },
-        dataType: 'text'
-    });
-}
+
 
 /* display an image in the right div */
 function displayImage(href) {
