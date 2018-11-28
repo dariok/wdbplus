@@ -64,40 +64,62 @@ $(document).ready(function () {
     $('.fn_number').hover(mouseIn, mouseOut);
 });
 
-/** AJAX functions to enable login in NavBar **/
-// url: '/edoc/modules/auth.xql',
+/* Login and logout */
+// url: 'edoc/modules/auth.xql'
 $(document).ready(function () {
-    $('#login').submit(function (e) {
-        username = $('#user').val();
-        password = $('#password').val();
-        console.log('login request');
-        
-        $.ajax({
-            url: 'login',
-            method: 'post',
-            data: {
-                user: username,
-                password: password,
-                edition: $('#edition').val()
-            },
-            success: function (data) {
-                try {
-                    $('#auth').replaceWith(data);
-                    console.log('logged in');
-                    console.log(data);
-                }
-                catch (e) {
-                    console.log('logged in, tried to replace #login with:');
-                    console.log(data);
-                    console.log(e);
-                }
-            },
-            dataType: 'text'
-        });
-        e.preventDefault();
-        Cookies.set('wdbplus', btoa(username + ':' + password));
-    });
+	$('#login').submit(function (e) { login(e) });
 })
+function login (e) {
+	e.preventDefault();
+	username = $('#user').val();
+	password = $('#password').val();
+	console.log('login request');
+	
+	$.ajax({
+		url: 'login',
+		method: 'post',
+		data: {
+			user: username,
+			password: password,
+			edition: $('#edition').val()
+		},
+		success: function (data) {
+			try {
+				$('#auth').replaceWith(data);
+				console.log('logged in');
+				console.log(data);
+			} catch (e) {
+				console.log('logged in, tried to replace #login with:');
+				console.log(data);
+				console.log(e);
+			}
+		},
+		dataType: 'text'
+	});
+	Cookies.set('wdbplus', btoa(username + ':' + password));
+}
+function doLogout () {
+	console.log('logout request');
+	Cookies.remove('wdbplus');
+	$.ajax({
+		url: 'login',
+		method: 'post',
+		data: {
+			logout: 'logout'
+		},
+		success: function (data) {
+			try {
+				$('#auth').replaceWith(data);
+				console.log('trying to log off' + data);
+			} catch (e) {
+				console.log('logging out, tried to replace #logout with:');
+				console.log(data);
+			}
+		},
+		dataType: 'text'
+	});
+}
+/* END login and logout */
 
 // load image in right div when clicking on a page number
 $(document).ready(function () {
@@ -137,10 +159,10 @@ function marginPos () {
             window.location.hash = '#';
         }
         
-        $('#content').css('width', 'calc(80% - 1em)');
-        $('#content').css('padding-left', '1em');
+        //$('#content').css('width', 'calc(80% - 1em)');
+        //$('#content').css('padding-left', '1em');
         mRefs.each(positionMarginalia);
-        $('#marginalia_container').show();
+        $('#marginalia_container').children('span').css('visibility', 'visible');
         
         if (tar !== '' && tar !== 'undefined') {
             window.location.hash = tar;
@@ -159,13 +181,20 @@ function positionMarginalia (index, element) {
     if (previous.length == 0) {
         targetTop = thisRefPos - $('header').height();
     } else {
-        if (Math.floor(thisRefPos - $('header').height()) == previous.css('top').match(/^\d+/)) {
-            targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + 1em)';
+        pHeight = parseFloat(previous.height());
+        pTop = parseFloat(previous.css('top').match(/^\d+/));
+        hHeight = $('header').height();
+        mTop = pHeight + pTop;
+        console.log(previous.css('top'));
+        console.log(thisRefID + ": pT: " + pTop + "; pH: " + pHeight + "; mTop: " + mTop + "; preTop: " + previous.position().top);
+        if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
+            //targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + ' + pHeight + 'px)';
+            targetTop = (pTop + pHeight) + "px";
         } else {
-            targetTop = thisRefPos - $('header').height();
+            targetTop = thisRefPos - hHeight;
         }
     }
-    
+    console.log(thisRefID + ': ' + targetTop);
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
     $(targetMargID).css('top', targetTop);
@@ -434,29 +463,7 @@ function getUniqueId() {
     return 'd' + internalUniqueId++;
 }
 
-/* logout */
-function doLogout () {
-    console.log('logout request');
-    Cookies.remove('wdbplus');
-    $.ajax({
-        url: 'login',
-        method: 'post',
-        data: {
-            logout: 'logout'
-        },
-        success: function (data) {
-            try {
-                $('#auth').replaceWith(data);
-                console.log('trying to log off' + data);
-            }
-            catch (e) {
-                console.log('logging out, tried to replace #logout with:');
-                console.log(data);
-            }
-        },
-        dataType: 'text'
-    });
-}
+
 
 /* display an image in the right div */
 function displayImage(href) {

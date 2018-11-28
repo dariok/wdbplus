@@ -6,7 +6,7 @@ import module namespace templates	= "http://exist-db.org/xquery/templates" ;
 import module namespace console 	= "http://exist-db.org/xquery/console";
 import module namespace xstring		= "https://github.com/dariok/XStringUtils"		at "../include/xstring/string-pack.xql";
 import module namespace wdbErr		= "https://github.com/dariok/wdbplus/errors"	at "error.xqm";
-import module namespace xConf       = "http://exist-db.org/xquery/apps/config"      at "config.xqm";
+import module namespace xConf			= "http://exist-db.org/xquery/apps/config"	at "config.xqm";
 
 declare namespace mets	    = "http://www.loc.gov/METS/";
 declare namespace mods	    = "http://www.loc.gov/mods/v3";
@@ -94,33 +94,33 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @return a map; in case of debugging, a list
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) { (:as map(*) {:)
-try {
-	(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
-	(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
-	let $files := collection($wdb:edocBaseDB)/id($id)
-    
-	let $pathToFile := if (count($files) = 0)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
-		else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
-		then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-		else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
-		then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-		else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
-		(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
-		then
-		    let $p := base-uri($files[1])
-		    return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-		else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+	try {
+		(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
+		(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
+		let $files := collection($wdb:edocBaseDB)/id($id)
 		
+		let $pathToFile := if (count($files) = 0)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
+			then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
+			else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
+			(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
+			then
+				let $p := base-uri($files[1])
+				return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
+			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+			
 		let $pathToEd := wdb:getEdPath($pathToFile, true())
 		let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
 		
 		(: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
 		let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
-	        then $pathToEd || '/wdbmeta.xml'
-	        else if (doc-available($pathToEd || '/mets.xml'))
-	            then $pathToEd || '/mets.xml'
-	            else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+			then $pathToEd || '/wdbmeta.xml'
+			else if (doc-available($pathToEd || '/mets.xml'))
+			then $pathToEd || '/mets.xml'
+			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 		
 		let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
 			then local:getXslFromWdbMeta($pathToEdRel, $id, 'html')
@@ -135,15 +135,15 @@ try {
 		let $title := normalize-space((doc($pathToFile)//tei:title)[1])
 			
 		(: TODO parameter aus config.xml einlesen und übergeben? :)
-	    let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
-	    		"title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
-	    let $t := console:log($map)
-	    
-	    return $map
-}
-catch * {
-	wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
-}
+		let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := $pathToEdRel, "infoFileLoc" := $infoFileLoc,
+		  "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+		let $t := console:log($map)
+		
+		return $map
+	}
+	catch * {
+		wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
+	}
 };
 
 (: ~
@@ -176,18 +176,18 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
  : @created 2018-02-02 DK
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
-    let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
-        then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
-    	else
-    	    (: no specific function available, so we assume standards :)
-    	    (
-                <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.css" />,
-                <script src="{$wdb:edocBaseURL}/{substring-after($model('ed'), 'edoc')}/scripts/project.js" />
-            )
-            
-    return if ($type = 'css')
-        then $files[self::*:link]
-        else $files[self::*:script]
+	let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
+		then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+		else
+			(: no specific function available, so we assume standards :)
+			(
+				<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />,
+				<script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
+			)
+		
+	return if ($type = 'css')
+		then $files[self::*:link]
+		else $files[self::*:script]
 };
 
 (:~
@@ -436,11 +436,11 @@ declare function wdb:getDataCollection () {
  : with the given parameters; else() otherwise.
  :)
 declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
-    let $location := $model("pathToEd") || '/project.xqm'
-    
-    return if (not(util:binary-doc-available($location)))
-        then false()
-        else
-            let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
-            return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+	let $location := $model("pathToEd") || '/project.xqm'
+	
+	return if (not(util:binary-doc-available($location)))
+		then false()
+		else
+			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+			return system:function-available(xs:QName("wdbPF:" || $name), $arity)
 };
