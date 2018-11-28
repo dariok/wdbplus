@@ -189,7 +189,6 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
 			else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
         
         return map {
-        	"@proFile": $projectFileLocation || ": " || $projectFileAvailable,
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
             "@type": "sc:Canvas",
             "label": "S. " || $page,
