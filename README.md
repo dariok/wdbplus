@@ -40,10 +40,9 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. apply the configuration
 1. Set execute rights on .xql files
 
-### post-installation
-1. add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
-1. create a file `wdbmeta.xml` in that collection:
-1. 
+### Creating and uploading projects
+1) add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
+2) create a file `wdbmeta.xml` in that collection:
 ```XML
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
     xml:id="yourProjectID">
@@ -62,11 +61,14 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
         </struct>
     </projectMD>
 ```
-1. The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
+3) The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
+
+### Usage and Configuration
+See the Wiki!
 
 ----
 
-##Currently used in these projects:
+## Currently used in these projects:
 
 * HAB Wolfenbüttel
   * Editionsprojekt Karlstadt
