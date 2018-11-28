@@ -162,20 +162,21 @@ declare
     %output:method("json")
 function wdbRf:getFileManifest ($fileID as xs:string) {
 	let $file := $wdbRf:collection/id($fileID)
+	
 	(: try to find a title; use @type="main" if possible, else use the first we can find :)
 	let $title := normalize-space(($file//tei:teiHeader//tei:title[@type='main'], $file//tei:teiHeader//tei:title[1])[1])
-
-    let $map := wdb:populateModel($fileID, '', map{})
-    let $meta := doc($map("infoFileLoc"))
-    
-    let $location := $map('ed')||'/project.xqm'
-    let $projectFileAvailable := util:binary-doc-available($location)
-    let $functionAvailable := if ($projectFileAvailable = true())
-    	then
-    		let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
-    		return system:function-available(xs:QName("wdbPF:getImages"), 2)
-    	else false()
-    
+	
+	let $map := wdb:populateModel($fileID, '', map{})
+	let $meta := doc($map("infoFileLoc"))
+	let $projectFileLocation := $wdb:edocBaseDB || '/' || $map('ed')||'/project.xqm'
+	
+	let $projectFileAvailable := util:binary-doc-available($projectFileLocation)
+	let $functionAvailable := if ($projectFileAvailable = true())
+		then
+			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $projectFileLocation)
+			return system:function-available(xs:QName("wdbPF:getImages"), 2)
+		else false()
+	
 	let $canv:= for $fa in $file//tei:surface
 		let $page := substring-after($fa/@xml:id, '_')
 		
@@ -188,6 +189,7 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
 			else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
         
         return map {
+        	"@proFile": $projectFileLocation || ": " || $projectFileAvailable,
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
             "@type": "sc:Canvas",
             "label": "S. " || $page,
@@ -279,7 +281,7 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
         "@context": "http://iiif.io/api/presentation/2/context.json",
         "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/manifest",
         "@type": "sc:Manifest",
-        "label": $num,
+        "label": $title,
         "description": [map{
         	"@value": $title,
         	"@language": xstring:substring-before($meta//meta:language[1], '-')
