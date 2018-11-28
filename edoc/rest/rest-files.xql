@@ -161,9 +161,10 @@ declare
     %rest:produces("application/json")
     %output:method("json")
 function wdbRf:getFileManifest ($fileID as xs:string) {
-    let $file := $wdbRf:collection/id($fileID)
-    let $title := normalize-space($file//tei:title[@type='main'])
-    let $num := normalize-space($file//tei:title[@type='num'])
+	let $file := $wdbRf:collection/id($fileID)
+	(: try to find a title; use @type="main" if possible, else use the first we can find :)
+	let $title := normalize-space(($file//tei:teiHeader//tei:title[@type='main'], $file//tei:teiHeader//tei:title[1])[1])
+
     let $map := wdb:populateModel($fileID, '', map{})
     let $meta := doc($map("infoFileLoc"))
     
@@ -175,14 +176,16 @@ function wdbRf:getFileManifest ($fileID as xs:string) {
     		return system:function-available(xs:QName("wdbPF:getImages"), 2)
     	else false()
     
-    let $canv:= for $fa in $file//tei:surface
-        let $page := substring-after($fa/@xml:id, '_')
-        let $resource := if ($functionAvailable)
-            	then util:eval("wdbPF:getImages($fileID, $page)", false(), ($fileID, $page))
-            	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
-        let $sid := if ($projectFileAvailable = true())
-    	then substring-before($resource, '/full')
-    	else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
+	let $canv:= for $fa in $file//tei:surface
+		let $page := substring-after($fa/@xml:id, '_')
+		
+		let $resource := if ($functionAvailable)
+			then util:eval("wdbPF:getImages($fileID, $page)", false(), ($fileID, $page))
+			else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
+		
+		let $sid := if ($projectFileAvailable = true())
+			then substring-before($resource, '/full')
+			else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
         
         return map {
             "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
