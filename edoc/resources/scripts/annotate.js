@@ -97,7 +97,7 @@ $(document).ready(function() {
     
     get = $.ajax({
         method: "get",
-        url: "../restxq/edoc/anno/" + id,
+        url: "../../restxq/edoc/anno/" + id,
         headers: headers,
         success: function(data){
             $.each(
@@ -113,7 +113,11 @@ $(document).ready(function() {
 	                        end = start;
 	                    cat = value.range["from"] + "–" + value.range["to"] + ": " + value.cat;
 	                    
-	                    highlightAll(start, end, 'red', cat);
+	                    f = value.range["from"].substring(1);
+	                    t = value.range["to"].substring(1);
+	                    
+	                    if(t > f) highlightAll(start, end, 'red', cat);
+	                    else highlightAll(end, start, 'red', cat);
 	                }
                 }
             );

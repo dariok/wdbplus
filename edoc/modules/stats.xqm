@@ -60,7 +60,8 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 					let $id := substring-before(substring-after($metaFile, $wdb:edocBaseDB), 'wdbmeta')
 					let $padding := count(tokenize($id, '/')) + 0.2
 					order by $id
-					return
+					return if ($w//wdbmeta:view[not(@private) or @private='false']
+						or $w//wdbmeta:struct[@file]) then
 						<tr>
 							<td>{$id}</td>
 							<td style="padding-left: {$padding}em;">
@@ -74,6 +75,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
 								else ()
 							}
 						</tr>
+						else ()
 				)
 			}
 		</table>

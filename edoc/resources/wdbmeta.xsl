@@ -65,7 +65,7 @@
 			</xsl:choose>
 		</xsl:variable>
 		<li>
-			<a href="{$base}/{$ed}/start.html">
+			<a href="{$ed}/start.html">
 				<xsl:value-of select="normalize-space(@label)"/>
 			</a>
 		</li>
@@ -73,8 +73,7 @@
 
 	<xsl:template match="wdbmeta:struct[parent::wdbmeta:struct and not(@file)]">
 		<xsl:variable name="id" select="generate-id()"/>
-		<xsl:if
-			test="
+		<xsl:if test="
 				$role = 'publication' or ($role = 'standalone' and not(@private = true()))
 				or ($role = 'standalone' and $access = true()) or ($role = 'workbench' and $access = true())">
 			<li>
@@ -86,7 +85,7 @@
 						<xsl:attribute name="style" select="'display: none;'"/>
 					</xsl:if>
 					<xsl:apply-templates>
-						<xsl:sort select="@order"/>
+						<xsl:sort select="xs:integer(@order)"/>
 					</xsl:apply-templates>
 				</ul>
 			</li>
@@ -95,8 +94,7 @@
 
 	<xsl:template match="wdbmeta:view">
 		<!-- TODO default process und weitere unterstützen! -->
-		<xsl:if
-			test="
+		<xsl:if test="
 				$role = 'publication' or ($role = 'standalone' and not(@private = true())
 				or ($role = 'standalone' and $access = true()) or ($role = 'workbench' and $access = true()))">
 			<li>
@@ -111,10 +109,10 @@
 		<xsl:param name="struct"/>
 		<xsl:param name="parentFile"/>
 		<xsl:param name="base"/>
-
+		
 		<xsl:variable name="label" select="$struct/@label"/>
 		<xsl:variable name="file" select="$base || '/' || $parentFile"/>
-		<xsl:variable name="meta" select="doc($file)"/>
+		<xsl:variable name="meta" select="document($file, $struct)"/>
 		<xsl:variable name="parent" select="$meta/wdbmeta:projectMD/wdbmeta:struct"/>
 		<xsl:variable name="files" select="$meta/wdbmeta:projectMD/wdbmeta:files"/>
 		<xsl:variable name="content" select="$struct/wdbmeta:struct"/>
@@ -128,9 +126,14 @@
 						</xsl:when>
 						<xsl:when test="@file">
 							<xsl:variable name="target" select="@file"/>
-							<wdbmeta:struct uri="{$files/wdbmeta:ptr[@xml:id = $target]/@path}">
-								<xsl:sequence select="@*"/>
-							</wdbmeta:struct>
+							<xsl:variable name="path"
+								select="xstring:substring-before-last($file, '/') || '/' || $files/wdbmeta:ptr[@xml:id = $target]/@path" />
+							<xsl:if test="doc($path)//wdbmeta:view[not(@private) or @private='false']
+								or not(doc($path)//wdbmeta:view)">
+								<wdbmeta:struct uri="{$path}">
+									<xsl:sequence select="@*"/>
+								</wdbmeta:struct>
+							</xsl:if>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:sequence select="."/>" </xsl:otherwise>
