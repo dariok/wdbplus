@@ -77,6 +77,16 @@ function wdbRf:getFileFragmentJSON ($fileID as xs:string, $fragment as xs:string
     return json:xml-to-json($f)
 };
 
+declare
+	%rest:GET
+	%rest:path("/edoc/file/{$fileID}/{$fragment}")
+	%rest:produces("text/plain")
+	%output:method("text")
+function wdbRf:getFileFragmentText ($fileID as xs:string, $fragment as xs:string) {
+    let $f := $wdbRf:collection/id($fileID)/id($fragment)
+    return $f
+};
+
 (: export options for ingest into (No)SkE :)
 declare
     %rest:GET
