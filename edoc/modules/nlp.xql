@@ -1,9 +1,7 @@
 xquery version "3.1";
 
-import module namespace json	= "http://www.json.org";
-
-declare namespace output			="http://www.w3.org/2010/xslt-xquery-serialization";
-declare namespace tei					="http://www.tei-c.org/ns/1.0";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 declare function local:spacyExport($id, $fr) {
 if ($id = "0" or $fr = "0")
@@ -42,7 +40,6 @@ let $tokens := local:spacyExport($id, $fr)
 let $request-headers := <headers>
 	<header name="Content-Type" value="application/json" />
 	<header name="cache-control" value="no-cache" />
-	<header name="Postman-Token" value="c59f1496-6b9b-48a9-beb5-585216f39eb4" />
 </headers>
 
 let $response := httpclient:post(xs:anyURI("https://spacyapp.acdh-dev.oeaw.ac.at/query/enrich-simple-json/"),
@@ -52,10 +49,9 @@ let $response := httpclient:post(xs:anyURI("https://spacyapp.acdh-dev.oeaw.ac.at
 
 let $code := $response//httpclient:body/@encoding
 
-return switch($code) 
-	case "URLEncoded"
-		return xmldb:decode($response//httpclient:body)
-	case "Base64Encoded"
-		return util:base64-decode($response//httpclient:body)
-	default
-		return $response
+let $ann := if ($response//httpclient:header[@name = 'Content-Type']/@value = "application/json; charset=utf-8")
+	then util:base64-decode($response//httpclient:body)
+	else ""
+
+return for $e in parse-json($ann)?*
+	return <entry>{for $k in map:keys($e) return element {xs:QName($k)} {$e($k)}}</entry>
