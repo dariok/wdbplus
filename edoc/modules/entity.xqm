@@ -16,7 +16,7 @@ declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:str
 	(: TODO falls XML und XSLT übergeben werden, diese verwenden :)
 	
 	(: da die ID innerhalb der Edition einzigartig sein muß, reicht eine Abfrage innerhalb der Edition :)
-	let $entryEd := doc($reg)/id($id)
+	let $entryEd := doc($wdb:data || '/' || $ed || '/' || $reg)/id($id)
 	(: TODO: wenn hier nicht gefunden, im zentralen Register suchen :)
 	
 	return map { "entry" := $entryEd, "id" := $id, "ed" := $ed }
