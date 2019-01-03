@@ -59,8 +59,6 @@ $( function() {
         chgLayout($('#layout').value);
     });
     
-    $('#annButton').on("click", anno);
-    
     function anno(){selection = window.getSelection();
         if (selection.focusNode === null && selection.anchorNode === null)
             return false;
@@ -86,7 +84,11 @@ $( function() {
         $('#annTo').text(end);
         
         dialog.dialog("open");
-    }
+    };
+    
+    $('#annButton').on("click", function() {
+    	anno();
+    });
 });
 $(document).ready(function() {
     id = $("meta[name='id']").attr("content");
