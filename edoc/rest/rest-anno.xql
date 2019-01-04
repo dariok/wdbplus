@@ -6,6 +6,7 @@ declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno"  at "../modules/annotations.xql";
 (:import module namespace xstring = "https://github.com/dariok/XStringUtils" at "../include/xstring/string-pack.xql";:)
 import module namespace console="http://exist-db.org/xquery/console";
 
@@ -80,31 +81,13 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
     </rest:response>,
     "no file found for ID " || $fileID)
         else 
-            let $annCollName := substring-before(substring-after(base-uri($file), 'data/'), '.xml')
-            let $annColl := if (xmldb:collection-available($wdb:edocBaseDB || '/annotations/' || $annCollName))
-                then $wdb:edocBaseDB || '/annotations/' || $annCollName
-                else xmldb:create-collection($wdb:edocBaseDB || '/annotations', $annCollName)
-            
-            let $fileName := if ($data('public') = 'on')
-                then "anno.xml"
-                else $username || '.xml'
-            let $cr := if (doc-available($annColl || '/' || $fileName))
-                then $annColl || '/' || $fileName
-                else
-                    let $annContent := <anno xmlns="https://github.com/dariok/wdbplus/annotations"/>
-                    let $ps := xmldb:store($annColl, $fileName, $annContent)
-                    let $ch := if ($fileName = 'anno.xml')
-                        then (sm:chgrp($ps, 'wdbusers'), sm:chmod($ps, 'rw-rw-r--'))
-                        else (sm:chmod($ps, 'rw-rw----'), sm:chgrp($ps, 'wdb'), sm:chown($ps, $username))
-                        return $ps
-            let $annoFile := doc($cr)
-            
-            return (
-        <rest:response>
-        <http:response status="200">
-            <http:header name="rest-status" value="REST:SUCCESS" />
-        </http:response>
-    </rest:response>,
-    update insert $ann into $annoFile/anno:anno
-    )
+        	let $annoFile := wdbanno:getAnnoFile($file, $username)
+        	return (
+        		<rest:response>
+        			<http:response status="200">
+        				<http:header name="rest-status" value="REST:SUCCESS" />
+        			</http:response>
+        		</rest:response>,
+    				update insert $ann into $annoFile/anno:anno
+    			)
 };

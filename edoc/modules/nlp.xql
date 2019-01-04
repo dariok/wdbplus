@@ -4,7 +4,8 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno" at "../modules/annotations.xqm";
 
 declare function local:spacyExport($doc, $fr) {
 if ($fr = "0")
@@ -34,29 +35,6 @@ if ($fr = "0")
 			)
 };
 
-declare function local:getAnnoFile($file, $username) {
-    let $annCollName := substring-before(substring-after(base-uri($file), 'data/'), '.xml')
-    let $annColl := if (xmldb:collection-available($wdb:edocBaseDB || '/annotations/' || $annCollName))
-        then $wdb:edocBaseDB || '/annotations/' || $annCollName
-        else xmldb:create-collection($wdb:edocBaseDB || '/annotations', $annCollName)
-            
-    let $fileName := if ($username = "")
-        then "anno.xml"
-        else $username || '.xml'
-        
-    let $cr := if (doc-available($annColl || '/' || $fileName))
-        then $annColl || '/' || $fileName
-        else
-            let $annContent := <anno xmlns="https://github.com/dariok/wdbplus/annotations"/>
-            let $ps := xmldb:store($annColl, $fileName, $annContent)
-            let $ch := if ($fileName = 'anno.xml')
-                then (sm:chgrp($ps, 'wdbusers'), sm:chmod($ps, 'rw-rw-r--'))
-                else (sm:chmod($ps, 'rw-rw----'), sm:chgrp($ps, 'wdb'), sm:chown($ps, $username))
-                return $ps
-
-    return doc($cr)
-};
-
 let $id := request:get-parameter("id", "0")
 let $fr := request:get-parameter("fr", "0")
 
@@ -69,6 +47,7 @@ let $request-headers := <headers>
 	<header name="cache-control" value="no-cache" />
 </headers>
 
+(: TODO: introduce configuration for spacy endpoint :)
 let $response := httpclient:post(xs:anyURI("https://spacyapp.acdh-dev.oeaw.ac.at/query/enrich-simple-json/"),
 	$tokens,
 	false(),
@@ -80,7 +59,7 @@ let $ann := if ($response//httpclient:header[@name = 'Content-Type']/@value = "a
     then util:base64-decode($response//httpclient:body)
     else ""
 
-let $annoFile := local:getAnnoFile($doc, "nlp")
+let $annoFile := wdbanno:getAnnoFile($doc, "nlp")
 
 return if($ann = "") then "no answer"
 	else for $e in parse-json($ann)?*
