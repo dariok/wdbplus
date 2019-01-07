@@ -6,7 +6,7 @@ declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
-import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno"  at "../modules/annotations.xql";
+import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno"  at "../modules/annotations.xqm";
 (:import module namespace xstring = "https://github.com/dariok/XStringUtils" at "../include/xstring/string-pack.xql";:)
 import module namespace console="http://exist-db.org/xquery/console";
 
@@ -30,14 +30,13 @@ declare
     %output:method("json")
 function wdbRa:getFileAnno ($fileID as xs:string) {
     let $username := xs:string(sm:id()//sm:real/sm:username)
-    let $file := $wdbRa:collection/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
-    let $annCollName := $wdb:edocBaseDB || '/annotations/' || substring-before(substring-after(base-uri($file), 'data/'), '.xml')
-    let $public := doc($annCollName || '/anno.xml')
-    let $private := doc($annCollName || '/' || $username || '.xml')
+    let $fileURI := wdb:getFilePath($fileID)
+    let $public := wdbanno:getAnnoFile($fileURI, "anno")
+    let $private := wdbanno:getAnnoFile($fileURI, $username)
     
     return
     <anno:anno>
-		<anno:entry><anno:collection>{$annCollName}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
+		<anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
 		{for $entry in ($public//anno:entry, $private//anno:entry)
 		    return $entry
 		}
