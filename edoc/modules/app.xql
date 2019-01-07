@@ -430,6 +430,13 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
 			return system:function-available(xs:QName("wdbPF:" || $name), $arity)
 };
 
+(:~
+ : Return the full URI to the (edition) XML file with the given ID
+ : The scope is the whole data collection; documentation states in several places that file IDs need to be unique
+ :
+ : @param $id as xs:string: the file ID
+ : @return xs:string the full URI to the file within the database
+ :)
 declare function wdb:getFilePath($id as xs:string) as xs:string {
 (: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
 		(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
