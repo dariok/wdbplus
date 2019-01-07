@@ -95,22 +95,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) { (:as map(*) {:)
 	try {
-		(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
-		(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
-		let $files := collection($wdb:edocBaseDB)/id($id)
-		
-		let $pathToFile := if (count($files) = 0)
-			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
-			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
-			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
-			then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-			else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
-			(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
-			then
-				let $p := base-uri($files[1])
-				return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+		let $pathToFile := wdb:getFilePath($id)
 			
 		let $pathToEd := wdb:getEdPath($pathToFile, true())
 		let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
@@ -443,4 +428,25 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
 		else
 			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
 			return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+};
+
+declare function wdb:getFilePath($id as xs:string) as xs:string {
+(: Wegen des Aufrufs aus pquery nur mit Nr. hier prüfen; 2017-03-27 DK :)
+		(: Das wird vmtl. verändert werden müssen. Ggf. auslagern für queries :)
+		let $files := collection($wdb:edocBaseDB)/id($id)
+		
+		let $pathToFile := if (count($files) = 0)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
+			then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+			else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
+			then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
+			else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
+			(: do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
+			then
+				let $p := base-uri($files[1])
+				return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
+			else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+			
+		return $pathToFile
 };
