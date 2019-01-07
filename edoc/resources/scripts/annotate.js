@@ -14,7 +14,7 @@ $( function() {
         
         put = $.ajax({
             method: "post",
-            url: "../restxq/edoc/anno/" + id,
+            url: "../../restxq/edoc/anno/" + id,
             headers: headers,
             data: JSON.stringify({
                 from: start,
@@ -27,7 +27,7 @@ $( function() {
             });
             
         get = $.getJSON(
-            "../restxq/edoc/anno/" + id,
+            "../../restxq/edoc/anno/" + id,
             function(data){ console.log(data); }
         );
         
