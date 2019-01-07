@@ -8,11 +8,11 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
  : return the annotation file for the given user on the given file.
  : If no user is given, the public annotation file is returned.
  :
- : @param $file as xs:string: the full URI to the edition file
+ : @param $file as xs:anyURI: the full URI to the edition file
  : @param $username as xs:string: the user for whom the annotations are to be returned
  : @return node(): the annotation file 
  :)
-declare function wdbanno:getAnnoFile($file as xs:string, $username as xs:string) as node() {
+declare function wdbanno:getAnnoFile($file as xs:anyURI, $username as xs:string) as node() {
 	let $annotationCollectionName := substring-before(substring-after($file, $wdb:data), '.xml')
 	let $annotationCollectionBase := $wdb:edocBaseDB || '/annotations/'
 	let $annotationCollection := if (xmldb:collection-available($annotationCollectionBase || $annotationCollectionName))
