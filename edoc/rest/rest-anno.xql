@@ -30,17 +30,17 @@ declare
     %output:method("json")
 function wdbRa:getFileAnno ($fileID as xs:string) {
     let $username := xs:string(sm:id()//sm:real/sm:username)
-    let $fileURI := wdb:getFilePath($fileID)
-    let $public := wdbanno:getAnnoFile($fileURI, "anno")
+    let $fileURI := xs:anyURI(wdb:getFilePath($fileID))
+    let $public := wdbanno:getAnnoFile($fileURI, "")
     let $private := wdbanno:getAnnoFile($fileURI, $username)
     
     return
-    <anno:anno>
-		<anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
-		{for $entry in ($public//anno:entry, $private//anno:entry)
-		    return $entry
-		}
-	</anno:anno>
+		<anno:anno>
+			<anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
+			{for $entry in ($public//anno:entry, $private//anno:entry)
+			    return $entry
+			}
+		</anno:anno>
 };
 
 (: insert a new annotation :)
@@ -80,7 +80,7 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
     </rest:response>,
     "no file found for ID " || $fileID)
         else 
-        	let $annoFile := wdbanno:getAnnoFile($file, $username)
+        	let $annoFile := wdbanno:getAnnoFile(base-uri($file), $username)
         	return (
         		<rest:response>
         			<http:response status="200">
