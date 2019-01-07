@@ -13,28 +13,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. Install eXgit as stated in the repo.
 1. (optional) create a user for the framework and log in under that name
 1. (optional) create the target collection as this user
-1. run the following XQuery:
-```xquery
-    xquery version "3.1";
-    
-    import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
-    
-    let $cl := exgit:clone("https://github.com/dariok/wdbplus", "{$whereToClone}")
-    let $ie := exgit:import("{$whereToClone}/wdbplus/edoc", "/db/apps/edoc")
-    let $ic := exgit:import("{$whereToClone}/wdbplus/config", "/db/system/config/db/apps")
-    
-    let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/nav.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'),
-            sm:chmod(xs:anyURI('/db/apps/edoc/annotations'), 'rw-rw-r--'))
-    let $chown := sm:chown(xs:anyURI('/db/apps/edoc/annotations'), 'wdb')
-    let $chgrp := sm:chgrp(xs:anyURI('/db/apps/edoc/annotations'), 'wdbusers')
-    let $reindex := xmldb:reindex('/db/apps/edoc/data')
-    
-    return ($cl, $ie, $ic, $chmod)
-```
+1. run `post-install.xql`
 
 ### manual installation
 1. clone this repo including its submodules
