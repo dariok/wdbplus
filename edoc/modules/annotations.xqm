@@ -14,10 +14,12 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
  :)
 declare function wdbanno:getAnnoFile($file as xs:string, $username as xs:string) as node() {
 	let $annotationCollectionName := substring-before(substring-after($file, $wdb:data), '.xml')
-	let $annotationCollection := if (xmldb:collection-available($wdb:edocBaseDB || '/annotations/'
-		|| $annotationCollectionName))
-			then $wdb:edocBaseDB || '/annotations/' || $annotationCollectionName
-			else xmldb:create-collection($wdb:edocBaseDB || '/annotations', $annotationCollectionName)
+	let $annotationCollectionBase := $wdb:edocBaseDB || '/annotations/'
+	let $annotationCollection := if (xmldb:collection-available($annotationCollectionBase || $annotationCollectionName))
+			then $annotationCollectionBase || $annotationCollectionName
+			else if (sm:has-access($annotationCollectionBase, 'w'))
+			then xmldb:create-collection($annotationCollectionBase, $annotationCollectionName)
+			else ""
 	
 	let $fileName := if ($username = "")
 		then "anno.xml"							(: public annotations :)
@@ -25,13 +27,17 @@ declare function wdbanno:getAnnoFile($file as xs:string, $username as xs:string)
 	
 	let $annotationFile := if (doc-available($annotationCollection || '/' || $fileName))
 		then $annotationCollection || '/' || $fileName
-		else
+		else if (sm:has-access($annotationCollection, 'w'))
+		then
 			let $annotationContent := <anno xmlns="https://github.com/dariok/wdbplus/annotations"/>
 			let $fileStored := xmldb:store($annotationCollection, $fileName, $annotationContent)
 			let $changes := if ($fileName = 'anno.xml')
 				then (sm:chgrp($fileStored, 'wdbusers'), sm:chmod($fileStored, 'rw-rw-r--'))
 				else (sm:chgrp($fileStored, 'wdb'), sm:chmod($fileStored, 'rw-rw----'), sm:chown($fileStored, $username))
 			return $fileStored
+		else ""
 	
-	return doc($annotationFile)
+	return if ($annotationCollection != "" and $annotationFile != "")
+		then doc($annotationFile)
+		else <error>Collection or file not found for user {sm:id()//sm:real/sm:username/text()}</error>
 };
