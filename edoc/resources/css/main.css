@@ -194,3 +194,10 @@ body.loading .loadingModal {
 body.loading .loadingModal {
     display: block;
 }
+
+/* Annotation dialog */
+#annotationDialog h1 {
+	text-align: center;
+	font-size: 1em;
+	margin-top: 0;
+}
