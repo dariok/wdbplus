@@ -22,7 +22,8 @@
 						<div id="annotationTab1">
 							<form id="fta">
 								<h1>Volltextanmerkung</h1>
-								<input type="text" id="ftaText" />
+								<p>Freier Text zur markierten Stelle</p>
+								<textarea style="width: 100%;" id="ftaText" />
 								<label for="public">Anmerkung ist öffentlich: </label>
 								<input type="checkbox" id="public" checked="checked" />
 								<br /><input type="submit" />
@@ -31,10 +32,12 @@
 						<div id="annotationTab2">
 							<form id="la">
 								<h1>Layout anpassen</h1>
+								<p>Spezifische Anmerkungen zum Layout dieser Stelle</p>
 								<select id="layout">
 									<option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
 									<option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
 									<option value="findent">Liste: 1. Zeile eingezogen, wie Absatz („findent“)</option>
+									<option value="hanging">hängender Einzug</option>
 								</select>
 								<input type="submit" />
 							</form>
@@ -42,11 +45,13 @@
 						<div id="annotationTab3">
 							<form id="ea">
 								<h1>Entitäten markieren und identifizieren</h1>
+								<p>Auszeichnen und identifizieren von Personen, Orten, Sachen</p>
 							</form>
 						</div>
 						<div id="annotationTab4">
 							<form id="sa">
 								<h1>Abschnitte verschlagworten</h1>
+								<p>Zuweisen von Schlagworten zu Abschnitten</p>
 							</form>
 						</div>
 					</div>
