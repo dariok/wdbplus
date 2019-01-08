@@ -41,7 +41,7 @@ $( function() {
         console.log(rend);
     }
     
-    dialog = $("#annotationForm").dialog({
+    dialog = $("#annotationDialog").dialog({
         autoOpen: false,
         width: 400,
         close: function() {
@@ -49,6 +49,7 @@ $( function() {
             $('#la')[0].reset();
           }
     });
+    $("#annotationDialogTabs").tabs();
     
     $("#fta").on("submit", function(event) {
         event.preventDefault();
