@@ -43,7 +43,7 @@ $( function() {
     
     dialog = $("#annotationDialog").dialog({
         autoOpen: false,
-        width: 400,
+        width: 'auto',
         close: function() {
             $('#fta')[0].reset();
             $('#la')[0].reset();

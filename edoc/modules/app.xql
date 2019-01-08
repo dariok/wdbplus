@@ -136,7 +136,7 @@ declare function wdb:populateModel($id as xs:string, $view as xs:string, $model 
  : @created 2018-02-02 DK
  :)
 declare function wdb:getHead ( $node as node(), $model as map(*) ) {
-    <head>
+	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<!-- Kurztitel als title; 2016-05-24 DK -->
 		<meta name="wdb-template" content="templates/layout.html" />
