@@ -106,3 +106,55 @@ return if (not($data('from') or $data('text')))
     				update insert $ann into $annoFile/anno:anno
     			)
 };
+
+declare
+	%rest:POST("{$body}")
+	%rest:path("/edoc/anno/{$fileID}")
+	%rest:consumes("application/json")
+function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
+	let $data := parse-json(util:base64-decode($body))
+	let $filePath := wdb:getFilePath(xs:anyURI($fileID))
+	let $doc := doc($filePath)
+	
+	(: check whether all necessary data are present :)
+	let $checkData := if (not($data("id") or $data("text") or $data("job")))
+		then "Missing content in message body: at least start and text must be supplied"
+		else ()
+	
+	(: check whether the user may write :)
+	let $checkWrite := if (not(sm:has-access($filePath, 'w')))
+		then "The current user does not have sufficient rights to write to the requested file"
+		else ""
+	
+	(: check whether the token ID exists :)
+	let $token := $doc/id($data("id"))
+	let $checkID := if ($token)
+		then ""
+		else "The requested token-ID could not be found in the file"
+	
+	(: check the job :)
+	let $checkJob := if (matches($data("job"), "'edit'"))
+		then ()
+		else "Unknown job description"
+	
+	return if ($checkData | $checkWrite | $checkID)
+		then (
+			<rest:response>
+				<http:response status="200">
+					<http:header name="rest-status" value="REST:ERR" />
+				</http:response>
+			</rest:response>,
+			string-join(($checkData, $checkWrite, $checkID), ' – ')
+		)
+		else (
+			<rest:response>
+				<http:response status="200">
+					<http:header name="rest-status" value="REST:SUCCESS" />
+				</http:response>
+			</rest:response>,
+			switch ($data("job"))
+			case "edit" return
+				update value $token with $data("text")
+			default return ""
+		)
+};
