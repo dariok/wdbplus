@@ -1,46 +1,5 @@
+var dialog;
 $( function() {
-    var dialog;
-    
-    function parsefta(start, end) {
-        id = $("meta[name='id']").attr("content");
-        
-        cred = Cookies.get("wdbplus");
-        headers = "";
-        if (typeof cred !== "undefined" && cred.length != 0)
-        headers = {"Authorization": "Basic " + cred};
-        
-        annoText = $('#ftaText').val();
-        dialog.dialog("close");
-        
-        put = $.ajax({
-            method: "post",
-            url: "../../restxq/edoc/anno/" + id,
-            headers: headers,
-            data: JSON.stringify({
-                from: start,
-                to: end,
-                text: annoText,
-                public: $('#public').val()
-            }),
-            contentType: "application/json; charset=UTF-8",
-            dataType: 'json'
-            });
-            
-        get = $.getJSON(
-            "../../restxq/edoc/anno/" + id,
-            function(data){ console.log(data); }
-        );
-        
-        startElem = $('#' + start);
-        endElem = $('#' + end);
-        
-        highlightAll(startElem, endElem, 'red', annoText);
-    }
-    
-    function chgLayout(rend) {
-        console.log(rend);
-    }
-    
     dialog = $("#annotationDialog").dialog({
         autoOpen: false,
         width: 'auto',
@@ -50,15 +9,6 @@ $( function() {
           }
     });
     $("#annotationDialogTabs").tabs();
-    
-    $("#fta").on("submit", function(event) {
-        event.preventDefault();
-        parsefta($('#annFrom').text(), $('#annTo').text());
-    });
-    $("#la").on("submit", function(event) {
-        event.preventDefault();
-        chgLayout($('#layout').value);
-    });
     
     function anno(){selection = window.getSelection();
         if (selection.focusNode === null && selection.anchorNode === null)
@@ -91,6 +41,73 @@ $( function() {
     	anno();
     });
 });
+
+cred = Cookies.get("wdbplus");
+headers = "";
+if (typeof cred !== "undefined" && cred.length != 0)
+headers = {"Authorization": "Basic " + cred};
+
+function parsefta() {
+    id = $("meta[name='id']").attr("content");
+    
+    start = $('#annFrom').text();
+    end = $('#annTo').text()
+    annoText = $('#ftaText').val();
+    dialog.dialog("close");
+    
+    put = $.ajax({
+        method: "post",
+        url: "../../restxq/edoc/anno/" + id,
+        headers: headers,
+        data: JSON.stringify({
+            from: start,
+            to: end,
+            text: annoText,
+            public: $('#public').val()
+        }),
+        contentType: "application/json; charset=UTF-8",
+        dataType: 'json'
+        });
+        
+    get = $.getJSON(
+        "../../restxq/edoc/anno/" + id,
+        function(data){ console.log(data); }
+    );
+    
+    startElem = $('#' + start);
+    endElem = $('#' + end);
+    
+    highlightAll(startElem, endElem, 'red', annoText);
+}
+
+function chgLayout(rend) {
+    console.log(rend);
+}
+
+function editText() {
+    id = $("meta[name='id']").attr("content");
+    edit = $("#corr").val();
+    dialog.dialog("close");
+    
+    put = $.ajax({
+        method: "post",
+        url: "../../restxq/edoc/anno/" + id + "/word",
+        headers: headers,
+        data: JSON.stringify({
+            id: start,
+            text: edit
+        }),
+        contentType: "application/json; charset=UTF-8",
+        dataType: 'json'
+    });
+}
+
+function fshow(id) {
+	anc = $(id).closest("form");
+	anc.children().hide();
+	$(id).show();
+}
+
 $(document).ready(function() {
     id = $("meta[name='id']").attr("content");
     cred = Cookies.get("wdbplus");
