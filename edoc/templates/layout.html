@@ -18,15 +18,16 @@
 							<li><a href="#annotationTab2">Layout</a></li>
 							<li><a href="#annotationTab3">Entitäten</a></li>
 							<li><a href="#annotationTab4">Verschlagwortung</a></li>
+							<li><a href="#annotationTab5">Korrekturen</a></li>
 						</ul>
 						<div id="annotationTab1">
 							<form id="fta">
 								<h1>Volltextanmerkung</h1>
 								<p>Freier Text zur markierten Stelle</p>
-								<textarea style="width: 100%;" id="ftaText" />
+								<textarea style="width: 100%;" id="ftaText"></textarea>
 								<label for="public">Anmerkung ist öffentlich: </label>
 								<input type="checkbox" id="public" checked="checked" />
-								<br /><input type="submit" />
+								<br /><input type="submit" formaction="javascript:parsefta();"/>
 							</form>
 						</div>
 						<div id="annotationTab2">
@@ -52,6 +53,26 @@
 							<form id="sa">
 								<h1>Abschnitte verschlagworten</h1>
 								<p>Zuweisen von Schlagworten zu Abschnitten</p>
+							</form>
+						</div>
+						<div id="annotationTab5">
+							<h1>Korrekturen</h1>
+							<p><a href="javascript:void(0);" onclick="fshow('#tCorr')">Korrekturen im Wort</a>, <a
+								href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder aufteilen</p>
+							<form id="korr">
+								<fieldset id="tCorr" name="tCorr" style="display: none;">
+									<label for="corr">Korrekturen: </label>
+									<input type="text" id="corr" name="corr" />
+									<input type="submit" formaction="javascript:editText();"/>
+								</fieldset>
+								<fieldset id="tComb" name="tComb" style="display: none;">
+									<label for="combine">Zusammenziehen: </label>
+									<input type="submit" formaction="javascript:combineWord();" />
+								</fieldset>
+								<fieldset id="tSplit" name="tSplit" style="display: none;">
+									<label for="combine">trennen: </label>
+									<input type="submit" formaction="javascript:splitWord();" />
+								</fieldset>
 							</form>
 						</div>
 					</div>
