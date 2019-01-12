@@ -109,7 +109,7 @@ return if (not($data('from') or $data('text')))
 
 declare
 	%rest:POST("{$body}")
-	%rest:path("/edoc/anno/{$fileID}")
+	%rest:path("/edoc/anno/word/{$fileID}")
 	%rest:consumes("application/json")
 function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	let $data := parse-json(util:base64-decode($body))
@@ -118,33 +118,33 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	
 	(: check whether all necessary data are present :)
 	let $checkData := if (not($data("id") or $data("text") or $data("job")))
-		then "Missing content in message body: at least start and text must be supplied"
+		then <error>Missing content in message body: at least start and text must be supplied</error>
 		else ()
 	
 	(: check whether the user may write :)
 	let $checkWrite := if (not(sm:has-access($filePath, 'w')))
-		then "The current user does not have sufficient rights to write to the requested file"
-		else ""
+		then <error>The current user does not have sufficient rights to write to the requested file</error>
+		else ()
 	
 	(: check whether the token ID exists :)
 	let $token := $doc/id($data("id"))
 	let $checkID := if ($token)
-		then ""
-		else "The requested token-ID could not be found in the file"
+		then ()
+		else <error>The requested token-ID could not be found in the file</error>
 	
 	(: check the job :)
 	let $checkJob := if (matches($data("job"), "'edit'"))
 		then ()
-		else "Unknown job description"
+		else <error>Unknown job description</error>
 	
-	return if ($checkData | $checkWrite | $checkID)
+	return if ($checkData | $checkWrite | $checkID | $checkJob)
 		then (
 			<rest:response>
 				<http:response status="200">
 					<http:header name="rest-status" value="REST:ERR" />
 				</http:response>
 			</rest:response>,
-			string-join(($checkData, $checkWrite, $checkID), ' – ')
+			string-join(($checkData, $checkWrite, $checkID, $checkJob), ' – ')
 		)
 		else (
 			<rest:response>
