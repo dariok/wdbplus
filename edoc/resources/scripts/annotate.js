@@ -91,14 +91,16 @@ function editText() {
     
     put = $.ajax({
         method: "post",
-        url: "../../restxq/edoc/anno/" + id + "/word",
+        url: "../../restxq/edoc/anno/word/" + id,
         headers: headers,
         data: JSON.stringify({
             id: start,
-            text: edit
+            text: edit,
+            job: "edit"
         }),
         contentType: "application/json; charset=UTF-8",
-        dataType: 'json'
+        dataType: 'json',
+        success: function(data) { $('#' + start).text(data); }
     });
 }
 

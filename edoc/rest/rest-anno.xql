@@ -111,6 +111,8 @@ declare
 	%rest:POST("{$body}")
 	%rest:path("/edoc/anno/word/{$fileID}")
 	%rest:consumes("application/json")
+	%rest:produces("application/json")
+	%output:method("json")
 function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	let $data := parse-json(util:base64-decode($body))
 	let $filePath := wdb:getFilePath(xs:anyURI($fileID))
@@ -133,7 +135,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 		else <error>The requested token-ID could not be found in the file</error>
 	
 	(: check the job :)
-	let $checkJob := if (matches($data("job"), "'edit'"))
+	let $checkJob := if ($data("job") = ("edit"))
 		then ()
 		else <error>Unknown job description</error>
 	
@@ -154,7 +156,8 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 			</rest:response>,
 			switch ($data("job"))
 			case "edit" return
-				update value $token with $data("text")
+				let $u := update value $token with $data("text")
+				return $doc/id($data("id"))/text()
 			default return ""
 		)
 };
