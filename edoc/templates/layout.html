@@ -61,10 +61,11 @@
 								href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder aufteilen</p>
 							<form id="korr">
 								<fieldset id="tCorr" name="tCorr" style="display: none;">
-									<label for="corr">Korrekturen (Achtung: nur ein Wort auswählen; Zeilenumbruch mit | markieren):</label>
-									<br />
-									<input type="text" id="corr" name="corr" />
-									<input type="submit" formaction="javascript:editText();"/>
+									<label for="corr">Korrektur:</label><br />
+									<input type="text" id="corr" name="corr" /> <input type="submit" formaction="javascript:editText();"/><br />
+									<label for="corr">nur ein Wort auswählen;<br/>Zeilenumbruch mit | markieren;<br/>letztes Zeichen vor
+										dem Umbruch wird als Trennzeichen gespeichert<br/>(Leerzeichen vor |, falls kein Trennzeichen)<br/>
+										komplexere Korrekturen als Volltextanmerkung hinterlegen.</label>
 								</fieldset>
 								<fieldset id="tComb" name="tComb" style="display: none;">
 									<label for="combine">Zusammenziehen: </label>
