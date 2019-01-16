@@ -103,7 +103,12 @@ function editText() {
         }),
         contentType: "application/json; charset=UTF-8",
         dataType: 'json',
-        success: function(data) { $('#' + start).text(data); }
+        success: function(data) {
+            ins = data["#text"][0] + data.pc;
+            if (data.lb) ins += "<br>";
+            ins += data["#text"][1];
+            $('#' + start).html(ins);
+        }
     });
 }
 

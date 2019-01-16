@@ -131,7 +131,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	(: check whether the token ID exists :)
 	let $token := $doc/id($data("id"))
 	let $checkID := if ($token)
-		then if (count($token) = 1)
+		then if (count($token) = 1 and not($data('job') = "combine"))
 			then if ($token[self::tei:w or self::tei:pc])
 				then ()
 				else <error>The requested ID does not refer to a single token (tei:w or tei:pc)</error>
@@ -160,8 +160,27 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 			</rest:response>,
 			switch ($data("job"))
 			case "edit" return
-				let $u := update value $token with $data("text")
-				return $doc/id($data("id"))/text()
+				let $d := console:log($token)
+				let $u := if ($token/tei:lb)
+					then
+						let $id := $token/@xml:id
+						let $lb := $token/tei:lb
+						let $text := tokenize($data("text"), '\|')
+						let $pid := if ($token/tei:pc)
+							then $token/tei:pc/@xml:id
+							else ()
+						let $pc := <pc>{$pid, substring($text[1], string-length($text[1]))}</pc>
+						let $d1 := console:log($text)
+						let $repl :=
+							<w xmlns="http://www.tei-c.org/ns/1.0">{$id,
+								substring($text[1], 1, string-length($text[1]) - 1),
+								$pc,
+								$lb,
+								$text[2]
+							}</w>
+						return update replace $token with $repl
+					else update value $token with $data("text")
+				return $doc/id($data("id"))
 			default return ""
 		)
 };

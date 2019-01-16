@@ -15,9 +15,9 @@
 					<div id="annotationDialogTabs">
 						<ul>
 							<li><a href="#annotationTab1">Volltext</a></li>
-							<li><a href="#annotationTab2">Layout</a></li>
-							<li><a href="#annotationTab3">Entitäten</a></li>
 							<li><a href="#annotationTab4">Verschlagwortung</a></li>
+							<li><a href="#annotationTab3">Entitäten</a></li>
+							<li><a href="#annotationTab2">Layout</a></li>
 							<li><a href="#annotationTab5">Korrekturen</a></li>
 						</ul>
 						<div id="annotationTab1">
@@ -61,7 +61,8 @@
 								href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder aufteilen</p>
 							<form id="korr">
 								<fieldset id="tCorr" name="tCorr" style="display: none;">
-									<label for="corr">Korrekturen: </label>
+									<label for="corr">Korrekturen (Achtung: nur ein Wort auswählen; Zeilenumbruch mit | markieren):</label>
+									<br />
 									<input type="text" id="corr" name="corr" />
 									<input type="submit" formaction="javascript:editText();"/>
 								</fieldset>
