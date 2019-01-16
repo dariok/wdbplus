@@ -131,7 +131,11 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	(: check whether the token ID exists :)
 	let $token := $doc/id($data("id"))
 	let $checkID := if ($token)
-		then ()
+		then if (count($token) = 1)
+			then if ($token[self::tei:w or self::tei:pc])
+				then ()
+				else <error>The requested ID does not refer to a single token (tei:w or tei:pc)</error>
+			else <error>The ID refers to more than one token</error>
 		else <error>The requested token-ID could not be found in the file</error>
 	
 	(: check the job :)

@@ -89,6 +89,9 @@ function editText() {
     edit = $("#corr").val();
     dialog.dialog("close");
     
+    if (start != end)
+        alert("You can only change one word at a time!");
+    else
     put = $.ajax({
         method: "post",
         url: "../../restxq/edoc/anno/word/" + id,
