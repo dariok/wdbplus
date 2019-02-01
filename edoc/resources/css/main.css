@@ -76,9 +76,12 @@ div nav {
 	min-width: 30em;
 	max-height: 100%;
 }
-
+nav li ul {
+	margin-left: 1.25em;
+}
 nav ul {
 	margin: 0;
+	list-style-type: none;
 }
 /* Nr., Titel der EE */
 nav h1 {
