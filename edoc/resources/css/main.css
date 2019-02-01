@@ -81,6 +81,7 @@ nav li ul {
 }
 nav ul {
 	margin: 0;
+	padding-left: 10px;
 	list-style-type: none;
 }
 /* Nr., Titel der EE */
