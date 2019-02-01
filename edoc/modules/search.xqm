@@ -42,14 +42,16 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                 </form>,
                 <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
                 )
-            else if ($model('q') = 'rs') then let $coll := if ($model("global") = 'on')
+            else if ($model('q') = 'rs')
+                then let $coll := if ($model("global") = 'on')
                     then $wdb:edocBaseDB
                     else $model("ed")
+                let $res := collection($model("ed"))//tei:rs[@ref='#'||$model("query")]
                 return (
-                <h3>Ergebnisse in {$coll}</h3>,
+                <h3>{count($res)} Ergebnisse in {$coll}</h3>,
                 <p>Suchstring: {$model("query")}</p>,
                 <table class="search">{
-                  for $hit in collection($model("ed"))//tei:rs[@ref='#'||$model("query")]
+                  for $hit in $res
                     group by $file := base-uri($hit)
                     order by $file
                     let $fileID := $hit[1]/ancestor::tei:TEI/@xml:id
@@ -70,13 +72,14 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
                 let $coll := if ($model("global") = 'on')
                     then $wdb:edocBaseDB
                     else $wdb:edocBaseDB||'/'||$model("ed")
-                return (
-                <h3>Ergebnisse in {$coll}</h3>,
-                <p>Suchstring: {$model("query")}</p>,
-                <table class="search">{
-                    for $hit in (collection($coll)//tei:p[ft:query(., $model("query"))]
+                let $res := (collection($coll)//tei:p[ft:query(., $model("query"))]
                             | collection($coll)//tei:table[ft:query(., $model("query"))]
                             | collection($coll)//tei:item[ft:query(., $model("query"))])
+                return (
+                <h3>{count($res)} Ergebnisse in {$coll}</h3>,
+                <p>Suchstring: {$model("query")}</p>,
+                <table class="search">{
+                    for $hit in $res
                         group by $file := base-uri($hit)
                         order by $file
                         
