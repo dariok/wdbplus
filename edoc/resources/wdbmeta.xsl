@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:wdbmeta="https://github.com/dariok/wdbplus/wdbmeta" xmlns:xstring="https://github.com/dariok/XStringUtils"
+<xsl:stylesheet
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:err="http://www.w3.org/2005/xqt-errors"
+	xmlns:wdbmeta="https://github.com/dariok/wdbplus/wdbmeta"
+	xmlns:xstring="https://github.com/dariok/XStringUtils"
 	exclude-result-prefixes="#all" version="3.0">
 
 	<xsl:import href="../include/xstring/string-pack.xsl"/>
@@ -112,46 +116,49 @@
 		
 		<xsl:variable name="label" select="$struct/@label"/>
 		<xsl:variable name="file" select="$base || '/' || $parentFile"/>
-		<xsl:variable name="meta" select="document($file, $struct)"/>
-		<xsl:variable name="parent" select="$meta/wdbmeta:projectMD/wdbmeta:struct"/>
-		<xsl:variable name="files" select="$meta/wdbmeta:projectMD/wdbmeta:files"/>
-		<xsl:variable name="content" select="$struct/wdbmeta:struct"/>
-		<xsl:variable name="res">
-			<wdbmeta:struct label="{$parent/@label}" uri="{$file}">
-				<xsl:sequence select="$parent/wdbmeta:import"/>
-				<xsl:for-each select="$parent/wdbmeta:struct">
-					<xsl:choose>
-						<xsl:when test="@label = $label">
-							<xsl:sequence select="$struct"/>
-						</xsl:when>
-						<xsl:when test="@file">
-							<xsl:variable name="target" select="@file"/>
-							<xsl:variable name="path"
-								select="xstring:substring-before-last($file, '/') || '/' || $files/wdbmeta:ptr[@xml:id = $target]/@path" />
-							<xsl:if test="doc($path)//wdbmeta:view[not(@private) or @private='false']
-								or not(doc($path)//wdbmeta:view)">
-								<wdbmeta:struct uri="{$path}">
-									<xsl:sequence select="@*"/>
-								</wdbmeta:struct>
-							</xsl:if>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:sequence select="."/>" </xsl:otherwise>
-					</xsl:choose>
-				</xsl:for-each>
-			</wdbmeta:struct>
-		</xsl:variable>
-
-		<xsl:choose>
-			<xsl:when test="$res/wdbmeta:struct/wdbmeta:import">
-				<xsl:variable name="pFile"
-					select="xstring:substring-before-last($parentFile, '/') || '/' || $res/wdbmeta:struct/wdbmeta:import/@path"/>
-				<xsl:sequence select="wdbmeta:rec($res/wdbmeta:struct, $pFile, $base)"/>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:sequence select="$res"/>
-			</xsl:otherwise>
-		</xsl:choose>
-		<!--		<xsl:sequence select="$parent"/>-->
+		
+		<xsl:if test="doc-available($file)">
+			<xsl:variable name="meta" select="document($file, $struct)" />
+			<xsl:variable name="parent" select="$meta/wdbmeta:projectMD/wdbmeta:struct"/>
+			<xsl:variable name="files" select="$meta/wdbmeta:projectMD/wdbmeta:files"/>
+			<xsl:variable name="content" select="$struct/wdbmeta:struct"/>
+			<xsl:variable name="res">
+				<wdbmeta:struct label="{$parent/@label}" uri="{$file}">
+					<xsl:sequence select="$parent/wdbmeta:import"/>
+					<xsl:for-each select="$parent/wdbmeta:struct">
+						<xsl:choose>
+							<xsl:when test="@label = $label">
+								<xsl:sequence select="$struct"/>
+							</xsl:when>
+							<xsl:when test="@file">
+								<xsl:variable name="target" select="@file"/>
+								<xsl:variable name="path"
+									select="xstring:substring-before-last($file, '/') || '/' || $files/wdbmeta:ptr[@xml:id = $target]/@path" />
+								<xsl:if test="doc($path)//wdbmeta:view[not(@private) or @private='false']
+									or not(doc($path)//wdbmeta:view)">
+									<wdbmeta:struct uri="{$path}">
+										<xsl:sequence select="@*"/>
+									</wdbmeta:struct>
+								</xsl:if>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:sequence select="."/>" </xsl:otherwise>
+						</xsl:choose>
+					</xsl:for-each>
+				</wdbmeta:struct>
+			</xsl:variable>
+	
+			<xsl:choose>
+				<xsl:when test="$res/wdbmeta:struct/wdbmeta:import">
+					<xsl:variable name="pFile"
+						select="xstring:substring-before-last($parentFile, '/') || '/' || $res/wdbmeta:struct/wdbmeta:import/@path"/>
+					<xsl:sequence select="wdbmeta:rec($res/wdbmeta:struct, $pFile, $base)"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:sequence select="$res"/>
+				</xsl:otherwise>
+			</xsl:choose>
+			<!--		<xsl:sequence select="$parent"/>-->
+		</xsl:if>
 	</xsl:function>
 </xsl:stylesheet>

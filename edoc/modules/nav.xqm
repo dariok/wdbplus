@@ -3,13 +3,13 @@ xquery version "3.0";
 module namespace wdbm = "https://github.com/dariok/wdbplus/nav";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates" ;
-import module namespace wdb 		= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb" at "app.xql";
 import module namespace console		= "http://exist-db.org/xquery/console";
-import module namespace sm			= "http://exist-db.org/xquery/securitymanager";
+import module namespace sm				= "http://exist-db.org/xquery/securitymanager";
 
 declare namespace mets		= "http://www.loc.gov/METS/";
 declare namespace mods		= "http://www.loc.gov/mods/v3";
-declare namespace tei		= "http://www.tei-c.org/ns/1.0";
+declare namespace tei			= "http://www.tei-c.org/ns/1.0";
 declare namespace match		= "http://www.w3.org/2005/xpath-functions";
 declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -38,7 +38,11 @@ declare function wdbm:getLeft($node as node(), $model as map(*)) {
 			<param name="role" value="{$wdb:role}" />
 			<param name="access" value="{sm:has-access($targetCollection, 'w')}" />
 		</parameters>
-	return  transform:transform(doc($xml), doc($xsl), $param)
+	return try {
+		transform:transform(doc($xml), doc($xsl), $param)
+		} catch * {
+			(console:log($err:code), console:log($err:additional))
+		}
 };
 
 declare function wdbm:getRight($node as node(), $model as map(*)) {
