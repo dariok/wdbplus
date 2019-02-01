@@ -16,7 +16,9 @@ declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
 declare function wdbm:getLeft($node as node(), $model as map(*)) {
 	let $targetCollection := if(collection($wdb:data)/id($model("id")))
 		then wdb:getEdPath(base-uri((collection($wdb:data)/id($model("id")))[1]), true())
-		else $model("pathToEd")
+		else if ($model("pathToEd") != "")
+		then $model("pathToEd")
+		else $wdb:edocBaseDB || "/" || $model("id")
 		
 	let $xml := if (doc-available($targetCollection||'/wdbmeta.xml'))
 		then ($targetCollection||'/wdbmeta.xml')
