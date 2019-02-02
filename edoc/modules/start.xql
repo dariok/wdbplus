@@ -16,15 +16,15 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 let $pPath := request:get-parameter('path', '')
-let $pEd := request:get-parameter('id', '')
+let $pId := request:get-parameter('id', ())
+let $pEd := request:get-parameter('ed', ())
 
-let $path := if ($pEd != '')
-	then wdb:getEdPath(base-uri(collection($wdb:data)/id($pEd)), true())
+let $path := if ($pEd) then $wdb:edocBaseDB || '/' || $pEd
+    else if ($pId != '')
+	then wdb:getEdPath(base-uri(collection($wdb:data)/id($pId)), true())
 	else wdb:getEdPath($wdb:edocBaseDB || $pPath, true())
 
-let $metaFile := if ($pEd != '')
-	then collection($wdb:data)/id($pEd)
-	else if (doc-available($path || '/wdbmeta.xml'))
+let $metaFile := if (doc-available($path || '/wdbmeta.xml'))
 	then doc($path || '/wdbmeta.xml')
 	else doc($path || '/mets.xml')
 
