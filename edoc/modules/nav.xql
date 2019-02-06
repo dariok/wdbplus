@@ -15,7 +15,7 @@ try {
                 $sequence
             else if ($c/*)
             then local:eval($c, $coll)
-            else $c
+            else local:children($c, $d/preceding-sibling::meta:files)
         }</struct>
     return if ($d/meta:import)
     then 
@@ -24,6 +24,17 @@ try {
 } catch * {
     $err:code || ': ' || $err:description
 }
+};
+
+declare function local:children($struct, $files) {
+    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{$struct/@*}{
+        let $filePath := substring-before(base-uri($struct), 'wdbmeta') || $files/id($struct/@file)/@path
+        let $file := doc($filePath)/meta:projectMD
+        return for $s in $file/meta:struct[1]/meta:struct
+            return if (not($s/meta:view) or $s/meta:view[not(@private)]
+            or $s/meta:view/@private='false' or sm:has-access(xs:anyURI(substring-before($filePath, '/wdbmeta.xml')), 'w')) then local:children($s, $file/meta:files)
+            else ()
+    }</struct>
 };
 
 declare function local:eval($sequence, $targetCollection) {
