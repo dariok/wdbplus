@@ -10,7 +10,8 @@ declare function local:pM($coll, $sequence) {
 try {
     let $d := doc($coll || '/wdbmeta.xml')/meta:projectMD/meta:struct[1]
     let $s := 
-        <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{$d/@* | $d/ancestor::meta:projectMD/@xml:id}{
+        <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{$d/@*}
+        {attribute file {$d/ancestor::meta:projectMD/@xml:id}}{
         for $c in $d/*[not(self::meta:import)]
             return if ($c/@file = $sequence/@xml:id)
             then 
