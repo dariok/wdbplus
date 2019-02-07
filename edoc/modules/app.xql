@@ -426,7 +426,8 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
 	return if (not(util:binary-doc-available($location)))
 		then false()
 		else
-			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', $location)
+			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
+				xs:anyURI($location))
 			return system:function-available(xs:QName("wdbPF:" || $name), $arity)
 };
 
