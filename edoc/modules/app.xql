@@ -432,6 +432,18 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
 };
 
 (:~
+ : Evalute the function given by $function.
+ : This is nothing but util:eval($function) but as it is within the scope of app.xql, you can evalute a function in a
+ : module imported by wdb:findProjetFunction while calling util:eval from any other XQuery will not work
+ :
+ : @param $function an xs:string to be passed to util:eval
+ : @return whatever evaluating the funciton returns
+ :)
+declare function wdb:eval($function as xs:string) {
+	util:eval($function)
+};
+
+(:~
  : Return the full URI to the (edition) XML file with the given ID
  : The scope is the whole data collection; documentation states in several places that file IDs need to be unique
  :
