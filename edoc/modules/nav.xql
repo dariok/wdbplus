@@ -52,7 +52,11 @@ declare function local:eval($sequence, $targetCollection) {
         else <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{($sequence/@*, $visible)}</struct>
 };
 
-let $ed := $wdb:data || '/' || request:get-parameter('ed', '')
+let $edition := request:get-parameter('ed', '')
+let $ed := if ($edition)
+    then $wdb:data || '/' || $edition
+    else wdb:getEdPath(wdb:getFilePath(request:get-parameter("id", ())), true())
+
 let $struct := local:pM($ed, ())
 let $xsl := if (wdb:findProjectFunction(map {"pathToEd" := $ed}, "getNavXSLT", 0))
     then wdb:eval("wdbPF:getNavXSLT()")
