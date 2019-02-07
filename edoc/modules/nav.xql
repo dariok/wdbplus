@@ -1,8 +1,10 @@
 xquery version "3.1";
 
+import module namespace console = "http://exist-db.org/xquery/console";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
-import module namespace console="http://exist-db.org/xquery/console";
-declare variable $base := "/db/apps/edoc/data";
+declare namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles";
 
 declare function local:pM($coll, $sequence) {
 try {
@@ -32,7 +34,9 @@ declare function local:children($struct, $files) {
         let $file := doc($filePath)/meta:projectMD
         return for $s in $file/meta:struct[1]/meta:struct
             return if (not($s/meta:view) or $s/meta:view[not(@private)]
-            or $s/meta:view/@private='false' or sm:has-access(xs:anyURI(substring-before($filePath, '/wdbmeta.xml')), 'w')) then local:children($s, $file/meta:files)
+                or $s/meta:view/@private='false'
+                or sm:has-access(xs:anyURI(substring-before($filePath, '/wdbmeta.xml')), 'w'))
+            then local:children($s, $file/meta:files)
             else ()
     }</struct>
 };
@@ -44,7 +48,15 @@ declare function local:eval($sequence, $targetCollection) {
         else $child
     return if ($visible = ())
         then ()
-        else <struct>{($sequence/@*, $visible)}</struct>
+        else <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{($sequence/@*, $visible)}</struct>
 };
 
-local:pM($base || '/1770/1779', ())
+let $ed := $wdb:data || '/' || request:get-parameter('ed', '')
+let $struct := local:pM($ed, ())
+let $xsl := if (wdb:findProjectFunction(map {"pathToEd" := $ed}, "getNavXSLT", 0))
+    then wdb:eval("wdbPF:getNavXSLT()")
+    else if (doc-available($ed || '/nav.xsl'))
+    then xs:anyURI($ed || '/nav.xsl')
+    else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+
+return transform:transform($struct, doc($xsl), ())
