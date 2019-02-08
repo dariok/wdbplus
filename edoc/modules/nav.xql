@@ -6,27 +6,21 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles";
 
-declare function local:pM($coll, $sequence) {
-try {
-    let $d := doc($coll || '/wdbmeta.xml')/meta:projectMD/meta:struct[1]
+declare function local:pM($ed, $sequence) {
+    let $d := doc($ed || '/wdbmeta.xml')/meta:projectMD/meta:struct[1]
+    
     let $s := 
         <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{$d/@*}
         {attribute file {$d/ancestor::meta:projectMD/@xml:id}}{
         for $c in $d/*[not(self::meta:import)]
             return if ($c/@file = $sequence/@xml:id)
-            then 
-                $sequence
-            else if ($c/*)
-            then local:eval($c, $coll)
+            then $sequence
             else local:children($c, $d/preceding-sibling::meta:files)
         }</struct>
     return if ($d/meta:import)
     then 
-        local:pM(string-join(tokenize($coll, '/')[not(position() = last())], '/'), $s)
+        local:pM(string-join(tokenize($ed, '/')[not(position() = last())], '/'), $s)
     else $s
-} catch * {
-    $err:code || ': ' || $err:description
-}
 };
 
 declare function local:children($struct, $files) {
@@ -43,25 +37,53 @@ declare function local:children($struct, $files) {
 };
 
 declare function local:eval($sequence, $targetCollection) {
-    let $visible := for $child in $sequence/*
-        return if ($child/@private = 'true' and not(sm:has-access($targetCollection, 'w')))
+for $child in $sequence/* return
+    if ($child[self::meta:struct]) then
+        <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+            {$child/@*}
+            {local:eval($child, $targetCollection)}
+        </struct>
+    else if ($child/@private = 'true' and not(sm:has-access($targetCollection, 'w')))
         then ()
         else $child
-    return if ($visible = ())
-        then ()
-        else <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{($sequence/@*, $visible)}</struct>
+};
+
+declare function local:assemble($st, $me) {
+<struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+    {$st/@*}
+    {
+        for $s in $st/* return
+            if ($s/@file = $me/@xml:id)
+            then $me
+            else if ($s/*)
+            then local:assemble($s, $me)
+            else $s
+    }
+</struct>
 };
 
 let $edition := request:get-parameter('ed', '')
 let $ed := if ($edition)
     then $wdb:data || '/' || $edition
     else wdb:getEdPath(wdb:getFilePath(request:get-parameter("id", ())), true())
+let $st := local:pM($ed, ())
 
-let $struct := local:pM($ed, ())
+let $m := doc($ed || '/wdbmeta.xml')/meta:projectMD/meta:struct[1]
+let $me := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+    {$m/ancestor::meta:projectMD/@xml:id}
+    {$m/@*}
+    {(element user { sm:id()//sm:real/sm:username/text() })[1]}
+    {local:eval($m, $ed)}
+</struct>
+
+let $struct := local:assemble($st, $me)
+
 let $xsl := if (wdb:findProjectFunction(map {"pathToEd" := $ed}, "getNavXSLT", 0))
     then wdb:eval("wdbPF:getNavXSLT()")
     else if (doc-available($ed || '/nav.xsl'))
     then xs:anyURI($ed || '/nav.xsl')
     else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
 
+(:return $struct:)
 return transform:transform($struct, doc($xsl), ())
+
