@@ -451,7 +451,7 @@ function toggleNavigation() {
         var id = $('meta[name="id"]').attr('content');
         var res = $. get ('modules/nav.xql?id=' + id, '',
         function (data) {
-            $('nav').html($('ul', data).first()).prepend($('<h2>Navigation</h2>'));
+            $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
         },
         'html');
     }
