@@ -21,7 +21,7 @@ let $pEd := request:get-parameter('ed', ())
 
 let $path := if ($pEd) then $wdb:edocBaseDB || '/' || $pEd
     else if ($pId != '')
-	then wdb:getEdPath(base-uri(collection($wdb:data)/id($pId)), true())
+	then wdb:getEdPath(base-uri((collection($wdb:data)/id($pId))[1]), true())
 	else wdb:getEdPath($wdb:edocBaseDB || $pPath, true())
 
 let $metaFile := if (doc-available($path || '/wdbmeta.xml'))
