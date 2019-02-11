@@ -47,6 +47,12 @@
 							<form id="ea">
 								<h1>Entitäten markieren und identifizieren</h1>
 								<p>Auszeichnen und identifizieren von Personen, Orten, Sachen</p>
+								<select id="type">
+									<option value="person">Person</option>
+									<optoin value="place">Ort</optoin>
+								</select>
+								<input type="text" id="identity" name="identity" />
+								<input type="submit" formaction="javascript:identifyEntity();"/>
 							</form>
 						</div>
 						<div id="annotationTab4">
