@@ -153,11 +153,14 @@ return if (not($data('from') or $data('text')))
             let $t := console:log($data)
             let $content := (
         		$file/id($data("from")), 
-        		$file/id($data("from"))/following-sibling::tei:* intersect $file/id($data("to"))/preceding-sibling::tei:*, 
-        		$file/id($data("to")) 
+        		if ($data("from") != $data("to")) then ($file/id($data("from"))/following-sibling::tei:* intersect $file/id($data("to"))/preceding-sibling::tei:*, 
+        			$file/id($data("to"))) else () 
         	)
         
-        let $ins := element { QName("http://www.tei-c.org/ns/1.0", "rs") } { attribute type { $data("type") }, $content }
+        let $ins := element { QName("http://www.tei-c.org/ns/1.0", "rs") } {
+        	attribute type { $data("type") },
+        	attribute ref { $data("identity") },
+        	$content }
         	return (
         		<rest:response>
         			<http:response status="200">
