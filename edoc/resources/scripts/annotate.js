@@ -84,6 +84,33 @@ function chgLayout(rend) {
     console.log(rend);
 }
 
+function identifyEntity() {
+    id = $("meta[name='id']").attr("content");
+    edit = $("#identity").val();
+    type = $("#type").val();
+    dialog.dialog("close");
+    
+    put = $.ajax({
+        method: "post",
+        url: "../../restxq/edoc/anno/entity/" + id,
+        headers: headers,
+        data: JSON.stringify({
+            from: start,
+            to: end,
+            type: type,
+            identity: identity
+        }),
+        contentType: "application/json; charset=UTF-8",
+        dataType: 'json',
+        success: function(data) {
+            ins = data["#text"][0] + data.pc;
+            if (data.lb) ins += "<br>";
+            ins += data["#text"][1];
+            $('#' + start).html(ins);
+        }
+    });
+}
+
 function editText() {
     id = $("meta[name='id']").attr("content");
     edit = $("#corr").val();
