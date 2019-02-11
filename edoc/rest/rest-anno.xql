@@ -107,6 +107,68 @@ return if (not($data('from') or $data('text')))
     			)
 };
 
+(:~
+	: surround w with rs and a given type
+	:)
+declare
+	%rest:POST("{$body}")
+	%rest:path("/edoc/anno/entity/{$fileID}")
+	%rest:consumes("application/json")
+function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
+	let $data := parse-json(util:base64-decode($body))
+	
+	(: check for minimum data before continuing :)
+return if (not($data('from') or $data('text')))
+	then (
+		<rest:response>
+			<http:response status="200">
+				<http:header name="rest-status" value="REST:ERR" />
+			</http:response>
+		</rest:response>,
+		"Missing content in message body: at least start and text must be supplied"
+	)
+	else
+		let $username := xs:string(sm:id()//sm:real/sm:username)
+		
+		(: check whether the user may write :)
+    return if ($username = 'guest')
+    then
+        (<rest:response>
+            <http:response status="200">
+                <http:header name="rest-status" value="REST:ERR" />
+            </http:response>
+        </rest:response>,
+        "User guest is not allowed to create annotations")
+    else
+    let $file := $wdbRa:collection/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+    return if (count($file) = 0)
+        then
+    (<rest:response>
+        <http:response status="200">
+            <http:header name="rest-status" value="REST:ERR" />
+        </http:response>
+    </rest:response>,
+    "no file found for ID " || $fileID)
+        else
+            let $t := console:log($data)
+            let $content := (
+        		$file/id($data("from")), 
+        		$file/id($data("from"))/following-sibling::tei:* intersect $file/id($data("to"))/preceding-sibling::tei:*, 
+        		$file/id($data("to")) 
+        	)
+        
+        let $ins := element { QName("http://www.tei-c.org/ns/1.0", "rs") } { attribute type { $data("type") }, $content }
+        	return (
+        		<rest:response>
+        			<http:response status="200">
+        				<http:header name="rest-status" value="REST:SUCCESS" />
+        			</http:response>
+        		</rest:response>,
+    				update replace $content[1] with $ins,
+    				update delete $content[position() > 1]
+    			)
+};
+
 declare
 	%rest:POST("{$body}")
 	%rest:path("/edoc/anno/word/{$fileID}")
