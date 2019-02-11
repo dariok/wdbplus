@@ -126,6 +126,7 @@ function identifyEntity() {
     edit = $("#identity").val();
     type = $("#type").val();
     dialog.dialog("close");
+    headers = {"Authorization": "Basic " + cred};
     
     put = $.ajax({
         method: "post",
@@ -135,7 +136,7 @@ function identifyEntity() {
             from: start,
             to: end,
             type: type,
-            identity: identity
+            identity: edit
         }),
         contentType: "application/json; charset=UTF-8",
         dataType: 'json',
