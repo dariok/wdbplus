@@ -435,9 +435,9 @@ declare function wdb:findProjectXQM ($project as xs:string) {
  : with the given parameters; else() otherwise.
  :)
 declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
-	let $location := $model("pathToEd") || '/project.xqm'
+	let $location := wdb:findProjectXQM($model("pathToEd"))
 	
-	return if (not(util:binary-doc-available($location)))
+	return if ($location instance of xs:boolean and $location = false())
 		then false()
 		else
 			let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
