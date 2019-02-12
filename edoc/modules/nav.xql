@@ -12,10 +12,12 @@ declare function local:pM($ed, $sequence) {
     let $s := 
         <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{$d/@*}
         {attribute file {$d/ancestor::meta:projectMD/@xml:id}}{
-        for $c in $d/*[not(self::meta:import)]
-            return if ($c/@file = $sequence/@xml:id)
+        (for $c in $d/*[not(self::meta:import)]
+            return if ($c/self::meta:struct and $c/@file = $sequence/@xml:id)
             then $sequence
-            else local:children($c, $d/preceding-sibling::meta:files)
+            else if ($c/self::meta:struct) then local:children($c, $d/preceding-sibling::meta:files)
+            else (),
+        local:eval($d, $ed))
         }</struct>
     return if ($d/meta:import)
     then 
