@@ -159,7 +159,7 @@ return if (not($data('from') or $data('text')))
         
         let $ins := element { QName("http://www.tei-c.org/ns/1.0", "rs") } {
         	attribute type { $data("type") },
-        	attribute ref { $data("identity") },
+        	attribute ref { 'per:' || translate($data("identity"), ' ,', '_') },
         	$content }
         	return (
         		<rest:response>
