@@ -63,7 +63,6 @@ declare variable $wdb:edocBaseURL :=
 		return $wdb:server || $path
 ;
 
-
 (: the server role :)
 declare variable $wdb:role :=
 	if ($wdb:configFile//main:role/main:type != '')
@@ -408,8 +407,23 @@ declare function wdb:getDataCollection () {
     return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
 };
 
+(:~
+ : Lookup of a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
+ : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
+ :
+ : @param $project a string representation of the path to the project
+ : @returns the path to a project.xqm if one was found; false() otherwise
+ :)
+declare function wdb:findProjectXQM ($project as xs:string) {
+	if (util:binary-doc-available($project || "/project.xqm"))
+	then $project || "/project.xqm"
+	else if (substring-after($project, $wdb:data) = '')
+	then false()
+	else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+};
+
 (:~ 
- : Look up $function the given project's project.xqm if it exists
+ : Look up $function in the given project's project.xqm if it exists
  : This involves registering the module: if the function is available, it can
  : immediately be used by the calling script if this lookup is within the caller's scope
  : The scope is the project as given in $model("pathToEd")
