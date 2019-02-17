@@ -32,13 +32,13 @@ let $model := if ($metaFile/wdbmeta:*)
 	then
 		let $id := $metaFile//wdbmeta:projectID/text()
 		let $title := normalize-space($metaFile//wdbmeta:title[1])
-		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml', "ed" := substring-after($path, $wdb:data),
-			"pathToEd" := $path, "fileLoc" := "start.xql" }
+		return map { "id" := $id, "title" := $title, "infoFileLoc" := $path || '/wdbmeta.xml',
+			"ed" := substring-after($path, $wdb:data), "pathToEd" := $path, "fileLoc" := "start.xql" }
 	else
 		let $id := analyze-string($path, '^/?(.*)/([^/]+)$')//match:group[1]/text()
 		let $title := normalize-space(($metaFile//mods:title)[1])
-		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml', "ed" := substring-after($path, $wdb:data),
-			"pathToEd" := $path, "fileLoc" := "start.xql" }
+		return map { "id" := $id, "title" := $title , "infoFileLoc" := $path || '/mets.xml',
+			"ed" := substring-after($path, $wdb:data), "pathToEd" := $path, "fileLoc" := "start.xql" }
 
 let $t := console:log($model)
 let $bogus := <void></void>
@@ -68,9 +68,7 @@ return
 			<aside id="wdbRight">
 				{
 				if (wdb:findProjectFunction($model, 'getStart', 1))
-					then
-						let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF', xs:anyURI($model('pathToEd')||'/project.xqm'))
-						return util:eval('wdbPF:getStart($model)', false(), (xs:QName('map'), $model))
+					then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('map'), $model))
 					else wdbm:getRight($bogus, $model)
 				}
 			</aside>
