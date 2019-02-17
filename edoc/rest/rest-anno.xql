@@ -53,7 +53,7 @@ declare
 	%rest:consumes("application/json")
 function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
 	let $data := parse-json(util:base64-decode($body))
-	
+	(: TODO update these checks like in changeWords! :)
 	(: check for minimum data before continuing :)
 return if (not($data('from') or $data('text')))
 	then (
@@ -116,7 +116,7 @@ declare
 	%rest:consumes("application/json")
 function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
 	let $data := parse-json(util:base64-decode($body))
-	
+	(: TODO update these checks like in changeWords! :)
 	(: check for minimum data before continuing :)
 return if (not($data('from') or $data('text')))
 	then (

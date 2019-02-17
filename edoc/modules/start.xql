@@ -50,20 +50,30 @@ return
 	</head>
 	<body>
 		<header>
-			<h1>{$model("title")}</h1>
-			<hr/>
+			{
+				if (wdb:findProjectFunction($model, 'getStartHeader', 1))
+				then wdb:eval('wdbPF:getStartHeader($model)', false(), (xs:QName('model'), $model))
+				else (
+					<h1>{$model("title")}</h1>,
+					<hr/>
+				)
+			}
 		</header>
 		<main>
 			<div>
 				<nav>
-					<h1>Inhalt</h1>
-					{wdbm:getLeft(<void />, $model)}
+				{
+				if (wdb:findProjectFunction($model, 'getStartLeft', 1))
+					then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
+					else (<h1>Inhalt</h1>,
+						wdbm:getLeft(<void />, $model))
+				}
 				</nav>
 			</div>
 			<aside id="wdbRight">
 				{
 				if (wdb:findProjectFunction($model, 'getStart', 1))
-					then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('map'), $model))
+					then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
 					else wdbm:getRight(<void/>, $model)
 				}
 			</aside>
