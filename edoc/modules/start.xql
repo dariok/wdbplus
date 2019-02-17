@@ -15,13 +15,15 @@ declare namespace wdbPF		= "https://github.com/dariok/wdbplus/projectFiles";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
-let $pPath := request:get-parameter('path', '')
+let $pPath := request:get-parameter('path', ())
 let $pId := request:get-parameter('id', ())
 let $pEd := request:get-parameter('ed', ())
 
-let $path := if ($pEd) then $wdb:edocBaseDB || '/' || $pEd
-    else if ($pId != '')
+(: general behaviour: IDs always take precedence :)
+let $path := if ($pId)
 	then wdb:getEdPath(base-uri((collection($wdb:data)/id($pId))[1]), true())
+	else if ($pEd)
+	then $wdb:edocBaseDB || '/' || $pEd
 	else wdb:getEdPath($wdb:edocBaseDB || $pPath, true())
 
 let $metaFile := if (doc-available($path || '/wdbmeta.xml'))
@@ -41,14 +43,10 @@ let $model := if ($metaFile/wdbmeta:*)
 			"ed" := substring-after($path, $wdb:data), "pathToEd" := $path, "fileLoc" := "start.xql" }
 
 let $t := console:log($model)
-let $bogus := <void></void>
-(: <link rel="stylesheet" type="text/css" href="$shared/css/start.css" /> :)
 return 
 <html>
 	<head>
-		<meta name="path" content="{$model("pathToEd")}" />
-		<meta name="template" content="start.xql" />
-		{wdb:getHead($bogus, $model)}
+		{wdb:getHead(<void/>, $model)}
 	</head>
 	<body>
 		<header>
@@ -59,17 +57,14 @@ return
 			<div>
 				<nav>
 					<h1>Inhalt</h1>
-					{wdbm:getLeft($bogus, $model)}
+					{wdbm:getLeft(<void />, $model)}
 				</nav>
-			</div>
-			<div id="wdbShowHide">
-				<a href="javascript:toggleRightside();">»</a>
 			</div>
 			<aside id="wdbRight">
 				{
 				if (wdb:findProjectFunction($model, 'getStart', 1))
 					then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('map'), $model))
-					else wdbm:getRight($bogus, $model)
+					else wdbm:getRight(<void/>, $model)
 				}
 			</aside>
 		</main>
