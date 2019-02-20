@@ -139,7 +139,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<!-- Kurztitel als title; 2016-05-24 DK -->
 		<meta name="id" content="{$model('id')}"/>
-		<meta name="edPath" content="{$model('edPath')}" />
+		<meta name="edPath" content="{$model('pathToEd')}" />
 		<meta name="path" content="{$model('fileLoc')}"/>
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
@@ -349,7 +349,6 @@ declare %private function local:getXslFromWdbMeta($ed as xs:string, $id as xs:st
 	:)
 declare function wdb:getEdPath($path as xs:string, $absolute as xs:boolean) as xs:string {
 	let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
-	let $t := console:log($path)
 	
 	let $pa := for $i in 1 to count($tok)
 		let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
@@ -417,8 +416,6 @@ declare function wdb:getDataCollection () {
  : @returns the path to a project.xqm if one was found; false() otherwise
  :)
 declare function wdb:findProjectXQM ($project as xs:string) {
-let $t := console:log($project)
-return
 	if (util:binary-doc-available($project || "/project.xqm"))
 	then $project || "/project.xqm"
 	else if (substring-after($project, $wdb:data) = '')
