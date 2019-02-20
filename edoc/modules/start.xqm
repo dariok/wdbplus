@@ -43,7 +43,19 @@ declare function wdbst:populateModel ($node as node(), $model as map(*), $id, $e
 };
 
 declare function wdbst:getHead ($node as node(), $model as map(*)) {
-  wdb:getHead ($node, $model)
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="id" content="{$model('id')}"/>
+    <meta name="edPath" content="{$model('pathToEd')}" />
+    <meta name="path" content="{$model('fileLoc')}"/>
+    <title>{normalize-space($wdb:configFile//*:short)} – {$model("title")}</title>
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
+    {wdb:getProjectFiles($node, $model, 'css')}
+    <!--(\: TODO get projectStart.css :\)-->
+    <script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
+    {wdb:getProjectFiles($node, $model, 'js')}
+    <!--(\: TODO get projectStart.js :\)-->
+  </head>
 };
 
 declare function wdbst:getStartHeader($node as node(), $model as map(*), $id) as node()* {
