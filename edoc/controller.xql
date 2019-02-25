@@ -49,17 +49,6 @@ else if ($exist:resource = 'login') then
             response:set-status-code(403),
             <status>{$err:description}</status>
         }
-(: Projekt-Startseite :)
-else if (ends-with($exist:path, 'start.html')) then
-	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<forward url="{$exist:controller}/modules/start.xql">
-			<add-parameter name="path" value="{$exist:path}" />
-		</forward>
-		<error-handler>
-			<forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-			<forward url="{$exist:controller}/modules/view.xql"/>
-		</error-handler>
-	</dispatch>
 (: Konfigurationsseiten :)
 else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
