@@ -73,3 +73,8 @@ declare %private function wdbRc:formatCollection ($collection as xs:string) {
 			return <resource name="{$file}" />
 	}</collection>
 };
+
+declare
+    %rest:GET
+    %rest:path("/edoc/collection/{$collection}/nav.html")
+    %output:method
