@@ -3,19 +3,29 @@
 
 @import "common.css";
 
-#toc_title {
-	background-color: #EEE;
-	padding: 0.5em;
-	border: 1px solid gray;
-	font-size: 0.8em;
-	margin-bottom: 2em;
+body {
+    display: flex;
+    flex-wrap: wrap;
 }
 
-div.startImage {
-	position: relative;
-	left: 10%;
-	width: 80%;
-	padding: 1em;
-	text-align: center;
-	border: 1px solid gray;
+h1, h2 {
+    width: 100%;
+    text-align: center;
+}
+
+header {
+    width: 100%;
+}
+
+aside {
+    width: calc(20% - 2.5px);
+    padding-right: 5px;
+}
+aside div div {
+    border-bottom: 1px solid black;
+    padding-bottom: 1em;
+}
+
+main {
+    width: calc(80% - 2.5px);
 }
