@@ -19,6 +19,7 @@ declare function wdbErr:error ($data as map (*)) {
 		case "wdb1001" return "An error occurred while applying the transformation."
 		case "wdbErr:wdb2001" return "Module not found."
 		case "wdbErr:wdb2002" return "Error executing wdbq:body($map as map(*))"
+		case "wdbErr:wdb3001" return "No project found for this ID"
 		default return "An unknown error has occurred: " || $data("code")
 
 	let $content :=

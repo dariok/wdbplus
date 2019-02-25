@@ -18,6 +18,7 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 declare function wdbst:populateModel ($node as node(), $model as map(*), $id, $ed, $path) {
+try {
   (: general behaviour: IDs always take precedence :)
   let $ppath := if ($id)
     then wdb:getEdPath(base-uri((collection($wdb:data)/id($id))[1]), true())
@@ -46,6 +47,9 @@ declare function wdbst:populateModel ($node as node(), $model as map(*), $id, $e
     "pathToEd" := $ppath, "fileLoc" := "start.xql" }
   
   return map:merge(($spec, $base))
+} catch * {
+  wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "ed" := $ed, "path" := $path })
+}
 };
 
 declare function wdbst:getHead ($node as node(), $model as map(*)) {
