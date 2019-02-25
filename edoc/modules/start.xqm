@@ -55,12 +55,18 @@ declare function wdbst:getHead ($node as node(), $model as map(*)) {
     <meta name="edPath" content="{$model('pathToEd')}" />
     <meta name="path" content="{$model('fileLoc')}"/>
     <title>{normalize-space($wdb:configFile//*:short)} – {$model("title")}</title>
-    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
-    {wdb:getProjectFiles($node, $model, 'css')}
-    <!--(\: TODO get projectStart.css :\)-->
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/start.css" />
+    {
+      if (util:binary-doc-available($model("resources") || 'projectStart.css'))
+      then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}{substring-after($model("resources"), $wdb:edocBaseDB)}projectStart.css" />
+      else()
+    }
     <script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
-    {wdb:getProjectFiles($node, $model, 'js')}
-    <!--(\: TODO get projectStart.js :\)-->
+    {
+      if (util:binary-doc-available($model("resources") || 'projectStart.js'))
+      then <script src="{$wdb:edocBaseURL}{substring-after($model("resources"), $wdb:edocBaseDB)}projectStart.js" />
+      else()
+    }
   </head>
 };
 
