@@ -29,17 +29,23 @@ declare function wdbst:populateModel ($node as node(), $model as map(*), $id, $e
     then doc($ppath || '/wdbmeta.xml')
     else doc($ppath || '/mets.xml')
   
-  return if ($metaFile/wdbmeta:*)
+  let $proFile := wdb:findProjectXQM($ppath)
+  let $proRes := substring-before($proFile, 'project.xqm') || 'resources/'
+  
+  let $spec := if ($metaFile/wdbmeta:*)
   then
     let $id := $metaFile//wdbmeta:projectID/text()
     let $title := normalize-space($metaFile//wdbmeta:title[1])
-    return map { "id" := $id, "title" := $title, "infoFileLoc" := $ppath || '/wdbmeta.xml',
-      "ed" := substring-after($ppath, $wdb:data), "pathToEd" := $ppath, "fileLoc" := "start.xql" }
+    return map { "id" := $id, "title" := $title, "infoFileLoc" := $ppath || '/wdbmeta.xml' }
   else
     let $id := analyze-string($ppath, '^/?(.*)/([^/]+)$')//match:group[1]/text()
     let $title := normalize-space(($metaFile//mods:title)[1])
-    return map { "id" := $id, "title" := $title , "infoFileLoc" := $ppath || '/mets.xml',
-      "ed" := substring-after($ppath, $wdb:data), "pathToEd" := $ppath, "fileLoc" := "start.xql" }
+    return map { "id" := $id, "title" := $title , "infoFileLoc" := $ppath || '/mets.xml' }
+  
+  let $base := map { "resources" := $proRes, "ed" := substring-after($ppath, $wdb:data),
+    "pathToEd" := $ppath, "fileLoc" := "start.xql" }
+  
+  return map:merge(($spec, $base))
 };
 
 declare function wdbst:getHead ($node as node(), $model as map(*)) {
@@ -58,8 +64,10 @@ declare function wdbst:getHead ($node as node(), $model as map(*)) {
   </head>
 };
 
-declare function wdbst:getStartHeader($node as node(), $model as map(*), $id) as node()* {
-  if (wdb:findProjectFunction($model, 'getStartHeader', 1))
+declare function wdbst:getStartHeader($node as node(), $model as map(*)) as node()* {
+  if (doc-available($model("resources") || 'startHeader.html'))
+  then doc($model("resources") || 'startHeader.html')
+  else if (wdb:findProjectFunction($model, 'getStartHeader', 1))
   then wdb:eval('wdbPF:getStartHeader($model)', false(), (xs:QName('model'), $model))
   else (
     <h1>{$model("title")}</h1>,
@@ -68,13 +76,17 @@ declare function wdbst:getStartHeader($node as node(), $model as map(*), $id) as
 };
 
 declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()* {
-  if (wdb:findProjectFunction($model, 'getStartLeft', 1))
+  if (doc-available($model("resources") || 'startLeft.html'))
+  then doc($model("resources") || 'startLeft.html')
+  else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
   then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
   else (<h1>Inhalt</h1>,())
 };
 
 declare function wdbst:getStart ($node as node(), $model as map(*)) as node()* {
-  if (wdb:findProjectFunction($model, 'getStart', 1))
+  if (doc-available($model("resources") || 'startRight.html'))
+  then doc($model("resources") || 'startRight.html')
+  else if (wdb:findProjectFunction($model, 'getStart', 1))
   then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
   else wdbm:getRight(<void/>, $model)
 };
