@@ -6,6 +6,8 @@
 body {
     display: flex;
     flex-wrap: wrap;
+    max-height: 100vh;
+    overflow: hidden;
 }
 
 h1, h2 {
@@ -15,6 +17,7 @@ h1, h2 {
 
 header {
     width: 100%;
+    max-height: 9vh;
 }
 
 aside {
@@ -28,4 +31,6 @@ aside div div {
 
 main {
     width: calc(80% - 2.5px);
+    max-height: 90vh;
+    overflow-y: auto;
 }
