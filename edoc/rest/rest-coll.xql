@@ -4,15 +4,26 @@ module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
 import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 
-declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare variable $wdbRc:server := $wdb:server;
-declare variable $wdbRc:collection := $wdb:data;
-
-(: List collection contents :)
+(: List all projects :)
 declare
+    %rest:GET
+    %rest:path("/edoc/collection")
+function wdbRc:getCollections () {
+  <collections base="{$wdb:data}/">{
+    for $p in collection($wdb:data)//meta:projectMD
+      let $path := substring-after(base-uri($p), $wdb:data || '/')
+      let $pat := substring-before($path, '/wdbmeta.xml')
+      order by $pat
+      return <collection id="{$p/@xml:id}" path="{$path}" title="{$p//meta:title[1]}"/>
+  }</collections>
+};
+
+(:declare
     %rest:GET
     %rest:path("/edoc/collection/{$collection}")
 function wdbRc:getCollection ($collection as xs:string) {
@@ -31,15 +42,15 @@ function wdbRc:getCollection ($collection as xs:string, $subcoll1 as xs:string, 
 	wdbRc:formatCollection($collection||'/'||$subcoll1||'/'||$subcoll2)
 };
 
-(: global list :)
+(\: global list :\)
 declare
 	%rest:GET
-	%rest:path("/edoc/collections")
+	%rest:path("/edoc/collection")
 function wdbRc:getCollection() {
 	wdbRc:formatCollection('')
 };
 
-(: make a zip :)
+(\: make a zip :\)
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$collection}/zip")
@@ -76,5 +87,16 @@ declare %private function wdbRc:formatCollection ($collection as xs:string) {
 
 declare
     %rest:GET
+    %rest:path("/edoc/collection/{$collection}/nav.xml")
+function wdbRc:getCollectionNavXML ($collection as xs:string) {
+  ()
+};
+
+declare
+    %rest:GET
     %rest:path("/edoc/collection/{$collection}/nav.html")
-    %output:method
+function wdbRc:getCollectionNavHTML ($collection as xs:string) {
+	(\: get content via XML function :\)
+	(\: select either project or generic XSLT :\)
+	()
+};:)
