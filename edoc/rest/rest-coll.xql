@@ -110,6 +110,7 @@ declare function local:listCollection ($md as element()) {
 };
 declare function local:listResources ($mfile, $subcollection) {
   for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
+  	order by $file/@path
     return <resource id="{$file/@xml:id}" path="{$file/@path}" />
 };
 
