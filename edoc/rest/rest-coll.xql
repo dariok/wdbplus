@@ -11,24 +11,12 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare
-    %rest:GET
-    %rest:path("/edoc/collection.json")
-    %rest:produces("application/json")
-    %output:method("json")
-function wdbRc:getCollectionsJSON () {
-  json:xml-to-json(wdbRc:getCollectionsXML())
-};
-declare
-    %rest:GET
-    %rest:path("/edoc/collection.xml")
-    %rest:produces("application/xml")
-function wdbRc:getCollectionsXML () {
+(: list all collections :)
+declare function local:getCollections() {
   <collections base="{$wdb:data}/">{
     for $p in collection($wdb:data)//meta:projectMD
-      let $path := substring-after(base-uri($p), $wdb:data || '/')
-      let $pat := substring-before($path, '/wdbmeta.xml')
-      order by $pat
+      let $path := substring-before(substring-after(base-uri($elem), $wdb:data || '/'), 'wdbmeta.xml')
+      order by $path
       return <collection id="{$p/@xml:id}" path="{$path}" title="{$p//meta:title[1]}"/>
   }</collections>
 };
@@ -44,10 +32,11 @@ function wdbRc:getCollections ($mt as xs:string*) {
         <http:header name="Content-Type" value="application/json; charset=UTF-8" />
       </http:response>
     </rest:response>,
-    wdbRc:getCollectionsJSON()
+    json:xml-to-json(local:getCollections())
   )
-  else wdbRc:getCollectionsXML()
+  else local:getCollections()
 };
+
 
 (: resources within a collection :)
 (: TODO make a zip? :)
