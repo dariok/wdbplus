@@ -52,21 +52,15 @@ function wdbRc:getCollectionsXML () {
   wdbRc:getCollections("application/xml")
 };
 
-
 (: resources within a collection :)
-(: TODO make a zip? :)
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$id}")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $md := try {
-    collection($wdb:data)//meta:projectMD[@xml:id = $id]
-  } catch * {
-    "ERROR"
-  }
+  let $md := collection($wdb:data)//meta:projectMD[@xml:id = $id]
   
-  return if ($md = "ERROR")
+  return if (count($md)  != 1)
   then
     <rest:response>
       <http:response status="500">
@@ -85,6 +79,19 @@ function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
       </rest:response>,
       json:xml-to-json($content))
     default return $content
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/resources.xml")
+function wdbRc:getResourcesXML ($id) {
+  wdbRc:getResources($id, "application/xml")
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/resources.json")
+  %output:method("json")
+function wdbRc:getResourcesXML ($id) {
+  wdbRc:getResources($id, "application/json")
 };
 declare function local:listCollection ($md as element()) {
   let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
@@ -105,6 +112,8 @@ declare function local:listResources ($mfile, $subcollection) {
   for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
     return <resource id="{$file/@xml:id}" path="{$file/@path}" />
 };
+
+
 
 (:
 declare
