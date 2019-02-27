@@ -15,7 +15,7 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare function local:getCollections() {
   <collections base="{$wdb:data}/">{
     for $p in collection($wdb:data)//meta:projectMD
-      let $path := substring-before(substring-after(base-uri($elem), $wdb:data || '/'), 'wdbmeta.xml')
+      let $path := substring-before(substring-after(base-uri($p), $wdb:data || '/'), 'wdbmeta.xml')
       order by $path
       return <collection id="{$p/@xml:id}" path="{$path}" title="{$p//meta:title[1]}"/>
   }</collections>
@@ -35,6 +35,21 @@ function wdbRc:getCollections ($mt as xs:string*) {
     json:xml-to-json(local:getCollections())
   )
   else local:getCollections()
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/collection.json")
+    %rest:produces("application/json")
+    %output:method("json")
+function wdbRc:getCollectionsJSON () {
+  wdbRc:getCollections("application/json")
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/collection.xml")
+    %rest:produces("application/xml")
+function wdbRc:getCollectionsXML () {
+  wdbRc:getCollections("application/xml")
 };
 
 
