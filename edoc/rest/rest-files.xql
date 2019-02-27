@@ -46,3 +46,52 @@ function wdbRf:getResource ($id as xs:string) {
     else util:binary-to-string(util:binary-doc($path))
   )
 };
+
+(: list all views available for this resource :)
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}/views.xml")
+function wdbRf:getResourceViewsXML ($id) {
+  wdbRf:getResourceViews($id, "application/xml")
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}/views.json")
+function wdbRf:getResourceViewsJSON ($id) {
+  wdbRf:getResourceViews($id,"application/json")
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}/views")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
+  (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
+   : To be on the safe side, we go for the first one anyway :)
+  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $f := $files[1]
+  
+  let $respCode := if (count($files) = 0)
+  then 404
+  else if (count($files) = 1)
+  then 200
+  else 500
+  
+  let $content := if ($respCode != 200) then () else
+    <views>{
+    for $process in $f/ancestor::meta:projectMD//meta:process
+      return <view process="{$process/@target}" />
+    }</views>
+  
+  return (
+    <rest:response>
+      <http:response status="{$respCode}">{
+        if (string-length($mt) = 0) then () else <http:header name="Content-Type" value="{$mt}" />
+      }
+      </http:response>
+    </rest:response>,
+  if ($respCode != 200) then () else
+    if ($mt = "application/json")
+    then json:xml-to-json($content)
+    else $content
+  )
+};
