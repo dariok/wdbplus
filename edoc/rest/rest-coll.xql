@@ -49,70 +49,60 @@ function wdbRc:getCollections ($mt as xs:string*) {
   else wdbRc:getCollectionsXML()
 };
 
-(: list a certain collection :)
-
-(:declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$collection}")
-function wdbRc:getCollection ($collection as xs:string) {
-	wdbRc:formatCollection($collection)
-};
+(: resources within a collection :)
+(: TODO make a zip? :)
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$collection}/{$subcoll1}")
-function wdbRc:getCollection ($collection as xs:string, $subcoll1 as xs:string) {
-	wdbRc:formatCollection($collection||'/'||$subcoll1)
+    %rest:path("/edoc/collection/{$id}")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
+  let $md := try {
+    collection($wdb:data)//meta:projectMD[@xml:id = $id]
+  } catch * {
+    "ERROR"
+  }
+  
+  return if ($md = "ERROR")
+  then
+    <rest:response>
+      <http:response status="500">
+        <http:header name="REST-Status" value="404 – ID not found" />
+      </http:response>
+    </rest:response>
+  else
+    let $content := local:listCollection($md)
+    return
+    switch ($mt)
+    case "application/json" return
+      (<rest:response>
+        <http:response status="200" message="OK">
+          <http:header name="Content-Type" value="application/json; charset=UTF-8" />
+        </http:response>
+      </rest:response>,
+      json:xml-to-json($content))
+    default return $content
 };
-declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$collection}/{$subcoll1}/{$subcoll2}")
-function wdbRc:getCollection ($collection as xs:string, $subcoll1 as xs:string, $subcoll2 as xs:string) {
-	wdbRc:formatCollection($collection||'/'||$subcoll1||'/'||$subcoll2)
-};
-
-(\: global list :\)
-declare
-	%rest:GET
-	%rest:path("/edoc/collection")
-function wdbRc:getCollection() {
-	wdbRc:formatCollection('')
-};
-
-(\: make a zip :\)
-declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$collection}/zip")
-    %output:method("binary")
-    %output:media-type("application/zip")
-function wdbRc:getCollectionZip ($collection as xs:string) {
-	compression:zip(xs:anyURI($wdbRc:collection||'/'||$collection), true())
-};
-declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$collection}/{$subcoll1}/zip")
-    %output:method("binary")
-    %output:media-type("application/zip")
-function wdbRc:getCollectionZip ($collection as xs:string, $subcoll1 as xs:string) {
-	compression:zip(xs:anyURI($wdbRc:collection||'/'||$collection||'/'||$subcoll1), true())
-};
-declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$collection}/{$subcoll1}/{$subcoll2}/zip")
-    %output:method("binary")
-    %output:media-type("application/zip")
-function wdbRc:getCollectionZip ($collection as xs:string, $subcoll1 as xs:string, $subcoll2 as xs:string) {
-	xs:base64Binary(compression:zip(xs:anyURI($wdbRc:collection||'/'||$collection||'/'||$subcoll1||'/'||$subcoll2), true()))
-};
-
-declare %private function wdbRc:formatCollection ($collection as xs:string) {
-	<collection name="{$collection}">{
-		for $coll in  xmldb:get-child-collections($wdbRc:collection||'/'||$collection)
-			return <collection name="{$coll}" />,
-		for $file in xmldb:get-child-resources($wdbRc:collection||'/'||$collection)
-			return <resource name="{$file}" />
+declare function local:listCollection ($md as element()) {
+  let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
+  return
+  <collection id="{$md/@xml:id}" path="{$collection}" title="{$md//meta:title[1]}">{
+    for $coll in xmldb:get-child-collections($collection)
+      let $mfile := $collection || '/' || $coll || '/wdbmeta.xml'
+      order by $coll
+      return if (doc-available($mfile))
+      then <collection id="{doc($mfile)/meta:projectMD/@xml:id}" />
+      else <collection name="{$coll}">{
+        local:listResources($md, $coll)
+      }</collection>,
+    local:listResources($md, "@")
 	}</collection>
 };
+declare function local:listResources ($mfile, $subcollection) {
+  for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
+    return <resource id="{$file/@xml:id}" path="{$file/@path}" />
+};
 
+(:
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$collection}/nav.xml")
