@@ -95,3 +95,32 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     else $content
   )
 };
+
+(:  return a fragment from a file :)
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}/{$fragment}")
+function wdbRf:getResourceFragment ($id as xs:string, $fragment as xs:string) {
+  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $f := $files[1]
+  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
+  let $type := xmldb:get-mime-type($path)
+  
+  let $frag := doc($path)/id($fragment)
+  
+  let $respCode := if (count($files) = 0 or count($frag) = 0)
+  then "404"
+  else if (count($files) = 1 or count($frag) = 1)
+  then "200"
+  else "500"
+  
+  return (
+    <rest:response>
+      <http:response status="{$respCode}">{
+        if (string-length($type) = 0) then () else
+        <http:header name="Content-Type" value="{$type}" />
+      }</http:response>
+    </rest:response>,
+    $frag
+  )
+};
