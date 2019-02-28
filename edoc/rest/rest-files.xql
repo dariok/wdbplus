@@ -189,6 +189,38 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
     }
 };
 
+(: IIIF image desriptor :)
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/iiif/{$id}/{$image}.json")
+    %output:method("json")
+function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
+  let $retrFile := wdbRf:getResource($id)
+  let $errorFile := if ($retrFile//http:response/@status != 200)
+    then "File not found or other error: " || $retrFile//http:response/@status
+    else ()
+  let $file := $retrFile/tei:TEI
+  
+  let $map := wdb:populateModel($id, '', map{})
+  let $meta := doc($map("infoFileLoc"))
+  
+  let $errors := string-join($errorFile, ' - ')
+  let $respCode := if (string-length($errors) = 0)
+  then 200
+  else 500
+  
+  return (
+    <rest:response>
+      <http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+          <http:header name="status" value="{$respCode}" />
+      </http:response>
+    </rest:response>,
+    if ($respCode != 200)
+    then $errors
+    else local:image($id, $image, $map)
+  )
+};
 
 (: produce a IIIF manifest :)
 declare
@@ -210,54 +242,62 @@ function wdbRf:getFileManifest ($id as xs:string) {
   let $canv := for $fa in $file//tei:surface
     return local:image($id, $fa/@xml:id, $map)
     
-    let $md := (
-    	map { "label": "ID", "value": $id },
-        map { "label": [
-        		map {"@value": "Title", "@language": "en" },
-        		map {"@value": "Titel", "@language": "de" }
-        	],
-        	"value": $title },
-        if ($meta//meta:type) then map {
-	            "label": [ map {"@value": "Type", "@language": "en"}, map {"@value": "Typ", "@language": "de"}],
-	            "value": [ map {"@value": normalize-space($meta//meta:type), "@language": "en"}]
-	        } else (),
-        if ($file//tei:teiHeader//tei:sourceDesc/tei:place) then
-	        map {
-	            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
-	            "value": "<a href='" || $file//tei:teiHeader//tei:place/@ref || "'>" || $file//tei:teiHeader//tei:place || "</a>"
-	        } else if ($meta//meta:place) then
-	        map {
-	            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
-	            "value": "<a href='" || $meta//meta:place/@ref || "'>" || $meta//meta:place || "</a>"
-	        } else (),
-        if ($file//tei:teiHeader//tei:sourceDesc/tei:date) then
-	        map {
-	            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
-	            "value": normalize-space($file//tei:teiHeader//tei:sourceDesc/tei:date[1]/@when)
-	        } else if ($meta//meta:titleData/meta:date) then
-	        map {
-	            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
-	            "value": normalize-space($meta//meta:titleData/meta:date[1])
-	        } else (),
-        if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
-	        map {
-	            "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
-	            "value": "<a href='" || $wdbRf:server || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
-	        } else (),
-        if ($meta//meta:language) then 
-	        map {
-	            "label": [ map {"@value": "Languages", "@language": "en"}, map {"@value": "Sprachen", "@language": "de"}],
-	            "value": for $l in $meta//meta:language return xs:string($l)
-	        } else ()
-    )
-    
-    return (
+  let $md := (
+  	map { "label": "ID", "value": $id },
+      map { "label": [
+      		map {"@value": "Title", "@language": "en" },
+      		map {"@value": "Titel", "@language": "de" }
+      	],
+      	"value": $title },
+      if ($meta//meta:type) then map {
+            "label": [ map {"@value": "Type", "@language": "en"}, map {"@value": "Typ", "@language": "de"}],
+            "value": [ map {"@value": normalize-space($meta//meta:type), "@language": "en"}]
+        } else (),
+      if ($file//tei:teiHeader//tei:sourceDesc/tei:place) then
+        map {
+            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
+            "value": "<a href='" || $file//tei:teiHeader//tei:place/@ref || "'>" || $file//tei:teiHeader//tei:place || "</a>"
+        } else if ($meta//meta:place) then
+        map {
+            "label": [ map {"@value": "Place of Publication", "@language": "en"}, map {"@value": "Erscheinungsort", "@language": "de"}],
+            "value": "<a href='" || $meta//meta:place/@ref || "'>" || $meta//meta:place || "</a>"
+        } else (),
+      if ($file//tei:teiHeader//tei:sourceDesc/tei:date) then
+        map {
+            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
+            "value": normalize-space($file//tei:teiHeader//tei:sourceDesc/tei:date[1]/@when)
+        } else if ($meta//meta:titleData/meta:date) then
+        map {
+            "label": [ map {"@value": "Date", "@language": "en"}, map {"@value": "Datum", "@language": "de"}],
+            "value": normalize-space($meta//meta:titleData/meta:date[1])
+        } else (),
+      if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
+        map {
+            "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
+            "value": "<a href='" || $wdbRf:server || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
+        } else (),
+      if ($meta//meta:language) then 
+        map {
+            "label": [ map {"@value": "Languages", "@language": "en"}, map {"@value": "Sprachen", "@language": "de"}],
+            "value": for $l in $meta//meta:language return xs:string($l)
+        } else ()
+  )
+  
+  let $errors := string-join($errorFile, ' - ')
+  let $respCode := if (string-length($errors) = 0)
+  then 200
+  else 500
+  
+  return (
     <rest:response>
-	    <http:response>
-	        <http:header name="Access-Control-Allow-Origin" value="*"/>
-	    </http:response>
-	</rest:response>,
-  map {
+      <http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+          <http:header name="status" value="{$respCode}" />
+      </http:response>
+  </rest:response>,
+  if ($respCode != 200)
+  then $errors
+  else map {
     "@context": "http://iiif.io/api/presentation/2/context.json",
     "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $id || "/manifest",
     "@type": "sc:Manifest",
