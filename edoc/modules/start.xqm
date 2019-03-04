@@ -2,8 +2,8 @@ xquery version "3.0";
 
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
 
-import module namespace wdbm    = "https://github.com/dariok/wdbplus/nav"	at "nav.xqm";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
+import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 import module namespace console = "http://exist-db.org/xquery/console";
 
 declare namespace match   = "http://www.w3.org/2005/xpath-functions";
@@ -98,5 +98,19 @@ declare function wdbst:getStart ($node as node(), $model as map(*)) as node()* {
   then doc($model("resources") || 'startRight.html')
   else if (wdb:findProjectFunction($model, 'getStart', 1))
   then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
-  else wdbm:getRight(<void/>, $model)
+  else local:getRight($model)
+};
+
+declare function local:getRight($model as map(*)) {
+	let $xml := concat($model("pathToEd"), '/start.xml')
+	
+	let $xsl := if (doc-available(concat($model("ed"), '/start.xsl')))
+		then $model("pathToEd") || '/start.xsl'
+		else $wdb:edocBaseDB || '/resources/start.xsl'
+	
+	return
+		<div class="start">
+			{transform:transform(doc($xml), doc($xsl), ())}
+			{wdb:getFooter($xml, $xsl)}
+		</div>
 };
