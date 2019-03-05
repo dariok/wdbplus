@@ -21,7 +21,7 @@ declare function wdbst:populateModel ($node as node(), $model as map(*), $id, $e
 try {
   (: general behaviour: IDs always take precedence :)
   let $ppath := if ($id)
-    then wdb:getEdPath(base-uri((collection($wdb:data)/id($id))[1]), true())
+    then wdb:getEdPath(base-uri((collection($wdb:data)/id($id))[self::wdbmeta:projectMD]), true())
     else if ($ed)
     then $wdb:edocBaseDB || '/' || $ed
     else wdb:getEdPath($wdb:edocBaseDB || $path, true())
