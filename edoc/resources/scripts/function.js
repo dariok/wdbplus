@@ -448,8 +448,8 @@ function toggleNavigation() {
     
     if ($('nav').text() === '') {
         $('nav').text('lädt...');
-        var id = $('meta[name="id"]').attr('content');
-        var res = $. get ('modules/nav.xql?id=' + id, '',
+        id = $('meta[name="ed"]').attr('content');
+        res = $. get ('/exist/restxq/collection/' + id + '/nav.html', '',
         function (data) {
             $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
         },
