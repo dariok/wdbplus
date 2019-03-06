@@ -159,15 +159,26 @@ declare function local:findImporter($path) {
 };
 
 declare function local:pM($meta) {
-  for $s in $meta/meta:projectMD/meta:struct/*
+  let $uri := base-uri($meta)
+  
+  return for $s in $meta/meta:projectMD/meta:struct/*
     let $f := $meta//meta:files/*[@xml:id = $s/@file]
     return if ($f[self::meta:ptr])
     then
-      let $base := substring-before(base-uri($meta), 'wdbmeta.xml')
+      let $base := substring-before($uri, 'wdbmeta.xml')
       return
         <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
           {$s/@*}
           {local:pM(doc($base || $f/@path))}
         </struct>
-    else $s[self::meta:struct]
+    else if ($s[self::meta:struct]/meta:view) then
+      <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+          {$s/@*}
+          {
+            for $v in $s/* return
+              if ($v[@private = 'true'] and not(sm:has-access($uri, 'w'))) then ()
+              else $v
+          }
+        </struct>
+    else ()
 };
