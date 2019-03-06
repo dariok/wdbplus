@@ -449,7 +449,7 @@ function toggleNavigation() {
     if ($('nav').text() === '') {
         $('nav').text('lädt...');
         id = $('meta[name="ed"]').attr('content');
-        res = $. get ('/exist/restxq/collection/' + id + '/nav.html', '',
+        res = $. get ('/exist/restxq/edoc/collection/' + id + '/nav.html', '',
         function (data) {
             $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
         },
@@ -462,8 +462,6 @@ function toggleNavigation() {
 function getUniqueId() {
     return 'd' + internalUniqueId++;
 }
-
-
 
 /* display an image in the right div */
 function displayImage(href) {
@@ -501,9 +499,12 @@ function close() {
 }
 
 /* toggle TOC level visibility */
-function switchlayer(Layer_Name) {	
-	var target = '#' + Layer_Name.replace( /(,|:|\.|\[|\])/g, "\\$1" );	
-	$(target).toggle();	
+function switchnav(id) {	
+  $(id).children('ul').children().toggle();
+}
+function switchnav(id, a) {	
+  $(id).children('ul').children().toggle();
+  $(a).html() == '→' ? $(a).html('↑') : $(a).html('→');
 }
 
 /* preparations to show some loading animation while doing AJAX requests */
