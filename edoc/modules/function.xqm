@@ -40,6 +40,7 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
     <meta name="id" content="{$model("id")}" />
     <meta name="ed" content="{$model("edPath")}" />
     <title>{$model("title")}</title>
+    <link rel="stylesheet" type="text/css" href="resources/css/wdb.css"/>
     <link rel="stylesheet" type="text/css" href="resources/css/function.css"/>
     {local:get('css', $model("pathToEd"))}
     <script src="resources/scripts/jquery.min.js"/>

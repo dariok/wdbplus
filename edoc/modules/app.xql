@@ -144,6 +144,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) {
 		<meta name="path" content="{$model('fileLoc')}"/>
 		<title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
 		<!-- this is used in /view.html, so the rel. path does not start with '..'! -->
+		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" />
 		<link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.css" />
