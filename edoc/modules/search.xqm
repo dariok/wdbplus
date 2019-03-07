@@ -2,28 +2,50 @@ xquery version "3.0";
 
 module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 
-declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace tei  = "http://www.tei-c.org/ns/1.0";
+declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
-import module namespace console   = "http://exist-db.org/xquery/console";
-import module namespace kwic      = "http://exist-db.org/xquery/kwic";
+import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+import module namespace kwic = "http://exist-db.org/xquery/kwic";
 
 (:~
  : return the header
  :)
 declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
-    <header>
-      <h1>{
-        if ($model("title") = "")
-          then ""
-          else $model("title")
-      }</h1>
-      <h2>Suche</h2>
-      <span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a>]</span>
-      <span class="dispOpts">[<a id="searchLink" href="search.html?ed={$model('ed')}">Suche</a>]</span>
-      <hr/>
-<nav style="display:none;" />
-    </header>
+  <header>
+    <h1>{
+      if ($model("title") = "")
+        then ""
+        else $model("title")
+    }</h1>
+    <h2>Suche</h2>
+    <span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a>]</span>
+    <span class="dispOpts">[<a id="searchLink" href="search.html?ed={$model('ed')}">Suche</a>]</span>
+    <hr/>
+    <nav style="display:none;" />
+  </header>
+};
+
+declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
+(
+  <h2>Suchparameter</h2>,
+  <form>
+    <select>{
+      let $md := doc($wdb:data || '/wdbmeta.xml')
+      let $opts := for $file in $md//meta:ptr
+        let $id := $file/@xml:id
+        let $label := $md//meta:struct[@file = $id]/@label
+        return <option value="{$id}">{normalize-space($label)}</option>
+      return (
+        <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+        $opts
+      )
+    }</select>
+    <label for="query">Suchbegriff(e) / RegEx: </label><input type="text" name="query" />
+    <input type="submit" />
+  </form>,
+  <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
+)
 };
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
