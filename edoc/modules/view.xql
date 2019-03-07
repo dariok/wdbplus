@@ -18,6 +18,7 @@ import module namespace wdbpq     = "https://github.com/dariok/wdbplus/pquery"  
 import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"    at "auth.xqm";
 import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"    at "search.xqm";
 import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"   at "start.xqm";
+import module namespace wdbfp     = "https://github.com/dariok/wdbplus/functionpages" at "function.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 
