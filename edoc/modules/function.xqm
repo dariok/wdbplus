@@ -13,12 +13,21 @@ declare
     %templates:default("p", "")
     %templates:default("id", "")
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) as map(*) {
+try {
   let $edPath := wdb:getEdPath((collection($wdb:data)/id($id))[1], true())
   
-  let $metaFile := doc($edPath||'/wdbmeta.xml')
-  let $title := $metaFile//meta:title/text()
+  let $metaFile := if (doc-available($edPath || '/wdbmeta.xml'))
+    then doc($edPath || '/wdbmeta.xml')
+    else doc($edPath || '/mets.xml')
   
-  return map{ "p" := parse-json($p), "q" := $q, "edPath" := $edPath, "title" := $title, "id" := $id }
+  let $proFile := wdb:findProjectXQM($edPath)
+  
+  let $title := ($metaFile//*:title)[1]/text()
+  
+  return map{ "p" := parse-json($p), "q" := $q, "pathToEd" := $edPath, "title" := $title, "id" := $id, "infoFileLoc" := $metaFile }
+} catch * {
+  wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "p" := $p, "q" := $q })
+}
 };
 
 declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
@@ -29,11 +38,11 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
     <meta name="ed" content="{$model("edPath")}" />
     <title>{$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="resources/css/function.css"/>
-    {local:get('css')}
+    {local:get('css', $model("pathToEd"))}
     <script src="resources/scripts/jquery.min.js"/>
     <script src="resources/scripts/js.cookie.js"/>
     <script src="resources/scripts/function.js"/>
-    {local:get('js')}
+    {local:get('js', $model("pathToEd"))}
   </head>
 };
 
@@ -41,11 +50,26 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
   wdbErr:error(map { "code" := "wdbErr:Err666", "model" := $model })
 };
 
-declare function local:get($type as xs:string) {
+declare function local:get ( $type as xs:string, $edPath as xs:string ) {
   let $file := substring-after(request:get-url(), $wdb:edocBaseURL || '/')
   let $name := substring-before($file, '.html')
+  let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   return switch($type)
-    case "css" return <link rel="stylesheet" type="text/css" href="resources/css/{$name}.css" />
-    case "js" return <script src="resources/scripts/{$name}.js" />
+    case "css" return
+      let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/' || $name || '.css'))
+        then <link rel="stylesheet" type="text/css" href="resources/css/{$name}.css" />
+        else()
+      let $pro := if (util:binary-doc-available($edPath || '/resources/' || $unam || '.css'))
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}{substring-after($edPath, $wdb:edocBaseDB)}/resources/{$unam}.css" />
+        else()
+      return ($gen, $pro)
+    case "js" return
+      let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resouces/' || $name || '.js'))
+        then <script src="resources/scripts/{$name}.js" />
+        else()
+      let $pro := if (util:binary-doc-available($edPath || '/resouces/' || $unam || '.js'))
+        then <script src="{$wdb:edocBaseURL}{substring-after($edPath, $wdb:edocBaseDB)}/resources/{$unam}.js" />
+        else()
+      return ($gen, $pro)
     default return <meta name="specFile" value="{$name}" />
 };
