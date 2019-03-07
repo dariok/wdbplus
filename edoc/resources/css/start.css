@@ -1,8 +1,6 @@
 /* global CSS for start.html */
 /* 2016-07-20 Dario Kampkaspar (DK) */
 
-@import "function.css";
-
 aside div div {
     border-bottom: 1px solid black;
     padding-bottom: 1em;
