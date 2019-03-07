@@ -76,3 +76,9 @@ declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
 declare function wdbpq:getEd ($node as node(), $model as map(*)) {
 	<meta name="id" content="{$model('ed')}"/>
 };
+
+declare function wdbpq:getCSS ($node as node(), $model as map(*)) {
+  let $file := substring-after(request:get-url(), $wdb:edocBaseURL || '/')
+  let $css := substring-before($file, 'html') || 'css'
+  return <link rel="stylesheet" type="text/css" href="resources/css/{$css}" />
+};
