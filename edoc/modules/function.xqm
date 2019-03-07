@@ -14,7 +14,10 @@ declare
     %templates:default("id", "")
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) as map(*) {
 try {
-  let $edPath := wdb:getEdPath((collection($wdb:data)/id($id))[1], true())
+  let $pid := if ($id = "")
+    then doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id
+    else $id
+  let $edPath := wdb:getEdPath((collection($wdb:data)/id($pid))[1], true())
   
   let $metaFile := if (doc-available($edPath || '/wdbmeta.xml'))
     then doc($edPath || '/wdbmeta.xml')
@@ -24,7 +27,7 @@ try {
   
   let $title := ($metaFile//*:title)[1]/text()
   
-  return map{ "p" := parse-json($p), "q" := $q, "pathToEd" := $edPath, "title" := $title, "id" := $id, "infoFileLoc" := $metaFile }
+  return map { "p" := parse-json($p), "q" := $q, "pathToEd" := $edPath, "title" := $title, "id" := $pid, "infoFileLoc" := $metaFile }
 } catch * {
   wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "p" := $p, "q" := $q })
 }
