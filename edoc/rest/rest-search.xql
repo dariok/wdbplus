@@ -44,11 +44,10 @@ declare
 function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $file := (collection($wdb:data)/id($id))[1]
   let $query := lower-case(xmldb:decode($q))
-  let $res := if (contains($query, ' '))
-    then ($file//tei:p[ft:query(., $query)]
-        | $file//tei:table[ft:query(., $query)]
-        | $file//tei:item[ft:query(., $query)])
-    else $file//tei:w[ft:query(., $query)]
+  (: querying for tei:w only will return no context :)
+  let $res := $file//tei:p[ft:query(., $query)]
+            | $file//tei:table[ft:query(., $query)]
+            | $file//tei:item[ft:query(., $query)]
   let $max := count($res)
   
   return
