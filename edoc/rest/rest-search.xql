@@ -42,7 +42,7 @@ declare
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI[1]
+  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
   let $query := lower-case(xmldb:decode($q))
   (: querying for tei:w only will return no context :)
   let $res := $file//tei:p[ft:query(., $query)]
@@ -66,15 +66,16 @@ declare
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:collectionEntity ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
+  
   let $coll := wdb:getEdPath(base-uri($md), true())
   let $query := xmldb:decode($q)
   
-  let $res := collection($coll)//tei:rs[@ref='#'||$query]
+  let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query]]
   let $max := count($res)
   
   return
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" que="{$query}">{
       for $f in subsequence($res, $start, 25) return
-        <file id="{$f/ancestor::tei:TEI/@xml:id}" />
+        <file id="{$f/@xml:id}" />
     }</results>
 };
