@@ -35,3 +35,27 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
         <file id="{$f/ancestor::tei:TEI/@xml:id}" />
     }</results>
 };
+
+declare
+    %rest:GET
+    %rest:path("/edoc/search/file/{$id}")
+    %rest:query-param("q", "{$q}")
+    %rest:query-param("start", "{$start}", 1)
+function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
+  let $file := (collection($wdb:data)/id($id))[1]
+  let $query := lower-case(xmldb:decode($q))
+  let $res := if (contains($query, ' '))
+    then ($file//tei:p[ft:query(., $query)]
+        | $file//tei:table[ft:query(., $query)]
+        | $file//tei:item[ft:query(., $query)])
+    else $file//tei:w[ft:query(., $query)]
+  let $max := count($res)
+  
+  return
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      for $h in subsequence($res, $start, 25) return
+        <result id="{$id}" fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
+          kwic:summarize($h, <config width="80"/>)
+        }</result>
+    }</results>
+};
