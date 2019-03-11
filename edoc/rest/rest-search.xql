@@ -2,6 +2,7 @@ xquery version "3.1";
 
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
+import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace kwic = "http://exist-db.org/xquery/kwic";
 import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 
@@ -55,48 +56,6 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
       for $h in subsequence($res, $start, 25) return
         <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
           kwic:summarize($h, <config width="80"/>)
-        }</result>
-    }</results>
-};
-
-declare
-    %rest:GET
-    %rest:path("/edoc/search/collection/entity/{$id}")
-    %rest:query-param("q", "{$q}")
-    %rest:query-param("start", "{$start}", 1)
-function wdbRs:collectionEntity ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-  
-  let $coll := wdb:getEdPath(base-uri($md), true())
-  let $query := xmldb:decode($q)
-  
-  let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query]]
-  let $max := count($res)
-  
-  return
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $f in subsequence($res, $start, 25) return
-        <file id="{$f/@xml:id}" />
-    }</results>
-};
-
-declare
-    %rest:GET
-    %rest:path("/edoc/search/file/entity/{$id}")
-    %rest:query-param("q", "{$q}")
-    %rest:query-param("start", "{$start}", 1)
-function wdbRs:fileEntity ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-  let $query := lower-case(xmldb:decode($q))
-  
-  let $res := $file//tei:rs[@ref=$query]
-  let $max := count($res)
-  
-  return
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $h in subsequence($res, $start, 25) return
-        <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-          $h
         }</result>
     }</results>
 };
