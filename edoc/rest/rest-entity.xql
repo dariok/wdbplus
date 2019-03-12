@@ -13,7 +13,7 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/{$type}/{$collection}/{$q}")
+    %rest:path("/edoc/entities/scan/{$type}/{$collection}/{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
   let $query := xmldb:decode($q)
   
@@ -73,5 +73,72 @@ function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:i
         <result fragment="{$a/@xml:id}">{
           $h
         }</result>
+    }</results>
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/list/collection/{$id}/{$q}")
+    %rest:query-param("start", "{$start}", 1)
+    %rest:query-param("p", "{$p}")
+function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
+  let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
+  
+  let $coll := wdb:getEdPath(base-uri($md), true())
+  let $query := xmldb:decode($q)
+  
+  let $params := parse-json($p)
+  
+  let $r := if ($p != "" and $params("type") != "")
+    then collection($coll)//tei:rs[starts-with(@ref, $query) and @type = $params("type")]
+    else collection($coll)//tei:rs[starts-with(@ref, $query)]
+  let $res := for $f in $r
+    group by $ref := $f/@ref
+    return
+      <result ref="{$ref}" count="{count($f)}">
+        {for $id in distinct-values($f/ancestor::tei:TEI/@xml:id)
+          return <file id="{$id}" />
+        }
+      </result>
+  let $max := count($res)
+  
+  return
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" p="{$p}">{
+      for $f in subsequence($res, $start, 25)
+      return $f
+    }</results>
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/list/file/{$id}/{$q}")
+    %rest:query-param("start", "{$start}", 1)
+    %rest:query-param("p", "{$p}")
+function wdbRe:listFileEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
+  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+  let $query := lower-case(xmldb:decode($q))
+  
+  let $params := parse-json($p)
+  
+  let $r := if ($p != "" and $params("type") != "")
+    then $file//tei:rs[starts-with(@ref, $query) and @type = $params("type")]
+    else $file//tei:rs[starts-with(@ref, $query)]
+  let $res := for $f in $r
+    group by $ref := $f/@ref
+    return
+      <result ref="{$ref}">
+        {for $i in $f
+          group by $id := $i/ancestor::tei:*[@xml:id][1]/@xml:id
+          return <fragment id="{$id}" />
+        }
+      </result>
+  let $max := count($res)
+  
+  return
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      for $h in subsequence($res, $start, 25) return
+        <result ref="{$h/@ref}" count="{count($h/*)}">
+          {$h/*}
+        </result>
     }</results>
 };
