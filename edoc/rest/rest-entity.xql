@@ -53,3 +53,25 @@ function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, 
         <file id="{$file}" />
     }</results>
 };
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/file/{$id}/{$ref}")
+    %rest:query-param("start", "{$start}", 1)
+function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
+  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+  let $query := lower-case(xmldb:decode($ref))
+  
+  let $res := $file//tei:rs[@ref=$query or @ref = '#'||$query]
+  let $max := count($res)
+  
+  return
+    <results count="{$max}" from="{$start}" id="{$id}" ref="{$ref}">{
+      for $h in subsequence($res, $start, 25)
+      group by $a := ($h/ancestor-or-self::*[@xml:id])[last()]
+      return
+        <result fragment="{$a/@xml:id}">{
+          $h
+        }</result>
+    }</results>
+};
