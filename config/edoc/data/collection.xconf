@@ -1,36 +1,45 @@
 <collection xmlns="http://exist-db.org/collection-config/1.0">
-    <index xmlns:tei="http://www.tei-c.org/ns/1.0"
-    	xmlns:xs="http://www.w3.org/2001/XMLSchema">
-        <!-- Lucene index is configured below -->
-        <lucene>
-            <analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-            <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
-            <text qname="tei:text" analyzer="std"/>
-            <text qname="tei:div" analyzer="std"/>
-            <text qname="tei:p" analyzer="std"/>
-            <text qname="tei:table" analyzer="std"/>
-            <text qname="tei:item" analyzer="std"/>
-            <text qname="tei:quote" analyzer="std"/>
-            <text qname="tei:w" analyzer="std" />
-            <inline qname="tei:unclear" />
-            <inline qname="tei:supplied" />
-            <inline qname="tei:gap" />
-            <inline qname="tei:ex" />
-            <inline qname="tei:hi" />
-            <ignore qname="tei:lb" />
-            <inline qname="tei:pb" />
-            <ignore qname="tei:pc" />
-        </lucene>
-        <range>
-            <create qname="@ref" type="xs:string"/>
-            <create qname="@type" type="xs:string"/>
-            <create qname="tei:rs">
-                <field name="rs-type" match="@type" type="xs:string"/>
-                <field name="rs-ref" match="@ref" type="xs:string"/>
-            </create>
-            <create qname="@when" type="xs:date" />
-            <create qname="@notBefore" type="xs:date" />
-            <create qname="@notAfter" type="xs:date" />
-        </range>
-    </index>
+	<index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<!-- Lucene index is configured below -->
+		<lucene>
+			<analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+			<analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+			<!-- configuration for index files -->
+			<!--            <text qname="tei:persName" analyzer="std" />-->
+			<!--            <text qname="tei:placeName" analyzer="std" />-->
+			<!--            <text qname="tei:orgName" analyzer="std" />-->
+			<!--            <text qname="tei:title" analyzer="std" />-->
+			<!-- configuration for text files -->
+			<text qname="tei:text" analyzer="std"/>
+			<text qname="tei:div" analyzer="std"/>
+			<text qname="tei:p" analyzer="std"/>
+			<text qname="tei:table" analyzer="std"/>
+			<text qname="tei:item" analyzer="std"/>
+			<text qname="tei:quote" analyzer="std"/>
+			<text qname="tei:w" analyzer="std"/>
+			<inline qname="tei:unclear"/>
+			<inline qname="tei:supplied"/>
+			<inline qname="tei:gap"/>
+			<inline qname="tei:ex"/>
+			<inline qname="tei:hi"/>
+			<ignore qname="tei:lb"/>
+			<inline qname="tei:pb"/>
+			<ignore qname="tei:pc"/>
+		</lucene>
+		<range>
+			<create qname="@ref" type="xs:string"/>
+			<create qname="@type" type="xs:string"/>
+			<create qname="tei:rs">
+				<field name="rs-type" match="@type" type="xs:string"/>
+				<field name="rs-ref" match="@ref" type="xs:string"/>
+			</create>
+			<create qname="@when" type="xs:date"/>
+			<create qname="@notBefore" type="xs:date"/>
+			<create qname="@notAfter" type="xs:date"/>
+			<create qname="tei:persName" type="xs:string" />
+			<create qname="tei:placeName" type="xs:string" />
+			<create qname="tei:orgName" type="xs:string" />
+			<create qname="tei:title" type="xs:string" />
+		</range>
+	</index>
 </collection>
