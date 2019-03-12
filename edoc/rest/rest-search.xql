@@ -19,7 +19,7 @@ declare
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-  let $coll := wdb:getEdPath(base-uri($md), true())
+  let $coll := wdb:getProject($id)
   
   let $query := xmldb:decode($q)
   
@@ -32,9 +32,33 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
   
   return
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $f in subsequence($res, $start, 25) return
-        <file id="{$f/ancestor::tei:TEI/@xml:id}" />
+      for $f in subsequence($res, $start, 25)
+      return
+        <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt//tei:title}</file>
     }</results>
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/search/collection/{$id}")
+    %rest:query-param("q", "{$q}")
+    %rest:query-param("start", "{$start}", 1)
+    %rest:produces("text/html")
+function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
+  let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
+  let $coll := wdb:getProject($id)
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+      then wdb:eval("wdbPF:getSearchXSLT()")
+      else if (doc-available($coll || '/search.xsl'))
+      then xs:anyURI($coll || '/search.xsl')
+      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$md//meta:title[1]}" />
+  </parameters>
+  
+  return transform:transform(wdbRs:collectionText($id, $q, $start), doc($xsl), $params)
 };
 
 declare
@@ -58,4 +82,27 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
           kwic:summarize($h, <config width="80"/>)
         }</result>
     }</results>
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/search/file/{$id}")
+    %rest:query-param("q", "{$q}")
+    %rest:query-param("start", "{$start}", 1)
+    %rest:produces("text/html")
+function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
+  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+  let $coll := wdb:getEdPath(base-uri($file))
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+      then wdb:eval("wdbPF:getSearchXSLT()")
+      else if (doc-available($coll || '/search.xsl'))
+      then xs:anyURI($coll || '/search.xsl')
+      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
+  </parameters>
+  
+  return transform:transform(wdbRs:fileText($id, $q, $start), doc($xsl), $params)
 };
