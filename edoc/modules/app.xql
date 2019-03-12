@@ -490,3 +490,16 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
 			
 		return $pathToFile
 };
+
+(:~
+ : Return the full DB path to the project described in a meta file with the given ID
+ : 
+ : @param $id as xs:string: the meta file (wdbmeta, METS) ID
+ : 
+ : @return xs:string the full DB path :)
+declare function wdb:getProject ($id as xs:string) {
+  let $md := collection($wdb:data)/id($id)
+  let $file := ($md[self::meta:projectMD], $md[self::mets:mets])[1]
+  
+  return xstring:substring-before-last(base-uri($file), '/')
+};
