@@ -63,6 +63,11 @@ declare variable $wdb:edocBaseURL :=
 		return $wdb:server || $path
 ;
 
+(: ~
+ : get the base URL for REST calls
+ : TODO introduce an option to set this in config :)
+declare variable $wdb:restURL := substring-before($wdb:edocBaseURL, substring-after($wdb:edocBaseDB, '/db/')) || "restxq/edoc";
+
 (: the server role :)
 declare variable $wdb:role :=
 	if ($wdb:configFile//main:role/main:type != '')
