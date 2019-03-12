@@ -458,6 +458,24 @@ function toggleNavigation() {
     $('nav').slideToggle();
 }
 
+function load (url, target, me) {
+    if ($('#' + target).css('display') == 'none') {
+      res = $.ajax(url,
+        {
+          dataType: "html",
+          success: function (data) {
+              $('#' + target).html($(data).children('ul'));
+              $('#' + target).slideToggle();
+              $(me).html('↑');
+          }
+        }
+      );
+    } else {
+      $('#' + target).slideToggle();
+      $(me).html('→');
+    }
+}
+
 /* create a runtime unique global ID */
 function getUniqueId() {
     return 'd' + internalUniqueId++;
