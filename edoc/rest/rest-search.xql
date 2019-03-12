@@ -56,6 +56,7 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
   return transform:transform(wdbRs:collectionText($id, $q, $start), doc($xsl), $params)
@@ -102,6 +103,7 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     
   let $params := <parameters>
     <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
   return transform:transform(wdbRs:fileText($id, $q, $start), doc($xsl), $params)
