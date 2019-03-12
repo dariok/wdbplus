@@ -33,3 +33,23 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
       <result id="{$id}" />
   }</results>
 };
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/collection/{$collection}/{$ref}")
+    %rest:query-param("start", "{$start}", 1)
+function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
+  let $coll := wdb:getProject($collection)
+  let $query := xmldb:decode($ref)
+  
+  let $res := collection($coll)//tei:rs[@ref=$query or @ref='#'||$query]
+  let $max := count($res)
+  
+  return
+    <results count="{$max}" from="{$start}" id="{$collection}" ref="{$ref}">{
+      for $f in subsequence($res, $start, 25)
+      group by $file := $f/ancestor::tei:TEI/@xml:id
+      return
+        <file id="{$file}" />
+    }</results>
+};
