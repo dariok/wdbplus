@@ -17,7 +17,7 @@ try {
   let $pid := if ($id = "")
     then doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id
     else $id
-  let $edPath := wdb:getEdPath((collection($wdb:data)/id($pid))[1], true())
+  let $edPath := wdb:getProject($pid)
   
   let $metaFile := if (doc-available($edPath || '/wdbmeta.xml'))
     then doc($edPath || '/wdbmeta.xml')
