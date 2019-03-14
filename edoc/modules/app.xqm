@@ -93,3 +93,36 @@ declare variable $wdb:peer :=
     else ""
 ;
 (: END ALL-PURPOSE VARIABLES :)
+
+(: FUNCTIONS TO GET SERVER INFO :)
+
+(: ~
+ : get the name of the server, possibly including the port
+ : If resolution fails, set the value in config.xml instead
+ : This cannot be used for RESTXQ
+ :)
+declare function wdb:getServerApp() as xs:string {
+  (: config:server contains the full base URL :)
+  let $config := 
+    let $scheme := substring-before($wdb:configFile//config:server, '//')
+    let $server := substring-before(substring-after($wdb:configFile//config:server, '//'), '/')
+    return $scheme || '//' || $server
+  
+  let $origin := try { request:get-header("Origin") } catch * { () }
+  let $request := try {
+    let $scheme := if (request:get-header-names() = 'X-Forwarded-Proto')
+      then normalize-space(request:get-header('X-Forwarded-Proto'))
+      else normalize-space(request:get-scheme())
+    
+    return if (request:get-server-port() != 80)
+      then $scheme || '://' || request:get-server-name() || ':' || request:get-server-port()
+      else $scheme || '://' || request:get-server-name()
+  } catch * { () }
+  let $ref := try { request:get-header('referer') } catch * { () }
+  
+  let $server := ($config, $ref, $origin, $request)
+  return if (count($server) > 0)
+    then $server[1]
+    else wdbErr:error(map {"code" := "wdbErr:wdb0010"})
+};
+(: END FUNCTIONS TO GET SERVER INFO :)
