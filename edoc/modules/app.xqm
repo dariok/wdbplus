@@ -95,7 +95,44 @@ declare variable $wdb:peer :=
 (: END ALL-PURPOSE VARIABLES :)
 
 (: FUNCTIONS TO GET SERVER INFO :)
-
+(:~
+ : get some test info about variables and other properties of the framework
+ : 
+ : @return (node()) HTML div
+ :)
+declare function wdb:test() as node() {
+<div>
+  <h1>APP CONTEXT test on {$wdb:configFile//config:name}</h1>
+  <h2>global variables (app.xqm)</h2>
+  <dl>
+    {
+      for $var in inspect:module-functions()//variable
+        let $variable := '$' || normalize-space($var/@name)
+        return (
+          <dt>{$variable}</dt>,
+          <dd><pre>{
+            let $s := util:eval($variable)
+            return typeswitch ($s)
+            case node() return util:serialize($s, ())
+            default return $s
+          }</pre></dd>
+        )
+    }
+  </dl>
+  <h2>HTTP request parameters</h2>
+  <dl>
+    {
+      for $var in request:get-header-names()
+        let $variable := '$' || normalize-space($var)
+        return (
+          <dt>{$variable}</dt>,
+          <dd><pre>{request:get-header($variable)}</pre></dd>
+        )
+    }
+  </dl>
+</div>
+};
+ 
 (: ~
  : get the name of the server, possibly including the port
  : If resolution fails, set the value in config.xml instead
