@@ -163,3 +163,213 @@ declare function wdb:getServerApp() as xs:string {
     else wdbErr:error(map {"code" := "wdbErr:wdb0010"})
 };
 (: END FUNCTIONS TO GET SERVER INFO :)
+
+(: FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
+(:~
+ : Templating function; called from layout.html
+ :)
+declare
+    %templates:wrap
+    %templates:default("view", "")
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) as item() {
+  wdb:populateModel($id, $view, $model)
+};
+
+(:~
+ : Populate the model with the most important global settings when displaying a file
+ : 
+ : @param $id the id for the file to be displayed
+ : @param $view a string to be passed to the processing XSLT
+ : @return a map; in case of error, an HTML file
+ :)
+declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
+try {
+  let $pathToFile := wdb:getFilePath($id)
+  
+  let $pathToEd := wdb:getEdPath($id, true())
+  let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
+  
+  (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+  let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
+    then $pathToEd || '/wdbmeta.xml'
+    else if (doc-available($pathToEd || '/mets.xml'))
+    then $pathToEd || '/mets.xml'
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+  
+  let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+    then local:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+    else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+  
+  let $xslt := if (doc-available($xsl))
+    then $xsl
+    else if (doc-available($pathToEd || '/' || $xsl))
+    then $pathToEd || '/' || $xsl
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
+  
+  let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+  
+  (: TODO read global parameters from config.xml and store as a map :)
+  let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := doc($infoFileLoc)/*[1]/@xml:id, "infoFileLoc" := $infoFileLoc,
+      "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+  
+  (: let $t := console:log($map) :)
+  
+  return $map
+} catch * {
+  wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
+}
+};
+(: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
+
+(: FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
+(:~
+ : Return the full URI to the (edition) XML file with the given ID
+ : The scope is the whole data collection; documentation states in several places that file IDs need to be unique
+ : 
+ : This function raises errors that are to be caught by the caller
+ :
+ : @param $id as xs:string: the file ID
+ : @return xs:string the full URI to the file within the database
+ :)
+declare function wdb:getFilePath($id as xs:string) as xs:string {
+  let $files := collection($wdb:edocBaseDB)/id($id)
+  
+  (: do not just return a random URI but add some checks for better error messages:
+   : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
+  let $pathToFile := if (count($files) = 0)
+    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
+    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
+    then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
+    else if (count($files[namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta"]) = 1)
+    (: TODO do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
+    then
+      let $p := base-uri($files[1])
+      return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+    
+  return $pathToFile
+};
+
+(:~
+ : Return the (relative or absolute) path to the project
+ : 
+ : @param $id the ID of a resource within a project
+ : @param $absolute (optional) if true(), return an absolute URL
+ : 
+ : @returns the path (relative) to the app root
+ :)
+declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
+  let $file := collection($wdb:data)/id($id)[self::meta:file]
+  
+  let $edPath := if (count($file) = 1)
+    then xstring:substring-before-last(base-uri($file), '/')
+    else if (count($file) > 1)
+    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+  
+  return if ($absolute) then $edPath else substring-after($edPath, $wdb:edocBaseDB)
+};
+
+(:~
+ : Return the relative path to the project
+ : 
+ : @param $id the ID of a file within the project, usually wdbmeta.xml or mets.xml
+ : @return the path relative to the app root
+ :)
+declare function wdb:getEdPath($id as xs:string) as xs:string {
+  wdb:getEdPath($id, false())
+};
+
+declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) as xs:string {
+  let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
+  
+  let $pa := for $i in 1 to count($tok)
+    let $t := $wdb:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
+    return xmldb:match-collection($t)
+  
+  let $path := if (count($pa) = 0)
+  then
+    wdbErr:error(map{"code" := "wdbErr:wdb2001", "additional" := <additional><path>{$path}</path></additional>})
+  else for $p in $pa
+    order by string-length($p) descending
+    let $p1 := $p || '/wdbmeta.xml'
+    let $p2 := $p || '/mets.xml'
+    
+    return if (doc-available($p1) or doc-available($p2)) then $p else ()
+  
+  return if ($absolute)
+    then $path[1]
+    else substring-after($path[1], $wdb:edocBaseDB||'/')
+};
+(: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
+
+(: LOCAL HELPER FUNCTIONS :)
+(:~
+ : Evaluate wdbmeta.xml to get the process used for transformation
+ :
+ : @param $ed The (relative) path to the project
+ : @param $id The ID of the file to be processed
+ : @param $target The processing target to be used
+ :
+ : @returns The path to the XSLT
+:)
+declare function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
+  let $metaFile := doc($infoFileLoc)
+  
+  let $process := ($metaFile//meta:process[@target = $target],
+    $metaFile//meta:process[1])[1]
+  
+  let $sel := for $c in $process/meta:command
+    return if ($c/@refs)
+      then
+        (: if a list of IDREFS is given, this command matches if $id is part of that list :)
+        let $map := tokenize($c/@refs, ' ')
+        return if ($map = $id) then $c else ()
+      else if ($c/@regex and matches($id, $c/@regex))
+        (: if a regex is given and $id matches that regex, the command matches :)
+      then $c
+      else if (not($c/@refs or $c/@regex))
+        (: if no selection method is given, the command is considered the default :)
+        then $c
+      else () (: neither refs nor regex match and no default given :)
+  
+  (: As we check from most specific to default, the first command in the sequence is the right one :)
+  return $sel[1]/text()
+};
+declare function local:getXslFromMets ($metsLoc, $id, $ed) {
+  let $mets := doc($metsLoc)
+  let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
+  
+  let $be := for $s in $structs
+    return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
+  let $behavior := for $b in $be
+    order by local:val($b, $structs, 'HTML')
+    return $b
+  let $trans := $behavior[last()]/mets:mechanism/@xlink:href
+  
+  return concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
+};
+(: Try to find the most specific mets:behavior
+ : $test: mets:behavior to be tested
+ : $seqStruct: sequence of mets:div/@ID (ordered by specificity, ascending)
+ : $type: return type
+ : returns: a weighted value for the behavior's “rank” :)
+declare function local:val($test, $seqStruct, $type) {
+  let $vIDt := for $s at $i in $seqStruct
+    return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
+      then math:exp10($i)
+      else 0
+  let $vID := fn:max($vIDt)
+  let $vS := if ($test[@BTYPE = $type])
+    then 5
+    else if ($test[@LABEL = $type])
+    then 3
+    else if ($test[@ID = $type])
+    then 1
+    else 0
+  
+  return $vS + $vID
+};
+(: END LOCAL HELPER FUNCTIONS :)
