@@ -205,11 +205,11 @@ try {
     then $xsl
     else if (doc-available($pathToEd || '/' || $xsl))
     then $pathToEd || '/' || $xsl
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0002'), "no XSLT", <value><label>XSLT</label><item>{$xsl}</item></value>)
+    else ""
   
   let $title := normalize-space((doc($pathToFile)//tei:title)[1])
   
-  let $proFile := wdb:findProjectXQM($edPath)
+  let $proFile := wdb:findProjectXQM($pathToEd)
   let $resource := substring-before($proFile, "project.xqm") || "resources/"
   
   (: TODO read global parameters from config.xml and store as a map :)
@@ -274,7 +274,11 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
  :)
 declare function wdb:getContent($node as node(), $model as map(*)) {
   let $file := $model("fileLoc")
-  let $xslt := $model("xslt")
+  
+  let $xslt := if ($model("xslt") != "")
+  then $model("xslt")
+  else wdbErr:error(map {"code" := "wdbErr:wdb0002", "model" := $model})
+  
   let $params :=
     <parameters>
       <param name="server" value="eXist"/>
@@ -353,7 +357,7 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
     then
       let $p := base-uri($files[1])
       return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with given @xml:id and no fallback")
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no file with given @xml:id and no fallback")
     
   return $pathToFile
 };
@@ -367,13 +371,13 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
  : @returns the path (relative) to the app root
  :)
 declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := collection($wdb:data)/id($id)[self::meta:file]
+  let $file := collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD]
   
   let $edPath := if (count($file) = 1)
     then xstring:substring-before-last(base-uri($file), '/')
     else if (count($file) > 1)
     then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
   
   return if ($absolute) then $edPath else substring-after($edPath, $wdb:edocBaseDB)
 };
