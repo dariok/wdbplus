@@ -1,0 +1,23 @@
+<body data-template="templates:surround" data-template-with="templates/function.html" data-template-at="container">
+  <div  style="overflow: auto; max-height: 100%;">
+    <div data-template="wdb:test" />
+    <script>
+      res = $.ajax("/exist/restxq/zz/test",
+      {
+      dataType: "html",
+      success: function (data) {
+      console.log("success");
+      console.log(data);
+      $('#test').html($(data));
+      },
+      error: function (xhr, status, error) {
+      console.log("error");
+      console.log(status);
+      console.log(error);
+      }
+      });
+      console.log(res);
+    </script>
+    <p id="test"/>
+  </div>
+</body>

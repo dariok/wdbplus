@@ -100,13 +100,13 @@ declare variable $wdb:peer :=
  : 
  : @return (node()) HTML div
  :)
-declare function wdb:test() as node() {
+declare function wdb:test($node as node(), $model as map(*)) as node() {
 <div>
   <h1>APP CONTEXT test on {$wdb:configFile//config:name}</h1>
   <h2>global variables (app.xqm)</h2>
   <dl>
     {
-      for $var in inspect:module-functions()//variable
+      for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
         let $variable := '$' || normalize-space($var/@name)
         return (
           <dt>{$variable}</dt>,
@@ -123,13 +123,14 @@ declare function wdb:test() as node() {
   <dl>
     {
       for $var in request:get-header-names()
-        let $variable := '$' || normalize-space($var)
         return (
-          <dt>{$variable}</dt>,
-          <dd><pre>{request:get-header($variable)}</pre></dd>
+          <dt>{$var}</dt>,
+          <dd><pre>{request:get-header($var)}</pre></dd>
         )
     }
   </dl>
+  <h2>$model</h2>
+  { local:get($model, "") }
 </div>
 };
  
@@ -213,8 +214,9 @@ try {
   let $resource := substring-before($proFile, "project.xqm") || "resources/"
   
   (: TODO read global parameters from config.xml and store as a map :)
-  let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := doc($infoFileLoc)/*[1]/@xml:id, "infoFileLoc" := $infoFileLoc,
-      "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd, "proFile" := $proFile, "resource" := $resource }
+  let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
+      "infoFileLoc" := $infoFileLoc, "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd,
+      "proFile" := $proFile, "resource" := $resource }
   
   (: let $t := console:log($map) :)
   
@@ -563,5 +565,17 @@ declare function local:val($test, $seqStruct, $type) {
     else 0
   
   return $vS + $vID
+};
+
+(: format a map’s content (identical to error.xqm) :)
+declare function local:get($map as map(*), $prefix as xs:string) {
+  for $key in map:keys($map)
+    let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
+    return try {
+      local:get($map($key), $pr)
+    } catch * {
+      let $value := try { xs:string($map($key)) } catch * { "err" }
+      return <p><b>{$pr}: </b> {$value}</p>
+    }
 };
 (: END LOCAL HELPER FUNCTIONS :)
