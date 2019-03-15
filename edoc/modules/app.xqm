@@ -20,10 +20,7 @@ declare namespace config    = "https://github.com/dariok/wdbplus/config";
 declare namespace main      = "https://github.com/dariok/wdbplus";
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets      = "http://www.loc.gov/METS/";
-declare namespace rest      = "http://exquery.org/ns/restxq";
 declare namespace tei       = "http://www.tei-c.org/ns/1.0";
-declare namespace templates = "http://exist-db.org/xquery/templates" ;
-declare namespace xlink     = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
@@ -236,6 +233,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="id" content="{$model('id')}"/>
     <meta name="ed" content="{$model("ed")}" />
     <meta name="path" content="{$model('fileLoc')}"/>
+    <meta name="rest" content="{$wdb:restURL}" />
     <title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
