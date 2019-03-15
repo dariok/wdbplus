@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta ../include/wdbmeta/wdbmeta.xsd" xml:id="">
+    xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta ../include/wdbmeta/wdbmeta.xsd"
+    xml:id="data">
     <projectID></projectID>
     <titleData>
         <title></title>
@@ -13,7 +13,7 @@
     </titleData>
     <metaData>
         <contentGroup>
-            <content xml:id="">
+            <content>
                 <description></description>
                 <external></external>
             </content>
@@ -27,5 +27,5 @@
     <process target="">
         <command type=""></command>
     </process>
-    <struct label=""></struct>
+    <struct></struct>
 </projectMD>
