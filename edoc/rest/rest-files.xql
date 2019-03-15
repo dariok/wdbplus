@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils" at "../include/xstring/string-pack.xql";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";

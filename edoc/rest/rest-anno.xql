@@ -4,10 +4,10 @@ module namespace wdbRa = "https://github.com/dariok/wdbplus/RestAnnotations";
 
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 
-import module namespace json		= "http://www.json.org";
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
-import module namespace wdbanno	= "https://github.com/dariok/wdbplus/anno" at "../modules/annotations.xqm";
-import module namespace console	="http://exist-db.org/xquery/console";
+import module namespace json    = "http://www.json.org";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
+import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno" at "../modules/annotations.xqm";
+import module namespace console ="http://exist-db.org/xquery/console";
 
 declare namespace output	= "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace tei			= "http://www.tei-c.org/ns/1.0";

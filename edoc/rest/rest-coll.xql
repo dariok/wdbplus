@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace json = "http://www.json.org";
-import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
+import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace json    = "http://www.json.org";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
