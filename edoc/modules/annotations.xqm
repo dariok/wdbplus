@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbanno = "https://github.com/dariok/wdbplus/anno";
 
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
 (:~
  : return the annotation file for the given user on the given file.

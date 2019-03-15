@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xql";
+import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -17,19 +17,13 @@ try {
   let $pid := if ($id = "")
     then doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id
     else $id
-  let $edPath := wdb:getProject($pid)
   
-  let $metaFile := if (doc-available($edPath || '/wdbmeta.xml'))
-    then doc($edPath || '/wdbmeta.xml')
-    else doc($edPath || '/mets.xml')
+  let $map := wdb:populateModel($pid, "", $model)
+  let $mmap := map { "title" := doc($map("infoFileLoc"))//*:title)[1]/text(), "p" := parse-json($p), "q" := $q, "id" := $pid }
   
-  let $proFile := wdb:findProjectXQM($edPath)
-  
-  let $title := ($metaFile//*:title)[1]/text()
-  
-  return map { "p" := parse-json($p), "q" := $q, "pathToEd" := $edPath, "title" := $title, "id" := $pid, "infoFileLoc" := $metaFile }
+  return map:merge(($map, $mmap))
 } catch * {
-  wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "p" := $p, "q" := $q })
+  wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "p" := $p, "q" := $q, "wdb:data" := $wdb:data })
 }
 };
 

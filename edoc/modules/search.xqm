@@ -5,7 +5,7 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
+import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
 (:~
  : return the header

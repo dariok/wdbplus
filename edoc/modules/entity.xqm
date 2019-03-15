@@ -3,8 +3,8 @@ xquery version "3.0";
 
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
-import module namespace wdb		= "https://github.com/dariok/wdbplus/wdb"		at "app.xql";
-import module namespace console	= "http://exist-db.org/xquery/console";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
+import module namespace console = "http://exist-db.org/xquery/console";
 
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 

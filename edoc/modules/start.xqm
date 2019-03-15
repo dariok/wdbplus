@@ -2,8 +2,8 @@ xquery version "3.0";
 
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
 
-import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xql";
-import module namespace wdbm = "https://github.com/dariok/wdbplus/nav" at "/db/apps/edoc/modules/nav.xqm";
+import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
+import module namespace wdbm = "https://github.com/dariok/wdbplus/nav" at "nav.xqm";
 
 declare namespace output  = "http://www.w3.org/2010/xslt-xquery-serialization";
 

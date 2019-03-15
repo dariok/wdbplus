@@ -3,7 +3,7 @@ xquery version "3.0";
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xql";
+import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xqm";
 import module namespace console 	= "http://exist-db.org/xquery/console";
 
 declare namespace mets		= "http://www.loc.gov/METS/";

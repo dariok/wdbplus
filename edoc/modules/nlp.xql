@@ -4,7 +4,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 
-import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xql";
+import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
 import module namespace wdbanno = "https://github.com/dariok/wdbplus/anno" at "../modules/annotations.xqm";
 
 declare function local:spacyExport($doc, $fr) {
