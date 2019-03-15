@@ -166,7 +166,7 @@ declare function wdb:getServerApp() as xs:string {
 
 (: FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 (:~
- : Templating function; called from layout.html
+ : Templating function; called from layout.html. Entry point for content pages
  :)
 declare
     %templates:wrap
@@ -177,6 +177,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
 
 (:~
  : Populate the model with the most important global settings when displaying a file
+ : Moved to a separate function as this one may be called by other functions, too
  : 
  : @param $id the id for the file to be displayed
  : @param $view a string to be passed to the processing XSLT
@@ -218,6 +219,89 @@ try {
 } catch * {
   wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
 }
+};
+
+(: ~
+ : Create the head for HTML files served via the templating system
+ : @created 2018-02-02 DK
+ :)
+declare function wdb:getHead ($node as node(), $model as map(*)) {
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="id" content="{$model('id')}"/>
+    <meta name="ed" content="{$model("ed")}" />
+    <meta name="path" content="{$model('fileLoc')}"/>
+    <title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.css" />
+    {wdb:getProjectFiles($node, $model, 'css')}
+    <script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
+    <script src="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.js" />
+    <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
+    <script src="{$wdb:edocBaseURL}/resources/scripts/function.js" />
+    {wdb:getProjectFiles($node, $model, 'js')}
+  </head>
+};
+(:~
+ : Try ro load project specific XQuery to import CSS and JS
+ : @created 2018-02-02 DK
+ :)
+declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
+  let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
+  then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+  else
+    (: no specific function available, so we assume standards :)
+    (
+      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
+      then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
+      else (),
+      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
+      then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
+      else ()
+    )
+  
+  return if ($type = 'css')
+    then $files[self::*:link]
+    else $files[self::*:script]
+};
+(:~ 
+ : Look up $function in the given project's project.xqm if it exists
+ : This involves registering the module: if the function is available, it can
+ : immediately be used by the calling script if this lookup is within the caller's scope
+ : The scope is the project as given in $model("pathToEd")
+ : 
+ : @param $model a map of parameters that conforms to the global structure
+ : @param $name the (local) name of the function to be looked for
+ : @param $arity the arity (i.e. number of arguments) of said function
+ : @return true() if project.xqm exists for the project and contains a function
+ : with the given parameters; else() otherwise.
+ :)
+declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
+  let $location := wdb:findProjectXQM($model("pathToEd"))
+  
+  return if ($location instance of xs:boolean and $location = false())
+  then false()
+  else
+    let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
+        xs:anyURI($location))
+    return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+};
+
+(:~
+ : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
+ : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
+ :
+ : @param $project a string representation of the path to the project
+ : @returns the path to a project.xqm if one was found; false() otherwise
+ :)
+declare function wdb:findProjectXQM ($project as xs:string) {
+  if (util:binary-doc-available($project || "/project.xqm"))
+  then $project || "/project.xqm"
+  else if (substring-after($project, $wdb:data) = '')
+  then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0020'), "cannae find project.xqm anywhere")
+  else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
@@ -275,11 +359,11 @@ declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:
 (:~
  : Return the relative path to the project
  : 
- : @param $id the ID of a file within the project, usually wdbmeta.xml or mets.xml
+ : @param $path a path to a file within the project, usually wdbmeta.xml or mets.xml
  : @return the path relative to the app root
  :)
-declare function wdb:getEdPath($id as xs:string) as xs:string {
-  wdb:getEdPath($id, false())
+declare function wdb:getEdPath($path as xs:string) as xs:string {
+  wdb:getEdPath($path, false())
 };
 
 declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) as xs:string {
@@ -315,7 +399,8 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  :
  : @returns The path to the XSLT
 :)
-declare function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
+declare
+function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
   let $metaFile := doc($infoFileLoc)
   
   let $process := ($metaFile//meta:process[@target = $target],
@@ -338,7 +423,7 @@ declare function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:st
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return $sel[1]/text()
 };
-declare function local:getXslFromMets ($metsLoc, $id, $ed) {
+declare %private function local:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
   let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
   
@@ -356,7 +441,7 @@ declare function local:getXslFromMets ($metsLoc, $id, $ed) {
  : $seqStruct: sequence of mets:div/@ID (ordered by specificity, ascending)
  : $type: return type
  : returns: a weighted value for the behavior's “rank” :)
-declare function local:val($test, $seqStruct, $type) {
+declare %private function local:val($test, $seqStruct, $type) {
   let $vIDt := for $s at $i in $seqStruct
     return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
       then math:exp10($i)
