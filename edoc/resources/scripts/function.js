@@ -6,6 +6,8 @@
 /* global variables */
 var timer;                 // timer for marginalia positioning
 var internalUniqueId = 0;  // basis for globally unique IDs
+var id = $("meta[name='id']").attr("content");
+var rest = $("meta[name='rest']").attr("content");
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
@@ -449,7 +451,7 @@ function toggleNavigation() {
     if ($('nav').text() === '') {
         $('nav').text('lädt...');
         id = $('meta[name="ed"]').attr('content');
-        res = $. get ('/exist/restxq/edoc/collection/' + id + '/nav.html', '',
+        res = $. get (rest + 'collection/' + id + '/nav.html', '',
         function (data) {
             $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
         },
@@ -467,6 +469,11 @@ function load (url, target, me) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
               $(me).html('↑');
+          },
+          error: function (xhr, status, error) {
+            console.log("error");
+            console.log(status);
+            console.log(error);
           }
         }
       );

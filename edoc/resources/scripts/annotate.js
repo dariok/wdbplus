@@ -1,4 +1,7 @@
+var id = $("meta[name='id']").attr("content");
+var rest = $("meta[name='rest']").attr("content");
 var dialog;
+
 $( function() {
     dialog = $("#annotationDialog").dialog({
         autoOpen: false,
@@ -10,9 +13,6 @@ $( function() {
     });
     $("#annotationDialogTabs").tabs();
     
-    
-    
-        id = $("meta[name='id']").attr("content");
     cred = Cookies.get("wdbplus");
     headers = "";
     if (typeof cred !== "undefined" && cred.length != 0)
@@ -20,7 +20,7 @@ $( function() {
     
     get = $.ajax({
         method: "get",
-        url: "../../restxq/edoc/anno/" + id,
+        url: rest + "anno/" + id,
         headers: headers,
         success: function(data){
             $.each(
@@ -28,22 +28,22 @@ $( function() {
                 function( index, value ) {
                     console.log(index + ": " + value);
                     if (index > 0 && value.range["from"] != '') {
-	                    start = $('#' + value.range["from"]);
-	                    if (value.range["to"] == '' || value.range["to"] == 'undefined')
-	                        end = start;
-	                        else end = $('#' + value.range["to"]);
-	                    if (end.length == 0)
-	                        end = start;
-	                    cat = value.range["from"] + "–" + value.range["to"] + ": " + value.cat;
-	                    
-	                    f = value.range["from"].substring(1);
-	                    t = value.range["to"].substring(1);
-	                    
-	                    if(t > f) highlightAll(start, end, 'red', cat);
-	                    else highlightAll(end, start, 'red', cat);
-	                }
+                    start = $('#' + value.range["from"]);
+                    if (value.range["to"] == '' || value.range["to"] == 'undefined')
+                        end = start;
+                        else end = $('#' + value.range["to"]);
+                    if (end.length == 0)
+                        end = start;
+                    cat = value.range["from"] + "–" + value.range["to"] + ": " + value.cat;
+                    
+                    f = value.range["from"].substring(1);
+                    t = value.range["to"].substring(1);
+                    
+                    if(t > f) highlightAll(start, end, 'red', cat);
+                    else highlightAll(end, start, 'red', cat);
                 }
-            );
+              }
+          );
         }
     });
     
@@ -85,8 +85,6 @@ if (typeof cred !== "undefined" && cred.length != 0)
 headers = {"Authorization": "Basic " + cred};
 
 function parsefta() {
-    id = $("meta[name='id']").attr("content");
-    
     start = $('#annFrom').text();
     end = $('#annTo').text()
     annoText = $('#ftaText').val();
@@ -94,7 +92,7 @@ function parsefta() {
     
     put = $.ajax({
         method: "post",
-        url: "../../restxq/edoc/anno/" + id,
+        url: rest + "anno/" + id,
         headers: headers,
         data: JSON.stringify({
             from: start,
@@ -107,7 +105,7 @@ function parsefta() {
         });
         
     get = $.getJSON(
-        "../../restxq/edoc/anno/" + id,
+        rest + "anno/" + id,
         function(data){ console.log(data); }
     );
     
@@ -130,7 +128,7 @@ function identifyEntity() {
     
     put = $.ajax({
         method: "post",
-        url: "../../restxq/edoc/anno/entity/" + id,
+        url: rest + "anno/entity/" + id,
         headers: headers,
         data: JSON.stringify({
             from: start,
@@ -159,7 +157,7 @@ function editText() {
     else
     put = $.ajax({
         method: "post",
-        url: "../../restxq/edoc/anno/word/" + id,
+        url: rest + "anno/word/" + id,
         headers: headers,
         data: JSON.stringify({
             id: start,
