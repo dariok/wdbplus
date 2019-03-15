@@ -209,9 +209,12 @@ try {
   
   let $title := normalize-space((doc($pathToFile)//tei:title)[1])
   
+  let $proFile := wdb:findProjectXQM($edPath)
+  let $resource := substring-before($proFile, "project.xqm") || "resources/"
+  
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := doc($infoFileLoc)/*[1]/@xml:id, "infoFileLoc" := $infoFileLoc,
-      "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd }
+      "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd, "proFile" := $proFile, "resource" := $resource }
   
   (: let $t := console:log($map) :)
   
