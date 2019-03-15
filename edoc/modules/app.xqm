@@ -245,63 +245,82 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
   </head>
 };
 (:~
- : Try ro load project specific XQuery to import CSS and JS
- : @created 2018-02-02 DK
+ : return the header - if there is a project specific function, use it
  :)
-declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
-  let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
-  then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
-  else
-    (: no specific function available, so we assume standards :)
-    (
-      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
-      then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
-      else (),
-      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
-      then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
-      else ()
-    )
+declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
+  let $functionAvailable := if (wdb:findProjectFunction($model, 'getHeader', 1))
+  then system:function-available(xs:QName("wdbPF:getHeader"), 1)
+  else false()
   
-  return if ($type = 'css')
-    then $files[self::*:link]
-    else $files[self::*:script]
-};
-(:~ 
- : Look up $function in the given project's project.xqm if it exists
- : This involves registering the module: if the function is available, it can
- : immediately be used by the calling script if this lookup is within the caller's scope
- : The scope is the project as given in $model("pathToEd")
- : 
- : @param $model a map of parameters that conforms to the global structure
- : @param $name the (local) name of the function to be looked for
- : @param $arity the arity (i.e. number of arguments) of said function
- : @return true() if project.xqm exists for the project and contains a function
- : with the given parameters; else() otherwise.
- :)
-declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
-  let $location := wdb:findProjectXQM($model("pathToEd"))
-  
-  return if ($location instance of xs:boolean and $location = false())
-  then false()
-  else
-    let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($location))
-    return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+  return
+    <header>{
+      if ($functionAvailable = true())
+      then util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
+      else
+        <h1>{$model("title")}</h1>
+      }
+      <span class="dispOpts">[<a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a>]</span>
+      <span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a>]</span>
+      <hr/>
+      <nav style="display:none;" />
+    </header>
 };
 
 (:~
- : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
- : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
- :
- : @param $project a string representation of the path to the project
- : @returns the path to a project.xqm if one was found; false() otherwise
+ : return the body
  :)
-declare function wdb:findProjectXQM ($project as xs:string) {
-  if (util:binary-doc-available($project || "/project.xqm"))
-  then $project || "/project.xqm"
-  else if (substring-after($project, $wdb:data) = '')
-  then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0020'), "cannae find project.xqm anywhere")
-  else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+declare function wdb:getContent($node as node(), $model as map(*)) {
+  let $file := $model("fileLoc")
+  let $xslt := $model("xslt")
+  let $params :=
+    <parameters>
+      <param name="server" value="eXist"/>
+      <param name="exist:stop-on-warn" value="no" />
+      <param name="exist:stop-on-error" value="no" />
+      <param name="projectDir" value="{$model('ed')}" />
+      {
+        if ($model("view") != '')
+        then <param name="view" value="{$model("view")}" />
+        else ()
+      }
+    </parameters>
+  (: do not stop transformation on ambiguous rule match and similar warnings :)
+  let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
+  
+  return
+    try {
+      <div id="wdbContent">
+        { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
+        {wdb:getFooter($file, $xslt)}
+      </div>
+    } catch * { (console:log(
+      <report>
+        <file>{$file}</file>
+        <xslt>{$xslt}</xslt>
+        {$params}
+        {$attr}
+        <error>{$err:code || ': ' || $err:description}</error>
+        <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
+        <additional>{$err:additional}</additional>
+      </report>),
+      wdbErr:error(map{"code" := "wdbErr:wdb1001", "model" := $model, "additional" := $params}))
+    }
+};
+
+declare function wdb:getFooter($xm as xs:string, $xs as xs:string) {
+  let $xml := if (starts-with($xm, 'http'))
+  then $xm
+  else wdb:getUrl($xm)
+  
+  let $xsl := if (starts-with($xs, 'http'))
+  then $xs
+  else wdb:getUrl($xs)
+  
+  return
+    <footer>
+      <span>XML: <a href="{$xml}">{$xml}</a></span>
+      <span>XSL: <a href="{$xsl}">{$xsl}</a></span>
+    </footer>
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
@@ -387,7 +406,72 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
     then $path[1]
     else substring-after($path[1], $wdb:edocBaseDB||'/')
 };
+(:~
+ : Try ro load project specific XQuery to import CSS and JS
+ : @created 2018-02-02 DK
+ :)
+declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
+  let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
+  then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+  else
+    (: no specific function available, so we assume standards :)
+    (
+      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
+      then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
+      else (),
+      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
+      then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
+      else ()
+    )
+  
+  return if ($type = 'css')
+    then $files[self::*:link]
+    else $files[self::*:script]
+};
+(:~ 
+ : Look up $function in the given project's project.xqm if it exists
+ : This involves registering the module: if the function is available, it can
+ : immediately be used by the calling script if this lookup is within the caller's scope
+ : The scope is the project as given in $model("pathToEd")
+ : 
+ : @param $model a map of parameters that conforms to the global structure
+ : @param $name the (local) name of the function to be looked for
+ : @param $arity the arity (i.e. number of arguments) of said function
+ : @return true() if project.xqm exists for the project and contains a function
+ : with the given parameters; else() otherwise.
+ :)
+declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
+  let $location := wdb:findProjectXQM($model("pathToEd"))
+  
+  return if ($location instance of xs:boolean and $location = false())
+  then false()
+  else
+    let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
+        xs:anyURI($location))
+    return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+};
+
+(:~
+ : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
+ : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
+ :
+ : @param $project a string representation of the path to the project
+ : @returns the path to a project.xqm if one was found; false() otherwise
+ :)
+declare function wdb:findProjectXQM ($project as xs:string) {
+  if (util:binary-doc-available($project || "/project.xqm"))
+  then $project || "/project.xqm"
+  else if (substring-after($project, $wdb:data) = '')
+  then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0020'), "cannae find project.xqm anywhere")
+  else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+};
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
+
+(: GENERAL HELPER FUNCTIONS :)
+declare function wdb:getUrl ( $path as xs:string ) as xs:string {
+  $wdb:edocBaseURL || substring-after($path, $wdb:edocBaseDB)
+};
+(: END GENERAL HELPER FUNCTIONS :)
 
 (: LOCAL HELPER FUNCTIONS :)
 (:~
@@ -423,7 +507,7 @@ function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $t
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return $sel[1]/text()
 };
-declare %private function local:getXslFromMets ($metsLoc, $id, $ed) {
+declare function local:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
   let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
   
@@ -441,7 +525,7 @@ declare %private function local:getXslFromMets ($metsLoc, $id, $ed) {
  : $seqStruct: sequence of mets:div/@ID (ordered by specificity, ascending)
  : $type: return type
  : returns: a weighted value for the behavior's “rank” :)
-declare %private function local:val($test, $seqStruct, $type) {
+declare function local:val($test, $seqStruct, $type) {
   let $vIDt := for $s at $i in $seqStruct
     return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
       then math:exp10($i)
