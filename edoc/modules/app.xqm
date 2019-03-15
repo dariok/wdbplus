@@ -20,7 +20,10 @@ declare namespace config    = "https://github.com/dariok/wdbplus/config";
 declare namespace main      = "https://github.com/dariok/wdbplus";
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets      = "http://www.loc.gov/METS/";
+declare namespace rest      = "http://exquery.org/ns/restxq";
 declare namespace tei       = "http://www.tei-c.org/ns/1.0";
+declare namespace templates = "http://exist-db.org/xquery/templates";
+declare namespace xlink     = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
@@ -64,7 +67,7 @@ declare variable $wdb:edocBaseURL :=
       then xstring:substring-before($dir, $local) (: there is a local part, e.g. 'admin' :)
       else $dir (: no local part, e.g. for view.html in app root :)
     
-    return wdb:getServerApp() || $path
+    return wdb:getServerApp() || replace($path, '//', '/')
 ;
 
 (: ~
@@ -141,7 +144,7 @@ declare function wdb:getServerApp() as xs:string {
   let $config := 
     let $scheme := substring-before($wdb:configFile//config:server, '//')
     let $server := substring-before(substring-after($wdb:configFile//config:server, '//'), '/')
-    return $scheme || '//' || $server
+    return if ($scheme != "") then $scheme || '//' || $server else ()
   
   let $origin := try { request:get-header("Origin") } catch * { () }
   let $request := try {
@@ -158,7 +161,7 @@ declare function wdb:getServerApp() as xs:string {
   let $server := ($config, $ref, $origin, $request)
   return if (count($server) > 0)
     then $server[1]
-    else wdbErr:error(map {"code" := "wdbErr:wdb0010"})
+    else ""
 };
 (: END FUNCTIONS TO GET SERVER INFO :)
 
