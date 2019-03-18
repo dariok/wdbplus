@@ -14,7 +14,7 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/collection/{$id}")
+    %rest:path("/edoc/search/collection/{$id}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
@@ -40,10 +40,10 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/collection/{$id}")
+    %rest:path("/edoc/search/collection/{$id}.html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-    %rest:produces("text/html")
+    %output:method("html")
 function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
   let $coll := wdb:getProject($id)
@@ -64,7 +64,7 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/file/{$id}")
+    %rest:path("/edoc/search/file/{$id}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
@@ -87,10 +87,10 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/file/{$id}")
+    %rest:path("/edoc/search/file/{$id}.html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-    %rest:produces("text/html")
+    %output:method("html")
 function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
   let $coll := wdb:getEdPath(base-uri($file))

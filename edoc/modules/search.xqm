@@ -19,7 +19,7 @@ declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
     }</h1>
     <h2>Suche</h2>
     <span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a>]</span>
-    <span class="dispOpts">[<a id="searchLink" href="search.html?ed={$model('ed')}">Suche</a>]</span>
+    <span class="dispOpts">[<a id="searchLink" href="search.html?id={$model('id')}">Suche</a>]</span>
     <hr/>
     <nav style="display:none;" />
   </header>
@@ -49,11 +49,10 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
 <main>{
-  let $url := xs:anyURI($wdb:restURL || "/search/collection/" || $model("id") || "?q=" || encode-for-uri($model("q")))
+  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || "html?q=" || encode-for-uri($model("q")))
   
   return try {
     let $request-headers := <headers>
-      <header name="Accept" value="text/html" />
       <header name="cache-control" value="no-cache" />
     </headers>
   
