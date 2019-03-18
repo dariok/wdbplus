@@ -360,7 +360,7 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
     then
       let $p := base-uri($files[1])
       return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no file with given @xml:id and no fallback")
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no single file with given @xml:id and no fallback")
     
   return $pathToFile
 };
