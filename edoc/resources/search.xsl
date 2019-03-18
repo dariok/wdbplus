@@ -25,7 +25,7 @@
 	
 	<xsl:template match="result">
 		<li>
-			<a href="view.html?id={ancestor::result/@id}#{@fragment}">
+			<a href="view.html?id={ancestor::results/@id}#{@fragment}">
 				<xsl:value-of select="@fragment" />
 			</a>
 		</li>
