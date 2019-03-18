@@ -75,7 +75,7 @@ declare variable $wdb:edocBaseURL :=
  :)
 declare variable $wdb:restURL := 
   if ($wdb:configFile//config:rest)
-  then $wdb:configFile//config:rest
+  then normalize-space($wdb:configFile//config:rest)
   else substring-before($wdb:edocBaseURL, substring-after($wdb:edocBaseDB, '/db/')) || "restxq/edoc/";
 
 (:~
