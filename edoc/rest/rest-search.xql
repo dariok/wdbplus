@@ -92,7 +92,7 @@ declare
     %output:method("html")
 function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-  let $coll := wdb:getEdPath($id)
+  let $coll := wdb:getEdPath($id, true())
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
       then wdb:eval("wdbPF:getSearchXSLT()")
