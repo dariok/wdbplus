@@ -345,12 +345,12 @@ declare function wdb:getFooter($xm as xs:string, $xs as xs:string) {
  : @return xs:string the full URI to the file within the database
  :)
 declare function wdb:getFilePath($id as xs:string) as xs:string {
-  let $files := collection($wdb:edocBaseDB)/id($id)
+  let $files := collection($wdb:data)/id($id)
   
   (: do not just return a random URI but add some checks for better error messages:
    : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
   let $pathToFile := if (count($files) = 0)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'))
+    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
     else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
     then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
     else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
@@ -360,7 +360,7 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
     then
       let $p := base-uri($files[1])
       return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no file with given @xml:id (" || $id || ") and no fallback")
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no single file with given @xml:id (" || $id || ") and no fallback")
     
   return $pathToFile
 };
