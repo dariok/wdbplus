@@ -16,7 +16,7 @@ declare
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) {
 try {
   let $pid := if ($id = "")
-    then doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id
+    then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
     else $id
   
   let $map := wdb:populateModel($pid, "", $model)
