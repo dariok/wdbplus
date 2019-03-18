@@ -105,5 +105,12 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
-  return transform:transform(wdbRs:fileText($id, $q, $start), doc($xsl), $params)
+    return (
+    <rest:response>
+      <http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRs:fileText($id, $q, $start), doc($xsl), $params)
+  )
 };
