@@ -49,7 +49,7 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
 <main>{
-  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || "html?q=" || encode-for-uri($model("q")))
+  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q")))
   
   return try {
     let $request-headers := <headers>
