@@ -1,23 +1,38 @@
 <body data-template="templates:surround" data-template-with="templates/function.html" data-template-at="container">
-  <div  style="overflow: auto; max-height: 100%;">
-    <div data-template="wdb:test" />
-    <script>
-      res = $.ajax("/exist/restxq/zz/test",
-      {
-      dataType: "html",
-      success: function (data) {
-      console.log("success");
-      console.log(data);
-      $('#test').html($(data));
-      },
-      error: function (xhr, status, error) {
-      console.log("error");
-      console.log(status);
-      console.log(error);
-      }
-      });
-      console.log(res);
-    </script>
-    <p id="test"/>
-  </div>
+  <header>
+    <h1>Self Test</h1>
+    <h2>fiddle around with CSS</h2>
+    <span class="dispOpts">
+      <a href="start.html?id=data">Start</a>
+    </span>
+    <hr />
+  </header>
+  <aside>
+    <h1>This is the left</h1>
+    <h2>subheading</h2>    
+  </aside>
+  <main>
+    <div style="overflow: auto; max-height: 100%;">
+      <div data-template="wdb:test"/>
+      <script>
+        rest = $("meta[name='rest']").attr("content");
+        res = $.ajax(rest + "test",
+        {
+        dataType: "html",
+        success: function (data) {
+        console.log("success");
+        console.log(data);
+        $('#test').html($(data));
+        },
+        error: function (xhr, status, error) {
+        console.log("error");
+        console.log(status);
+        console.log(error);
+        }
+        });
+        console.log(res);
+      </script>
+      <p id="test"/>
+    </div>
+  </main>
 </body>
