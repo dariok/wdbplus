@@ -2,9 +2,10 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
-import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace console = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace templates = "http://exist-db.org/xquery/templates";
@@ -53,7 +54,7 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
 };
 
 declare function local:get ( $type as xs:string, $edPath as xs:string ) {
-  let $file := substring-after(request:get-url(), $wdb:edocBaseURL || '/')
+  let $file := xstring:substring-after-last(request:get-url(), '/')
   let $name := substring-before($file, '.html')
   let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   return switch($type)
