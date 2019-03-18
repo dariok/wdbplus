@@ -1,0 +1,77 @@
+/* wdbPlus: basic element layout – used by all pages
+ * created: 2019-03-07
+ * creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://github.com/dariok/wdbplus */
+
+@font-face {
+  font-family: 'mufi';
+  src: url('Junicode.woff') format('woff');
+}
+
+a{
+  color: #098AB2;
+  text-decoration: none;
+}
+
+/* Main layout: wide header, rest below, each scrolling on its own */
+html {
+  height: 100%;
+}
+
+body {
+  margin-left: 2.5em;
+  margin-right: 2.5em;
+  margin-top: 0;
+  margin-bottom: 0;
+
+  min-width: 30rem;
+  height: 100%;
+  max-height: 100vh;
+
+  font-family: mufi;
+  font-size: 1rem;
+  line-height: 1.4rem;
+
+  display: flex;
+  flex-direction: row;
+}
+
+/* Content of the header */
+header {
+  flex: 0 0 auto;
+  background-color: white;
+  width: 100%;
+  max-height: 9vh;
+}
+
+header h1 {
+  font-size: 1.1em;
+  text-align: center;
+  letter-spacing: 0.09em;
+  color: #900129;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+/* Titel des Teils (Einleitung, Text, Beilage) */
+header h2 {
+  letter-spacing: 0.3em;
+  font-size: 1em;
+  padding: 0;
+  margin: 0;
+  font-weight: normal;
+  display: inline-block;
+}
+
+/* spans within header */
+span.dispOpts {
+  float: right;
+  font-size: 0.8em;
+  font-family: sans-serif;
+  
+}
+.dispOpts:before {
+  content: ' [';
+}
+.dispOpts:after {
+  content: ']';
+}
