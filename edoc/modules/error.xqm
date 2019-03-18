@@ -15,6 +15,8 @@ declare function wdbErr:error ($data as map (*)) {
 		case "wdb0002" return "No transformation was found to display the file."
 		case "wdbErr:wdb0003"
 		case "wdb0003" return "No metadata file could be found for the project."
+    case "wdbErr:wdb0200"
+    case "wdb0200" return "Project not found."
 		case "wdbErr:wdb1001"
 		case "wdb1001" return "An error occurred while applying the transformation."
 		case "wdbErr:wdb2001" return "Module not found."
