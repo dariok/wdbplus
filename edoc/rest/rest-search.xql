@@ -45,7 +45,7 @@ declare
     %output:method("html")
 function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-  let $coll := wdb:getEdPath($id, true())
+  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
       then wdb:eval("wdbPF:getSearchXSLT()")
