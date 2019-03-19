@@ -79,6 +79,28 @@ function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, 
         </file>
     }</results>
 };
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/collection/{$collection}/{$ref}.html")
+    %rest:query-param("start", "{$start}", 1)
+    %output:method("html")
+function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
+  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
+  let $coll := wdb:getEdPath($collection, true())
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+    then wdb:eval("wdbPF:getEntityXSLT()")
+    else if (doc-available($coll || '/resources/entity.xsl'))
+    then xs:anyURI($coll || '/resources/entity.xsl')
+    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$md//meta:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
+  </parameters>
+  
+  return transform:transform(wdbRe:collectionEntity($collection, $ref, $start), doc($xsl), $params)
+};
 
 declare
     %rest:GET
