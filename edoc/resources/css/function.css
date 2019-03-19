@@ -1,29 +1,30 @@
 /* layout of function pages (e.g. start.html, search.html, query.hmtl */
-
-body {
-    display: flex;
-    flex-wrap: wrap;
-    max-height: 100vh;
-    overflow: hidden;
-}
-
-h1, h2 {
-    width: 100%;
-    text-align: center;
-}
-
-header {
-    width: 100%;
-    max-height: 9vh;
+h1 {
+  width: 100%;
+  text-align: center;
 }
 
 aside {
-    width: calc(20% - 2.5px);
-    padding-right: 5px;
+  width: calc(20% - 2.5px);
+  padding-right: 5px;
+  height: 91vh;
+}
+
+aside h1, aside h2 {
+  font-family: sans-serif;
+}
+aside h1 {
+  font-size: 1.3em;
 }
 
 main {
-    width: calc(80% - 2.5px);
-    max-height: 90vh;
-    overflow-y: auto;
+  width: calc(80% - 2.5px);
+  max-height: 91vh;
+  overflow-y: auto;
+  height: calc(100% - 9vh);
+}
+main h1, main h2 {
+  font-family: sans-serif;
+  width: 100%;
+  text-align: center;
 }
