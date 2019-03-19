@@ -2,170 +2,112 @@
  * created: 2018-02-06
  * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
  * sources: https://www.github.com/dariok/wdbplus */
- 
-@font-face {
-	font-family:'mufi'; 
-	src: url('Junicode.woff') format('woff');
-}
-
-/* Main layout: wide header, rest below, each scrolling on its own */
-html {
-    height: 100%;
-}
-
-body {
-	margin-left: 2.5em;
-	margin-right: 2.5em;
-	margin-top: 0;
-	margin-bottom: 0;
-	
-	min-width: 30rem;
-	height: 100%;
-	max-height: 100vh;
-	
-	font-family: mufi;
-	font-size: 1rem;
-	line-height: 1.4rem;
-	
-	display: flex;
-	flex-direction: column;
-}
-
-header {
-	flex: 0 0 auto;
-	background-color: white;
-}
-
-header h1 {
-	font-size: 1.1em;
-	text-align: center;
-	letter-spacing: 0.09em;
-	color: #900129;
-	margin-bottom: 0.5em;
-	margin-top: 0.5em;
-}
-/* Titel des Teils (Einleitung, Text, Beilage) */
-header h2 {
-	letter-spacing: 0.3em;
-	font-size: 1em;
-	padding: 0;
-	margin: 0;
-	font-weight: normal;
-	display: inline-block;
-}
 
 main {
-	display: flex;
-	flex: 1 1 auto;
-	overflow-y: hidden;
+  display: flex;
+  flex: 1 1 auto;
+  overflow-y: hidden;
 }
 
 /* Navigation */
 nav {
-	background-color: white;
-	border: 0.1px solid;
-	padding: .5em;
-	overflow-y: auto;
+  background-color: white;
+  border: 0.1px solid;
+  padding: .5em;
+  overflow-y: auto;
 }
 header nav {
-	position: fixed;
-	z-index: 99;
-	max-height: 75%;
+  position: fixed;
+  z-index: 99;
+  max-height: 75%;
 }
 div nav {
-	min-width: 30em;
-	max-height: 100%;
+  min-width: 30em;
+  max-height: 100%;
 }
 nav li ul {
-	margin-left: 1.25em;
+  margin-left: 1.25em;
 }
 nav ul {
-	margin: 0;
-	padding-left: 10px;
-	list-style-type: none;
+  margin: 0;
+  padding-left: 10px;
+  list-style-type: none;
 }
 /* Nr., Titel der EE */
 nav h1 {
-	font-size: 1em;
-	text-align: center;
-	letter-spacing: 0.09em;
-	color: #900129;
-	margin-bottom: 0.5em;
-	margin-top: 0;
+  font-size: 1em;
+  text-align: center;
+  letter-spacing: 0.09em;
+  color: #900129;
+  margin-bottom: 0.5em;
+  margin-top: 0;
 }
 /* Titel des Teils (Einleitung, Text, Beilage) */
 header nav h2 {
-	letter-spacing: 0.3em;
-	font-size: 1em;
-	padding: 0;
-	margin: 0;
-	font-weight: normal;
-	text-align: center;
-	width: 100%;
+  letter-spacing: 0.3em;
+  font-size: 1em;
+  padding: 0;
+  margin: 0;
+  font-weight: normal;
+  text-align: center;
+  width: 100%;
 }
 h2 + hr {
-	margin: 0;
-	margin-bottom: 0.5em;
-	padding: 0;
-	height: 1px;
+  margin: 0;
+  margin-bottom: 0.5em;
+  padding: 0;
+  height: 1px;
 }
 
 /* The parts with content */
 /* Right side */
 #wdbRight {
-	background-color: white;
-	overflow-y: auto;
-	overflow: hidden;
-	flex: 1 1 auto;
+  background-color: white;
+  overflow-y: auto;
+  overflow: hidden;
+  flex: 1 1 auto;
 }
 #fac {
-	flex: 1 1 auto;
-	display: flex;
-	flex-direction: column;
-	height: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 #facsimile {
-	flex: 1 1 auto;
-	width: 100%;
+  flex: 1 1 auto;
+  width: 100%;
 }
 
 /* Show/hide bar */
 #wdbShowHide {
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-	margin-top: 0;
-	padding-top: 45vh;
-	width: 0.5em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-top: 0;
+  padding-top: 45vh;
+  width: 0.5em;
 }
 
 /* Content on the left */
 #wdbContent {
-	overflow-y: auto;
-	flex: 0 1 auto;
-	flex-wrap: wrap;
-	flex-direction: row;
-	display: flex;
-	padding-right: .5em;
-	width: 50%;
-	resize: horizontal;
+  overflow-y: auto;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  flex-direction: row;
+  display: flex;
+  padding-right: .5em;
+  width: 50%;
+  resize: horizontal;
 }
 footer {
-	background-color: #EEE;
-	padding: 1em;
-	margin-top: 2.5em;
-	display: block;
-	flex: 1 1 auto;
+  background-color: #EEE;
+  padding: 1em;
+  margin-top: 2.5em;
+  display: block;
+  flex: 1 1 auto;
 }
 footer span {
-	display: block;
+  display: block;
 }
-
-/* spans within header */
-span.dispOpts {
-	float: right;
-	font-size: 0.8em;
-}
-
 
 /* animation during AJAX requests 
  * Taken from @Sampson, https://stackoverflow.com/questions/1964839/how-can-i-create-a-please-wait-loading-animation-using-jquery
@@ -175,34 +117,34 @@ span.dispOpts {
    for themselves. Background we set to 80% white with
    our animation centered, and no-repeating */
 .loadingModal {
-    display:    none;
-    position:   fixed;
-    z-index:    1000;
-    top:        0;
-    left:       0;
-    height:     100%;
-    width:      100%;
-    background: rgba( 255, 255, 255, .8 ) 
-                url('../FhHRx.gif') 
-                50% 50% 
-                no-repeat;
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, .8)
+ url('../FhHRx.gif')
+ 50% 50%
+ no-repeat;
 }
 
 /* When the body has the loading class, we turn
    the scrollbar off with overflow:hidden */
 body.loading .loadingModal {
-    overflow: hidden;   
+  overflow: hidden;
 }
 
 /* Anytime the body has the loading class, our
    modal element will be visible */
 body.loading .loadingModal {
-    display: block;
+  display: block;
 }
 
 /* Annotation dialog */
 #annotationDialog h1 {
-	text-align: center;
-	font-size: 1em;
-	margin-top: 0;
+  text-align: center;
+  font-size: 1em;
+  margin-top: 0;
 }
