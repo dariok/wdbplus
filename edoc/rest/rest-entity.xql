@@ -127,7 +127,7 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
 function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+  let $coll := substring-before(wdb:findProjectXQM(base-uri(collection($wdb:data)/id($id)[self::meta:file])), 'project.xqm')
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
@@ -136,7 +136,6 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
     else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
     
   let $params := <parameters>
-    <param name="title" value="{$md//meta:title[1]}" />
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
