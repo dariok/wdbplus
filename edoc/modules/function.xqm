@@ -21,8 +21,12 @@ try {
     else $id
   
   let $map := wdb:populateModel($pid, "", $model)
-  let $t := console:log($map)
-  let $mmap := map { "title" := (doc($map("infoFileLoc"))//*:title)[1]/text(), "p" := parse-json($p), "q" := $q, "id" := $pid }
+  let $pp := try {
+    parse-json($p)
+  } catch * {
+    normalize-space($p)
+  }
+  let $mmap := map { "title" := (doc($map("infoFileLoc"))//*:title)[1]/text(), "p" := $pp, "q" := $q, "id" := $pid }
   
   return map:merge(($map, $mmap))
 } catch * {
