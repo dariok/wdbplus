@@ -16,12 +16,13 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}/{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
   let $query := xmldb:decode($q)
+  let $coll := wdb:getEdPath($collection, true())
   
   let $res := switch ($type)
-    case "bibl" return collection($wdb:data)//tei:title[matches(., $query)][ancestor::tei:listBibl]
-    case "person" return collection($wdb:data)//tei:persName[matches(., $query)][ancestor::tei:listPerson]
-    case "place" return collection($wdb:data)//tei:placeName[matches(., $query)][ancestor::tei:listPlace]
-    case "org" return collection($wdb:data)//tei:orgName[matches(., $query)][ancestor::tei:listOrg]
+    case "bibl" return collection($coll)//tei:title[matches(., $query)][ancestor::tei:listBibl]
+    case "person" return collection($coll)//tei:persName[matches(., $query)][ancestor::tei:listPerson]
+    case "place" return collection($coll)//tei:placeName[matches(., $query)][ancestor::tei:listPlace]
+    case "org" return collection($coll)//tei:orgName[matches(., $query)][ancestor::tei:listOrg]
     default return ()
     
   return if ($res = ())
@@ -39,7 +40,7 @@ declare
     %rest:path("/edoc/entities/collection/{$collection}/{$ref}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $coll := wdb:getProject($collection)
+  let $coll := wdb:getEdPath($collection, true())
   let $query := xmldb:decode($ref)
   
   let $res := collection($coll)//tei:rs[@ref=$query or @ref='#'||$query]
