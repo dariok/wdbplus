@@ -34,4 +34,12 @@
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
+	
+	<xsl:template match="result[@fragment]">
+		<li>
+			<a href="view.html?id={ancestor::results/@id}#{@fragment}">
+				<xsl:value-of select="normalize-space(@fragment)" />
+			</a>
+		</li>
+	</xsl:template>
 </xsl:stylesheet>
