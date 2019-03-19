@@ -13,7 +13,8 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/scan/{$type}/{$collection}/{$q}")
+    %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
+    %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
   let $query := xmldb:decode($q)
   let $coll := wdb:getEdPath($collection, true())
@@ -33,6 +34,29 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
     return
       <result id="{$id}" />
   }</results>
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/scan/{$type}/{$collection}.html")
+    %rest:query-param("q", "{$q}")
+    %output:method("html")
+function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
+  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
+  let $coll := wdb:getEdPath($collection, true())
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+      then wdb:eval("wdbPF:getEntityXSLT()")
+      else if (doc-available($coll || '/resources/entity.xsl'))
+      then xs:anyURI($coll || '/resources/entity.xsl')
+      else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$md//meta:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
+  </parameters>
+  
+  return transform:transform(wdbRe:scan($collection, $type, $q), doc($xsl), $params)
 };
 
 declare
