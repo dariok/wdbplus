@@ -19,10 +19,10 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
   let $coll := wdb:getEdPath($collection, true())
   
   let $res := switch ($type)
-    case "bibl" return collection($coll)//tei:title[matches(., $query)][ancestor::tei:listBibl]
-    case "person" return collection($coll)//tei:persName[matches(., $query)][ancestor::tei:listPerson]
-    case "place" return collection($coll)//tei:placeName[matches(., $query)][ancestor::tei:listPlace]
-    case "org" return collection($coll)//tei:orgName[matches(., $query)][ancestor::tei:listOrg]
+    case "bibl" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
+    case "person" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
+    case "place" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
+    case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
     default return ()
     
   return if ($res = ())

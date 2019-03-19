@@ -5,10 +5,10 @@
 			<analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
 			<analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
 			<!-- configuration for index files -->
-			<!--            <text qname="tei:persName" analyzer="std" />-->
-			<!--            <text qname="tei:placeName" analyzer="std" />-->
-			<!--            <text qname="tei:orgName" analyzer="std" />-->
-			<!--            <text qname="tei:title" analyzer="std" />-->
+			<text qname="tei:persName" analyzer="std" />
+			<text qname="tei:placeName" analyzer="std" />
+			<text qname="tei:orgName" analyzer="std" />
+			<text qname="tei:title" analyzer="std" />
 			<!-- configuration for text files -->
 			<text qname="tei:text" analyzer="std"/>
 			<text qname="tei:div" analyzer="std"/>
@@ -36,10 +36,6 @@
 			<create qname="@when" type="xs:date"/>
 			<create qname="@notBefore" type="xs:date"/>
 			<create qname="@notAfter" type="xs:date"/>
-			<create qname="tei:persName" type="xs:string" />
-			<create qname="tei:placeName" type="xs:string" />
-			<create qname="tei:orgName" type="xs:string" />
-			<create qname="tei:title" type="xs:string" />
 		</range>
 	</index>
 </collection>
