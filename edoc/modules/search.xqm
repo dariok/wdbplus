@@ -27,23 +27,51 @@ declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
 
 declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 <aside>
-  <h2>Suchparameter</h2>
-  <form action="search.html">
-    <select name="id">{
-      let $md := doc($wdb:data || '/wdbmeta.xml')
-      let $opts := for $file in $md//meta:ptr
-        let $id := $file/@xml:id
-        let $label := $md//meta:struct[@file = $id]/@label
-        return <option value="{$id}">{normalize-space($label)}</option>
-      return (
-        <option value="{$md/meta:projectMD/@xml:id}">global</option>,
-        $opts
-      )
-    }</select>
-    <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
-    <input type="submit" />
-  </form>
-  <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
+  <div>
+    <h1>Volltextsuche</h1>
+    <form action="search.html">
+      <select name="id">{
+        let $md := doc($wdb:data || '/wdbmeta.xml')
+        let $opts := for $file in $md//meta:ptr
+          let $id := $file/@xml:id
+          let $label := $md//meta:struct[@file = $id]/@label
+          return <option value="{$id}">{normalize-space($label)}</option>
+        return (
+          <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+          $opts
+        )
+      }</select><br />
+      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+      <input type="submit" />
+    </form>
+    <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
+  </div>
+  <hr />
+  <div>
+    <h1>Registersuche</h1>
+    <form action="search.html">
+      <select name="id">{
+        let $md := doc($wdb:data || '/wdbmeta.xml')
+        let $opts := for $file in $md//meta:ptr
+          let $id := $file/@xml:id
+          let $label := $md//meta:struct[@file = $id]/@label
+          return <option value="{$id}">{normalize-space($label)}</option>
+        return (
+          <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+          $opts
+        )
+      }</select><br />
+      <select name="p">
+        <option value="person">Personen</option>
+        <option value="place">Orte</option>
+        <option value="bibl">Bücher</option>
+        <option value="org">Körperschaften</option>
+        <option value="event">Ereignisse</option>
+      </select><br />
+      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+      <input type="submit" />
+    </form>
+  </div>
 </aside>
 };
 
