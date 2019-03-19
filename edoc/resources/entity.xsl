@@ -23,4 +23,15 @@
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
+	
+	<xsl:template match="file">
+		<li>
+			<a href="view.html?id={@id}">
+				<xsl:value-of select="normalize-space(*:title[1])" />
+			</a>
+			<xsl:text> </xsl:text>
+			<a href="javascript:void(0);" onclick="load('{$rest}entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
+			<div id="{@id}" class="results" style="display: none;"/>
+		</li>
+	</xsl:template>
 </xsl:stylesheet>
