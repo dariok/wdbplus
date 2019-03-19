@@ -16,8 +16,8 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
-  let $query := xmldb:decode($q)
   let $coll := wdb:getEdPath($collection, true())
+  let $query := xmldb:decode($q)
   
   let $res := switch ($type)
     case "bibl" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
@@ -42,13 +42,13 @@ declare
     %output:method("html")
 function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-  let $coll := wdb:getEdPath($collection, true())
+  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
-      then wdb:eval("wdbPF:getEntityXSLT()")
-      else if (doc-available($coll || '/resources/entity.xsl'))
-      then xs:anyURI($coll || '/resources/entity.xsl')
-      else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    then wdb:eval("wdbPF:getEntityXSLT()")
+    else if (doc-available($coll || '/resources/entity.xsl'))
+    then xs:anyURI($coll || '/resources/entity.xsl')
+    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
@@ -86,7 +86,7 @@ declare
     %output:method("html")
 function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-  let $coll := wdb:getEdPath($collection, true())
+  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
@@ -104,7 +104,7 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:strin
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/file/{$id}/{$ref}")
+    %rest:path("/edoc/entities/file/{$id}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
 function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
@@ -118,10 +118,29 @@ function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:i
       for $h in subsequence($res, $start, 25)
       group by $a := ($h/ancestor-or-self::*[@xml:id])[last()]
       return
-        <result fragment="{$a/@xml:id}">{
-          $h
-        }</result>
+        <result fragment="{$a/@xml:id}"/>
     }</results>
+};
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/file/{$id}/{$ref}.html")
+    %rest:query-param("start", "{$start}", 1)
+    %output:method("html")
+function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
+  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+    then wdb:eval("wdbPF:getEntityXSLT()")
+    else if (doc-available($coll || '/resources/entity.xsl'))
+    then xs:anyURI($coll || '/resources/entity.xsl')
+    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$md//meta:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
+  </parameters>
+  
+  return transform:transform(wdbRe:fileEntity($id, $ref, $start), doc($xsl), $params)
 };
 
 declare
