@@ -300,6 +300,28 @@ function show_annotation (ref, xml, dir) {
         dataType: 'html'
     });
 }
+
+function showAnnotation (url) {
+  var info = $('<div class="info"></div>');
+  var uid = getUniqueId();
+  
+  $.ajax({
+    url: url,
+    method: 'get',
+    success: function (data) {
+      var ins = $('<div/>');
+      var wrap = $('<div/>');
+      wrap.attr('id', uid);
+      var res = $.parseHTML(data);
+      ins.html(data);
+      wrap.append(ins.find('div'));
+      wrap.append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>');
+      wrap.append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
+      $('#ann').append(wrap);
+    },
+    dataType: 'html'
+  });
+}
 /* END hover */
 
 /* close elements */
