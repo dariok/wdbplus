@@ -17,7 +17,7 @@ declare
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
   let $coll := wdb:getEdPath($collection, true())
-  let $query := xmldb:decode($q)
+  let $query := xmldb:decode($q) || '*'
   
   let $res := switch ($type)
     case "bibl" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
