@@ -1,0 +1,78 @@
+/* wdbPlus: CSS for view.html
+ * created: 2019-04-04
+ * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://www.github.com/dariok/wdbplus */
+
+/* Navigation */
+nav {
+  background-color: white;
+  border: 0.1px solid;
+  padding: .5em;
+  overflow-y: auto;
+  position: fixed;
+  z-index: 99;
+  max-height: 75%;
+}
+
+/* Main content below header */
+main {
+  display: flex;
+  flex: 1 1 auto;
+  
+  overflow-y: hidden;
+}
+
+/* Content on the left */
+#wdbContent {
+  width: 50%;
+  resize: horizontal;
+  padding-right: .5em;
+  overflow-y: auto;
+  flex: 0 1 auto;
+  
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+footer {
+  display: block;
+  flex: 1 1 auto;
+  
+  padding: 1em;
+  margin-top: 2.5em;
+  
+  background-color: #EEE;
+}
+footer span {
+  display: block;
+}
+
+/* Show/hide bar */
+/* This one is necessary for at least basic resizing as long as CSS resize property is not supported
+ * by Edge and many versions of gnawed at fruit crap */
+#wdbShowHide {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-top: 0;
+  padding-top: 45vh;
+  width: 0.5em;
+}
+
+/* right side */
+#fac {
+  height: 100%;
+}
+#ann {
+  z-index: 1;
+  position: fixed;
+  background-color: white;
+  padding-right: 2.5em;
+}
+
+/* Annotation dialog */
+#annotationDialog h1 {
+  text-align: center;
+  font-size: 1em;
+  margin-top: 0;
+}
