@@ -3,6 +3,10 @@
  * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
  * sources: https://www.github.com/dariok/wdbplus */
 
+body {
+  flex-direction: column;
+}
+
 /* Navigation */
 nav {
   background-color: white;

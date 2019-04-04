@@ -32,7 +32,6 @@ body {
   line-height: 1.4rem;
 
   display: flex;
-  flex-direction: column;
 }
 
 /* Content of the header */

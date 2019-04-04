@@ -1,4 +1,9 @@
 /* layout of function pages (e.g. start.html, search.html, query.hmtl */
+body {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
 h1 {
   width: 100%;
   text-align: center;
