@@ -242,6 +242,8 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.css" />
     {wdb:getProjectFiles($node, $model, 'css')}
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" />
+    <script src="resources/scripts/legal.js"/>
     <script src="{$wdb:edocBaseURL}/resources/scripts/jquery.min.js" />
     <script src="{$wdb:edocBaseURL}/resources/scripts/jquery-ui/jquery-ui.min.js" />
     <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
