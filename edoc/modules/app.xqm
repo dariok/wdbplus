@@ -271,6 +271,11 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
     </header>
 };
 
+declare function wdb:pageTitle($node as node(), $model as map(*)) {
+	let $ti := $model("title")
+	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
+};
+
 (:~
  : return the body
  :)
