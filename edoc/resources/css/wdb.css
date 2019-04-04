@@ -104,3 +104,20 @@ span.dispOpts {
 body.loading .loadingModal {
   display: block;
 }
+
+/* Display of parts of the navigation (heading, list entries) */
+
+nav h2 {
+  width: 100%;
+  text-align: center;
+  margin: 0;
+}
+nav ul {
+  margin: 0;
+  padding-left: 10px;
+  list-style-type: none;
+}
+
+nav li ul {
+  margin-left: 1.25em;
+}
