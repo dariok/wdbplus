@@ -3,7 +3,6 @@ xquery version "3.0";
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
 
 import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
-import module namespace wdbm = "https://github.com/dariok/wdbplus/nav" at "nav.xqm";
 
 declare namespace output  = "http://www.w3.org/2010/xslt-xquery-serialization";
 
@@ -34,5 +33,5 @@ declare function wdbst:getStart ($node as node(), $model as map(*)) as node()* {
   then doc($model("pathToEd") || '/resources/startRight.html')
   else if (wdb:findProjectFunction($model, 'getStart', 1))
   then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
-  else wdbm:getRight(<void/>, $model)
+  else ()
 };
