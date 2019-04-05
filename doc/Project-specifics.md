@@ -35,9 +35,9 @@ In order to easily use templating with any XQuery within a project, queries can 
 XQuery script MUST be a module in [[namespace `wdbq`|list-of-namespaces]] and implement a function
 `wdbq:query($map as map(*))` and SHOULD implement `wdbq:getTask()`.
 
-!! UPDATE !!
-The URL should look like this: `query.html?ed={$pathToEd}&query={$pathToQueryWithinProject}&q={$firstParameter}&q2={$secondParameter}`.
-Parameters `q` and `q2` can be accessed via `$model` by `wdbq:query($model)`.
+The URL should look like this: `query.html?ed={$pathToEd}&query={$pathToQueryWithinProject}&q={$mainQueryParameter}&p={$additionalParameters}`.
+Parameters `q` and `p` can be accessed via `$model` by `wdbq:query($model)`. Parameter `p` MUST be a JSON object and
+will be parsed into a `map(*)`. 
 
 ---
 
