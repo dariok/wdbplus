@@ -8,8 +8,8 @@ By default, the template loads global CSS files (namely, `wdb.css` and either `v
 These provide the basic layout and functionality of the app. An overview of what is defined globally can be found in [[the list of CSS files and classes|css-files-and-classes]] and [[the list of JS functions|js-functions]]
 
 ## Simple extension: `project.css` and `project.js`
-If your needs for adaptation are not too complex or you have some changes that you need for all files in a project,
-each project (i. e. any collection with an own `project.xqm`) can have customized CSS and JS files. A file called
+If your needs for adaptation are not too complex or you have some changes that you need for all files in a Project, each
+Project (i. e. any collection with an own `project.xqm`) can have customized CSS and JS files. A file called
 `project.css` or `project.js`, respectively, located in `{$project}/resources` will be loaded automatically _after_ the
 global scripts (`wdb.css`, `view.css`/`function.css`, or `function.js`) – this means you can simply override any style
 or function definition given globally. Keep in mind, though, that if you override any of these, especially the
