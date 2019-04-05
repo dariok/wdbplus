@@ -39,6 +39,8 @@ function wdbRf:getResource ($id as xs:string) {
       <http:response status="{$respCode}">{
         if (string-length($type) = 0) then () else
         <http:header name="Content-Type" value="{$type}" />
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
       }</http:response>
     </rest:response>,
     if ($type = "application/xml")
@@ -86,7 +88,8 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     <rest:response>
       <http:response status="{$respCode}">{
         if (string-length($mt) = 0) then () else <http:header name="Content-Type" value="{$mt}" />
-      }
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
   if ($respCode != 200) then () else
@@ -119,7 +122,9 @@ function wdbRf:getResourceFragment ($id as xs:string, $fragment as xs:string) {
       <http:response status="{$respCode}">{
         if (string-length($type) = 0) then () else
         <http:header name="Content-Type" value="{$type}" />
-      }</http:response>
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
     </rest:response>,
     $frag
   )
