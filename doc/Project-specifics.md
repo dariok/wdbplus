@@ -1,5 +1,4 @@
 # Project specifics
-
 While this app aims at making available many default scripts so that any project can start by just uploading XML files, most projects will want to add some specific scripts or change the layout.
 In order to achieve this without affecting other projects, this app provides several levels of customization.
 Global scripts should remain unchanged.<sup id="a1">[1](#f1)</sup>
@@ -10,7 +9,8 @@ These provide the basic layout and functionality of the app. An overview of what
 ## Simple extension: `project.css` and `project.js`
 If your needs for adaptation are not too complex or you have some changes that you need for all files in a Project, each
 Project (i. e. any collection with an own `project.xqm`) can have customized CSS and JS files. A file called
-`project.css` or `project.js`, respectively, located in `{$project}/resources` will be loaded automatically _after_ the
+`project.css` or `project.js`, respectively, located in `{$project}/resources` (that is, as collection called
+`resources` that is located “next to” `project.xqm`) will be automatically imported _after_ loading the
 global scripts (`wdb.css`, `view.css`/`function.css`, or `function.js`) – this means you can simply override any style
 or function definition given globally. Keep in mind, though, that if you override any of these, especially the
 JavaScript functions, you are responsible to implement their functionality yourself should you want to keep
@@ -21,6 +21,11 @@ If the selection of a CSS or JS is more complex than the method above, for examp
 introductions and transcriptions, you can select these by means of an XQuery function in [[project.xqm]]. The files
 loaded by this method will be loaded last, meaning you can override any definition you made in `project.css` or
 `project.js`.
+
+## Adapting function pages
+Some special function pages, such as [[start.html]] or `search.html` can be adapted to your needs. For `start.html`,
+this projess is documented separately. For `search.html`, you can provide two files: `projectSearch.css` and
+`search.xml` within `{$project}/resources` to create and style the HTML view.
 
 This mechanism should give you sufficient freedom to adapt the layout of any project to the specific needs.
 
