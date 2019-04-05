@@ -16,16 +16,17 @@ or function definition given globally. Keep in mind, though, that if you overrid
 JavaScript functions, you are responsible to implement their functionality yourself should you want to keep
 it.<sup id="a2">[2](#f2)</sup>
 
-## Complex extensions
-If the selection of a CSS or JS is more complex than the method above, for example if you need different stylesheets for
-introductions and transcriptions, you can select these by means of an XQuery function in [[project.xqm]]. The files
-loaded by this method will be loaded last, meaning you can override any definition you made in `project.css` or
-`project.js`.
-
 ## Adapting function pages
 Some special function pages, such as [[start.html]] or `search.html` can be adapted to your needs. For `start.html`,
 this projess is documented separately. For `search.html`, you can provide two files: `projectSearch.css` and
 `search.xml` within `{$project}/resources` to create and style the HTML view.
+
+## Complex extensions
+If the selection of a CSS or JS is more complex than allowed for by the methods above, for example if you need different
+CSS files for introductions and transcriptions, you can select these by means of an XQuery function in [[project.xqm]].
+The files loaded by this method will be loaded last, meaning you can override any definition you made in `project.css`
+or `project.js`. Additionally, these can point anywhere while the “generic specifics” need to reside in
+`{$project}/resources`.
 
 This mechanism should give you sufficient freedom to adapt the layout of any project to the specific needs.
 
