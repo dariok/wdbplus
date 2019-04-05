@@ -1,9 +1,0 @@
-/* global CSS for index- and other wide pages */
-/* !! DO NOT EDIT THIS PAGE !! It may be overwritten by update mechanisms */
-
-@import "common.css";
-
-main {
-	width: 70%;
-	padding-left: 15%;
-}

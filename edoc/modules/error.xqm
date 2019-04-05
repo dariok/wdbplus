@@ -46,7 +46,8 @@ declare function wdbErr:error ($data as map (*)) {
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="wdb-template" content="(error page)" />
 		<title>ERROR</title>
-		<link rel="stylesheet" type="text/css" href="resources/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="resources/css/wdb.css" />
+		<link rel="stylesheet" type="text/css" href="resources/css/function.css" />
 		<!-- this one is being called from app root, so no ..! -->
 		<script src="resources/scripts/jquery.min.js"/>
 		<script src="resources/scripts/function.js"/>
