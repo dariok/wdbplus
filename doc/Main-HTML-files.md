@@ -24,11 +24,14 @@ Does roughly the same as query.html but is made especially for search pages. It 
 
 _Template:_ `function.html`
 
+### start.html
+This file is to be called with an ID parameter pointing to the project: `{$edocBaseURL}/start.html?id=projectID`. It will display a start page for that project. By default, this will be the navigation as defined by `wdbmeta.xml` or `mets.xml` and optionally additional content created by `start.xml`, possibly a local `start.xsl` (if none exists, a global stylesheet will be used) and a local `start.css` (a global CSS will be loaded first).
+
+To customize it, you can either create HTML fragments called `startHeader.html`, `startLeft.html`,  or `startRight.html` or implement functions in `project.xqm` (`wdbPF:getStartHeader`, `wdbPF:getStartLeft`, `wdb:getStart`). HTML files will take precedence over functions which will take precedence over the generic function.
+
+_Template:_ `function.html`
+
 ### view.html
 The main entry point to display an HTML representation of an XML file in any project.
 
 _Template:_ `layout.html`
-
-## “virtual files“
-### start.html
-This file can be called from a project directory or (preferrably) globally via `{$approot}/start.html?ed=data/myProject` to display a start page for that project. By default, this will be the navigation as defined by `wdbmeta.xml` or `mets.xml` and optinally additional content created by `start.xml`, possibly a local `start.xsl` (if none exists, a global stylesheet will be used) and a local `start.css` (a global CSS will be loaded first).

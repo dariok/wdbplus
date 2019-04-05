@@ -1,7 +1,7 @@
 # Global variables
 ## $model
 
-In several instances, most prominently in `app.xql`, a parameter called `$model` is passed to functions.
+In several instances, most prominently in `app.xqm`, a parameter called `$model` is passed to functions.
 This is part of eXist's templating system and has been used in several locations to allow for uniform distribution of common parameters.
 
 `$model` always is a `map(*)`. The most important parameters MUST be the same in all instances. This means:
@@ -10,10 +10,13 @@ This is part of eXist's templating system and has been used in several locations
 |--|--|
 | `id` | a file's ID (e.g. file to be displayed) |
 | `title` | the title of the file or project |
-| `ed` | the document within the local structure, i.e. relative to `$wdb:data`|
-| `pathToEd` | the full DB-Path to the project's collection|
-| `fileLoc` | full path to the current file|
-| `infoFileLoc` | full path to `wdbmeta.xml` or `mets.xml`|
+| `ed` | the ID of the project (= `@xml:id` of `meta:projectMD` or `mets:mets`) |
+| `pathToEd` | the full DB-Path to the project |
+| `fileLoc` | full path to the current file |
+| `infoFileLoc` | full path to `wdbmeta.xml` or `mets.xml` |
+| `xslt` (app.xqm only) | full path to the XSLT to be used for transformation |
+| `view` (app.xqm only) | the `view` query parameter as pass in the call to `view.html` |
+| `p` (function.xml only) | all values from `p` query parameter parsed into a `map(*)` |
 
 ## parameters in `wdb` namespace
 The [[wdb namespace|list-of-namespaces]] contains several global parameters that can be accessed from every script that imports `app.xql`:
