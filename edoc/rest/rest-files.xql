@@ -112,9 +112,15 @@ function wdbRf:getResourceFragment ($id as xs:string, $fragment as xs:string) {
   let $files := (collection($wdb:data)//id($id)[self::meta:file])
   let $f := $files[1]
   let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
-  let $type := xmldb:get-mime-type($path)
   
-  let $frag := doc($path)/id($fragment)
+  let $doc := doc($path)
+  
+  let $mtype := xmldb:get-mime-type($path)
+  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
+    then "application/tei+xml"
+    else $mtype
+  
+  let $frag := $doc/id($fragment)
   
   let $respCode := if (count($files) = 0 or count($frag) = 0)
   then "404"
