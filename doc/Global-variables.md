@@ -8,15 +8,18 @@ This is part of eXist's templating system and has been used in several locations
 
 | parameter | contents |
 |--|--|
+| `ed` | the ID of the Collection (= `@xml:id` of `meta:projectMD` or `mets:mets`) |
+| `fileLoc` | full path to the current Resource |
 | `id` | a file's ID (e.g. file to be displayed) |
-| `title` | the title of the file or project |
-| `ed` | the ID of the project (= `@xml:id` of `meta:projectMD` or `mets:mets`) |
-| `pathToEd` | the full DB-Path to the project |
-| `fileLoc` | full path to the current file |
 | `infoFileLoc` | full path to `wdbmeta.xml` or `mets.xml` |
-| `xslt` (app.xqm only) | full path to the XSLT to be used for transformation |
+| `pathToEd` | the full DB-Path to the Collection (= `substring-before($infoFileLoc, '/wdbmeta.xml')`) |
+| `projectFile` | path to Project’s `project.xqm`|
+| `projectResources` | path to Project’s resource folder (= `substring-before($projectFile, 'project.xqm') || 'resources'`)|
+| `title` | the title of the file or project |
 | `view` (app.xqm only) | the `view` query parameter as pass in the call to `view.html` |
+| `xslt` (app.xqm only) | full path to the XSLT to be used for transformation |
 | `p` (function.xml only) | all values from `p` query parameter parsed into a `map(*)` |
+
 
 ## parameters in `wdb` namespace
 The [[wdb namespace|list-of-namespaces]] contains several global parameters that can be accessed from every script that imports `app.xql`:

@@ -214,9 +214,17 @@ try {
   let $resource := substring-before($proFile, "project.xqm") || "resources/"
   
   (: TODO read global parameters from config.xml and store as a map :)
-  let $map := map { "fileLoc" := $pathToFile, "xslt" := $xslt, "ed" := normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
-      "infoFileLoc" := $infoFileLoc, "title" := $title, "id" := $id, "view" := $view, "pathToEd" := $pathToEd,
-      "proFile" := $proFile, "resource" := $resource }
+  let $map := map {
+    "ed" := normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
+    "fileLoc" := $pathToFile,
+    "id" := $id,
+    "infoFileLoc" := $infoFileLoc,
+    "pathToEd" := $pathToEd,
+    "projectFile" := $proFile,
+    "projectResources" := $resource,
+    "title" := $title,
+    "view" := $view,
+    "xslt" := $xslt}
   
   (: let $t := console:log($map) :)
   

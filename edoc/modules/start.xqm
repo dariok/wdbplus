@@ -10,8 +10,8 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 declare function wdbst:getStartHeader($node as node(), $model as map(*)) as node()* {
-  if (doc-available($model("pathToEd") || '/resources/startHeader.html'))
-  then doc($model("pathToEd") || '/resources/startHeader.html')
+  if (doc-available($model("projectResources") || '/startHeader.html'))
+  then doc($model("projectResources") || '/startHeader.html')
   else if (wdb:findProjectFunction($model, 'getStartHeader', 1))
   then wdb:eval('wdbPF:getStartHeader($model)', false(), (xs:QName('model'), $model))
   else (
@@ -21,16 +21,16 @@ declare function wdbst:getStartHeader($node as node(), $model as map(*)) as node
 };
 
 declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()* {
-  if (doc-available($model("pathToEd") || '/resources/startLeft.html'))
-  then doc($model("pathToEd") || '/resources/startLeft.html')
+  if ($model("projectResources") || '/startLeft.html'))
+  then doc($model("projectResources") || '/startLeft.html')
   else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
   then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
   else (<h1>Inhalt</h1>,())
 };
 
 declare function wdbst:getStart ($node as node(), $model as map(*)) as node()* {
-  if (doc-available($model("pathToEd") || '/resources/startRight.html'))
-  then doc($model("pathToEd") || '/resources/startRight.html')
+  if (doc-available($model("projectResources") || '/startRight.html'))
+  then doc($model("projectResources") || '/startRight.html')
   else if (wdb:findProjectFunction($model, 'getStart', 1))
   then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
   else ()

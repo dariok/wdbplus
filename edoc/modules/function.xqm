@@ -69,7 +69,7 @@ declare function local:get ( $type as xs:string, $edPath as xs:string ) {
         then <link rel="stylesheet" type="text/css" href="resources/css/{$name}.css" />
         else()
       let $pro := if (util:binary-doc-available($edPath || '/resources/' || $unam || '.css'))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}{substring-after($edPath, $wdb:edocBaseDB)}/resources/{$unam}.css" />
+        then <link rel="stylesheet" type="text/css" href="{$model("projectResources")}/{$unam}.css" />
         else()
       return ($gen, $pro)
     case "js" return
@@ -77,7 +77,7 @@ declare function local:get ( $type as xs:string, $edPath as xs:string ) {
         then <script src="resources/scripts/{$name}.js" />
         else()
       let $pro := if (util:binary-doc-available($edPath || '/resouces/' || $unam || '.js'))
-        then <script src="{$wdb:edocBaseURL}{substring-after($edPath, $wdb:edocBaseDB)}/resources/{$unam}.js" />
+        then <script src="{$model("projectResources")}/{$unam}.js" />
         else()
       return ($gen, $pro)
     default return <meta name="specFile" value="{$name}" />
