@@ -1,53 +1,21 @@
 ## global CSS files
 
-All these files define global CSS rules. While it is possible to change them directly, the preferred way to go is via [[project specific files|project-specifics]] as these global files may be replaced during an update or upgrade.
+All these files define global CSS rules. While it is possible to change them
+directly, the preferred way to go is via
+[[project specific files|project-specifics]] as these global files may be
+replaced during an update or upgrade.
 
 |file|rules|
 |--|--|
-|[[resources/css/common.css\|css-files-and-classes#commoncss]]| basic layout of any main page|
+|resources/css/wdb.css|basic layout of any main page (includes general header layout)|
+|resources/css/function.css| basic layout for function pages (small aside left, wide main right)|
+|[[resources/css/view.css\|css-files-and-classes#viewcss]]| main layout file for _header_, _nav_, _main_ and _aside_ in of view.html|
+|resources/css/search.css|additional layout for search page and results|
+|[[resources/css/start.css\|css-files-and-classes#startcss]]| additional layout for `start.html`|
 |[[resources/css/footnotes.css\|css-files-and-classes#footnotescss]]| additional layout for footnotes|
-|resources/css/function.css| additional layout for function pages (e.g. search)|
-|resources/css/index.css| additional layout for `index.html` and other wide pages – includes `common.css`|
-|[[resources/css/main.css\|css-files-and-classes#maincss]]| main layout file for _header_, _nav_, _main_ and _aside_ in an HTML page|
-|[[resources/css/start.css\|css-files-and-classes#startcss]]| additional layout for `start.html` – includes `common.css`|
 
 ## overview of classes
-### common.css
-|class / rule / id|intended for|
-|--|--|
-|a.upRef|link back to top|
-|:target|target of a link|
-|[lang=grc], [lang=he], [lang=he]|text in foreign language|
-|p.editors|editors etc. of a text|
-|.info|iformation displayed in aside or hovering|
-|#wip|“work in progress” information|
-|.footer|footer in an HTML generated from XML|
-|table.noborder|table without visible border|
-|span.infoContainer|container for .info|
-|div.ccsec|license information|
-|img.ccimg|image for .ccsec|
-|.subscript|subscript|
-|.superscript|superscript (size adjusted)|
-|.blockquote|long citations|
-|p.content|main text content|
-|span.orig|original text (e.g. for critical footnotes)|
-|span.nameSC|name in small caps|
-|#rDis|central div with » or «|
-|#auth|login containter|
-|#ann|annotation display within/on top of _aside_|
-|.start|container on the right hand side of a `start.html`|
-
-### footnotes.css
-|class / rule / id|intended for|
-|--|--|
-|div.footnotes|container for all footnotes|
-|#kritApp, #FußnotenApparat, #critApp, #apparatus|one group of notes|
-|hr.fnRule|footnote rule (above)|
-|a.fn_number|footnotes's identifier in the main text| 
-|.fn_number_app|footnotes's identifier within the footnote|
-|span.footnoteText|footnote's text (usually after the identifier)|
-
-### main.css
+### view.css
 |class / rule / id|intended for|
 |--|--|
 |header|the horizontal header at the top|
@@ -61,6 +29,17 @@ All these files define global CSS rules. While it is possible to change them dir
 |footer|the footer below a text (container)|
 |span.dispOpts|options in the header (usually to the right)|
 |#marginalia_container|container for marginalia|
+
+### footnotes.css
+|class / rule / id|intended for|
+|--|--|
+|div.footnotes|container for all footnotes|
+|#kritApp, #FußnotenApparat, #critApp, #apparatus|one group of notes|
+|hr.fnRule|footnote rule (above)|
+|a.fn_number|footnotes's identifier in the main text| 
+|.fn_number_app|footnotes's identifier within the footnote|
+|span.footnoteText|footnote's text (usually after the identifier)|
+
 
 ### start.css
 |class / rule / id|intended for|
