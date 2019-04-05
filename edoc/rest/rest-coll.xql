@@ -31,6 +31,8 @@ function wdbRc:getCollections ($mt as xs:string*) {
     <rest:response>
       <http:response status="200" message="OK">
         <http:header name="Content-Type" value="application/json; charset=UTF-8" />
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
     json:xml-to-json(local:getCollections())
@@ -65,7 +67,7 @@ function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
   then
     <rest:response>
       <http:response status="500">
-        <http:header name="REST-Status" value="404 – ID not found" />
+        <http:header name="REST-Status" value="REST:404 – ID not found" />
       </http:response>
     </rest:response>
   else
@@ -76,6 +78,8 @@ function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
       (<rest:response>
         <http:response status="200" message="OK">
           <http:header name="Content-Type" value="application/json; charset=UTF-8" />
+          <http:header name="REST-Status" value="REST:SUCCESS" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
       </rest:response>,
       json:xml-to-json($content))
@@ -142,6 +146,8 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
     <rest:response>
       <http:response status="200">
         <http:header name="Access-Control-Allow-Origin" value="*" />
+        <http:header name="Content-Type" value="text/html" />
+        <http:header name="REST-Status" value="REST:SUCCESS" />
       </http:response>
     </rest:response>,
     transform:transform($struct, doc($xsl), ())
