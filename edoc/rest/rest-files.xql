@@ -57,19 +57,19 @@ function wdbRf:getResource ($id as xs:string) {
 (: list all views available for this resource :)
 declare
     %rest:GET
-    %rest:path("/edoc/resource/{$id}/views.xml")
+    %rest:path("/edoc/resource/views/{$id}.xml")
 function wdbRf:getResourceViewsXML ($id) {
   wdbRf:getResourceViews($id, "application/xml")
 };
 declare
     %rest:GET
-    %rest:path("/edoc/resource/{$id}/views.json")
+    %rest:path("/edoc/resource/views/{$id}.json")
 function wdbRf:getResourceViewsJSON ($id) {
   wdbRf:getResourceViews($id,"application/json")
 };
 declare
     %rest:GET
-    %rest:path("/edoc/resource/{$id}/views")
+    %rest:path("/edoc/resource/views/{$id}")
     %rest:header-param("Accept", "{$mt}")
 function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
