@@ -119,3 +119,8 @@ nav ul {
 nav li ul {
   margin-left: 1.25em;
 }
+
+/* login form */
+#auth form {
+	display: inline-block;
+}
