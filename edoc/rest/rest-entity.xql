@@ -26,14 +26,29 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
     case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
     default return ()
     
-  return if ($res = ())
-  then "Error: no or wrong type"
-  else <results q="{$query}" type="{$type}" collection="{$collection}">{
+  return (
+  if ($res = ())
+  then (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:ERR" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    "Error: no or wrong type")
+  else (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    <results q="{$query}" type="{$type}" collection="{$collection}">{
     for $r in $res
     group by $id := $r/ancestor::*[@xml:id][1]/@xml:id
     return
       <result id="{$id}" />
-  }</results>
+    }</results>)
 };
 declare
     %rest:GET
@@ -55,7 +70,15 @@ function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
-  return transform:transform(wdbRe:scan($collection, $type, $q), doc($xsl), $params)
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRe:scan($collection, $type, $q), doc($xsl), $params)
+  )
 };
 
 declare
@@ -69,7 +92,13 @@ function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, 
   let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query or @ref='#'||$query]]
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$collection}" ref="{$ref}">{
       for $f in subsequence($res, $start, 25)
       group by $file := $f/@xml:id
@@ -78,6 +107,7 @@ function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, 
           {$f//tei:title[parent::tei:titleStmt]}
         </file>
     }</results>
+  )
 };
 declare
     %rest:GET
@@ -99,7 +129,15 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:strin
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
-  return transform:transform(wdbRe:collectionEntity($collection, $ref, $start), doc($xsl), $params)
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRe:collectionEntity($collection, $ref, $start), doc($xsl), $params)
+  )
 };
 
 declare
@@ -113,13 +151,20 @@ function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:i
   let $res := $file//tei:rs[@ref=$query or @ref = '#'||$query]
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" ref="{$ref}">{
       for $h in subsequence($res, $start, 25)
       group by $a := ($h/ancestor-or-self::*[@xml:id])[last()]
       return
         <result fragment="{$a/@xml:id}"/>
     }</results>
+  )
 };
 declare
     %rest:GET
@@ -139,7 +184,15 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
-  return transform:transform(wdbRe:fileEntity($id, $ref, $start), doc($xsl), $params)
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRe:fileEntity($id, $ref, $start), doc($xsl), $params)
+  )
 };
 
 declare
@@ -168,11 +221,18 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
       </result>
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" p="{$p}">{
       for $f in subsequence($res, $start, 25)
       return $f
     }</results>
+  )
 };
 
 declare
@@ -200,11 +260,18 @@ function wdbRe:listFileEntities ($id as xs:string*, $q as xs:string*, $start as 
       </result>
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
       for $h in subsequence($res, $start, 25) return
         <result ref="{$h/@ref}" count="{count($h/*)}">
           {$h/*}
         </result>
     }</results>
+  )
 };
