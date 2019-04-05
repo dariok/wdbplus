@@ -29,12 +29,19 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
   let $res := collection($coll)//tei:text[ft:query(., $query)]
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
       for $f in subsequence($res, $start, 25)
       return
         <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt//tei:title}</file>
     }</results>
+  )
 };
 
 declare
@@ -58,7 +65,15 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
     <param name="rest" value="{$wdb:restURL}" />
   </parameters>
   
-  return transform:transform(wdbRs:collectionText($id, $q, $start), doc($xsl), $params)
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRs:collectionText($id, $q, $start), doc($xsl), $params)
+  )
 };
 
 declare
@@ -75,13 +90,20 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
         | $file//tei:item[ft:query(., $query)]
   let $max := count($res)
   
-  return
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
       for $h in subsequence($res, $start, 25) return
         <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
           kwic:summarize($h, <config width="80"/>)
         }</result>
     }</results>
+  )
 };
 
 declare
@@ -107,7 +129,7 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
   
     return (
     <rest:response>
-      <http:response>
+      <http:response status="200">
           <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
