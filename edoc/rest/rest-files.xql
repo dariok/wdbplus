@@ -14,8 +14,6 @@ declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 
-declare variable $wdbRf:server := $wdb:server;
-
 (: get a resource by its ID – whatever type it might be :)
 declare
     %rest:GET
@@ -26,7 +24,13 @@ function wdbRf:getResource ($id as xs:string) {
   let $files := (collection($wdb:data)//id($id)[self::meta:file])
   let $f := $files[1]
   let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
-  let $type := xmldb:get-mime-type($path)
+  
+  let $doc := doc($path)
+  
+  let $mtype := xmldb:get-mime-type($path)
+  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
+    then "application/tei+xml"
+    else $mtype
   
   let $respCode := if (count($files) = 0)
   then "404"
@@ -38,13 +42,14 @@ function wdbRf:getResource ($id as xs:string) {
     <rest:response>
       <http:response status="{$respCode}">{
         if (string-length($type) = 0) then () else
-        <http:header name="Content-Type" value="{$type}" />
+          <http:header name="Content-Type" value="{$type}" />
+        }
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
-      }</http:response>
+      </http:response>
     </rest:response>,
-    if ($type = "application/xml")
-    then doc($path)
+    if ($mtype = "application/xml")
+    then $doc
     else util:binary-to-string(util:binary-doc($path))
   )
 };
@@ -143,11 +148,11 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
     let $projectFileAvailable := wdb:findProjectFunction($map, "getImages", 2)
     let $resource := if ($projectFileAvailable)
       then wdb:eval("wdbPF:getImages($fileID, $page)", false(), (xs:QName("fileID"), $fileID, xs:QName("page"), $page))
-      else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
+      else $wdb:restURL || "file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
     
     let $sid := if ($projectFileAvailable = true())
       then substring-before($resource, '/full')
-      else $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/images/" || $page
+      else $wdb:restURL || "file/iiif/" || $fileID || "/images/" || $page
     
     let $tiles := map {
           "scaleFactors": [1, 2, 4, 8, 16],
@@ -169,13 +174,13 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
       }
       
       (:map {
-        "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page,
+        "@id": $wdb:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page,
         "@type": "sc:Canvas",
         "label": "S. " || $page,
         "height": xs:int($fa/@lry),
         "width": xs:int($fa/@lrx),
         "images": [map{
-            "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
+            "@id": $wdb:restURL || "file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
             "@type": "oa:Annotation",
             "motivation": "sc:painting",
             "resource": map {
@@ -187,22 +192,22 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
                      "profile" : "http://iiif.io/api/image/2/level2.json"
                 }
             },
-            "on": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page
+            "on": $wdb:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
         }],
         "otherContent": [
             map {
-                "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/list/" || $page,
+                "@id": $wdb:restURL || "file/iiif/" || $fileID || "/list/" || $page,
                 "@type": "sc:AnnotationList",
                 "resources": [
                     map {
                         "@type": "oa:Annotation",
                         "motivation": "sc:painting",
                         "resource": map {
-                            "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
+                            "@id": $wdb:restURL || "file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
                             "@type": "dctypes:text",
                             "format": "application/xml"
                         },
-                        "on": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $fileID || "/canvas/p" || $page
+                        "on": $wdb:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
                     }
                 ]
             }
@@ -295,7 +300,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
       if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
         map {
             "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
-            "value": "<a href='" || $wdbRf:server || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
+            "value": "<a href='" || $wdb:restURL || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
         } else (),
       if ($meta//meta:language) then 
         map {
@@ -320,7 +325,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
   then $errors
   else map {
     "@context": "http://iiif.io/api/presentation/2/context.json",
-    "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $id || "/manifest",
+    "@id": $wdb:restURL || "file/iiif/" || $id || "/manifest",
     "@type": "sc:Manifest",
     "label": $title,
     "description": [map{
@@ -337,9 +342,9 @@ function wdbRf:getFileManifest ($id as xs:string) {
     "metadata": $md,
     "sequences": [
       map {
-        "@id": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $id || "/sequence/normal",
+        "@id": $wdb:restURL || "file/iiif/" || $id || "/sequence/normal",
         "@type": "sc:Sequence",
-        "startCanvas": $wdbRf:server || "/exist/restxq/edoc/file/iiif/" || $id || "/canvas/p1",
+        "startCanvas": $wdb:restURL || "file/iiif/" || $id || "/canvas/p1",
         "canvases": $canv
       }
     ]
