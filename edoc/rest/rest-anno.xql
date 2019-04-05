@@ -35,13 +35,19 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
 	let $public := wdbanno:getAnnoFile($fileURI, "")
 	let $private := wdbanno:getAnnoFile($fileURI, $username)
 	
-	return
-		<anno:anno>
-			<anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
-			{for $entry in ($public//anno:entry, $private//anno:entry)
-			    return $entry
-			}
-		</anno:anno>
+	return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    <anno:anno>
+      <anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
+      {for $entry in ($public//anno:entry, $private//anno:entry)
+        return $entry
+      }
+    </anno:anno>
 };
 
 (:~
@@ -98,11 +104,12 @@ return if (not($data('from') or $data('text')))
         else 
         	let $annoFile := wdbanno:getAnnoFile(base-uri($file), $username)
         	return (
-        		<rest:response>
-        			<http:response status="200">
-        				<http:header name="rest-status" value="REST:SUCCESS" />
-        			</http:response>
-        		</rest:response>,
+            <rest:response>
+              <http:response status="200">
+                <http:header name="rest-status" value="REST:SUCCESS" />
+                <http:header name="Access-Control-Allow-Origin" value="*"/>
+              </http:response>
+            </rest:response>,
     				update insert $ann into $annoFile/anno:anno
     			)
 };
@@ -162,11 +169,12 @@ return if (not($data('from') or $data('text')))
         	attribute ref { 'per:' || translate($data("identity"), ' ,', '_') },
         	$content }
         	return (
-        		<rest:response>
-        			<http:response status="200">
-        				<http:header name="rest-status" value="REST:SUCCESS" />
-        			</http:response>
-        		</rest:response>,
+            <rest:response>
+              <http:response status="200">
+                <http:header name="rest-status" value="REST:SUCCESS" />
+                <http:header name="Access-Control-Allow-Origin" value="*"/>
+              </http:response>
+            </rest:response>,
     				update replace $content[1] with $ins,
     				update delete $content[position() > 1]
     			)
@@ -218,11 +226,12 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 			string-join(($checkData, $checkWrite, $checkID, $checkJob), ' – ')
 		)
 		else (
-			<rest:response>
-				<http:response status="200">
-					<http:header name="rest-status" value="REST:SUCCESS" />
-				</http:response>
-			</rest:response>,
+      <rest:response>
+        <http:response status="200">
+          <http:header name="rest-status" value="REST:SUCCESS" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
 			switch ($data("job"))
 			case "edit" return
 				let $d := console:log($token)
