@@ -5,6 +5,7 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
+import module namespace console="http://exist-db.org/xquery/console";
 import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
 (:~
@@ -77,7 +78,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
 <main>{
-  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q")))
+  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q"))
+    || (if ($model("p")("start") > 0) then '&amp;start=' || $model("p")("start") else ''))
   
   return try {
     let $request-headers := <headers>
