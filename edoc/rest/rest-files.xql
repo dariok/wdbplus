@@ -141,6 +141,15 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
   )
 };
 
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/view/{$id}.{$type}")
+    %rest:query-param("view", "{$view}", "")
+function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*) as node() {
+  let $model := wdb:populateModel($id, $view, map {})
+  return wdb:getContent(<void />, $model)
+};
+
 declare function local:image ($fileID as xs:string, $image as xs:string, $map as map(*)) {
   let $retrFile := wdbRf:getResource($fileID)
   let $errorFile := if ($retrFile//http:response/@status != 200)
