@@ -78,9 +78,9 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
 <main>{
-  if ($model("q") != "") then
+  if (map:contains($model, "q")) then
       let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q"))
-        || (if ($model("p") and $model("p")("start") > 0) then '&amp;start=' || $model("p")("start") else ''))
+        || (if (map:contains($model, "p")  and map:contains($model("p"), "start")) then '&amp;start=' || $model("p")("start") else ''))
       
       return try {
         let $request-headers := <headers>
