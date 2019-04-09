@@ -78,25 +78,27 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
 <main>{
-  let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q"))
-    || (if ($model("p")("start") > 0) then '&amp;start=' || $model("p")("start") else ''))
-  
-  return try {
-    let $request-headers := <headers>
-      <header name="cache-control" value="no-cache" />
-    </headers>
-  
-    return httpclient:get($url, false(), $request-headers)//httpclient:body/*
-  } catch * {
-    <div>
-      <a href="{$url}">klick</a>
-      <ul>
-        <li>{$err:code}</li>
-        <li>{$err:description}</li>
-        <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
-        <li>{$err:additional}</li>
-      </ul>
-    </div>
-  }
+  if ($model("q") != "") then
+      let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q"))
+        || (if ($model("p") and $model("p")("start") > 0) then '&amp;start=' || $model("p")("start") else ''))
+      
+      return try {
+        let $request-headers := <headers>
+          <header name="cache-control" value="no-cache" />
+        </headers>
+      
+        return httpclient:get($url, false(), $request-headers)//httpclient:body/*
+      } catch * {
+        <div>
+          <a href="{$url}">klick</a>
+          <ul>
+            <li>{$err:code}</li>
+            <li>{$err:description}</li>
+            <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
+            <li>{$err:additional}</li>
+          </ul>
+        </div>
+      }
+  else ()
 }</main>
 };
