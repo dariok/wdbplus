@@ -54,22 +54,59 @@ function wdbRf:getResource ($id as xs:string) {
   )
 };
 
+(:  return a fragment from a file :)
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}/f/{$fragment}")
+function wdbRf:getResourceFragment ($id as xs:string, $fragment as xs:string) {
+  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $f := $files[1]
+  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
+  
+  let $doc := doc($path)
+  
+  let $mtype := xmldb:get-mime-type($path)
+  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
+    then "application/tei+xml"
+    else $mtype
+  
+  let $frag := $doc/id($fragment)
+  
+  let $respCode := if (count($files) = 0 or count($frag) = 0)
+  then "404"
+  else if (count($files) = 1 or count($frag) = 1)
+  then "200"
+  else "500"
+  
+  return (
+    <rest:response>
+      <http:response status="{$respCode}">{
+        if (string-length($type) = 0) then () else
+        <http:header name="Content-Type" value="{$type}" />
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    $frag
+  )
+};
+
 (: list all views available for this resource :)
 declare
     %rest:GET
-    %rest:path("/edoc/resource/views/{$id}.xml")
+    %rest:path("/edoc/resource/{$id}/view.xml")
 function wdbRf:getResourceViewsXML ($id) {
   wdbRf:getResourceViews($id, "application/xml")
 };
 declare
     %rest:GET
-    %rest:path("/edoc/resource/views/{$id}.json")
+    %rest:path("/edoc/resource/{$id}/view.json")
 function wdbRf:getResourceViewsJSON ($id) {
   wdbRf:getResourceViews($id,"application/json")
 };
 declare
     %rest:GET
-    %rest:path("/edoc/resource/views/{$id}")
+    %rest:path("/edoc/resource/{$id}/views")
     %rest:header-param("Accept", "{$mt}")
 function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
@@ -101,43 +138,6 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     if ($mt = "application/json")
     then json:xml-to-json($content)
     else $content
-  )
-};
-
-(:  return a fragment from a file :)
-declare
-    %rest:GET
-    %rest:path("/edoc/resource/{$id}/{$fragment}")
-function wdbRf:getResourceFragment ($id as xs:string, $fragment as xs:string) {
-  let $files := (collection($wdb:data)//id($id)[self::meta:file])
-  let $f := $files[1]
-  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
-  
-  let $doc := doc($path)
-  
-  let $mtype := xmldb:get-mime-type($path)
-  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
-    then "application/tei+xml"
-    else $mtype
-  
-  let $frag := $doc/id($fragment)
-  
-  let $respCode := if (count($files) = 0 or count($frag) = 0)
-  then "404"
-  else if (count($files) = 1 or count($frag) = 1)
-  then "200"
-  else "500"
-  
-  return (
-    <rest:response>
-      <http:response status="{$respCode}">{
-        if (string-length($type) = 0) then () else
-        <http:header name="Content-Type" value="{$type}" />
-        }
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    $frag
   )
 };
 
@@ -257,7 +257,7 @@ function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
 (: produce a IIIF manifest :)
 declare
     %rest:GET
-    %rest:path("/edoc/resource/iiif/{$id}.json")
+    %rest:path("/edoc/resource/iiif/{$id}/manifest.json")
     %output:method("json")
 function wdbRf:getFileManifest ($id as xs:string) {
   let $retrFile := wdbRf:getResource($id)
