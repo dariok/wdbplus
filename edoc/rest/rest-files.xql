@@ -230,6 +230,32 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
     }:)
 };
 
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/iiif/{$id}/images")
+    %output:method("json")
+function wdbRf:getImages($id as xs:string) {
+  let $retrFile := wdbRf:getResource($id)
+  let $errorFile := if ($retrFile//http:response/@status != 200)
+    then "File not found or other error: " || $retrFile//http:response/@status
+    else ()
+  let $file := $retrFile/tei:TEI
+  let $map := wdb:populateModel($id, '', map{})
+  
+  let $canv := for $fa in $file//tei:surface
+    return local:image($id, $fa/@xml:id, $map)
+  
+  return (
+    <rest:response>
+      <http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+          <http:header name="status" value="200" />
+      </http:response>
+    </rest:response>,
+    $canv
+  )
+};
+
 (: IIIF image desriptor :)
 declare
     %rest:GET
