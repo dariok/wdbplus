@@ -9,11 +9,11 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
-import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdb			= "https://github.com/dariok/wdbplus/wdb"				at "../modules/app.xql";
-import module namespace wdba		= "https://github.com/dariok/wdbplus/auth"				at "../modules/auth.xqm";
-import module namespace wdbGS		= "https://github.com/dariok/wdbplus/GlobalSettings"	at "global.xqm";
-import module namespace wdbPL		= "https://github.com/dariok/wdbplus/ProjectList"		at "projects.xqm";
+import module namespace templates = "http://exist-db.org/xquery/templates";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"            at "../modules/app.xqm";
+import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"           at "../modules/auth.xqm";
+import module namespace wdbGS     = "https://github.com/dariok/wdbplus/GlobalSettings" at "global.xqm";
+import module namespace wdbPL     = "https://github.com/dariok/wdbplus/ProjectList"    at "projects.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 
