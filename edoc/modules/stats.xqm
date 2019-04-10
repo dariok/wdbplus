@@ -18,67 +18,63 @@ function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
 };
 
 declare function wdbs:projectList($admin as xs:boolean, $ed) {
-	let $project := if ($ed = '')
-		then $wdb:edocBaseDB
-		else $wdb:data || '/' || $ed
-	let $editionsM := collection($project)//mets:mets
-	let $editionsW := collection($project)//wdbmeta:projectMD
-	return
-		<table>
-			<tr>
-				<th>Eintrag</th>
-				<th>Titel</th>
-				{if ($admin = true()) then
-					(
-						<th>Metadaten-Datei</th>,
-						<th>verwalten</th>
-					)
-					else ()
-				}
-			</tr>
-			
-			{(for $mets in $editionsM
-				let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
-				let $metsFile := document-uri(root($mets))
-				let $id := wdb:getEdPath($metsFile)
-				order by $id
-				return
-					<tr>
-						<td>{$id}</td>
-						<td><a href="{$wdb:edocBaseURL || $id || '/start.html'}">{normalize-space($name)}</a></td>
-						{if ($admin = true()) then
-							(	
-								<td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
-								<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
-							)
-							else ()
-						}
-					</tr>,
-				for $w in $editionsW
-					let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
-					let $metaFile := document-uri(root($w))
-					let $id := substring-before(substring-after($metaFile, $wdb:edocBaseDB), 'wdbmeta')
-					let $padding := count(tokenize($id, '/')) + 0.2
-					order by $id
-					return if ($w//wdbmeta:view[not(@private) or @private='false']
-						or $w//wdbmeta:struct[@file]) then
-						<tr>
-							<td>{$id}</td>
-							<td style="padding-left: {$padding}em;">
-								<a href="{$wdb:edocBaseURL || $id || 'start.html'}">{normalize-space($name)}</a>
-							</td>
-							{if ($admin = true()) then
-								(
-									<td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-									<td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={substring-after($id, '/')}">verwalten</a></td>
-								)
-								else ()
-							}
-						</tr>
-						else ()
-				)
-			}
-		</table>
+  let $project := if ($ed = '')
+    then $wdb:data
+    else $wdb:data || '/' || $ed
+  
+  let $editionsM := collection($project)//mets:mets
+  let $editionsW := collection($project)//wdbmeta:projectMD
+  
+  return
+    <table>
+      <tr>
+        <th>Eintrag</th>
+        <th>Titel</th>
+        {if ($admin = true()) then
+          ( 
+          <th>Metadaten-Datei</th>,
+          <th>verwalten</th>
+          )
+          else ()
+        }
+      </tr>
+      {(for $mets in $editionsM
+        let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
+        let $metsFile := document-uri(root($mets))
+        let $id := wdb:getEdPath($metsFile)
+        order by $id
+        return
+        <tr>
+          <td>(M) {$id}</td>
+          <td><a href="{$wdb:edocBaseURL || $id || '/start.html'}">{normalize-space($name)}</a></td>
+          {if ($admin = true()) then
+          (	
+            <td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
+            <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
+          )
+          else ()
+          }
+        </tr>,
+        for $w in $editionsW
+          let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
+          let $metaFile := document-uri(root($w))
+          let $id := substring-before(substring-after($metaFile, $wdb:edocBaseDB), 'wdbmeta')
+          let $padding := count(tokenize($id, '/')) + 0.2
+          order by $id
+          return if ($w//wdbmeta:view[not(@private) or @private='false'] or $w//wdbmeta:struct[@file]) then
+            <tr>
+              <td>{$id}</td>
+              <td style="padding-left: {$padding}em;"><a href="{$wdb:edocBaseURL || $id || 'start.html'}">{normalize-space($name)}</a></td>
+              {if ($admin = true()) then ( 
+                <td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
+                <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={substring-after($id, '/')}">verwalten</a></td>
+              )
+              else ()
+              }
+            </tr>
+          else ()
+      )}
+    </table>
 };
 
 declare function wdbs:chronologicalOrder($ed) {
