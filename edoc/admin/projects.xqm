@@ -8,8 +8,15 @@ import module namespace console  = "http://exist-db.org/xquery/console";
 import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 
-declare namespace meta	= "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace tei	= "http://www.tei-c.org/ns/1.0";
+declare namespace config = "https://github.com/dariok/wdbplus/config";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+
+declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
+  let $t := $wdb:configFile//config:short
+  
+  return <title>{normalize-space($t)} – Admin</title>
+};
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 	let $ed := xstring:substring-before-if-ends(request:get-parameter('ed', ''), '/')
