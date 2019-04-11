@@ -14,6 +14,7 @@ import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"     
 import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"           at "../modules/auth.xqm";
 import module namespace wdbGS     = "https://github.com/dariok/wdbplus/GlobalSettings" at "global.xqm";
 import module namespace wdbPL     = "https://github.com/dariok/wdbplus/ProjectList"    at "projects.xqm";
+import module namespace wdbPN     = "https://github.com/dariok/wdbplus/ProjectNew"     at "new.xqm";
 
 (: 
  : The following modules provide functions which will be called by the 
