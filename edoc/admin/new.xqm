@@ -12,30 +12,57 @@ declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare function wdbPN:pageTitle ($node as node(), $model as map(*)) {
-  let $t := $wdb:configFile//config:short
-  
-  return <title>{normalize-space($t)} – Admin</title>
-};
-
 declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:string*, $pShort as xs:string*,
-  $pID as xs:string*, $pColl as xs:string* ) {
-  if (string-length($pName) = 0 or string-length($pID) = 0) then (
+  $pID as xs:string*, $pColl as xs:string*, $pDate as xs:string*, $pDesc as xs:string*, $pLic as xs:string* ) {
+  let $user := sm:id()
+  
+  return
+  if (not($user//sm:group = 'dba'))
+  then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
+  else if (string-length($pName) = 0 or string-length($pID) = 0 or string-length($pColl) = 0) then
     <form method="POST">
-      <label for="pName">Projekttitel: </label><input type="text" id="pName" /><br />
-      <label for="pShort">Kurztitel: </label><input type="text" id="pShort" /><br />
-      <label for="pID">ID (xs:NCName): </label><input type="text" id="pID" /><br />
-      <label for="pColl">Collection: </label><input type="text" id="pColl" /><br />
+      <label for="pName">Projekttitel: </label><input type="text" name="pName" /><br />
+      <label for="pShort">Kurztitel: </label><input type="text" name="pShort" /><br />
+      <label for="pID">ID (xs:NCName): </label><input type="text" name="pID" /><br />
+      <label for="pColl">Collection: </label><input type="text" name="pColl" /><br />
+      <label for="pDate">Zeitraum der Texte (ISO): </label><input type="text" name="pDate" /><br />
+      <label for="pDesc">Beschreibung der (Haupt-)Inhalte: </label><input type="text" name="pDesc" /><br />
+      <label for="pLic">Lizenz der (Haupt-)Inhalte: </label><input type="text" name="pLic" /><br />
       <input type="submit" name="erstellen" />
-    </form>,
-    <!--<script>
-      $('form').on('submit', function(e) {
-        e.preventDefault();
-        let data = {"name": $('#pName').value(), "short": $('#pShort').value(), "id": $('#pID').value(), "coll": $('#pColl')}
-        window.location.href=new.xql?id
-      });
-    </script>--> 
-  )
+    </form>
   else
-    <p>{$pName}</p>
+    let $mfile := 
+    <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta ../include/wdbmeta/wdbmeta.xsd"
+      xml:id="{$pID}">
+      <projectID>{$pID}</projectID>
+      <titleData>
+        <title>{$pName}</title>
+        {if (string-length($pShort) > 0) then <short>{$pShort}</short> else ()}
+        <involvement></involvement>
+        <date>{if (string-length($pDate) > 0) then $pDate else current-date()}</date>
+        <place></place>
+        <language></language>
+        <type></type>
+      </titleData>
+      <metaData>
+        <contentGroup>
+          <content xml:id="c1">
+            <description>{if (string-length($pDesc) > 0) then $pDesc else ""}</description>
+          </content>
+        </contentGroup>
+        <involvement></involvement>
+        <legal>
+          <licence content="#c1">{if (string-length($pLic) > 0) then $pLic else ""}</licence>
+        </legal>
+      </metaData>
+      <files></files>
+      <process target="">
+        <command type=""></command>
+      </process>
+      <struct></struct>
+    </projectMD>
+    
+    return $mfile
 };
