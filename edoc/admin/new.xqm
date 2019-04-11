@@ -31,7 +31,7 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       <input type="submit" name="erstellen" />
     </form>
   else
-    let $mfile := 
+    let $contents := 
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta ../include/wdbmeta/wdbmeta.xsd"
@@ -64,5 +64,11 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       <struct></struct>
     </projectMD>
     
-    return $mfile
+    let $collection-uri := xmldb:create-collection($wdb:data, $pColl)
+    let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
+    return
+        <p>
+            <span>{$collection-uri}</span>
+            <span>{$saveMetaFile}</span>
+        </p>
 };
