@@ -25,7 +25,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 
 ## Creating and uploading projects
 1) add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
-2) create a file `wdbmeta.xml` in that collection:
+2) create a file `wdbmeta.xml` in that collection (you can also use `admin/admin.html` for the basic settings)
 ```XML
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
     xml:id="yourProjectID">
@@ -37,13 +37,14 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
             <file path="pathTo.xml" xml:id="xml-id" />
         </files>
         <process target="html">
-            <command type="xsl">/db/apps/edoc/data/yourProject/yourXSL.xsl</command>
+            <command type="xsl">/db/apps/edoc/resources/xsl/tei-transcript.xsl</command>
         </process>
         <struct label="1722" order="1722">
             <view file="xml-id" label="Title of File" />
         </struct>
     </projectMD>
 ```
+You have to set at least one `process`; the example above points to a standard XSLT provided by wdb+.
 3) The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
 
 ### Usage and Configuration
