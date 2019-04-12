@@ -21,7 +21,7 @@ declare function wdbst:getStartHeader($node as node(), $model as map(*)) as node
 };
 
 declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()* {
-  if ($model("projectResources") || '/startLeft.html'))
+  if (doc-available($model("projectResources") || '/startLeft.html'))
   then doc($model("projectResources") || '/startLeft.html')
   else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
   then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
