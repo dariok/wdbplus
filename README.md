@@ -19,10 +19,9 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 
 ### manual installation
 1. clone this repo including its submodules
-1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
-1. import the configuration files – i.e. the contents of the `config` directory – into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
-1. apply the configuration
-1. Set execute rights on .xql files (start out from `edoc/post-install.xql`; if not installing into `/db/apps/edoc`, adjust your paths.
+1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`; you can also rename it to your needs (in this case, you have to adjust the paths in the next steps!).
+1. import the index configuration files – i.e. the contents of the `config` directory – into `/db/system/config/db/apps` (see the wiki if you change the destination)
+1. run `edoc/post-install.xql` to set execution rights and apply the index configuration (if you change the destination, adjust your paths).
 
 ## Creating and uploading projects
 1) add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
