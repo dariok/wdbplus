@@ -48,7 +48,10 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 3) The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
 
 ### Usage and Configuration
-See the Wiki!
+Global configuration options, i.e. those that concern options for the whole instance, have to be set in `config.xml` (e.g. the instance's name).
+Settings for a project are set in the project's `wdbmeta.xml`.
+
+See the Wiki for details!
 
 ----
 
