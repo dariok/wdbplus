@@ -13,9 +13,36 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. Install eXgit as stated in the repo.
 1. (optional) create a user for the framework and log in under that name –– CAVEAT: this user, at least for the duration of the installation, **needs to be** in the **dba** group!
 1. (optional) create the target collection as this user
-1. in `install.xql`, set `$whereToClone` to a path on your file system where you want to clone
-1. if you do not want to install into `/db/apps/edoc`, adjust the paths in `install.xql` so they point to the desired destination
-1. copy the contents of the cloned `wdbplus/install.xql` into eXide and run
+1. open eXide from eXist's Dashboard and paste:
+
+```
+xquery version "3.1";
+
+import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
+
+let $whereToClone := "~/git/"
+
+let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
+let $ie := exgit:import($whereToClone || "/wdbplus/edoc", "/db/apps/edoc")
+let $ic := exgit:import($whereToClone || "/wdbplus/config", "/db/system/config/db/apps")
+
+let $chmod := (sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-anno.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-coll.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-entity.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-files.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-search.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-test.xql'), 'r-xr-xr-x')
+)
+let $chown := sm:chown(xs:anyURI('/db/apps/edoc/annotations'), 'wdb')
+let $chgrp := sm:chgrp(xs:anyURI('/db/apps/edoc/annotations'), 'wdbusers')
+let $reindex := xmldb:reindex('/db/apps/edoc/data')
+
+return ($cl, $ie, $ic, $chmod, $chown, $chgrp, $reindex)
+```
+1. adjust `$whereToClone` to point to a directory on your file system where the app shall be cloned into.
+1. run the script
 
 ### manual installation
 1. clone this repo including its submodules
