@@ -21,9 +21,9 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. put folder `edoc` anywhere you want in your eXist; the default would be `/db/apps/edoc`
 1. import the configuration files into `/db/system/config/db/apps/edoc` or the config folder corresponding to the collection you chose
 1. apply the configuration
-1. Set execute rights on .xql files
+1. Set execute rights on .xql files (start out from `edoc/post-install.xql`; if not installing into `/db/apps/edoc`, adjust your paths.
 
-### Creating and uploading projects
+## Creating and uploading projects
 1) add project's XML/XSLT etc. files into a subcollection of `/db/apps/edoc/data`
 2) create a file `wdbmeta.xml` in that collection:
 ```XML
