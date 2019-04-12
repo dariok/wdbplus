@@ -14,7 +14,7 @@ declare function wdbPF:getProjectFiles ( $model as map(*) ) as node()* {
 };
 
 declare function wdbPF:getHeader ( $model as map(*) ) as node()* {
-	
+	let $file := doc($model("fileLoc"))
 	return (
 		<h1>{$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type = 'main']/text()}</h1>,
 		<h2>{$file/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@type = 'num']/text()}</h2>,
@@ -23,8 +23,7 @@ declare function wdbPF:getHeader ( $model as map(*) ) as node()* {
 };
 
 declare function wdbPF:getImages ($id as xs:string, $page as xs:string) as xs:string {
-	
-	return()
+  "none"
 };
 
 declare function wdbPF:getStart ($model as map(*)) {
