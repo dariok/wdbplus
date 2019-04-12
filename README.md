@@ -13,7 +13,8 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. Install eXgit as stated in the repo.
 1. (optional) create a user for the framework and log in under that name
 1. (optional) create the target collection as this user
-1. run `post-install.xql`
+1. if not installing into `/db/apps/edoc`, adjust the paths in `post-install.xql`
+1. copy the contents of the cloned `wdbplus/post-install.xql` into eXide and run
 
 ### manual installation
 1. clone this repo including its submodules
