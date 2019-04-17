@@ -186,5 +186,7 @@ declare function local:pM($meta) {
               else $v
           }
         </struct>
+    else if ($s[self::meta:struct]/meta:struct)
+    then $s
     else ()
 };
