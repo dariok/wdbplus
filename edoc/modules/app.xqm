@@ -441,14 +441,20 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
   let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
   then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
   else
-    (: no specific function available, so we assume standards :)
+    (: no specific function available, so we assume standards
+     : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
+     : but rather throws an error... :)
     (
-      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
-      then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
-      else (),
-      if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
-      then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
-      else ()
+      try {
+        if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
+        else ()
+      } catch * { () },
+      try {
+        if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
+        then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
+        else ()
+      } catch * { () }
     )
   
   return if ($type = 'css')
