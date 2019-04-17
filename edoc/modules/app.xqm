@@ -369,12 +369,11 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
     then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
     else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
     then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-    else if (count($files[self::meta:file]) = 1)
-    (: TODO do we need to add a check and error if the xml:id is found twice in wdbmeta.xml? :)
-    then if (starts-with($files[1]/@path, '/') or contains($files[1]/@path, '://'))
-      then
-        $files[1]/@path
-      else
+    else if (count($files[self::meta:file]) = 1
+        and (starts-with($files[1]/@path, '/') or contains($files[1]/@path, '://')))
+    then $files[1]/@path
+    else if (contains(base-uri($files[1]), 'wdbmeta.xml'))
+    then
         let $p := base-uri($files[1])
         return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
     else
