@@ -45,13 +45,13 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
     <title>{$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="resources/css/wdb.css"/>
     <link rel="stylesheet" type="text/css" href="resources/css/function.css"/>
-    {local:get('css', $model("pathToEd"))}
+    {local:get('css', $model("pathToEd"), $model)}
     <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" />
     <script src="resources/scripts/legal.js"/>
     <script src="resources/scripts/jquery.min.js"/>
     <script src="resources/scripts/js.cookie.js"/>
     <script src="resources/scripts/function.js"/>
-    {local:get('js', $model("pathToEd"))}
+    {local:get('js', $model("pathToEd"), $model)}
   </head>
 };
 
@@ -59,7 +59,7 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
   wdbErr:error(map { "code" := "wdbErr:Err666", "model" := $model })
 };
 
-declare function local:get ( $type as xs:string, $edPath as xs:string ) {
+declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) {
   let $file := xstring:substring-after-last(request:get-url(), '/')
   let $name := substring-before($file, '.html')
   let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
