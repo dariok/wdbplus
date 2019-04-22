@@ -55,9 +55,12 @@ return ($cl, $ie, $ic, $chmod, $chown, $chgrp, $reindex)
 1. import the index configuration files – i.e. the contents of the `config` directory – into `/db/system/config/db/apps` (see the wiki if you change the destination)
 1. run `edoc/post-install.xql` to set execution rights and apply the index configuration (if you change the destination, adjust your paths).
 
+## Initial configuration
+Set the name for the instance and other settings in `edoc/config.xml`.
+
 ## Creating and uploading projects
 While many different ways of putting data into the application are possible, the stanard way is to have one collection
-under data for each project. The following assumes that you work with a standard setup, i.e. have installed the app
+under data for each project. It is possible to create an ninitial setup using `admin/admin.html`. The following describes a manual installation and assumes that you work with a standard setup, i.e. have installed the app
 into `/db/apps/edoc` and want to put your projects into `/db/apps/edoc/data/*`.
 
 1. create `wdbmeta.xml` in that collection, either by copying, pasting and editing the example or by using
