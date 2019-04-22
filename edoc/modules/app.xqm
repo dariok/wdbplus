@@ -342,8 +342,8 @@ declare function wdb:getFooter($xm as xs:string, $xs as xs:string) {
   
   return
     <footer>
-      <span>XML: <a href="{$xml}">{$xml}</a></span>
-      <span>XSL: <a href="{$xsl}">{$xsl}</a></span>
+      <span>XML: <a href="{$xml}" target="_blank">{$xml}</a></span>
+      <span>XSL: <a href="{$xsl}" target="_blank">{$xsl}</a></span>
     </footer>
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
