@@ -5,7 +5,12 @@ An extensible framework for digital Editions for the [eXist XML database](https:
 This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Installation
-The final version will be available as an installable .xar package for eXist.
+1. Clone
+1. `cd edoc`
+1. run `ant`
+1. install the `.xar` file in `edoc/build/` using eXist's dashboard
+
+The app will be installed into `/db/apps/edoc`.
 
 ### eXgit
 Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to clone the current version directly into a running eXist instance.
