@@ -36,7 +36,11 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
         let $opts := for $file in $md//meta:ptr
           let $id := $file/@xml:id
           let $label := $md//meta:struct[@file = $id]/@label
-          return <option value="{$id}">{normalize-space($label)}</option>
+          return
+            <option value="{$id}">
+              {if ($id = $model?id) then attribute selected {"selected"} else ()}
+              {normalize-space($label)}
+            </option>
         return (
           <option value="{$md/meta:projectMD/@xml:id}">global</option>,
           $opts
@@ -56,7 +60,11 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
         let $opts := for $file in $md//meta:ptr
           let $id := $file/@xml:id
           let $label := $md//meta:struct[@file = $id]/@label
-          return <option value="{$id}">{normalize-space($label)}</option>
+          return
+            <option value="{$id}">
+              {if ($id = $model?id) then attribute selected {"selected"} else ()}
+              {normalize-space($label)}
+            </option>
         return (
           <option value="{$md/meta:projectMD/@xml:id}">global</option>,
           $opts
