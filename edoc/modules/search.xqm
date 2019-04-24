@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 
@@ -19,8 +19,8 @@ declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
         else $model("title")
     }</h1>
     <h2>Suche</h2>
-    <span class="dispOpts">[<a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a>]</span>
-    <span class="dispOpts">[<a id="searchLink" href="search.html?id={$model('id')}">Suche</a>]</span>
+    <span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>
+    <span class="dispOpts"><a id="searchLink" href="search.html?id={$model('id')}">Suche</a></span>
     <hr/>
     <nav style="display:none;" />
   </header>
@@ -31,22 +31,11 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
   <div>
     <h1>Volltextsuche</h1>
     <form action="search.html">
-      <select name="id">{
-        let $md := doc($wdb:data || '/wdbmeta.xml')
-        let $opts := for $file in $md//meta:ptr
-          let $id := $file/@xml:id
-          let $label := $md//meta:struct[@file = $id]/@label
-          return
-            <option value="{$id}">
-              {if ($id = $model?id) then attribute selected {"selected"} else ()}
-              {normalize-space($label)}
-            </option>
-        return (
-          <option value="{$md/meta:projectMD/@xml:id}">global</option>,
-          $opts
-        )
-      }</select><br />
+      {local:selectEd($model)}
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+      <input type="hidden" name="p">
+        {attribute value {'{"job": "fts"}'}}
+      </input>
       <input type="submit" />
     </form>
     <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
@@ -55,28 +44,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
   <div>
     <h1>Registersuche</h1>
     <form action="search.html">
-      <select name="id">{
-        let $md := doc($wdb:data || '/wdbmeta.xml')
-        let $opts := for $file in $md//meta:ptr
-          let $id := $file/@xml:id
-          let $label := $md//meta:struct[@file = $id]/@label
-          return
-            <option value="{$id}">
-              {if ($id = $model?id) then attribute selected {"selected"} else ()}
-              {normalize-space($label)}
-            </option>
-        return (
-          <option value="{$md/meta:projectMD/@xml:id}">global</option>,
-          $opts
-        )
-      }</select><br />
-      <select name="p">
-        <option value="person">Personen</option>
-        <option value="place">Orte</option>
-        <option value="bibl">Bücher</option>
-        <option value="org">Körperschaften</option>
-        <option value="event">Ereignisse</option>
-      </select><br />
+      {local:selectEd($model)}
+      {local:listEnt("search")}
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
       <input type="submit" />
     </form>
@@ -84,34 +53,16 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
   <hr />
   <div>
     <h1>Registerliste</h1>
-    <div>
-      <a href="search.html?p=reg&amp;q=A">A</a> 
-      <a href="search.html?p=reg&amp;q=B">B</a> 
-      <a href="search.html?p=reg&amp;q=C">C</a> 
-      <a href="search.html?p=reg&amp;q=D">D</a> 
-      <a href="search.html?p=reg&amp;q=E">E</a> 
-      <a href="search.html?p=reg&amp;q=F">F</a> 
-      <a href="search.html?p=reg&amp;q=G">G</a> 
-      <a href="search.html?p=reg&amp;q=H">H</a> 
-      <a href="search.html?p=reg&amp;q=I">I</a> 
-      <a href="search.html?p=reg&amp;q=J">J</a> 
-      <a href="search.html?p=reg&amp;q=K">K</a> 
-      <a href="search.html?p=reg&amp;q=L">L</a> 
-      <a href="search.html?p=reg&amp;q=M">M</a> 
-      <a href="search.html?p=reg&amp;q=N">N</a> 
-      <a href="search.html?p=reg&amp;q=O">O</a> 
-      <a href="search.html?p=reg&amp;q=P">P</a> 
-      <a href="search.html?p=reg&amp;q=Q">Q</a> 
-      <a href="search.html?p=reg&amp;q=R">R</a> 
-      <a href="search.html?p=reg&amp;q=S">S</a> 
-      <a href="search.html?p=reg&amp;q=T">T</a> 
-      <a href="search.html?p=reg&amp;q=U">U</a> 
-      <a href="search.html?p=reg&amp;q=V">V</a> 
-      <a href="search.html?p=reg&amp;q=W">W</a> 
-      <a href="search.html?p=reg&amp;q=X">X</a> 
-      <a href="search.html?p=reg&amp;q=Y">Y</a> 
-      <a href="search.html?p=reg&amp;q=Z">Z</a> 
-    </div>
+    <form action="search.html">
+      {local:selectEd($model)}
+      {local:listEnt("list")}
+      <select name="q">{
+        for $c in (1 to 26)
+          let $b := codepoints-to-string($c + 64)
+          return <option value="{$b}">{$b}</option>
+      }</select>
+      <input type="submit" />
+    </form>
   </div>
 </aside>
 };
@@ -121,11 +72,20 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
     then '&amp;start=' || $model("p")("start")
     else ''
   
+  let $job := if ($model("p") instance of map(*))
+    then $model?p?job
+    else "fts"
+  
+  let $ln := switch ($job)
+    case "fts" return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || $start
+    case "list" return $wdb:restURL || "entities/scan/" || $model?p?type || "/" || $model?id || ".html?q=" || encode-for-uri($model?q)
+    default return $wdb:restURL || "entities/collection/" || $model?id || "/" || encode-for-uri($model?q) || ".html"
+  
   return
-<main>{
+<main>
+  {
   if (map:contains($model, "q") and $model("q") != "") then
-    let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q="
-        || encode-for-uri($model("q")) || $start)
+    let $url := xs:anyURI($ln)
       
     return try {
       let $request-headers := <headers>
@@ -147,3 +107,38 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
   else ()
 }</main>
 };
+
+declare function local:selectEd ($model) {(
+  <select name="id">{
+    let $md := doc($wdb:data || '/wdbmeta.xml')
+    let $opts := for $file in $md//meta:ptr
+      let $id := $file/@xml:id
+      let $label := $md//meta:struct[@file = $id]/@label
+      return
+        <option value="{$id}">
+          {if ($id = $model?id) then attribute selected {"selected"} else ()}
+          {normalize-space($label)}
+        </option>
+    return (
+      <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+      $opts
+    )
+  }</select>,
+  <br />
+)};
+
+declare function local:listEnt ($job) {(
+  <select name="p">
+    <option>
+      {attribute value {'{"job": "' || $job || '", "type": "person"}'}}Personen</option>
+    <option>
+      {attribute value {'{"job": "' || $job || '", "type": "place"}'}}Orte</option>
+    <option>
+      {attribute value {'{"job": "' || $job || '", "type": "bibl"}'}}Bücher</option>
+    <option>
+      {attribute value {'{"job": "' || $job || '", "type": "org"}'}}Körperschaften</option>
+    <option>
+      {attribute value {'{"job": "' || $job || '", "type": "event"}'}}>Ereignisse</option>
+  </select>,
+  <br />
+)};
