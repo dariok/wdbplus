@@ -156,9 +156,14 @@ declare function wdb:getServerApp() as xs:string {
       then $scheme || '://' || request:get-server-name() || ':' || request:get-server-port()
       else $scheme || '://' || request:get-server-name()
   } catch * { () }
-  let $ref := try { request:get-header('referer') } catch * { () }
+  let $ref := try {
+    let $r := request:get-header('referer')
+    let $scheme := substring-before($r, '://')
+    let $server := substring-before(substring-after($r, '://'), '/')
+    return $scheme || '://' || $server
+  } catch * { () }
   
-  let $server := ($config, $ref, $origin, $request)
+  let $server := ($config, $request, $ref, $origin)
   return if (count($server) > 0)
     then $server[1]
     else ""
