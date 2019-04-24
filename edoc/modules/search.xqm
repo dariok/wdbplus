@@ -81,6 +81,38 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
       <input type="submit" />
     </form>
   </div>
+  <hr />
+  <div>
+    <h1>Registerliste</h1>
+    <div>
+      <a href="search.html?p=reg&amp;q=A">A</a> 
+      <a href="search.html?p=reg&amp;q=B">B</a> 
+      <a href="search.html?p=reg&amp;q=C">C</a> 
+      <a href="search.html?p=reg&amp;q=D">D</a> 
+      <a href="search.html?p=reg&amp;q=E">E</a> 
+      <a href="search.html?p=reg&amp;q=F">F</a> 
+      <a href="search.html?p=reg&amp;q=G">G</a> 
+      <a href="search.html?p=reg&amp;q=H">H</a> 
+      <a href="search.html?p=reg&amp;q=I">I</a> 
+      <a href="search.html?p=reg&amp;q=J">J</a> 
+      <a href="search.html?p=reg&amp;q=K">K</a> 
+      <a href="search.html?p=reg&amp;q=L">L</a> 
+      <a href="search.html?p=reg&amp;q=M">M</a> 
+      <a href="search.html?p=reg&amp;q=N">N</a> 
+      <a href="search.html?p=reg&amp;q=O">O</a> 
+      <a href="search.html?p=reg&amp;q=P">P</a> 
+      <a href="search.html?p=reg&amp;q=Q">Q</a> 
+      <a href="search.html?p=reg&amp;q=R">R</a> 
+      <a href="search.html?p=reg&amp;q=S">S</a> 
+      <a href="search.html?p=reg&amp;q=T">T</a> 
+      <a href="search.html?p=reg&amp;q=U">U</a> 
+      <a href="search.html?p=reg&amp;q=V">V</a> 
+      <a href="search.html?p=reg&amp;q=W">W</a> 
+      <a href="search.html?p=reg&amp;q=X">X</a> 
+      <a href="search.html?p=reg&amp;q=Y">Y</a> 
+      <a href="search.html?p=reg&amp;q=Z">Z</a> 
+    </div>
+  </div>
 </aside>
 };
 
