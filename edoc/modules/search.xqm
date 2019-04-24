@@ -77,28 +77,33 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
 };
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
+  let $start := if ($model("p") instance of map(*) and map:contains($model("p"), "start"))
+    then '&amp;start=' || $model("p")("start")
+    else ''
+  
+  return
 <main>{
-  if (map:contains($model, "q")) then
-      let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q=" || encode-for-uri($model("q"))
-        || (if (map:contains($model, "p")  and map:contains($model("p"), "start")) then '&amp;start=' || $model("p")("start") else ''))
+  if (map:contains($model, "q") and $model("q") != "") then
+    let $url := xs:anyURI($wdb:restURL || "search/collection/" || $model("id") || ".html?q="
+        || encode-for-uri($model("q")) || $start)
       
-      return try {
-        let $request-headers := <headers>
-          <header name="cache-control" value="no-cache" />
-        </headers>
-      
-        return httpclient:get($url, false(), $request-headers)//httpclient:body/*
-      } catch * {
-        <div>
-          <a href="{$url}">klick</a>
-          <ul>
-            <li>{$err:code}</li>
-            <li>{$err:description}</li>
-            <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
-            <li>{$err:additional}</li>
-          </ul>
-        </div>
-      }
+    return try {
+      let $request-headers := <headers>
+        <header name="cache-control" value="no-cache" />
+      </headers>
+    
+      return httpclient:get($url, false(), $request-headers)//httpclient:body/*
+    } catch * {
+      <div>
+        <a href="{$url}">klick</a>
+        <ul>
+          <li>{$err:code}</li>
+          <li>{$err:description}</li>
+          <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
+          <li>{$err:additional}</li>
+        </ul>
+      </div>
+    }
   else ()
 }</main>
 };
