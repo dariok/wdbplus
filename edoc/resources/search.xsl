@@ -44,7 +44,7 @@
 	
 	<xsl:template match="file">
 		<li>
-			<a href="view.html?id={@id}"><xsl:value-of select="*:title[1]" /></a>
+			<a href="view.html?id={@id}"><xsl:value-of select="*:titleStmt/*[descendant::text()][1]" /></a>
 			<xsl:text>&#x2005;</xsl:text>
 			<a href="javascript:void(0);" onclick="load('{$rest}/search/file/{@id}?q={ancestor::results/@q}', '{@id}', this)">→</a>
 			<div id="{@id}" class="results" style="display: none;"/>
