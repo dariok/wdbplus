@@ -78,8 +78,8 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
   
   let $ln := switch ($job)
     case "fts" return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || $start
-    case "list" return $wdb:restURL || "entities/scan/" || $model?p?type || "/" || $model?id || ".html?q=" || encode-for-uri($model?q)
-    default return $wdb:restURL || "entities/collection/" || $model?id || "/" || encode-for-uri($model?q) || ".html"
+    (:case "list" return $wdb:restURL || "entities/scan/" || $model?p?type || "/" || $model?id || ".html?q=" || encode-for-uri($model?q):)
+    default return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q)
   
   return
 <main>
