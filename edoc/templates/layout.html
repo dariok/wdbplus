@@ -1,93 +1,116 @@
 <html data-template="wdb:getEE">
-	<head data-template="wdb:getHead"/>
-	<body>
-		<header data-template="wdb:getHeader"/>
-		<main>
-			<div class="loadingModal" />
-			<div id="wdbContent" data-template="wdb:getContent" />
-			<div id="wdbShowHide">
-				<a href="javascript:toggleRightside();">»</a>
-			</div>
-			<aside id="wdbRight">
-				<div id="annotationDialog" style="display: none;" title="Annotationen">
-					<p style="text-align: center;"><i id="annText"></i> (<span id="annFrom"/> <span id="annTo" />)</p>
-					<hr />
-					<div id="annotationDialogTabs">
-						<ul>
-							<li><a href="#annotationTab1">Volltext</a></li>
-							<li><a href="#annotationTab4">Verschlagwortung</a></li>
-							<li><a href="#annotationTab3">Entitäten</a></li>
-							<li><a href="#annotationTab2">Layout</a></li>
-							<li><a href="#annotationTab5">Korrekturen</a></li>
-						</ul>
-						<div id="annotationTab1">
-							<form id="fta">
-								<h1>Volltextanmerkung</h1>
-								<p>Freier Text zur markierten Stelle</p>
-								<textarea style="width: 100%;" id="ftaText"></textarea>
-								<label for="public">Anmerkung ist öffentlich: </label>
-								<input type="checkbox" id="public" checked="checked" />
-								<br /><input type="submit" formaction="javascript:parsefta();"/>
-							</form>
-						</div>
-						<div id="annotationTab2">
-							<form id="la">
-								<h1>Layout anpassen</h1>
-								<p>Spezifische Anmerkungen zum Layout dieser Stelle</p>
-								<select id="layout">
-									<option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
-									<option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
-									<option value="findent">Liste: 1. Zeile eingezogen, wie Absatz („findent“)</option>
-									<option value="hanging">hängender Einzug</option>
-								</select>
-								<input type="submit" />
-							</form>
-						</div>
-						<div id="annotationTab3">
-							<form id="ea">
-								<h1>Entitäten markieren und identifizieren</h1>
-								<p>Auszeichnen und identifizieren von Personen, Orten, Sachen</p>
-								<select id="type">
-									<option value="person">Person</option>
-									<optoin value="place">Ort</optoin>
-								</select>
-								<input type="text" id="identity" name="identity" />
-								<input type="submit" formaction="javascript:identifyEntity();"/>
-							</form>
-						</div>
-						<div id="annotationTab4">
-							<form id="sa">
-								<h1>Abschnitte verschlagworten</h1>
-								<p>Zuweisen von Schlagworten zu Abschnitten</p>
-							</form>
-						</div>
-						<div id="annotationTab5">
-							<h1>Korrekturen</h1>
-							<p><a href="javascript:void(0);" onclick="fshow('#tCorr')">Korrekturen im Wort</a>, <a
-								href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder aufteilen</p>
-							<form id="korr">
-								<fieldset id="tCorr" name="tCorr" style="display: none;">
-									<label for="corr">Korrektur:</label><br />
-									<input type="text" id="corr" name="corr" /> <input type="submit" formaction="javascript:editText();"/><br />
-									<label for="corr">nur ein Wort auswählen;<br/>Zeilenumbruch mit | markieren;<br/>letztes Zeichen vor
-										dem Umbruch wird als Trennzeichen gespeichert<br/>(Leerzeichen vor |, falls kein Trennzeichen)<br/>
-										komplexere Korrekturen als Volltextanmerkung hinterlegen.</label>
-								</fieldset>
-								<fieldset id="tComb" name="tComb" style="display: none;">
-									<label for="combine">Zusammenziehen: </label>
-									<input type="submit" formaction="javascript:combineWord();" />
-								</fieldset>
-								<fieldset id="tSplit" name="tSplit" style="display: none;">
-									<label for="combine">trennen: </label>
-									<input type="submit" formaction="javascript:splitWord();" />
-								</fieldset>
-							</form>
-						</div>
-					</div>
-				</div>
-				<div id="ann" />
-				<div id="fac" />
-			</aside>
-		</main>
-	</body>
+  <head data-template="wdb:getHead"></head>
+  <body>
+    <header data-template="wdb:getHeader"></header>
+    <main>
+      <div class="loadingModal"></div>
+      <div id="wdbContent" data-template="wdb:getContent"></div>
+      <div id="wdbShowHide">
+        <a href="javascript:toggleRightside();">»</a>
+      </div>
+      <aside id="wdbRight">
+        <div id="annotationDialog" style="display: none;" title="Annotationen">
+          <p style="text-align: center;">
+            <i id="annText"></i> (<span id="annFrom"></span>
+            <span id="annTo"></span>)</p>
+          <hr />
+          <div id="annotationDialogTabs">
+            <ul>
+              <li>
+                <a href="#annotationTab1">Volltext</a>
+              </li>
+              <li>
+                <a href="#annotationTab4">Verschlagwortung</a>
+              </li>
+              <li>
+                <a href="#annotationTab3">Entitäten</a>
+              </li>
+              <li>
+                <a href="#annotationTab2">Layout</a>
+              </li>
+              <li>
+                <a href="#annotationTab5">Korrekturen</a>
+              </li>
+            </ul>
+            <div id="annotationTab1">
+              <form id="fta">
+                <h1>Volltextanmerkung</h1>
+                <p>Freier Text zur markierten Stelle</p>
+                <textarea style="width: 100%;" id="ftaText"></textarea>
+                <label for="public">Anmerkung ist öffentlich: </label>
+                <input type="checkbox" id="public" checked="checked" />
+                <br />
+                <input type="submit" formaction="javascript:parsefta();" />
+              </form>
+            </div>
+            <div id="annotationTab2">
+              <form id="la">
+                <h1>Layout anpassen</h1>
+                <p>Spezifische Anmerkungen zum Layout dieser Stelle</p>
+                <select id="layout">
+                  <option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
+                  <option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
+                  <option value="findent">Liste: 1. Zeile eingezogen, wie Absatz
+                    („findent“)</option>
+                  <option value="hanging">hängender Einzug</option>
+                </select>
+                <input type="submit" />
+              </form>
+            </div>
+            <div id="annotationTab3">
+              <form id="ea">
+                <h1>Entitäten markieren und identifizieren</h1>
+                <p>Auszeichnen und identifizieren von Personen, Orten, Sachen</p>
+                <select id="type">
+                  <option value="person">Person</option>
+                  <option value="place">Ort</option>
+                </select>
+                <input type="text" id="identity" name="identity" />
+                <input type="submit" formaction="javascript:identifyEntity();" />
+              </form>
+            </div>
+            <div id="annotationTab4">
+              <form id="sa">
+                <h1>Abschnitte verschlagworten</h1>
+                <p>Zuweisen von Schlagworten zu Abschnitten</p>
+              </form>
+            </div>
+            <div id="annotationTab5">
+              <h1>Korrekturen</h1>
+              <p>
+                <a href="javascript:void(0);" onclick="fshow('#tCorr')">Korrekturen im Wort</a>, <a
+                  href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a>
+                oder aufteilen</p>
+              <form id="korr">
+                <fieldset id="tCorr" name="tCorr" style="display: none;">
+                  <label for="corr">Korrektur:</label>
+                  <br />
+                  <input type="text" id="corr" name="corr" />
+                  <input type="submit" formaction="javascript:editText();" />
+                  <br />
+                  <label for="corr">nur ein Wort auswählen;<br />Zeilenumbruch mit |
+                    markieren;<br />letztes Zeichen vor dem Umbruch wird als Trennzeichen
+                    gespeichert<br />(Leerzeichen vor |, falls kein Trennzeichen)<br /> komplexere
+                    Korrekturen als Volltextanmerkung hinterlegen.</label>
+                </fieldset>
+                <fieldset id="tComb" name="tComb" style="display: none;">
+                  <label for="combine">Zusammenziehen: </label>
+                  <input type="submit" formaction="javascript:combineWord();" />
+                </fieldset>
+                <fieldset id="tSplit" name="tSplit" style="display: none;">
+                  <label for="combine">trennen: </label>
+                  <input type="submit" formaction="javascript:splitWord();" />
+                </fieldset>
+              </form>
+            </div>
+          </div>
+          <div>
+            <span id="auth" data-template="wdba:getAuth"></span>
+          </div>
+        </div>
+        <div id="ann"></div>
+        <div id="fac"></div>
+      </aside>
+    </main>
+  </body>
 </html>
