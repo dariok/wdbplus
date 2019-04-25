@@ -66,6 +66,12 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     
     let $collection-uri := xmldb:create-collection($wdb:data, $pColl)
     let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
+    
+    let $chmod := (
+      sm:chmod(xs:anyURI($collection-uri), 'r--r--r--'),
+      sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--')
+    )
+    
     return
         <p>
             <span>{$collection-uri}</span>
