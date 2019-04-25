@@ -26,7 +26,7 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
     case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
     default return ()
     
-  return (
+  return
   if ($res = ())
   then (
     <rest:response>
@@ -201,9 +201,7 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %rest:query-param("p", "{$p}")
 function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
-  let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-  
-  let $coll := wdb:getEdPath(base-uri($md), true())
+  let $coll := wdb:getEdPath($id, true())
   let $query := xmldb:decode($q)
   
   let $params := parse-json($p)
