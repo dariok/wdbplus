@@ -39,7 +39,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
       for $f in subsequence($res, $start, 25)
       return
-        <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt//tei:title}</file>
+        <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
     }</results>
   )
 };
