@@ -16,9 +16,6 @@ declare namespace http		= "http://expath.org/ns/http-client";
 declare namespace sm			= "http://exist-db.org/xquery/securitymanager";
 declare namespace session	= "http://exist-db.org/xquery/session";
 
-declare variable $wdbRa:server			:= $wdb:server;
-declare variable $wdbRa:collection	:= collection($wdb:data);
-
 (:~
 	:return all public full text annotations and those of the current user for $fileID
 	:)
@@ -48,6 +45,7 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
         return $entry
       }
     </anno:anno>
+  )
 };
 
 (:~
@@ -91,7 +89,7 @@ return if (not($data('from') or $data('text')))
             <cat>{$data('text')}</cat>
             <user>{$username}</user>
         </entry>
-    let $file := $wdbRa:collection/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+    let $file := $wdb:data/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
     
     return if (count($file) = 0)
         then
@@ -147,7 +145,7 @@ return if (not($data('from') or $data('text')))
         </rest:response>,
         "User guest is not allowed to create annotations")
     else
-    let $file := $wdbRa:collection/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+    let $file := $wdb:data/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
     return if (count($file) = 0)
         then
     (<rest:response>
@@ -198,7 +196,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	
 	(: check whether the user may write :)
 	let $checkWrite := if (not(sm:has-access($filePath, 'w')))
-		then <error>The current user does not have sufficient rights to write to the requested file</error>
+		then <error>The current user ({xs:string(sm:id()//sm:real/sm:username)}) does not have sufficient rights to write to the requested file</error>
 		else ()
 	
 	(: check whether the token ID exists :)
