@@ -198,7 +198,7 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$id}/{$q}")
+    %rest:path("/edoc/entities/list/collection/{$id}/{$q}.xml")
     %rest:query-param("start", "{$start}", 1)
     %rest:query-param("p", "{$p}")
 function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
@@ -213,12 +213,9 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
     else collection($coll)//tei:rs[starts-with(@ref, $query)]
   let $res := for $f in $r
     group by $ref := $f/@ref
+    order by $ref
     return
-      <result ref="{$ref}" count="{count($f)}">
-        {for $id in distinct-values($f/ancestor::tei:TEI/@xml:id)
-          return <file id="{$id}" />
-        }
-      </result>
+      <result ref="{$ref}" count="{count($f)}" />
   let $max := count($res)
   
   return (
@@ -237,7 +234,38 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/list/file/{$id}/{$q}")
+    %rest:path("/edoc/entities/list/collection/{$collection}/{$q}.html")
+    %rest:query-param("start", "{$start}", 1)
+    %rest:query-param("p", "{$p}")
+function wdbRe:listCollectionEntitiesHtml ($collection as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
+  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
+  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
+  
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+    then wdb:eval("wdbPF:getEntityXSLT()")
+    else if (doc-available($coll || '/resources/entity.xsl'))
+    then xs:anyURI($coll || '/resources/entity.xsl')
+    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    
+  let $params := <parameters>
+    <param name="title" value="{$md//meta:title[1]}" />
+    <param name="rest" value="{$wdb:restURL}" />
+  </parameters>
+  
+  return (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    transform:transform(wdbRe:listCollectionEntities ($collection, $q, $start, $p), doc($xsl), $params)
+  )
+};
+
+declare
+    %rest:GET
+    %rest:path("/edoc/entities/list/file/{$id}/{$q}.xml")
     %rest:query-param("start", "{$start}", 1)
     %rest:query-param("p", "{$p}")
 function wdbRe:listFileEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
