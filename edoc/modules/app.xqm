@@ -404,7 +404,7 @@ declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:
     then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
     else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
   
-  return if ($absolute) then $edPath else substring-after($edPath, $wdb:edocBaseDB)
+  return if ($absolute) then replace($edPath, '//', '/') else substring-after($edPath, $wdb:edocBaseDB)
 };
 
 (:~
