@@ -235,7 +235,7 @@ try {
   
   return $map
 } catch * {
-  wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value })
+  wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value, "desc": $err:description })
 }
 };
 
