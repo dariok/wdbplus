@@ -130,15 +130,15 @@ declare function local:selectEd ($model) {(
 declare function local:listEnt ($job) {(
   <select name="p">
     <option>
-      {attribute value {'{"job": "' || $job || '", "type": "person"}'}}Personen</option>
+      {attribute value {'{"job": "' || $job || '", "type": "per"}'}}Personen</option>
     <option>
-      {attribute value {'{"job": "' || $job || '", "type": "place"}'}}Orte</option>
+      {attribute value {'{"job": "' || $job || '", "type": "pla"}'}}Orte</option>
     <option>
-      {attribute value {'{"job": "' || $job || '", "type": "bibl"}'}}Bücher</option>
+      {attribute value {'{"job": "' || $job || '", "type": "bib"}'}}Bücher</option>
     <option>
       {attribute value {'{"job": "' || $job || '", "type": "org"}'}}Körperschaften</option>
     <option>
-      {attribute value {'{"job": "' || $job || '", "type": "event"}'}}>Ereignisse</option>
+      {attribute value {'{"job": "' || $job || '", "type": "evt"}'}}>Ereignisse</option>
   </select>,
   <br />
 )};
