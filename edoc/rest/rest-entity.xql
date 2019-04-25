@@ -208,7 +208,8 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
   let $params := parse-json($p)
   
   let $r := if ($p != "" and $params("type") != "")
-    then collection($coll)//tei:rs[starts-with(@ref, $query) and @type = $params("type")]
+    then collection($coll)//tei:rs[(starts-with(@ref, $query) and @type = $params("type"))
+    or starts-with(@ref, $params?type || ':' || $query)]
     else collection($coll)//tei:rs[starts-with(@ref, $query)]
   let $res := for $f in $r
     group by $ref := $f/@ref
