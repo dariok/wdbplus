@@ -15,13 +15,13 @@ declare function wdbpq:body($node as node(), $model as map(*)) {
     util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
   } catch * {
     wdbErr:error(map {"code" := fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2001'),
-      "path" := $model("path"), "model" := $model, "err" := $err:value })
+      "path" := $model("path"), "model" := $model, "err" := $err:value, "desc": $err:description })
   }
   
   return try { util:eval("wdbq:query($map)", xs:boolean('false'), (xs:QName('map'), $model))
   } catch * {
     wdbErr:error(map {"code" := fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2002'),
-      "path" := $model("path"), "model" := $model, "err" := $err:value, "module" := $module })
+      "path" := $model("path"), "model" := $model, "err" := $err:value, "module" := $module , "desc": $err:description})
   }
 };
 
