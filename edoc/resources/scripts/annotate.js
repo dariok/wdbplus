@@ -167,10 +167,13 @@ function editText() {
         contentType: "application/json; charset=UTF-8",
         dataType: 'json',
         success: function(data) {
-            ins = data["#text"][0] + data.pc;
-            if (data.lb) ins += "<br>";
-            ins += data["#text"][1];
-            $('#' + start).html(ins);
+          let ins = "";
+          if (data.lb) 
+            ins = data["#text"][0] + data.pc["#text"] + "<br>" + data["#text"][1];
+          else 
+            ins = data["#text"];
+          
+          $('#' + start).html(ins);
         }
     });
 }

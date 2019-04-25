@@ -217,7 +217,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 	return if ($checkData | $checkWrite | $checkID | $checkJob)
 		then (
 			<rest:response>
-				<http:response status="200">
+				<http:response status="500">
 					<http:header name="rest-status" value="REST:ERR" />
 				</http:response>
 			</rest:response>,
