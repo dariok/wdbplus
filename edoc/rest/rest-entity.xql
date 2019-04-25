@@ -84,13 +84,13 @@ function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/collection/{$collection}/{$ref}.xml")
+    %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
-function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
+function wdbRe:collectionEntity ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $coll := wdb:getEdPath($collection, true())
   let $query := xmldb:decode($ref)
   
-  let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query or @ref='#'||$query]]
+  let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query or @ref='#'||$query or @ref = $type || ':' || $ref]]
   let $max := count($res)
   
   return (
@@ -105,17 +105,17 @@ function wdbRe:collectionEntity ($collection as xs:string*, $ref as xs:string*, 
       group by $file := $f/@xml:id
       return
         <file id="{$file}">
-          {$f//tei:title[parent::tei:titleStmt]}
+          {$f//tei:titleStmt}
         </file>
     }</results>
   )
 };
 declare
     %rest:GET
-    %rest:path("/edoc/entities/collection/{$collection}/{$ref}.html")
+    %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.html")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:string*, $start as xs:int*) {
+function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
   let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
@@ -137,7 +137,7 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $ref as xs:strin
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    transform:transform(wdbRe:collectionEntity($collection, $ref, $start), doc($xsl), $params)
+    transform:transform(wdbRe:collectionEntity($collection, $type, $ref, $start), doc($xsl), $params)
   )
 };
 

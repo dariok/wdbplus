@@ -74,17 +74,19 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
   
   let $job := if ($model("p") instance of map(*))
     then $model?p?job
-    else "fts"
+    else "err"
   
   let $ln := switch ($job)
     case "fts" return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || $start
-    (:case "list" return $wdb:restURL || "entities/scan/" || $model?p?type || "/" || $model?id || ".html?q=" || encode-for-uri($model?q):)
-    default return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q)
+    case "search" return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q)
+    case "list" return $wdb:restURL || "entities/collection/" || $model?id || "/" || $model?p?type || "/" || $model?p?id || ".html"
+    default return ""
   
   return
 <main>
+  <p>{$ln}</p>
   {
-  if (map:contains($model, "q") and $model("q") != "") then
+  if ($job != "err") then
     let $url := xs:anyURI($ln)
       
     return try {

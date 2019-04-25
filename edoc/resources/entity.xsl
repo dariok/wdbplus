@@ -13,7 +13,7 @@
 	
 	<xsl:template match="result[@id]">
 		<li>
-			<xsl:variable name="val">{"type": "<xsl:value-of select="ancestor::results/@type"/>", "id": "<xsl:value-of select="@id" />"}</xsl:variable>
+			<xsl:variable name="val">{"type": "<xsl:value-of select="ancestor::results/@type"/>", "id": "<xsl:value-of select="@id" />", "job": "list"}</xsl:variable>
 			<xsl:variable name="p" select="encode-for-uri($val)" />
 			<a href="search.html?id={ancestor::results/@collection}&amp;p={$p}">
 				<xsl:value-of select="normalize-space(@id)" />
@@ -27,7 +27,7 @@
 	<xsl:template match="file">
 		<li>
 			<a href="view.html?id={@id}">
-				<xsl:value-of select="normalize-space(*:title[1])" />
+			  <xsl:value-of select="*:titleStmt/*[descendant::text()][1]" />
 			</a>
 			<xsl:text> </xsl:text>
 			<a href="javascript:void(0);" onclick="load('{$rest}entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
