@@ -449,15 +449,18 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     (: no specific function available, so we assume standards
      : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
      : but rather throws an error... :)
+    let $css := $model?pathToEd || "/scripts/project.css"
+    let $js := $model?pathToEd || "/scripts/project.js"
+    return
     (
       try {
-        if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.css" />
+        if (util:binary-doc-available($css))
+        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
         else ()
       } catch * { () },
       try {
-        if (util:binary-doc-available($wdb:edocBaseURL||"/"||$model('ed')||"/scripts/project.js"))
-        then <script src="{$wdb:edocBaseURL}/{$model('ed')}/scripts/project.js" />
+        if (util:binary-doc-available($js))
+        then <script src="{wdb:getUrl($js)}" />
         else ()
       } catch * { () }
     )
