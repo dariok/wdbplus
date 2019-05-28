@@ -61,11 +61,6 @@ $(document).ready(function () {
     }
 });
 
-/* when hovering over a footnote, display it in the right div */
-$(document).ready(function () {
-    $('.fn_number').hover(mouseIn, mouseOut);
-});
-
 /* Login and logout */
 // url: 'edoc/modules/auth.xql'
 $(document).ready(function () {
@@ -125,7 +120,7 @@ function doLogout () {
 
 // load image in right div when clicking on a page number
 $(document).ready(function () {
-    $('.pagebreak > a').click(function (event) {
+    $('.pagebreak a').click(function (event) {
         event.preventDefault();
         href = $(this).attr('href');
         displayImage(href);
@@ -228,6 +223,13 @@ function getPosition(el) {
 }
 /* end marginalia */
 
+/*****
+ *  Display annotations – footnotes, critical apparatus and similar on mouseover
+ *****/
+/* when hovering over a footnote, display it in the right div */
+$(document).ready(function () {
+    $('.fn_number').hover(mouseIn, mouseOut);
+});
 /* load notes into right div on hover */
 function mouseIn (event) {
     var maxWidth = 400;
@@ -269,12 +271,9 @@ function mouseOut (event) {
     console.log(id);
     setTimeout($(id).detach(), 2000, id);
 }
-
-// for backwards compatibility
-// TODO remove
-function show_annotation (dir, xml, xsl, ref, height, width) {
-    show_annotation (ref, xml, dir);
-}
+/*****
+ * Display “external” (i.e. not found within the current view) information such as (but not limited to) entities
+ *****/
 
 // show annotation in right div
 function show_annotation (ref, xml, dir) {
@@ -301,6 +300,7 @@ function show_annotation (ref, xml, dir) {
     });
 }
 
+/* display external URL */
 function showAnnotation (url) {
   var info = $('<div class="info"></div>');
   var uid = getUniqueId();
