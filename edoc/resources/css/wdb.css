@@ -19,8 +19,9 @@ html {
 }
 
 body {
-  margin-left: 2.5em;
-  margin-right: 2.5em;
+  /* a global margin left and right will make styling of function pages difficult */
+  /*margin-left: 2.5em;
+  margin-right: 2.5em;*/
   margin-top: 0;
   margin-bottom: 0;
 
