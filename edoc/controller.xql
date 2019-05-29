@@ -32,23 +32,16 @@ if ($exist:path eq '') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="{request:get-uri()}/"/>
     </dispatch>
-(: login - geklaut von eXide :)
+(: login :)
 else if ($exist:resource = 'login') then
-    let $loggedIn := login:set-user("wd", (), false())
-    return
-        try {
-            if (request:get-parameter('logout', '') = 'logout') then
-                wdba:getAuth(<br/>, map {'res': 'logout'})
-            else if (local:user-allowed()) then
-                wdba:getAuth(<br/>, map {'res': request:get-attribute("wd.user")})
-            else (
-                response:set-status-code(401),
-                    <status>fail</status>
-                )
-        } catch * {
-            response:set-status-code(403),
-            <status>{$err:description}</status>
-        }
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        {login:set-user("wd", (), false())}
+        <forward url="{$exist:controller}/auth.xql">
+            <set-attribute name="xquery.report-errors" value="yes"/>
+            <set-header name="Cache-Control" value="no-cache"/>
+            <set-header name="Access-Control-Allow-Origin" value="https://digitarium-app.acdh-dev.oeaw.ac.at"/>
+        </forward>
+    </dispatch>
 (: Konfigurationsseiten :)
 else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
 	<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
