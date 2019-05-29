@@ -65,13 +65,16 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
   let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   return switch($type)
     case "css" return
+      let $fun := if (util:binary-doc-available($model?projectResources || 'projectFunction.css'))
+        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model?projectResources)}projectFunction.css" />
+        else() 
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/css/' || $name || '.css'))
         then <link rel="stylesheet" type="text/css" href="resources/css/{$name}.css" />
         else()
       let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.css'))
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model("projectResources"))}/{$unam}.css" />
         else()
-      return ($gen, $pro)
+      return ($fun, $gen, $pro)
     case "js" return
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/scripts/' || $name || '.js'))
         then <script src="resources/scripts/{$name}.js" />
