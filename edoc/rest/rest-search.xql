@@ -90,20 +90,23 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
         | $file//tei:item[ft:query(., $query)]
   let $max := count($res)
   
-  return (
-    <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
+  return
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
       for $h in subsequence($res, $start, 25) return
         <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-          kwic:summarize($h, <config width="80"/>)
+            let $result := for $match in util:expand($h)//exist:match
+            let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
+                then $match
+                else $match/parent::*
+            let $p := $m/preceding-sibling::*[position() < 5]
+            let $f := $m/following-sibling::*[position() < 5]
+            return <match>{($p, $m, $f)}</match>
+            
+            return for $r at $pos in $result
+                where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
+                return $r
         }</result>
     }</results>
-  )
 };
 
 declare
