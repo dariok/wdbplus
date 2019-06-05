@@ -11,23 +11,20 @@ import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.x
 (:~
  : return the header
  :)
-declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {
-  <header>
+declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {(
     <h1>{
       if ($model("title") = "")
         then ""
         else $model("title")
-    }</h1>
-    <h2>Suche</h2>
-    <span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>
-    <span class="dispOpts"><a id="searchLink" href="search.html?id={$model('id')}">Suche</a></span>
-    <hr/>
+    }</h1>,
+    <h2>Suche</h2>,
+    <span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>,
+    <span class="dispOpts"><a id="searchLink" href="search.html?id={$model('id')}">Suche</a></span>,
+    <hr/>,
     <nav style="display:none;" />
-  </header>
-};
+)};
 
-declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
-<aside>
+declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
   <div>
     <h1>Volltextsuche</h1>
     <form action="search.html">
@@ -39,8 +36,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
       <input type="submit" />
     </form>
     <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
-  </div>
-  <hr />
+  </div>,
+  <hr />,
   <div>
     <h1>Registersuche</h1>
     <form action="search.html">
@@ -49,8 +46,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
       <input type="submit" />
     </form>
-  </div>
-  <hr />
+  </div>,
+  <hr />,
   <div>
     <h1>Registerliste</h1>
     <form action="search.html">
@@ -64,7 +61,7 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {
       <input type="submit" />
     </form>
   </div>
-</aside>
+)
 };
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
@@ -83,10 +80,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
     case "entries"  return $wdb:restURL || "entities/list/collection/" || $model?id || "/" || $model?q || ".html?p=" || encode-for-uri('{"type": "' || $model?p?type || '"}')
     default return ""
   
-  return
-<main>
-  {
-  if ($job != "err") then
+  return if ($job != "err") then
     let $url := xs:anyURI($ln)
       
     return try {
@@ -107,7 +101,6 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
       </div>
     }
   else ()
-}</main>
 };
 
 declare function local:selectEd ($model) {(
