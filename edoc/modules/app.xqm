@@ -315,6 +315,8 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         then <param name="view" value="{$model("view")}" />
         else ()
       }
+      <param name="xml" value="{$file}" />
+      <param name="xsl" value="{$xslt}" />
     </parameters>
   (: do not stop transformation on ambiguous rule match and similar warnings :)
   let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
