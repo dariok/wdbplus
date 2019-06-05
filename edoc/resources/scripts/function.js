@@ -8,6 +8,12 @@ var timer;                 // timer for marginalia positioning
 var internalUniqueId = 0;  // basis for globally unique IDs
 var id = $("meta[name='id']").attr("content");
 var rest = $("meta[name='rest']").attr("content");
+let ar = window.location.search.substr(1).split("&");
+var params = new Object();
+for (let i = 0; i < ar.length; i++) {
+  let te = ar[i].split("=");
+  params[te[0]] = te[1];
+}
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
@@ -19,7 +25,7 @@ $(window).on('load resize', function (event) {
 
 // Für Hervorhebung einer Abfolge von Elementen
 $(document).ready(function () {
-    if (window.location.search.indexOf('&l') > -1) {
+    if (params.hasOwnProperty('l')) {
         var range = window.location.search.split('&l=')[1];
         var from = range.split('-')[0];
         var to = range.split('-')[1];
@@ -37,6 +43,14 @@ $(document).ready(function () {
         var pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
         displayImage(pb.attr('href'));
     }
+});
+$(document).ready(function() {
+  if (params.hasOwnProperty('i')) {
+    let ids = params.i.split(',');
+    for (let i = 0; i < ids.length; i++) {
+      $('#' + ids[i]).css('background-color', 'lightblue');
+    }
+  }
 });
 
 /* autoload image */
