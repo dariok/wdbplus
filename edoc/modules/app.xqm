@@ -339,20 +339,12 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     }
 };
 
-declare function wdb:getFooter($xm as xs:string, $xs as xs:string) {
-  let $xml := if (starts-with($xm, 'http'))
-  then $xm
-  else wdb:getUrl($xm)
-  
-  let $xsl := if (starts-with($xs, 'http'))
-  then $xs
-  else wdb:getUrl($xs)
-  
-  return
-    <footer>
-      <span>XML: <a href="{$xml}" target="_blank">{$xml}</a></span>
-      <span>XSL: <a href="{$xsl}" target="_blank">{$xsl}</a></span>
-    </footer>
+declare function wdb:getFooter($node as node(), $model as map(*)) {
+  if (doc-available($model?projectResources || "/footer.html"))
+  then doc($model?projectResources || "/footer.html")
+  else if (wdb:findProjectFunction($model, "getProjectFooter", 1))
+  then wdb:eval("wdbPF:getProjectFooter", true(), (xs:QName("map"), $model))
+  else ()
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
