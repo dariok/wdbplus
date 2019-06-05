@@ -325,6 +325,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     try {
       <div id="wdbContent">
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
+        {wdb:getFooter($node, $model)}
       </div>
     } catch * { (console:log(
       <report>
