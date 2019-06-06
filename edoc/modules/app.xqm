@@ -348,6 +348,13 @@ declare function wdb:getFooter($node as node(), $model as map(*)) {
   then wdb:eval("wdbPF:getProjectFooter", true(), (xs:QName("map"), $model))
   else ()
 };
+declare function wdb:getRightFooter($node as node(), $model as map(*)) {
+  if (doc-available($model?projectResources || "/projectRightFooter.html"))
+  then doc($model?projectResources || "/projectRightFooter.html")
+  else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
+  then wdb:eval("wdbPF:getProjectRightFooter", true(), (xs:QName("map"), $model))
+  else ()
+};
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
 (: FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
