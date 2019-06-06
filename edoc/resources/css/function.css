@@ -1,18 +1,17 @@
 /* layout of function pages (e.g. start.html, search.html, query.hmtl */
 body {
-  flex-direction: row;
-  flex-wrap: wrap;
+  grid-template-columns: repeat( auto-fit, minmax(400px, 1fr) );
 }
-
 h1 {
   width: 100%;
   text-align: center;
 }
 
 aside {
-  width: calc(20% - 2.5px);
+  grid-area: left;
+  
+/*  width: calc(20% - 2.5px);*/
   padding-right: 5px;
-  height: 91vh;
 }
 
 aside h1, aside h2 {
@@ -23,10 +22,10 @@ aside h1 {
 }
 
 main {
-  width: calc(80% - 2.5px);
-  max-height: 91vh;
+  grid-area: right;
+  
+  /*width: calc(80% - 2.5px);*/
   overflow-y: auto;
-  height: calc(100% - 9vh);
 }
 main h1, main h2 {
   font-family: sans-serif;
