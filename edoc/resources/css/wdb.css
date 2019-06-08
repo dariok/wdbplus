@@ -30,6 +30,7 @@ body {
   display: grid;
   grid-template-areas: 'header header'
                        'left right';
+  grid-template-rows: max-content;
 }
 
 /* Content of the header */
