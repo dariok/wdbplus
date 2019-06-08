@@ -9,17 +9,6 @@ declare namespace output  = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "html5";
 declare option output:media-type "text/html";
 
-declare function wdbst:getStartHeader($node as node(), $model as map(*)) as node()* {
-  if (doc-available($model("projectResources") || '/startHeader.html'))
-  then doc($model("projectResources") || '/startHeader.html')
-  else if (wdb:findProjectFunction($model, 'getStartHeader', 1))
-  then wdb:eval('wdbPF:getStartHeader($model)', false(), (xs:QName('model'), $model))
-  else (
-    <h1>{$model("title")}</h1>,
-    <hr/>
-  )
-};
-
 declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()* {
   if (doc-available($model("projectResources") || '/startLeft.html'))
   then doc($model("projectResources") || '/startLeft.html')

@@ -8,22 +8,6 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 import module namespace console="http://exist-db.org/xquery/console";
 import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
-(:~
- : return the header
- :)
-declare function wdbSearch:getHeader ( $node as node(), $model as map(*) ) {(
-    <h1>{
-      if ($model("title") = "")
-        then ""
-        else $model("title")
-    }</h1>,
-    <h2>Suche</h2>,
-    <span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>,
-    <span class="dispOpts"><a id="searchLink" href="search.html?id={$model('id')}">Suche</a></span>,
-    <hr/>,
-    <nav style="display:none;" />
-)};
-
 declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
   <div>
     <h1>Volltextsuche</h1>
