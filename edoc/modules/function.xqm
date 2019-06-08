@@ -2,13 +2,15 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace console = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
+import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
+import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   at "search.xqm";
+import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"  at "start.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace templates = "http://exist-db.org/xquery/templates";
 
 declare
     %templates:default("q", "")
@@ -35,7 +37,13 @@ try {
 }
 };
 
-declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
+declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
+  element { local-name($node) } {
+    $model($key)
+  }
+};
+
+declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="wdb-template" content="templates/function.html"/>
@@ -53,6 +61,26 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) {
     <script src="resources/scripts/function.js"/>
     {local:get('js', $model("pathToEd"), $model)}
   </head>
+};
+
+declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
+  let $file := xstring:substring-after-last(request:get-url(), '/')
+  let $name := substring-before($file, '.html')
+  
+  let $psHeader := if (doc-available($model("projectResources") || '/' || $name || 'Header.html'))
+    then templates:process(doc($model("projectResources") || '/' || $name || 'Header.html'), $model)
+    else if (wdb:findProjectFunction($model, 'get' || $name || 'Header', 1))
+    then wdb:eval('wdbPF:get' || $name || 'Header($model)', false(), (xs:QName('model'), $model))
+    else if (doc-available($model?projectResources || "functionHeader.html"))
+    then templates:process(doc($model?projectResources || "functionHeader.html"), $model)
+    else ()
+  
+  return if (count($psHeader) > 0)
+  then $psHeader
+  else (
+    <h1 class="default">{$model("title")}</h1>,
+    <hr/>
+  )
 };
 
 declare function wdbfp:test ( $node as node(), $model as map(*) ) {
