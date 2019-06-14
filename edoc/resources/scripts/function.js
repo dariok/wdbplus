@@ -486,7 +486,7 @@ function toggleNavigation() {
     
     if ($('nav').text() === '') {
         $('nav').text('lädt...');
-        id = $('meta[name="ed"]').attr('content');
+        id = $('meta[name="id"]').attr('content');
         res = $. get (rest + 'collection/' + id + '/nav.html', '',
         function (data) {
             $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
