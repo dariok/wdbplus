@@ -48,7 +48,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="wdb-template" content="templates/function.html"/>
     <meta name="id" content="{$model("id")}" />
-    <meta name="ed" content="{$model("edPath")}" />
+    <meta name="ed" content="{$model("id")}" />
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="resources/css/wdb.css"/>
