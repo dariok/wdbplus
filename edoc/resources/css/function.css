@@ -1,6 +1,6 @@
 /* layout of function pages (e.g. start.html, search.html, query.hmtl */
 body {
-  grid-template-columns: repeat( auto-fit, minmax(400px, 1fr) );
+  grid-template-columns: 3fr 7fr;
 }
 h1 {
   width: 100%;
