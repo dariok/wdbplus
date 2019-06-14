@@ -65,7 +65,8 @@ header h2 {
 span.dispOpts {
   float: right;
   
-  font-size: 0.8em;
+  font-size: 0.9em;
+  line-height: 1.4rem;
   font-family: sans-serif;
 }
 .dispOpts:before {
