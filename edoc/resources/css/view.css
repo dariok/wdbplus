@@ -7,17 +7,6 @@ body {
   grid-template-columns: 1fr 1fr;
 }
 
-/* Navigation */
-nav {
-  background-color: white;
-  border: 0.1px solid;
-  padding: .5em;
-  overflow-y: auto;
-  position: fixed;
-  z-index: 99;
-  max-height: 75%;
-}
-
 /* Main content below header */
 main {
   display: flex;
