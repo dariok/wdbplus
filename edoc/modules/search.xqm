@@ -84,7 +84,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
         </ul>
       </div>
     }
-  else ()
+  else <div />
 };
 
 declare function local:selectEd ($model) {(

@@ -24,13 +24,17 @@ aside h1 {
 main {
   grid-area: right;
   
-  /*width: calc(80% - 2.5px);*/
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
 }
 main h1, main h2 {
   font-family: sans-serif;
   width: 100%;
   text-align: center;
+}
+main div {
+  flex-grow: 1;
 }
 
 header a {
