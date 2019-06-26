@@ -50,22 +50,25 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
 
 declare function wdbSearch:search($node as node(), $model as map(*)) {
   let $start := if ($model("p") instance of map(*) and map:contains($model("p"), "start"))
-    then '&amp;start=' || $model("p")("start")
+    then '&amp;start=' || $model?p?start
     else ''
   
   let $job := if ($model("p") instance of map(*))
     then $model?p?job
     else "err"
   
-  let $ln := switch ($job)
-    case "fts"      return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || $start
-    case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q)
-    case "list"     return $wdb:restURL || "entities/collection/" || $model?id || "/" || $model?p?type || "/" || $model?p?id || ".html"
-    case "entries"  return $wdb:restURL || "entities/list/collection/" || $model?id || "/" || $model?q || ".html?p=" || encode-for-uri('{"type": "' || $model?p?type || '"}')
-    default return ""
+  let $p := $model?p
+  let $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
+  let $json := "{" || string-join($c, ', ') || "}"
   
   return if ($job != "err") then
-    let $url := xs:anyURI($ln)
+    let $ln := switch ($job)
+      case "fts"      return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
+      case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
+      case "list"     return $wdb:restURL || "entities/collection/" || $model?id || "/" || $model?p?type || "/" || $model?p?id || ".html?p=" || encode-for-uri($json)
+      case "entries"  return $wdb:restURL || "entities/list/collection/" || $model?id || "/" || $model?q || ".html?p=" || encode-for-uri($json)
+      default return ""
+    let $url := xs:anyURI($ln || $start)
       
     return try {
       let $request-headers := <headers>
