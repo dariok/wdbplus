@@ -77,10 +77,11 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
   
   return if (count($psHeader) > 0)
   then $psHeader
-  else (
-    <h1 class="default">{$model("title")}</h1>,
-    <hr/>
-  )
+  else
+    <header>
+      <h1 class="default">{$model("title")}</h1>,
+      <hr/>
+    </header>
 };
 
 declare function wdbfp:test ( $node as node(), $model as map(*) ) {
