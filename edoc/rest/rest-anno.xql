@@ -145,7 +145,7 @@ return if (not($data('from') or $data('text')))
         </rest:response>,
         "User guest is not allowed to create annotations")
     else
-    let $file := $wdb:data/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+    let $file := collection($wdb:data)/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
     return if (count($file) = 0)
         then
     (<rest:response>
