@@ -158,7 +158,7 @@ return if (not($data('from') or $data('text')))
             let $t := console:log($data)
             let $content := (
         		$file/id($data("from")), 
-        		if ($data("from") != $data("to")) then ($file/id($data("from"))/following-sibling::tei:* intersect $file/id($data("to"))/preceding-sibling::tei:*, 
+        		if ($data("from") != $data("to")) then ($file/id($data("from"))/following-sibling::node() intersect $file/id($data("to"))/preceding-sibling::node(), 
         			$file/id($data("to"))) else () 
         	)
         
