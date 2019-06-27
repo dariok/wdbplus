@@ -51,8 +51,7 @@
               <select id="layout">
                 <option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
                 <option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
-                <option value="findent">Liste: 1. Zeile eingezogen, wie Absatz
-                  („findent“)</option>
+                <option value="findent">Liste: 1. Zeile eingezogen, wie Absatz („findent“)</option>
                 <option value="hanging">hängender Einzug</option>
               </select>
               <input type="submit" />
@@ -66,7 +65,7 @@
                 <option value="person">Person</option>
                 <option value="place">Ort</option>
               </select>
-              <input type="text" id="identity" name="identity" />
+              <select id="search-entity" style="width: 80%"></select>
               <input type="submit" formaction="javascript:identifyEntity();" />
             </form>
           </div>
@@ -80,8 +79,8 @@
             <h1>Korrekturen</h1>
             <p>
               <a href="javascript:void(0);" onclick="fshow('#tCorr')">Korrekturen im Wort</a>, <a
-                href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a>
-              oder aufteilen</p>
+                href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder
+              aufteilen</p>
             <form id="korr">
               <fieldset id="tCorr" name="tCorr" style="display: none;">
                 <label for="corr">Korrektur:</label>
@@ -111,7 +110,7 @@
       </div>
       <div id="ann"></div>
       <div id="fac"></div>
-      <div data-template="wdb:getRightFooter" />
+      <div data-template="wdb:getRightFooter"></div>
     </aside>
   </body>
 </html>
