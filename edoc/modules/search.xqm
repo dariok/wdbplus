@@ -57,11 +57,11 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
     then $model?p?job
     else "err"
   
-  let $p := $model?p
-  let $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
-  let $json := "{" || string-join($c, ', ') || "}"
-  
   return if ($job != "err") then
+    let $p := $model?p
+    let $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
+    let $json := "{" || string-join($c, ', ') || "}"
+    
     let $ln := switch ($job)
       case "fts"      return $wdb:restURL || "search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
       case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
