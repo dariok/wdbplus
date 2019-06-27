@@ -121,7 +121,7 @@ function chgLayout(rend) {
 
 function identifyEntity() {
     id = $("meta[name='id']").attr("content");
-    edit = $("#identity").val();
+    edit = $("#search-entity").val();
     type = $("#type").val();
     dialog.dialog("close");
     headers = {"Authorization": "Basic " + cred};
