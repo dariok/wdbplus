@@ -1,3 +1,12 @@
+(: wdbplus: load parts of start.html by means of project specifics
+ : created: 2019-02-20
+ : creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ : sources: https://github.com/dariok/wdbplus
+ : changes:
+ :          - 2019-06-08: module now used in function.html context
+ :          - 2019-06-28: enable use of templating functions within project
+ :                        specific HTML files
+ :)
 xquery version "3.0";
 
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
@@ -35,7 +44,7 @@ declare function wdbst:getStart ($node as node(), $model as map(*)) as node()* {
     else false()
     
   return if (doc-available($model("projectResources") || '/startRight.html'))
-  then templates-apply(doc($model("projectResources") || '/startRight.html'), $wdbst:lookup, $model)
+  then templates:apply(doc($model("projectResources") || '/startRight.html'), $wdbst:lookup, $model)
   else if (wdb:findProjectFunction($model, 'getStart', 1))
   then wdb:eval('wdbPF:getStart($model)', false(), (xs:QName('model'), $model))
   else ()
