@@ -114,3 +114,28 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
       return ($gen, $pro)
     default return <meta name="specFile" value="{$name}" />
 };
+
+(: get the footerfor function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
+declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
+  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
+  let $functionsAvailable := if ($projectAvailable)
+    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
+        xs:anyURI($projectAvailable))
+    else false()
+    
+  return if (doc-available($model("projectResources") || 'functionFooter.html'))
+  then 
+      templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbst:lookup, $model)
+  else if (wdb:findProjectFunction($model, 'getFunctionFooter', 1))
+  then wdb:eval('wdbPF:getFunctionFooter($model)', false(), (xs:QName('model'), $model))
+  else ()
+};
+
+(: we need a lookup function for the templating system to work :)
+declare variable $wdbfp:lookup := function($functionName as xs:string, $arity as xs:int) {
+    try {
+        function-lookup(xs:QName($functionName), $arity)
+    } catch * {
+        ()
+    }
+};
