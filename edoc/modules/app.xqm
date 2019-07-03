@@ -12,6 +12,7 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console = "http://exist-db.org/xquery/console";
+import module namespace templates="http://exist-db.org/xquery/templates" at "/db/apps/shared-resources/content/templates.xql";
 import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 import module namespace xConf   = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
@@ -22,7 +23,6 @@ declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets      = "http://www.loc.gov/METS/";
 declare namespace rest      = "http://exquery.org/ns/restxq";
 declare namespace tei       = "http://www.tei-c.org/ns/1.0";
-declare namespace templates = "http://exist-db.org/xquery/templates";
 declare namespace xlink     = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
@@ -341,10 +341,16 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 };
 
 declare function wdb:getFooter($node as node(), $model as map(*)) {
-  if (doc-available($model?projectResources || "/footer.html"))
-  then doc($model?projectResources || "/footer.html")
+  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
+  let $functionsAvailable := if ($projectAvailable)
+    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
+        xs:anyURI($projectAvailable))
+    else false()
+  
+  return if (doc-available($model?projectResources || "/footer.html"))
+  then templates:apply(doc($model?projectResources || "/footer.html"),  $wdb:lookup, $model)
   else if (wdb:findProjectFunction($model, "getProjectFooter", 1))
-  then wdb:eval("wdbPF:getProjectFooter", true(), (xs:QName("map"), $model))
+  then wdb:eval("wdbPF:getProjectFooter", true(), (xs:QName("model"), $model))
   else ()
 };
 declare function wdb:getRightFooter($node as node(), $model as map(*)) {
@@ -611,6 +617,15 @@ declare function local:get($map as map(*), $prefix as xs:string) {
     } catch * {
       let $value := try { xs:string($map($key)) } catch * { "err" }
       return <p><b>{$pr}: </b> {$value}</p>
+    }
+};
+
+(: we need a lookup function for the templating system to work :)
+declare variable $wdb:lookup := function($functionName as xs:string, $arity as xs:int) {
+    try {
+        function-lookup(xs:QName($functionName), $arity)
+    } catch * {
+        ()
     }
 };
 (: END LOCAL HELPER FUNCTIONS :)
