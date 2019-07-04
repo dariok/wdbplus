@@ -70,7 +70,6 @@ header h2 {
 span.dispOpts {
   float: right;
   
-  font-size: 0.9em;
   line-height: 1.4rem;
   font-family: sans-serif;
 }
@@ -188,10 +187,11 @@ span.dispOpts {
   content: ']';
 }
 
-/* function links, i.e. links in the header or footer, should be distinguishable from “content” links
- * – therefore, use sans-serif for these links */
-header a, footer a {
+/* function links, i.e. links in the header, and the content of the footer should be distinguishable from the text of
+ * the edition – therefore, use sans-serif for these texts and links */
+header a, footer {
     font-family: sans-serif;
+    font-size: 0.9em;
 }
 
 /* animation during AJAX requests 
