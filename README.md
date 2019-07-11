@@ -26,7 +26,7 @@ xquery version "3.1";
 
 import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
 
-let $whereToClone := "~/git/wdbplus"
+let $whereToClone := "/home/user/git/wdbplus"
 let $targetCollection := "/db/apps/edoc"
 
 let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
