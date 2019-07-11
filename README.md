@@ -33,40 +33,40 @@ let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
 let $ie := exgit:import($whereToClone || "/edoc", $targetCollection)
 let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
 
+let $collsr := (
+  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/scripts/jquery-ui", "/resources/scripts/jquery-ui/images", "/resources/xsl"
+)
+
+let $ro := for $coll in $collsr
+  let $resources := xmldb:get-child-resources($targetCollection || $coll)
+  return for $resource in $resources
+    let $res := $targetCollection || $coll || '/' || $resource
+    return $res || ': ' || sm:chmod(xs:anyURI($res), 'r--r--r--')
+
 let $chmod := (
-    sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/include/xstring/string-pack.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/view.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-anno.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-coll.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-entity.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-files.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-search.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-test.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/annotations.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/app.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/auth.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/config.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/entity.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/error.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/function.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/nlp.xql'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/pquery.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/search.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/start.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || '/modules/stats.xqm'), 'r--r--r--')
-    sm:chmod(xs:anyURI($targetCollection || 'templates/layout.html'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || 'templates/admin.html'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || 'templates/function.html'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || 'templates/error-page.html'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || 'templates/error.html'), 'r--r--r--'),
-    sm:chmod(xs:anyURI($targetCollection || 'templates/page2.html'), 'r--r--r--')
+  sm:chmod(xs:anyURI($targetCollection || '/config.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/index.html'), 'r--r--r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/entity.html'), 'r--r--r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/start.html'), 'r--r--r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/test.html'), 'r--r--r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/view.html'), 'r--r--r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/project.xqm'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/include/xstring/string-pack.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-anno.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-coll.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-entity.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-files.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-search.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/rest/rest-test.xql'), 'r-xr-xr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/modules/view.xql'), 'r-xr-xr-x')
 )
 let $chown := sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb')
 let $chgrp := sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers')
 let $reindex := xmldb:reindex($targetCollection || '/data')
 
-return ($cl, $ie, $ic, $chmod, $chown, $chgrp, $reindex)
+return ($cl, $ie, $ic, $ro, $chmod, $chown, $chgrp, $reindex)
 ```
 1. replace the value of `$whereToClone` with the full target directory on your file system where the app shall be cloned into
 1. if you created a different target collection, change the value of `$targetCollection` accordingly
