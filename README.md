@@ -30,7 +30,7 @@ let $whereToClone := "/home/user/git/wdbplus"
 let $targetCollection := "/db/apps/edoc"
 
 let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
-let $ie := exgit:import($whereToClone || "/edoc", "$targetCollection")
+let $ie := exgit:import($whereToClone || "/edoc", $targetCollection)
 let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
 
 let $chmod := (
