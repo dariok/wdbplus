@@ -35,6 +35,7 @@ let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/a
 
 let $chmod := (
     sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/include/xstring/string-pack.xql'), 'r-xr-xr-x'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/view.xql'), 'r-xr-xr-x'),
     sm:chmod(xs:anyURI($targetCollection || '/rest/rest-anno.xql'), 'r-xr-xr-x'),
     sm:chmod(xs:anyURI($targetCollection || '/rest/rest-coll.xql'), 'r-xr-xr-x'),
@@ -42,6 +43,7 @@ let $chmod := (
     sm:chmod(xs:anyURI($targetCollection || '/rest/rest-files.xql'), 'r-xr-xr-x'),
     sm:chmod(xs:anyURI($targetCollection || '/rest/rest-search.xql'), 'r-xr-xr-x'),
     sm:chmod(xs:anyURI($targetCollection || '/rest/rest-test.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/annotations.xqm'), 'r--r--r--'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/app.xqm'), 'r--r--r--'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/auth.xqm'), 'r--r--r--'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/config.xqm'), 'r--r--r--'),
@@ -53,6 +55,12 @@ let $chmod := (
     sm:chmod(xs:anyURI($targetCollection || '/modules/search.xqm'), 'r--r--r--'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/start.xqm'), 'r--r--r--'),
     sm:chmod(xs:anyURI($targetCollection || '/modules/stats.xqm'), 'r--r--r--')
+    sm:chmod(xs:anyURI($targetCollection || 'templates/layout.html'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || 'templates/admin.html'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || 'templates/function.html'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || 'templates/error-page.html'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || 'templates/error.html'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || 'templates/page2.html'), 'r--r--r--')
 )
 let $chown := sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb')
 let $chgrp := sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers')
