@@ -73,8 +73,8 @@ return ($cl, $ie, $ic, $chmod, $chown, $chgrp, $reindex)
 Set the name for the instance and other settings in `edoc/config.xml`.
 
 ## Creating and uploading projects
-While many different ways of putting data into the application are possible, the stanard way is to have one collection
-under data for each project. It is possible to create an ninitial setup using `admin/admin.html`. The following describes a manual installation and assumes that you work with a standard setup, i.e. have installed the app
+While many different ways of putting data into the application are possible, the standard way is to have one collection
+under data for each project. It is possible to create an initial setup using `admin/admin.html`. The following describes a manual installation and assumes that you work with a standard setup, i.e. have installed the app
 into `/db/apps/edoc` and want to put your projects into `/db/apps/edoc/data/*`.
 
 1. create `wdbmeta.xml` in that collection, either by copying, pasting and editing the example or by using
