@@ -16,8 +16,8 @@ The app will be installed into `/db/apps/edoc`.
 Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to clone the current version directly into a running eXist instance.
 
 1. Install eXgit as stated in the repo.
-1. (optional) create a user for the framework and log in under that name –– CAVEAT: this user, at least for the duration of the installation, **needs to be** in the **dba** group!
-1. (optional) create the target collection as this user
+1. create a user `wdb` and a group `wdbusers` for the framework and log in under that name –– CAVEAT: this user, at least for the duration of the installation, **needs to be** in the **dba** group!
+1. create the target collection (default would be `/db/apps/edoc`) as this user
 1. open eXide from eXist's Dashboard and paste:
 
 ```
@@ -26,39 +26,41 @@ xquery version "3.1";
 import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
 
 let $whereToClone := "~/git/wdbplus"
+let $targetCollection := "/db/apps/edoc"
 
 let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
-let $ie := exgit:import($whereToClone || "/edoc", "/db/apps/edoc")
+let $ie := exgit:import($whereToClone || "/edoc", "$targetCollection")
 let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
 
 let $chmod := (
-    sm:chmod(xs:anyURI('/db/apps/edoc/controller.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/view.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-anno.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-coll.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-entity.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-files.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-search.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/rest/rest-test.xql'), 'r-xr-xr-x'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/app.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/auth.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/config.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/entity.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/error.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/function.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/nlp.xql'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/pquery.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/search.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/start.xqm'), 'r--r--r--'),
-    sm:chmod(xs:anyURI('/db/apps/edoc/modules/stats.xqm'), 'r--r--r--')
+    sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/view.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-anno.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-coll.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-entity.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-files.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-search.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/rest/rest-test.xql'), 'r-xr-xr-x'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/app.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/auth.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/config.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/entity.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/error.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/function.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/nlp.xql'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/pquery.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/search.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/start.xqm'), 'r--r--r--'),
+    sm:chmod(xs:anyURI($targetCollection || '/modules/stats.xqm'), 'r--r--r--')
 )
-let $chown := sm:chown(xs:anyURI('/db/apps/edoc/annotations'), 'wdb')
-let $chgrp := sm:chgrp(xs:anyURI('/db/apps/edoc/annotations'), 'wdbusers')
-let $reindex := xmldb:reindex('/db/apps/edoc/data')
+let $chown := sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb')
+let $chgrp := sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers')
+let $reindex := xmldb:reindex($targetCollection || '/data')
 
 return ($cl, $ie, $ic, $chmod, $chown, $chgrp, $reindex)
 ```
 1. replace the value of `$whereToClone` with the full target directory on your file system where the app shall be cloned into
+1. if you created a different target collection, change the value of `$targetCollection` accordingly
 1. run the script
 
 ### manual installation
