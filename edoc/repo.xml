@@ -1,13 +1,13 @@
 <meta xmlns="http://exist-db.org/xquery/repo">
     <description>Workbench und Publikationsumgebung für Digitale Bibliotheken</description>
     <author>Dario Kampkaspar</author>
-    <website>https://github.com/dariok/wdb-exist-public</website>
-    <status>alpha</status>
+    <website>https://github.com/dariok/wdbplus</website>
+    <status>stable</status>
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
     <type>application</type>
     <target>edoc</target>
     <prepare>pre-install.xql</prepare>
     <finish>post-install.xql</finish>
-    <permissions user="wdb" group="wdb" mode="rw-rw-r--"/>
+    <permissions user="wdb" group="wdbusers" mode="rw-rw-r--"/>
 </meta>
