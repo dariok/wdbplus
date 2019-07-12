@@ -37,10 +37,6 @@ let $collsr := (
   "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/scripts/jquery-ui", "/resources/scripts/jquery-ui/images", "/resources/xsl"
 )
 
-let $collsr := (
-  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/scripts/jquery-ui", "/resources/scripts/jquery-ui/images", "/resources/xsl"
-)
-
 return (
   for $coll in $collsr
     let $resources := xmldb:get-child-resources($targetCollection || $coll)
