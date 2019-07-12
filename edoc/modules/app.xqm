@@ -110,6 +110,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
   <dl>
     {
       for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
+        where not(contains($var/@name, 'lookup'))
         let $variable := '$' || normalize-space($var/@name)
         return (
           <dt>{$variable}</dt>,
