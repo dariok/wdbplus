@@ -28,7 +28,7 @@ declare function local:query-execution-allowed() {
     xmldb:is-admin-user((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
 
-if ($exist:path eq '' or $exist:resource eq 'index.html') then
+if ($exist:resource eq '' or $exist:resource eq 'index.html') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/global/index.html"/>
     </dispatch>
