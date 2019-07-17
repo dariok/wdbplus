@@ -48,7 +48,7 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. run `edoc/post-install.xql` to set execution rights and apply the index configuration (if you change the destination, adjust your paths).
 
 ## Initial configuration
-Set the name for the instance and other settings in `edoc/config.xml`.
+Set the name for the instance and other settings in `edoc/config.xml` or using the form under `edoc/admin/admin.html`.
 
 ## Creating and uploading projects
 While many different ways of putting data into the application are possible, the standard way is to have one collection
