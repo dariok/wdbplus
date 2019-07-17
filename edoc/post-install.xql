@@ -20,16 +20,18 @@ let $chmod := (
     return sm:chmod(xs:anyURI($targetCollection || '/rest/' || $xql), 'r-xr-xr-x'),
   for $xql in xmldb:get-child-resources($targetCollection || '/modules')[ends-with(., '.xql')]
     return sm:chmod(xs:anyURI($targetCollection || '/modules/' || $xql), 'r-xr-xr-x'),
+  for $global in xmldb:get-child-resources($targetCollection || '/global')
+    return sm:chmod(xs:anyURI($targetCollection || '/global/' || $global), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/config.xml'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
   sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/data/project.xqm'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/include/xstring/string-pack.xql'), 'r-xr-xr-x'),
   for $s in xmldb:get-child-collections($targetCollection)
-    return sm:chmod(xs:anyURI($coll || '/' || $s), "r-xr-xr-x"),
-  sm:chmod(xs:anyURI($targetCollection || '/global'), 'rwxrwxr-x')
+    return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
+  sm:chmod(xs:anyURI($targetCollection || '/global'), 'rwxrwxr-x'),
   sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb'),
-  sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers'),
+  sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers')
 )
 
 let $reindex := (
