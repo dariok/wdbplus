@@ -2,19 +2,20 @@ xquery version "3.0";
 
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
-import module namespace templates	= "http://exist-db.org/xquery/templates";
-import module namespace wdb				= "https://github.com/dariok/wdbplus/wdb"	at "app.xqm";
-import module namespace console 	= "http://exist-db.org/xquery/console";
+import module namespace templates = "http://exist-db.org/xquery/templates";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"  at "app.xqm";
+import module namespace console   = "http://exist-db.org/xquery/console";
 
-declare namespace mets		= "http://www.loc.gov/METS/";
-declare namespace mods		= "http://www.loc.gov/mods/v3";
-declare namespace tei			= "http://www.tei-c.org/ns/1.0";
-declare namespace wdbmeta	= "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets    = "http://www.loc.gov/METS/";
+declare namespace mods    = "http://www.loc.gov/mods/v3";
+declare namespace tei     = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbc    = "https://github.com/dariok/wdbplus/config";
+declare namespace wdbmeta = "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare
 %templates:default('ed', '')
 function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
-	wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()), $ed)
+  wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()), $ed)
 };
 
 declare function wdbs:projectList($admin as xs:boolean, $ed) {
@@ -48,7 +49,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
           <td>(M) {$id}</td>
           <td><a href="{$wdb:edocBaseURL || $id || '/start.html'}">{normalize-space($name)}</a></td>
           {if ($admin = true()) then
-          (	
+          (  
             <td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
             <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
           )
@@ -77,26 +78,33 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
     </table>
 };
 
+declare function wdbs:getInstanceName($node as node(), $model as map(*)) {
+  <span>{$wdb:configFile//wdbc:meta/wdbc:name}</span>
+};
+declare function wdbs:getInstanceShort($node as node(), $model as map(*)) {
+  <span>{$wdb:configFile//wdbc:meta/wdbc:short}</span>
+};
+
 declare function wdbs:chronologicalOrder($ed) {
-	for $fi in $ed
-				let $dates := $fi//tei:date/@when
-				
-				for $date in $dates
-					let $parsed := if (matches($date, '^\d{4}-\d{2}-\d{2}'))
-						then datetime:parse-date($date, 'yyyy-MM-dd')
-						else (if (matches($date, '^\d{4}-\d{2}'))
-							then datetime:parse-date($date, 'yyyy-MM')
-							else (if (matches($date, '^\d{4}'))
-								then datetime:parse-date($date, 'yyyy')
-								else ()))
-					let $cast :=  if ($date castable as xs:date)
-						then $date cast as xs:date
-						else '?'
-					where $parsed lt datetime:parse-date('1900-01-01', 'yyyy-MM-dd')
-					return
-						<dl>
-							<dd>{base-uri($fi)}</dd>
-							<dt>{$date}{$parsed}</dt>
-							<dt>{$cast}</dt>
-						</dl>
+  for $fi in $ed
+    let $dates := $fi//tei:date/@when
+    
+    for $date in $dates
+      let $parsed := if (matches($date, '^\d{4}-\d{2}-\d{2}'))
+        then datetime:parse-date($date, 'yyyy-MM-dd')
+        else (if (matches($date, '^\d{4}-\d{2}'))
+          then datetime:parse-date($date, 'yyyy-MM')
+          else (if (matches($date, '^\d{4}'))
+            then datetime:parse-date($date, 'yyyy')
+            else ()))
+      let $cast :=  if ($date castable as xs:date)
+        then $date cast as xs:date
+        else '?'
+      where $parsed lt datetime:parse-date('1900-01-01', 'yyyy-MM-dd')
+      return
+        <dl>
+          <dd>{base-uri($fi)}</dd>
+          <dt>{$date}{$parsed}</dt>
+          <dt>{$cast}</dt>
+        </dl>
 };
