@@ -97,7 +97,7 @@ declare function wdbPL:head ($node as node(), $model as map(*)) {
 		else "Projekt " || $ed
 	
 	let $opts := if (request:get-parameter('job', '') != '')
-		then <span class="dispOpts">[<a href="global.html">globale Optionen</a>]</span>
+		then <span class="dispOpts"><a href="global.html">globale Optionen</a></span>
 		else ()
 		
 	return (<h1>{$title}</h1>,
