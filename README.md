@@ -21,18 +21,18 @@ Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to 
 1. create the target collection (default would be `/db/apps/edoc`) as this user
 1. open eXide from eXist's Dashboard
 1. paste:
-  ```
-  xquery version "3.1";
-  
-  import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
-  
-  let $whereToClone := "/home/user/git/wdbplus"
-  let $targetCollection := "/db/apps/edoc"
-  
-  let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
-  let $ie := exgit:import($whereToClone || "/edoc", $targetCollection)
-  let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
-  ```
+    ```
+    xquery version "3.1";
+    
+    import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
+    
+    let $whereToClone := "/home/user/git/wdbplus"
+    let $targetCollection := "/db/apps/edoc"
+    
+    let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
+    let $ie := exgit:import($whereToClone || "/edoc", $targetCollection)
+    let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
+    ```
 1. replace the value of `$whereToClone` with the full target directory on your file system where the app shall be cloned into
 1. if you created a different target collection, change the value of `$targetCollection` accordingly
 1. run the script
