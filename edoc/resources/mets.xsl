@@ -463,14 +463,14 @@
                 <li>
                     <a>
                         <xsl:attribute name="href"><!-- angepaßt für WDB-eXist; 2016-07-19 DK -->
-                            <xsl:value-of select="$wdb"/><!--							<xsl:text>&distype=optional</xsl:text>--><!-- ersetze: 
+                            <xsl:value-of select="$wdb"/><!--							<xsl:text>&amp;distype=optional</xsl:text>--><!-- ersetze: 
                                 =  || %3D 
                                 &  || %26
                                 ?  || %3F
                                 "   || %22
                             -->
                             <xsl:text>?id=</xsl:text>
-                            <xsl:value-of select="mets:fptr/@FILEID"/><!--							<xsl:text>&xml=</xsl:text>
+                            <xsl:value-of select="mets:fptr/@FILEID"/><!--							<xsl:text>&amp;xml=</xsl:text>
 							<xsl:call-template name="url-encode">
 								<xsl:with-param name="str">
 									<xsl:value-of select="//mets:file[@ID = current()/mets:fptr/@FILEID]/mets:FLocat/@xlink:href"/>
