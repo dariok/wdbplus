@@ -7,28 +7,30 @@ While the app was built with the possibility in mind to adapt it to different lo
 The default setup install the app into the collection `/db/apps/edoc` of eXist. It contains the [[main HTML files|main-html-files]] and the everything else the app needs to run. It is also home to several subcollections:
 
     edoc
-    |-admin
-    |-data
-    |-include
-    |-modules
-    |-resources
-    |-rest
-    |-schema
-    |-templates
-    |-(annotations)
-    |-(doc)
+     ├─admin
+     ├─data
+     ├─global
+     ├─include
+     ├─modules
+     ├─resources
+     ├─rest
+     ├─schema
+     ├─templates
+     ├─(annotations)
+     ├─(doc)
 
 * `admin`, as the name suggests, contains a few scripts to help admins keep an overview of the projects within this installation (more are to be added in later versions).
 * `data` is where the different projects go as subcollections. While it can be empty, it may contain [[start.xml|main-files#start]] and should contain [[wdbmeta.xml]] to give a global start page or set global metadata.
-* `include` contains recent versions of related projects, namely the schema for [[wdbmeta.xml|main-files#wdbmeta]] and a collection of XSL/XQuery functions to deal with strings (extending the normal XPath string functions). **No user changes should be made here.**
-* `modules` is where the main global scripts go. **No user changes should be made here.**
-* `resources` contains global resources such as default XSLTs, global CSS and JavaScript. **No user changes should be made here.**
+* `global` is where globally available or root level content is stored, e.g. `index.html`. **This is the only place in the app root where users should (and need to) make changes**
+* `include` contains recent versions of related projects, namely the schema for [[wdbmeta.xml|main-files#wdbmeta]] and a collection of XSL/XQuery functions to deal with strings (extending the normal XPath string functions).
+* `modules` is where the main global scripts go.
+* `resources` contains global resources such as default XSLTs, global CSS and JavaScript.
 * `rest` contains scripts for the RESTful interface. While it is possible for users to change these scripts, it is recommended to instead add scripts instead of changing existing ones.
 * `schema` contains schema files for global files other than `wdbmeta.xml` (currently, this is only `config.xml`).
 * `templates` contains the rump HTML files used for the templating system. While it is possible to change these files, most changes can better be done by using [[project specific layout and functions|project-specifics]]. The standard files here may be overwritten by an update.
 * `annotation` and `doc` are not in use yet but are to be considered 'reserved' as they will be used for internal functions in upcoming releases.
 
-There are several subcollections where no changes are recommended: all changes may be overwritten by an update or upgrade. Instead, use the [[configuration options|global-configuration]] and [[project specific layout and functions|project-specifics]] to adapt functions and layout to your needs.
+Except for `global`, there are no user servicable parts in these collections. All changes may be overwritten by an update or upgrade. Instead, use the [[configuration options|global-configuration]] and [[project specific layout and functions|project-specifics]] to adapt functions and layout to your needs.
 Should you really require a change in one of these subcollections, consider opening an issue instead so this can be changed to an option that can be set on a project or instance level.
 
 ## Non-default structures
