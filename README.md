@@ -80,7 +80,7 @@ into `/db/apps/edoc` and want to put your projects into `/db/apps/edoc/data/your
         </struct>
     </projectMD>
     ```
-You have to set at least one `process`; the example above points to a standard XSLT provided by wdb+.
+    You have to set at least one `process`; the example above points to a standard XSLT provided by wdb+.
 1. add project's XML/XSLT etc. files to your projects, e.g. into a subcollection `/db/apps/edoc/data/yourproject/texts`
 1. add a `<file>` entry to `wdbmeta.xlm` for each file to be displayed; you MUST give it an `xml:id` which SHOULD be the same as that file’s `/*/@xml:id`
 1. The file is now available to view under `http://yourserver:8080/exist/apps/edoc/view.html?id=xml-id`
