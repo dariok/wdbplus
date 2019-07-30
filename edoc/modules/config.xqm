@@ -42,7 +42,7 @@ declare variable $config:expath-descriptor := doc(concat($config:app-root, "/exp
  :)
 declare function config:resolve($relPath as xs:string) {
 	(: es können auch absolute Pfade vorkommen; diese sollten nicht ersetzt werden :)
-    if (starts-with/$relPath, '/db') then
+    if (starts-with($relPath, '/db')) then
     	doc($relPath)
     else if (starts-with($config:app-root, "/db")) then
         doc(concat($config:app-root, "/", $relPath))
