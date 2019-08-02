@@ -195,7 +195,10 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
 try {
-  let $pathToFile := wdb:getFilePath($id)
+  let $pTF := wdb:getFilePath($id)
+  let $pathToFile := if (sm:has-access($pTF, "r"))
+  then $pTF
+  else error(xs:QName("wdbErr:wdb0004"))
   
   let $pathToEd := wdb:getEdPath($id, true())
   let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
@@ -239,7 +242,13 @@ try {
   
   return $map
 } catch * {
-  wdbErr:error(map {"code" := $err:code, "pathToEd" := $wdb:data, "ed" := $wdb:data, "model" := $model, "value" := $err:value, "desc": $err:description })
+  wdbErr:error(map {"code" := $err:code,
+    "pathToEd" := $wdb:data,
+    "ed" := $wdb:data,
+    "model" := $model,
+    "value" := $err:value,
+    "desc": $err:description,
+    "location": $err:module || '@' || $err:line-number ||':'||$err:column-number })
 }
 };
 
