@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbPF	= "https://github.com/dariok/wdbplus/projectFiles";
 
-import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xql";
+import module namespace wdb	= "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
 declare namespace tei	= "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPF:getProjectFiles ( $model as map(*) ) as node()* {
