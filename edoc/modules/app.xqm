@@ -361,6 +361,8 @@ declare function wdb:getFooter($node as node(), $model as map(*)) {
   then templates:apply(doc($model?projectResources || "/footer.html"),  $wdb:lookup, $model)
   else if (wdb:findProjectFunction($model, "getProjectFooter", 1))
   then wdb:eval("wdbPF:getProjectFooter", true(), (xs:QName("model"), $model))
+  else if (doc-available($wdb:edocBaseDB || "/resources/footer.html"))
+  then doc($wdb:edocBaseDB || "/resources/footer.html")
   else ()
 };
 declare function wdb:getRightFooter($node as node(), $model as map(*)) {
@@ -368,6 +370,8 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
   then doc($model?projectResources || "/projectRightFooter.html")
   else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
   then wdb:eval("wdbPF:getProjectRightFooter", true(), (xs:QName("map"), $model))
+  else if (doc-available($wdb:edocBaseDB || "/resources/rightFooter.html"))
+  then doc($wdb:edocBaseDB || "/resources/rightFooter.html")
   else ()
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
