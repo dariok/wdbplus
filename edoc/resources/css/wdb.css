@@ -33,6 +33,25 @@ body {
   grid-template-rows: max-content;
 }
 
+/* hide right side on small broser windows, e.g. mobile */
+@media screen and (max-width: 768px) {
+  body {
+    margin: 0;
+    height: 100vh;
+    
+    overflow: hidden;
+    
+    font-family: mufi;
+    font-size: 1rem;
+    line-height: 1.4rem;
+    
+    display: grid;
+    grid-template-areas: 'header'
+                         'left';
+    grid-template-rows: max-content;
+  }
+}
+
 a{
   color: #098AB2;
   text-decoration: none;

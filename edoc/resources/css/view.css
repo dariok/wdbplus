@@ -7,6 +7,13 @@ body {
   grid-template-columns: 1fr 1fr;
 }
 
+/* hide right side on small broser windows, e.g. mobile */
+@media screen and (max-width: 768px) {
+  body {
+    grid-template-columns: none;
+  }
+}
+
 /* Main content below header */
 main {
   display: flex;
