@@ -46,6 +46,7 @@ declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:str
 declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="wdb-template" content="templates/function.html"/>
     <meta name="id" content="{$model("id")}" />
     <meta name="ed" content="{$model("id")}" />
