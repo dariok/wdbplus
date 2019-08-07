@@ -68,7 +68,7 @@ else if (ends-with($exist:resource, ".html")) then
 else if (contains($exist:path, "/$shared/")) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
-      <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
+      <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
     </forward>
   </dispatch>
 else if (ends-with($exist:path, ".xql")) then
@@ -81,4 +81,5 @@ else
   (: everything else is passed through :)
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <cache-control cache="yes"/>
+    <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
   </dispatch>
