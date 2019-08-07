@@ -57,7 +57,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     {local:get('css', $model("pathToEd"), $model)}
     <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" />
     <script src="resources/scripts/legal.js"/>
-    <script src="resources/scripts/jquery.min.js"/>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
     <script src="resources/scripts/js.cookie.js"/>
     <script src="resources/scripts/function.js"/>
     {local:get('js', $model("pathToEd"), $model)}
