@@ -35,6 +35,12 @@ main {
   flex-wrap: wrap;
   flex-direction: row;
 }
+/* no showHide, so full width on small screens */
+@media screen and (max-width: 768px) {
+  #wdbContent {
+    width: 100%;
+  }
+}
 
 footer {
   display: block;
@@ -58,6 +64,12 @@ footer span {
   margin-top: 0;
   padding-top: 45vh;
   width: 0.5em;
+}
+/* do not display on small screens */
+@media screen and (max-width: 768px) {
+  #wdbShowHide {
+    display: none;
+  }
 }
 
 /* right side */
