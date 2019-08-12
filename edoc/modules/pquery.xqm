@@ -48,7 +48,6 @@ declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
     	<h1>{$model("title")}</h1>
     	{wdba:getAuth($node, $model)}
     	<span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>
-    	<span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>
     	<hr/>
     	<nav style="display:none;" />
     </header>
