@@ -80,7 +80,7 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
   then $psHeader
   else
     <header>
-      <h1 class="default">{$model("title")}</h1>,
+      <h1 class="default">{$model("title")}</h1>
       <hr/>
     </header>
 };
