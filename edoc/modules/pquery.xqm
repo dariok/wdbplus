@@ -26,7 +26,8 @@ declare function wdbpq:body($node as node(), $model as map(*)) {
     wdbErr:error(map {"code" := fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2002'),
       "path" := $path, "model" := $model, "err" := $err:value, "module" := $module, "desc": $err:description,
       "available": system:function-available(xs:QName("wdbq:query"), 1),
-      "functions": inspect:module-functions(xs:anyURI($path))
+      "functions": inspect:module-functions(xs:anyURI($path)),
+      "location": $err:module || '@' || $err:line-number
     })
   }
 };
