@@ -31,24 +31,3 @@ declare function wdbpq:body($node as node(), $model as map(*)) {
     })
   }
 };
-
-(: return the heading section :)
-declare function wdbpq:getTask($node as node(), $model as map(*)) {
-  let $path := $model("edPath") || '/' || $model("query")
-  let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/wdbq"), 'wdbq', xs:anyURI($path))
-  
-  return util:eval("wdbq:getTask()", xs:boolean('false'), (xs:QName('map'), $model))
-};
-
-(:~
- : return the header
- :)
-declare function wdbpq:getHeader ( $node as node(), $model as map(*) ) {
-    <header>
-    	<h1>{$model("title")}</h1>
-    	{wdba:getAuth($node, $model)}
-    	<span class="dispOpts"><a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a></span>
-    	<hr/>
-    	<nav style="display:none;" />
-    </header>
-};
