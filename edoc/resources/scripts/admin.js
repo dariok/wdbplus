@@ -42,26 +42,29 @@ async function dirupload (event) {
     let file = files[i];
     let type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3);
     let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream";
-    
     let item = $('#results').children()[i];
     let text = item.innerText;
     
-    await $.ajax({
-      method: "post",
-      url: rest + "/admin/ingest/dir?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
-      headers: headers,
-      data: file,
-      contentType: content,
-      processData: false,
-      success: function (response, textStatus, xhr) {
-        console.log(response);
-        item.innerText = text.substring(0, text.length - 1) + "✓";
-      },
-      error: function (response) {
-        console.log(response);
-        item.innerText = text.substring(0, text.length - 1) + "✕";
-      }
-    });
+    try {
+      await $.ajax({
+        method: "post",
+        url: rest + "/admin/ingest/dir?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
+        headers: headers,
+        data: file,
+        contentType: content,
+        processData: false,
+        success: function (response, textStatus, xhr) {
+          console.log(response);
+          item.innerText = text.substring(0, text.length - 1) + "✓";
+        },
+        error: function (response) {
+          console.log(response);
+          item.innerText = text.substring(0, text.length - 1) + "✕";
+        }
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   $('p img').hide();
