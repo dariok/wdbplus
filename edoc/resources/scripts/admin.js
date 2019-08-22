@@ -45,11 +45,10 @@ async function dirupload (event) {
     
     let item = $('#results').children()[i];
     let text = item.innerText;
-    console.log(text.substring(text.length - 1));
     
     await $.ajax({
       method: "post",
-      url: rest + "/admin/ingest/file?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
+      url: rest + "/admin/ingest/dir?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
       headers: headers,
       data: file,
       contentType: content,

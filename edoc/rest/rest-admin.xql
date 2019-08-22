@@ -9,12 +9,12 @@ declare namespace http = "http://expath.org/ns/http-client";
 declare namespace rest = "http://exquery.org/ns/restxq";
 declare namespace tei  ="http://www.tei-c.org/ns/1.0";
 
-(: endpoints to ingest files by uploading directories from the browser
+(: endpoints to ingest entire projects by uploading directories from the browser
  : useful when ingesting existing projects into the database
  : does not do anything else, esp. does not enter files into wdbmeta.xml :)
 declare
   %rest:POST("{$contents}")
-  %rest:path("/edoc/admin/ingest/file")
+  %rest:path("/edoc/admin/ingest/dir")
   %rest:query-param("collection", "{$collection}")
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/xml")
@@ -56,7 +56,7 @@ declare
 
 declare
   %rest:POST("{$data}")
-  %rest:path("/edoc/admin/ingest/file")
+  %rest:path("/edoc/admin/ingest/dir")
   %rest:query-param("collection", "{$collection}")
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/octet-stream")
