@@ -19,7 +19,8 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
   return
   if (not($user//sm:group = 'dba'))
   then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
-  else if (string-length($pName) = 0 or string-length($pID) = 0 or string-length($pColl) = 0) then
+  else if (string-length($pName) = 0 or string-length($pID) = 0 or string-length($pColl) = 0) then (
+    <p><a href="directoryForm.html?collection={$wdb:data}">bestehendes Projekt hochladen</a></p>,
     <form method="POST">
       <label for="pName">Projekttitel: </label><input type="text" name="pName" /><br />
       <label for="pShort">Kurztitel: </label><input type="text" name="pShort" /><br />
@@ -30,6 +31,7 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       <label for="pLic">Lizenz der (Haupt-)Inhalte: </label><input type="text" name="pLic" /><br />
       <input type="submit" name="erstellen" />
     </form>
+  )
   else
     let $contents := 
     <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
