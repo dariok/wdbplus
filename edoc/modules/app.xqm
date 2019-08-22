@@ -441,6 +441,14 @@ declare function wdb:getEdPath($path as xs:string) as xs:string {
   wdb:getEdPath($path, false())
 };
 
+(: ~
+ : Return the path to a project
+ : 
+ : @param $path a path to a file within the project
+ : @param absolute (boolean) whether or not to return an absolute path
+ : 
+ : @return the path
+ :)
 declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) as xs:string {
   let $tok := tokenize(xstring:substring-after($path, $wdb:edocBaseDB||'/'), '/')
   
