@@ -25,6 +25,7 @@ $('#picker').on("submit", dirupload);
 
 function dirupload (event) {
   event.preventDefault();
+  $('#results').children().remove();
   $('p img').show();
   let files = event.target[0].files;
   
@@ -54,7 +55,6 @@ function dirupload (event) {
         console.log(response);
       }
     });
-  
-    $('p img').hide();
   };
+  $('p img').hide();
 }
