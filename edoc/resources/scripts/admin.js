@@ -25,6 +25,7 @@ $('#picker').on("submit", dirupload);
 
 function dirupload (event) {
   event.preventDefault();
+  $('p img').show();
   let files = event.target[0].files;
   
   let cred = Cookies.get("wdbplus");
@@ -32,10 +33,10 @@ function dirupload (event) {
   if (typeof cred !== "undefined" && cred.length != 0)
     headers = {"Authorization": "Basic " + cred};
     
-  for (let i=0; i < files.length; i++) {
+  for (let i = 0; i < files.length; i++) {
     let file = files[i];
     let type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3);
-    let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream"
+    let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream";
     $.ajax({
       method: "post",
       url: rest + "/admin/ingest/file?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
@@ -44,12 +45,16 @@ function dirupload (event) {
       contentType: content,
       processData: false,
       async: false,
-      success: function (response) {
+      success: function (response, textStatus, xhr) {
         console.log(response);
+        let li = "<li>" + response + "</li>";
+        $('#results').append(li);
       },
       error: function (response) {
         console.log(response);
       }
     });
+  
+    $('p img').hide();
   };
 }
