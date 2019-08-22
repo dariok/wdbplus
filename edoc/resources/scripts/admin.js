@@ -34,10 +34,18 @@ async function dirupload (event) {
     ? {"Authorization": "Basic " + cred}
     : "";
   
-  for (let i=0; i < files.length; i++) {
+  for (let i = 0; i < files.length; i++) {
+    $('#results').append("<li>" + files[i].webkitRelativePath + "…</li>");
+  }
+  
+  for (let i = 0; i < files.length; i++) {
     let file = files[i];
     let type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3);
     let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream";
+    
+    let item = $('#results').children()[i];
+    let text = item.innerText;
+    console.log(text.substring(text.length - 1));
     
     await $.ajax({
       method: "post",
@@ -48,11 +56,11 @@ async function dirupload (event) {
       processData: false,
       success: function (response, textStatus, xhr) {
         console.log(response);
-        let li = "<li>" + response + "</li>";
-        $('#results').append(li);
+        item.innerText = text.substring(0, text.length - 1) + "✓";
       },
       error: function (response) {
         console.log(response);
+        item.innerText = text.substring(0, text.length - 1) + "✕";
       }
     });
   }
