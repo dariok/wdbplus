@@ -1,9 +1,9 @@
 (: Bearbeiter DK = Dario Kampkaspar :)
 xquery version "3.0";
 
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"  at "modules/auth.xqm";
-import module namespace login   = "http://exist-db.org/xquery/login"        at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace config  = "http://exist-db.org/xquery/apps/config"  at "/db/apps/eXide/modules/config.xqm";
+import module namespace login   = "http://exist-db.org/xquery/login"        at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"  at "modules/auth.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
