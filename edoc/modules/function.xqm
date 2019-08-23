@@ -28,12 +28,24 @@ try {
   } catch * {
     normalize-space($p)
   }
-  let $mmap := map { "title" := (doc($map("infoFileLoc"))//*:title)[1]/text(), "p" := $pp, "q" := $q, "id" := $pid }
+  let $mmap := map {
+    "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
+    "p": $pp, "q": $q, "id": $pid }
   
   return map:merge(($map, $mmap))
 } catch * {
-  wdbErr:error(map { "code" := "wdbErr:wdb3001", "model" := $model, "id" := $id, "p" := $p, "q" := $q, "wdb:data" := $wdb:data,
-    "errC" := $err:code, "errA" := $err:additional, "errM" := $err:description, "errLocation" := $err:module || '@' || $err:line-number ||':'||$err:column-number })
+  wdbErr:error(map {
+    "code":  "wdbErr:wdb3001",
+    "model":       $model,
+    "id":          $id,
+    "p":           $p,
+    "q":           $q,
+    "wdb:data":    $wdb:data,
+    "errC":        $err:code,
+    "errA":        $err:additional,
+    "errM":        $err:description,
+    "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
+  })
 }
 };
 
@@ -86,7 +98,7 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
 };
 
 declare function wdbfp:test ( $node as node(), $model as map(*) ) {
-  wdbErr:error(map { "code" := "wdbErr:Err666", "model" := $model })
+  wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
 };
 
 declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) {
