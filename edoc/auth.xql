@@ -14,7 +14,7 @@ declare function local:user-allowed() {
 declare function local:query-execution-allowed() {
     local:user-allowed()
         or
-    xmldb:is-admin-user((xmldb:get-current-user(), request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
+    sm:is-dba((sm:id()//sm:real/sm:username, request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
 
 (: let $loggedIn := xmldb:login("/db/apps/edoc", request:get-parameter("user", ""), request:get-parameter("password", ""), true()) :)
