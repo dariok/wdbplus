@@ -5,8 +5,8 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace console="http://exist-db.org/xquery/console";
-import module namespace wdb  = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
+import module namespace console = "http://exist-db.org/xquery/console";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
 declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
   <div>
