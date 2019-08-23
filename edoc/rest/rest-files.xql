@@ -170,22 +170,22 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
       else $wdb:restURL || "file/iiif/" || $fileID || "/images/" || $page
     
     let $tiles := map {
-          "scaleFactors": [1, 2, 4, 8, 16],
-          "width": 512,
-          "height": 512
-        }
+      "scaleFactors": [1, 2, 4, 8, 16],
+      "width":        512,
+      "height":       512
+    }
     
     let $errors := string-join($errorFile, ' - ')
     return if (string-length($errors) > 0)
       then "ERROR: " || $errors
       else map {
-        "@context" : "http://iiif.io/api/image/2/context.json",
-        "profile" : "http://iiif.io/api/image/2/level2.json",
-        "@id" : $sid,
-        "height": xs:int($fa/@lry),
-        "width": xs:int($fa/@lrx),
+        "@context": "http://iiif.io/api/image/2/context.json",
+        "profile":  "http://iiif.io/api/image/2/level2.json",
+        "@id":      $sid,
+        "height":   xs:int($fa/@lry),
+        "width":    xs:int($fa/@lrx),
         "protocol": "http://iiif.io/api/image",
-        "tiles": [$tiles]
+        "tiles":    [$tiles]
       }
       
       (:map {

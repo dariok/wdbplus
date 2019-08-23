@@ -11,19 +11,19 @@ xquery version "3.1";
 
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
-import module namespace console = "http://exist-db.org/xquery/console";
-import module namespace templates="http://exist-db.org/xquery/templates" at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
-import module namespace xConf   = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
+import module namespace console   = "http://exist-db.org/xquery/console";
+import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
-declare namespace config    = "https://github.com/dariok/wdbplus/config";
-declare namespace main      = "https://github.com/dariok/wdbplus";
-declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets      = "http://www.loc.gov/METS/";
-declare namespace rest      = "http://exquery.org/ns/restxq";
-declare namespace tei       = "http://www.tei-c.org/ns/1.0";
-declare namespace xlink     = "http://www.w3.org/1999/xlink";
+declare namespace config = "https://github.com/dariok/wdbplus/config";
+declare namespace main   = "https://github.com/dariok/wdbplus";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets   = "http://www.loc.gov/METS/";
+declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
@@ -227,28 +227,31 @@ try {
   
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
-    "ed" := normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
-    "fileLoc" := $pathToFile,
-    "id" := $id,
-    "infoFileLoc" := $infoFileLoc,
-    "pathToEd" := $pathToEd,
-    "projectFile" := $proFile,
-    "projectResources" := $resource,
-    "title" := $title,
-    "view" := $view,
-    "xslt" := $xslt}
+    "ed":               normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
+    "fileLoc":          $pathToFile,
+    "id":               $id,
+    "infoFileLoc":      $infoFileLoc,
+    "pathToEd":         $pathToEd,
+    "projectFile":      $proFile,
+    "projectResources": $resource,
+    "title":            $title,
+    "view":             $view,
+    "xslt":             $xslt
+  }
   
   (: let $t := console:log($map) :)
   
   return $map
 } catch * {
-  wdbErr:error(map {"code" := $err:code,
-    "pathToEd" := $wdb:data,
-    "ed" := $wdb:data,
-    "model" := $model,
-    "value" := $err:value,
-    "desc": $err:description,
-    "location": $err:module || '@' || $err:line-number ||':'||$err:column-number })
+  wdbErr:error(map {
+    "code":     $err:code,
+    "pathToEd": $wdb:data,
+    "ed":       $wdb:data,
+    "model":    $model,
+    "value":    $err:value,
+    "desc":     $err:description,
+    "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
+  })
 }
 };
 
@@ -312,7 +315,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   
   let $xslt := if ($model("xslt") != "")
   then $model("xslt")
-  else wdbErr:error(map {"code" := "wdbErr:wdb0002", "model" := $model})
+  else wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
   
   let $params :=
     <parameters>
@@ -347,7 +350,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
         <additional>{$err:additional}</additional>
       </report>),
-      wdbErr:error(map{"code" := "wdbErr:wdb1001", "model" := $model, "additional" := $params}))
+      wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "additional": $params}))
     }
 };
 
@@ -458,7 +461,7 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
   
   let $path := if (count($pa) = 0)
   then
-    wdbErr:error(map{"code" := "wdbErr:wdb2001", "additional" := <additional><path>{$path}</path></additional>})
+    wdbErr:error(map{"code": "wdbErr:wdb2001", "additional": <additional><path>{$path}</path></additional>})
   else for $p in $pa
     order by string-length($p) descending
     let $p1 := $p || '/wdbmeta.xml'
