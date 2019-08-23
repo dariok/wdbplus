@@ -94,6 +94,7 @@ declare
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
     let $id := $doc/*[1]/@xml:id
+    let $uuid := util:uuid($doc)
     
     let $metaFile := (
       $meta/id($id),
@@ -102,21 +103,46 @@ declare
     let $errorNonMatch := if (count($metaFile) eq 0)
       then false()
       else not($metaFile[1] is $metaFile[2])
+    let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
+      then true() else false()
     
-    return if ($id = "") then
-      try {
-        (: file erstellen :)
+    return if ($errorUUID or $errorNonMatch)
+      then (
+        <rest:response>
+          <http:response status="500">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="rest-status" value="REST:ERROR" />
+          </http:response>
+        </rest:response>,
+        <error>{
+          if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
+          else if ($errorNonMatch) then "Conflicting entries for " || $id
+          else "unknown error"
+        }</error>
+      )
+      else if (count($id) = 0) then
+      (: no entry in wdbmeta: create file and view entries :)
+      let $fid := 'f' || count($meta//meta:file) + 1
+      
+      return try {
+        (: create file entry :)
         let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
-            attribute xml:id { if ($id != "") then $id else generate-id($doc/*[1])},
+            attribute xml:id { $fid },
             attribute path { substring-after($path, $project) },
             attribute date { current-date() },
-            attribute uuid { util:uuid($doc) }
-          )}
-          </file>
+            attribute uuid { $uuid }
+          )}</file>
         let $fins := update insert $file into $meta//meta:files
-        (: struct erstellen :)
-        (: view erstellen :)
+        
+        (: create view entry :)
+        let $view :=
+          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+            attribute file { $fid },
+            attribute label { $doc//tei:titleStmt/tei:title[1] }
+          )}</view>
+        let $sins := update insert $view into $meta/meta:projectMD/meta:struct[1]
+        
         return (
           <rest:response>
             <http:response status="200">
@@ -130,25 +156,21 @@ declare
         <rest:response>
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
-            <http:header name="rest-status" value="REST:SUCCESS" />
+            <http:header name="rest-status" value="REST:ERROR" />
           </http:response>
         </rest:response>,
-        <error>{$err:code}: {$err:description}</error>
+        <error>Error creating new entry: {$err:code}: {$err:description}</error>
       )}
-    else if (not($errorNonMatch))
-    then
+    else 
       (: file updateen :)
       (: struct updateen :)
-      ()
-    else (
-      <rest:response>
+      (<rest:response>
         <http:response status="200">
           <http:header name="Content-Type" value="text/plain" />
           <http:header name="rest-status" value="REST:SUCCESS" />
         </http:response>
       </rest:response>,
-      $path
-    )
+      $path)
 };
   
 declare function local:store($collection, $resource-name, $contents) {
