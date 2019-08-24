@@ -95,9 +95,10 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.json")
   %output:method("json")
-function wdbRc:getResourcesXML ($id) {
+function wdbRc:getResourcesJson ($id) {
   wdbRc:getResources($id, "application/json")
 };
+
 declare function local:listCollection ($md as element()) {
   let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
   return
@@ -117,6 +118,35 @@ declare function local:listResources ($mfile, $subcollection) {
   for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
   	order by $file/@path
     return <resource id="{$file/@xml:id}" path="{$file/@path}" />
+};
+
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/collections.json")
+  %output:method("json")
+  function wdbRc:getSubcollJson ($id) {
+    json:xml-to-json(wdbRc:getSubcollXML($id))
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/collections.xml")
+  %output:method("json")
+  function wdbRc:getSubcollXML ($id) {
+    let $md := collection($wdb:data)/id($id)[descendant::meta:*]
+    let $path := xstring:substring-before-last(base-uri($md), '/')
+    return
+    <collection id="$id" path="{$path}">{
+      for $s in xmldb:get-child-collections($path)
+        return local:childCollections($path, $s)
+    }</collection>
+};
+declare function local:childCollections($path, $s) {
+  let $p := $path || '/' || $s
+  return
+  <collection path="{$p}">{
+    for $sc in xmldb:get-child-collections($p)
+      return local:childCollections($p, $sc)
+  }</collection>
 };
 
 (: navigation :)
