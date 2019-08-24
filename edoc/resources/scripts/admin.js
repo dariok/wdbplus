@@ -1,7 +1,7 @@
 var rest = $("meta[name='rest']").attr("content");
 
 $("document").ready(function() {
-  if (params['action'] == "multi")
+  if (params['id'] !== undefined && params['action'] == "dir")
   {
     let url = rest + "/collection/" + params["id"] + "/collections.json";
     $.ajax({
@@ -19,7 +19,8 @@ function getPaths (data) {
   if (data.hasOwnProperty("@path"))
     $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
   if (data.hasOwnProperty("collection"))
-    data["collection"].forEach(function(coll) { getPaths(coll); });
+    if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
+    else $('#selectTarget select').append("<option>" + data.collection["@path"] + "</option>");
 }
 
 function show ( ed, file ) {
@@ -50,7 +51,7 @@ async function dirupload (event) {
   $('#results').children().remove();
   $('p img').show();
   
-  let files = event.target[0].files;
+  let files = event.target[2].elements[0].files;
   let cred = Cookies.get("wdbplus");
   let headers = (typeof cred !== "undefined" && cred.length != 0)
     ? {"Authorization": "Basic " + cred}
@@ -66,11 +67,13 @@ async function dirupload (event) {
     let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream";
     let item = $('#results').children()[i];
     let text = item.innerText;
+    let collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection']
+    let endpoint = params['action'] !== undefined ? "file" : "dir"
     
     try {
       await $.ajax({
         method: "post",
-        url: rest + "/admin/ingest/dir?name=" + file.webkitRelativePath + "&collection=" + params['collection'],
+        url: rest + "/admin/ingest/" + endpoint + "?name=" + file.webkitRelativePath + "&collection=" + collection,
         headers: headers,
         data: file,
         contentType: content,
