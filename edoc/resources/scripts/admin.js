@@ -1,5 +1,27 @@
 var rest = $("meta[name='rest']").attr("content");
 
+$("document").ready(function() {
+  if (params['action'] == "multi")
+  {
+    let url = rest + "/collection/" + params["id"] + "/collections.json";
+    $.ajax({
+      method: "get",
+      url: url,
+      success: function (data) {
+        let json = JSON.parse(data);
+        getPaths(json);
+      }
+    });
+    $('#selectTarget').show();
+  }
+});
+function getPaths (data) {
+  if (data.hasOwnProperty("@path"))
+    $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
+  if (data.hasOwnProperty("collection"))
+    data["collection"].forEach(function(coll) { getPaths(coll); });
+}
+
 function show ( ed, file ) {
   url = 'projects.html?ed=' + ed + '&file=' + file;
   rightSide ( url );
