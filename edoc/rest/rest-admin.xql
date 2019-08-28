@@ -9,7 +9,7 @@ import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "/
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace rest = "http://exquery.org/ns/restxq";
-declare namespace tei  ="http://www.tei-c.org/ns/1.0";
+declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
 (: endpoints to ingest entire projects by uploading directories from the browser
  : useful when ingesting existing projects into the database
@@ -81,13 +81,100 @@ declare
     else wdbRAd:enterMetaXML($store[2])
 };
 
+(: uploaded a single non-XML file with the intent to create/update entry :)
 declare
   %private
   function wdbRAd:enterMeta ($path as xs:anyURI) {
+    (: non-XML files have no internally defined ID and in general no view :)
     let $project := wdb:getEdFromPath($path, true())
-    let $t0 := console:log($project)
-    return $path
+    let $meta := doc($project || '/wdbmeta.xml')
+    let $doc := doc($path)
+    let $uuid := util:uuid($doc)
+    let $metaFile := $meta//meta:file[@path = $path]
+    
+    let $errNum := (count($metaFile) > 1)
+    
+    return if ($errNum)
+    then (
+      <rest:response>
+        <http:response status="500">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="rest-status" value="REST:ERROR" />
+        </http:response>
+      </rest:response>,
+      <error>{
+        if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
+        else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path
+        else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
+        else "unknown error"
+      }</error>
+    )
+    else if (count($metaFile) = 0)
+      (: new entry :)
+    then try {
+      (: create file entry :)
+      let $fid := 'f' || count($meta//meta:file) + 1
+      let $file :=
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          attribute xml:id { $fid },
+          attribute path { substring-after($path, $project) },
+          attribute date { current-dateTime() },
+          attribute uuid { $uuid }
+        )}</file>
+      let $fins := update insert $file into $meta//meta:files
+      
+      return (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="rest-status" value="REST:SUCCESS" />
+          </http:response>
+        </rest:response>,
+        $path
+      )
+    } catch * {(
+      <rest:response>
+        <http:response status="500">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="rest-status" value="REST:ERROR" />
+        </http:response>
+      </rest:response>,
+      <error>Error creating new entry: {$err:code}: {$err:description}</error>
+    )}
+    else
+      (: Update :)
+      try {
+      (: create file entry :)
+      let $fid := $metaFile/@xml:id
+      let $file :=
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          attribute xml:id { $fid },
+          attribute path { substring-after($path, $project) },
+          attribute date { current-dateTime() },
+          attribute uuid { $uuid }
+        )}</file>
+      let $fins := update replace $metaFile with $file
+      
+      return (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="rest-status" value="REST:SUCCESS" />
+          </http:response>
+        </rest:response>,
+        $path
+      )
+    } catch * {(
+      <rest:response>
+        <http:response status="500">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="rest-status" value="REST:ERROR" />
+        </http:response>
+      </rest:response>,
+      <error>Error creating new entry: {$err:code}: {$err:description}</error>
+    )}
 };
+(: uploaded a single XML file with intent to create/update entry :)
 declare
   %private
   function wdbRAd:enterMetaXML ($path as xs:anyURI) {
