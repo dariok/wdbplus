@@ -62,6 +62,7 @@ declare
     else wdbRAd:enterMeta($store[2])
 };
 
+(: endpoint to ingest an XML file and create a wdbmeta entry :)
 declare
   %rest:POST("{$contents}")
   %rest:path("/edoc/admin/ingest/file")
@@ -105,8 +106,9 @@ declare
       else not($metaFile[1] is $metaFile[2])
     let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
       then true() else false()
+    let $errorNum := count($metaFile) > 2
     
-    return if ($errorUUID or $errorNonMatch)
+    return if ($errorUUID or $errorNonMatch or $errorNum)
       then (
         <rest:response>
           <http:response status="500">
@@ -117,10 +119,11 @@ declare
         <error>{
           if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
           else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path
+          else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
           else "unknown error"
         }</error>
       )
-      else if (count($id) = 0) then
+      else if (count($metaFile) = 0) then
       (: no entry in wdbmeta: create file and view entries :)
       let $fid := 'f' || count($meta//meta:file) + 1
       
@@ -130,7 +133,7 @@ declare
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
             attribute xml:id { $fid },
             attribute path { substring-after($path, $project) },
-            attribute date { current-date() },
+            attribute date { current-dateTime() },
             attribute uuid { $uuid }
           )}</file>
         let $fins := update insert $file into $meta//meta:files
@@ -161,16 +164,41 @@ declare
         </rest:response>,
         <error>Error creating new entry: {$err:code}: {$err:description}</error>
       )}
-    else 
-      (: file updateen :)
-      (: struct updateen :)
-      (<rest:response>
-        <http:response status="200">
-          <http:header name="Content-Type" value="text/plain" />
-          <http:header name="rest-status" value="REST:SUCCESS" />
-        </http:response>
-      </rest:response>,
-      $path)
+    else
+      (: file entry is present – update file (and struct if necessary) :)
+      try {
+      let $file :=
+          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+            attribute xml:id { $id },
+            attribute path { substring-after($path, $project) },
+            attribute date { current-dateTime() },
+            attribute uuid { $uuid }
+          )}</file>
+      let $updf := update replace $metaFile[1] with $file
+      
+      let $view :=
+          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+            attribute file { $id },
+            attribute label { $doc//tei:titleStmt/tei:title[1] }
+          )}</view>
+      let $updv := update replace $meta//meta:view[@file = $id] with $view
+      return (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="rest-status" value="REST:SUCCESS" />
+          </http:response>
+        </rest:response>,
+        $path
+      )} catch * {(
+        <rest:response>
+          <http:response status="500">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="rest-status" value="REST:ERROR" />
+          </http:response>
+        </rest:response>,
+        <error>Error updating entry for ID {$id}: {$err:code}: {$err:description}</error>
+      )}
 };
   
 declare function local:store($collection, $resource-name, $contents) {
