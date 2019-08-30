@@ -8,6 +8,10 @@ import module namespace console  = "http://exist-db.org/xquery/console";
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exgit = "http://exist-db.org/xquery/exgit";
 
+declare function wdbGS:getRest ( $node as node(), $model as map(*) ) {
+  <meta name="rest" content="{$wdb:restURL}" />
+};
+
 declare function wdbGS:body ( $node as node(), $model as map(*) ) {
   let $param := request:get-parameter('job', 'main')
   let $metaFile := doc('../config.xml')
