@@ -50,6 +50,7 @@ declare
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/octet-stream")
   function wdbRAd:ingest ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
+    let $t0 := console:log("Request to store " || $name || " to " || $collection || " with wdbmeta entry.")
     let $fullpath := $collection || '/' || $name
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
@@ -70,6 +71,7 @@ declare
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/xml")
   function wdbRAd:ingest ($contents as document-node()*, $collection as xs:string*, $name as xs:string*) {
+    let $t0 := console:log("Request to store XML " || $name || " to " || $collection || " with wdbmeta entry.")
     let $fullpath := $collection || '/' || $name
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
