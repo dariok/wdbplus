@@ -232,14 +232,12 @@ declare
       )
       else if (count($metaFile) = 0) then
       (: no entry in wdbmeta: create file and view entries :)
-      let $fid := 'f' || count($meta//meta:file) + 1
-      
-      return try {
+      try {
         (: create file entry :)
         let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
-            attribute xml:id { $fid },
-            attribute path { $path, $project },
+            attribute xml:id { $id },
+            attribute path { $path },
             attribute date { current-dateTime() },
             attribute uuid { $uuid }
           )}</file>
@@ -248,7 +246,7 @@ declare
         (: create view entry :)
         let $view :=
           <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
-            attribute file { $fid },
+            attribute file { $id },
             attribute label { $doc//tei:titleStmt/tei:title[1] }
           )}</view>
         let $sins := update insert $view into $meta/meta:projectMD/meta:struct[1]
@@ -267,6 +265,7 @@ declare
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
             <http:header name="rest-status" value="REST:ERROR" />
+            <http:header name="rest-reason" value="{$err:code}: {$err:description}" />
           <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
         </rest:response>,
         <error>Error creating new entry: {$err:code}: {$err:description}</error>
