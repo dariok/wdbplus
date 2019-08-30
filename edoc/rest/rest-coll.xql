@@ -124,8 +124,16 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.json")
   %output:method("json")
-  function wdbRc:getSubcollJson ($id) {
+  function wdbRc:getSubcollJson ($id) {(
+    <rest:response>
+      <http:response status="200" message="OK">
+        <http:header name="Content-Type" value="application/json; charset=UTF-8" />
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
     json:xml-to-json(wdbRc:getSubcollXML($id))
+  )
 };
 declare
   %rest:GET
@@ -133,11 +141,12 @@ declare
   function wdbRc:getSubcollXML ($id) {
     let $md := collection($wdb:data)/id($id)[descendant::meta:*]
     let $path := xstring:substring-before-last(base-uri($md), '/')
-    return
+    return (
     <collection id="$id" path="{$path}">{
       for $s in xmldb:get-child-collections($path)
         return local:childCollections($path, $s)
     }</collection>
+  )
 };
 declare function local:childCollections($path, $s) {
   let $p := $path || '/' || $s
