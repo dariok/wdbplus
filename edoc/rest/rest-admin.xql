@@ -60,7 +60,7 @@ declare
     
     return if ($store[1]//http:response/@status = 500)
     then $store
-    else wdbRAd:enterMeta($store[2])
+    else wdbRAd:enterMeta($name, $fullpath)
 };
 
 (: endpoint to ingest an XML file and create a wdbmeta entry :)
@@ -80,13 +80,13 @@ declare
     
     return if ($store[1]//http:response/@status = 500)
     then $store
-    else wdbRAd:enterMetaXML($store[2])
+    else wdbRAd:enterMetaXML($name, $fullpath)
 };
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
 declare
   %private
-  function wdbRAd:enterMeta ($path as xs:anyURI) {
+  function wdbRAd:enterMeta ($path as xs:anyURI, $fullpath as xs:anyURI) {
     (: non-XML files have no internally defined ID and in general no view :)
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
@@ -179,7 +179,7 @@ declare
 (: uploaded a single XML file with intent to create/update entry :)
 declare
   %private
-  function wdbRAd:enterMetaXML ($path as xs:anyURI) {
+  function wdbRAd:enterMetaXML ($path as xs:anyURI, $fullpath as xs:anyURI) {
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
