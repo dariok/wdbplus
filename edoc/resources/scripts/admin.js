@@ -3,7 +3,8 @@ var rest = $("meta[name='rest']").attr("content");
 $("document").ready(function() {
   if (params['id'] !== undefined && params['action'] == "dir")
   {
-    let url = rest + "/collection/" + params["id"] + "/collections.json";
+    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
+    let url = rest + delim + "collection/" + params["id"] + "/collections.json";
     $.ajax({
       method: "get",
       url: url,
@@ -69,11 +70,12 @@ async function dirupload (event) {
     let text = item.innerText;
     let collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection']
     let endpoint = params['action'] !== undefined ? "file" : "dir"
+    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
     
     try {
       await $.ajax({
         method: "post",
-        url: rest + "/admin/ingest/" + endpoint + "?name=" + file.webkitRelativePath + "&collection=" + collection,
+        url: rest + delim + "admin/ingest/" + endpoint + "?name=" + file.webkitRelativePath + "&collection=" + collection,
         headers: headers,
         data: file,
         contentType: content,
