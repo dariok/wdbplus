@@ -169,7 +169,7 @@ declare
       let $file :=
         <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
           attribute xml:id { $fid },
-          attribute path { substring-after($path, $project) },
+          attribute path { $path },
           attribute date { current-dateTime() },
           attribute uuid { $uuid }
         )}</file>
@@ -276,13 +276,15 @@ declare
       let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
             attribute xml:id { $id },
-            attribute path { substring-after($path, $project) },
+            attribute path { $path },
             attribute date { current-dateTime() },
             attribute uuid { $uuid }
           )}</file>
       let $updf := update replace $metaFile[1] with $file
       
-      let $view :=
+      let $view := if (wdb:findProjectFunction(map{"pathToEd": $project}, "getRestView", 1))
+      then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
+      else
           <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
             attribute file { $id },
             attribute label { $doc//tei:titleStmt/tei:title[1] }
