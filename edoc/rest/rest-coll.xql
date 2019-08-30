@@ -5,6 +5,7 @@ module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -95,10 +96,9 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.json")
   %output:method("json")
-function wdbRc:getResourcesJson ($id) {
+function wdbRc:getResourcesXML ($id) {
   wdbRc:getResources($id, "application/json")
 };
-
 declare function local:listCollection ($md as element()) {
   let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
   return
