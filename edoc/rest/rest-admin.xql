@@ -105,9 +105,7 @@ declare
         </http:response>
       </rest:response>,
       <error>{
-        if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
-        else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path
-        else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
+        if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
         else "unknown error"
       }</error>
     )
