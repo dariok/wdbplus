@@ -323,6 +323,25 @@ declare function local:store($collection, $resource-name, $contents) {
       if ($contents/tei:TEI) then "application/tei+xml" else "application/xml"
     case "xsl" return "application/xslt+xml"
     default return "application/octet-stream"
+    
+  (: when uploading programatically, we enforce the use of IDs – trying to replace a file entry in wdbmeta that has no
+     @xml:id with a file that has an ID will result in errorNoMatch :)
+  let $errorNoID := if ($mime-type = ('application/xml', 'application/tei+xml'))
+    then $contents/tei:TEI/@xml:id or $contents/*/@id
+    else false()
+
+  return if ($errorNoID)
+	then (
+      <rest:response>
+        <http:response status="500">
+          <http:header name="Content-Type" value="application/xml" />
+          <http:header name="rest-status" value="REST:ERROR" />
+					<http:header name="rest-reason" value="No ID supplied in XML file!" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
+      </rest:response>,
+      console:log("error storing XML " || $mime-type || " to " || $path)
+    )
+	else
   let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
   let $coll := if (not(xmldb:collection-available($collection)))
     then local:createCollection($collection)
