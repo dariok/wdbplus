@@ -69,7 +69,7 @@ declare
   %rest:query-param("collection", "{$collection}")
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/octet-stream")
-  function wdbRAd:ingest ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
+  function wdbRAd:ingestM ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
     let $fullpath := $collection || '/' || $name
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
@@ -88,7 +88,7 @@ declare
   %rest:query-param("collection", "{$collection}")
   %rest:query-param("name", "{$name}")
   %rest:consumes("application/xml")
-  function wdbRAd:ingest ($contents as document-node()*, $collection as xs:string*, $name as xs:string*) {
+  function wdbRAd:ingestMXML ($contents as document-node()*, $collection as xs:string*, $name as xs:string*) {
     let $fullpath := $collection || '/' || $name
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
