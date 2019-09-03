@@ -96,7 +96,7 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.json")
   %output:method("json")
-function wdbRc:getResourcesXML ($id) {
+function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
 };
 declare function local:listCollection ($md as element()) {
