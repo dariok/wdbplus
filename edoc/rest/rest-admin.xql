@@ -48,6 +48,12 @@ declare
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
     
+    let $mime-type := switch (substring-after($resource-name, '.'))
+      case "xml" return
+        if ($contents/tei:TEI) then "application/tei+xml" else "application/xml"
+      case "xsl" return "application/xslt+xml"
+      default return "application/xml"
+    
     (: when uploading programatically, we enforce the use of IDs – trying to
      replace a file entry in wdbmeta that has no @xml:id with a file that has an
      ID will result in errorNoMatch :)
@@ -62,16 +68,14 @@ declare
           <http:header name="rest-reason" value="No ID supplied in XML file!" />
         <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
       </rest:response>,
-      console:log("error storing XML " || $mime-type || " to " || $path || ": no ID supplied in XML file!")
+      console:log("error storing XML " || $mime-type || " to " || $collection-uri || '/' || $resource-name || ": no ID supplied in XML file!")
     )
     else
       let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
       return 
-        if ($store[1]//http:response/@status = 500)
+        if ($store[1]//http:response/@status = 500 or $meta != 1)
         then $store
-        else if ($meta = 1)
-        then wdbRAd:enterMeta($store[2])
-        else $path
+        else wdbRAd:enterMetaXML($store[2])
 };
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
@@ -79,7 +83,7 @@ declare
   %private
   function wdbRAd:enterMeta ($path as xs:anyURI) {
     (: non-XML files have no internally defined ID and in general no view :)
-    let $project := wdb:getEdFromPath($fullpath, true())
+    let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
     let $uuid := util:uuid($doc)
@@ -171,10 +175,10 @@ declare
 (: uploaded a single XML file with intent to create/update entry :)
 declare
   %private
-  function wdbRAd:enterMetaXML ($path as xs:anyURI, $fullpath as xs:anyURI) {
-    let $project := wdb:getEdFromPath($fullpath, true())
+  function wdbRAd:enterMetaXML ($path as xs:anyURI) {
+    let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
-    let $doc := doc($fullpath)
+    let $doc := doc($path)
     let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
     
