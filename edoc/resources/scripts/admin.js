@@ -72,12 +72,13 @@ async function dirupload (event) {
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text.substr(0, text.length - 1);
+        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text.substr(0, text.length - 1),
+        mode = $('#selectTask input:checked').attr("id") == "dm" ? "?meta=1" : "";
     
     try {
       await $.ajax({
         method: "post",
-        url: rest + delim + "admin/ingest/" + params['id'] + "/" + encodeURIComponent(relpath),
+        url: rest + delim + "admin/ingest/" + params['id'] + "/" + encodeURIComponent(relpath) + mode,
         headers: headers,
         data: file,
         contentType: content,
