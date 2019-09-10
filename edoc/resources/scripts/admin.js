@@ -72,7 +72,7 @@ async function dirupload (event) {
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + file.name;
+        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text.substr(0, text.length - 1);
     
     try {
       await $.ajax({
