@@ -63,19 +63,21 @@ async function dirupload (event) {
   }
   
   for (let i = 0; i < files.length; i++) {
-    let file = files[i];
-    let type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3);
-    let content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream";
-    let item = $('#results').children()[i];
-    let text = item.innerText;
-    let collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection']
-    let endpoint = params['action'] !== undefined ? "file" : "dir"
-    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
+    let file = files[i],
+        type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
+        content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream",
+        item = $('#results').children()[i],
+        text = item.innerText,
+        collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection'],
+        delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
+        pathToEd = $('#selectTarget').find('option')[0].innerHTML,
+        edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
+        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + file.name;
     
     try {
       await $.ajax({
         method: "post",
-        url: rest + delim + "admin/ingest/" + endpoint + "?name=" + file.webkitRelativePath + "&collection=" + collection,
+        url: rest + delim + "admin/ingest/" + params['id'] + "/" + encodeURIComponent(relpath),
         headers: headers,
         data: file,
         contentType: content,
@@ -101,3 +103,4 @@ function ingestAction(event) {
   if(event.target.id == "fi") { $('#picker').attr('webkitdirectory', null); }
   else { $('#picker').attr('webkitdirectory', 'true'); }
 }
+
