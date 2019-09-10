@@ -12,92 +12,66 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace rest = "http://exquery.org/ns/restxq";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
-(: endpoints to ingest entire projects by uploading directories from the browser
- : useful when ingesting existing projects into the database
- : does not do anything else, esp. does not enter files into wdbmeta.xml :)
-declare
-  %rest:POST("{$contents}")
-  %rest:path("/edoc/admin/ingest/dir")
-  %rest:query-param("collection", "{$collection}")
-  %rest:query-param("name", "{$name}")
-  %rest:consumes("application/xml")
-  function wdbRAd:ingestXML ($contents as document-node()*, $collection as xs:string*, $name as xs:string*) {
-    let $fullpath := $collection || '/' || $name
-    let $collection-uri := xstring:substring-before-last($fullpath, '/')
-    let $resource-name := xstring:substring-after-last($fullpath, '/')
-    
-    return local:store($collection-uri, $resource-name, $contents)
-};
-
+(: endpoints to ingest a file into the database
+ : if query param plain is set to true, create/update entries in wdbmeta.xml :)
 declare
   %rest:POST("{$data}")
-  %rest:path("/edoc/admin/ingest/dir")
-  %rest:query-param("collection", "{$collection}")
-  %rest:query-param("name", "{$name}")
+  %rest:path("/edoc/admin/ingest/{$collection-id}/{$name}")
   %rest:consumes("application/octet-stream")
-  function wdbRAd:ingest ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
-    let $fullpath := $collection || '/' || $name
+  %rest:query-param("meta", "{$meta}", 0)
+  function wdbRAd:ingest($data as xs:string*, $collection-id as xs:string*, $name as xs:string*, $meta as xs:int*) {
+    let $contents := util:base64-decode($data)
+    let $resource-path := xmldb:decode($name)
+    let $collection-path := wdb:getEdPath($collection-id, true())
+    let $fullpath := $collection-path || '/' || $resource-path
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
-    let $contents := util:base64-decode($data)
     
-    return local:store($collection-uri, $resource-name, $contents)
-};
-
-(: endpoint to ingest an XML file and create a wdbmeta entry :)  
-declare
-  %rest:OPTIONS
-  %rest:path("/edoc/admin/ingest/file")
-  %rest:query-param("collection", "{$collection}")
-  %rest:query-param("name", "{$name}")
-  %rest:consumes("application/octet-stream")
-  function wdbRAd:options ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
-    let $t0 := console:log("Preflight request from")
-    let $t1 := console:log(sm:is-authenticated())
-    return
-    <rest:response>
-        <http:response status="200">
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-            <http:header name="Access-Control-Allow-Methods" value="GET, POST, OPTIONS" />
-            <http:header name="Access-Control-Allow-Headers" value="Content-Type" />
-        </http:response>
-    </rest:response>
-};
-declare
-  %rest:POST("{$data}")
-  %rest:path("/edoc/admin/ingest/file")
-  %rest:query-param("collection", "{$collection}")
-  %rest:query-param("name", "{$name}")
-  %rest:consumes("application/octet-stream")
-  function wdbRAd:ingestM ($data as xs:string*, $collection as xs:string*, $name as xs:string*) {
-    let $fullpath := $collection || '/' || $name
-    let $collection-uri := xstring:substring-before-last($fullpath, '/')
-    let $resource-name := xstring:substring-after-last($fullpath, '/')
-    let $contents := util:base64-decode($data)
-    
-    let $store := local:store($collection-uri, $resource-name, $contents)
-    
-    return if ($store[1]//http:response/@status = 500)
-    then $store
-    else wdbRAd:enterMeta($store[2])
+    let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
+    return 
+      if ($store instance of element())
+      then $store
+      else if ($meta = 1)
+      then wdbRAd:enterMeta($store[2])
+      else $path
 };
 
 declare
   %rest:POST("{$contents}")
-  %rest:path("/edoc/admin/ingest/file")
-  %rest:query-param("collection", "{$collection}")
-  %rest:query-param("name", "{$name}")
+  %rest:path("/edoc/admin/ingest/{$collection-id}/{$name}")
   %rest:consumes("application/xml")
-  function wdbRAd:ingestMXML ($contents as document-node()*, $collection as xs:string*, $name as xs:string*) {
-    let $fullpath := $collection || '/' || $name
+  %rest:query-param("meta", "{$meta}", 0)
+  function wdbRAd:ingestXML($contents as document-node()*, $collection-id as xs:string*, $name as xs:string*, $meta as xs:int*) {
+    let $resource-path := xmldb:decode($name)
+    let $collection-path := wdb:getEdPath($collection-id, true())
+    let $fullpath := $collection-path || '/' || $resource-path
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
     
-    let $store := local:store($collection-uri, $resource-name, $contents)
+    (: when uploading programatically, we enforce the use of IDs – trying to
+     replace a file entry in wdbmeta that has no @xml:id with a file that has an
+     ID will result in errorNoMatch :)
+    let $errorNoID := $contents/*/@xml:id or $contents/*/@id
     
-    return if ($store[1]//http:response/@status = 500)
-    then $store
-    else wdbRAd:enterMetaXML($name, $fullpath)
+    return if ($errorNoID)
+    then ( 
+      <rest:response>
+        <http:response status="500">
+          <http:header name="Content-Type" value="application/xml" />
+          <http:header name="rest-status" value="REST:ERROR" />
+          <http:header name="rest-reason" value="No ID supplied in XML file!" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
+      </rest:response>,
+      console:log("error storing XML " || $mime-type || " to " || $path || ": no ID supplied in XML file!")
+    )
+    else
+      let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
+      return 
+        if ($store[1]//http:response/@status = 500)
+        then $store
+        else if ($meta = 1)
+        then wdbRAd:enterMeta($store[2])
+        else $path
 };
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
@@ -119,7 +93,7 @@ declare
         else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path
         else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
         else "unknown error"
-    return(
+    return( 
       <rest:response>
         <http:response status="500">
           <http:header name="Content-Type" value="text/plain" />
@@ -134,8 +108,8 @@ declare
     then try {
       (: create file entry :)
       let $fid := 'f' || count($meta//meta:file) + 1
-      let $file :=
-        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+      let $file := 
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
           attribute xml:id { $fid },
           attribute path { $path },
           attribute date { current-dateTime() },
@@ -143,7 +117,7 @@ declare
         )}</file>
       let $fins := update insert $file into $meta//meta:files
       
-      return (
+      return ( 
         <rest:response>
           <http:response status="200">
             <http:header name="Content-Type" value="text/plain" />
@@ -152,7 +126,7 @@ declare
         </rest:response>,
         $path
       )
-    } catch * {(
+    } catch * {( 
       <rest:response>
         <http:response status="500">
           <http:header name="Content-Type" value="text/plain" />
@@ -167,7 +141,7 @@ declare
       (: create file entry :)
       let $fid := $metaFile/@xml:id
       let $file :=
-        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
           attribute xml:id { $fid },
           attribute path { $path },
           attribute date { current-dateTime() },
@@ -175,7 +149,7 @@ declare
         )}</file>
       let $fins := update replace $metaFile with $file
       
-      return (
+      return ( 
         <rest:response>
           <http:response status="200">
             <http:header name="Content-Type" value="text/plain" />
@@ -184,7 +158,7 @@ declare
         </rest:response>,
         $path
       )
-    } catch * {(
+    } catch * {( 
       <rest:response>
         <http:response status="500">
           <http:header name="Content-Type" value="text/plain" />
@@ -204,7 +178,7 @@ declare
     let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
     
-    let $metaFile := (
+    let $metaFile := ( 
       $meta/id($id),
       $meta//meta:file[@path = $path]
     )
@@ -221,7 +195,7 @@ declare
             else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path || " in " || base-uri($meta)
             else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path || " in " || base-uri($meta)
             else "unknown error"
-        return (
+        return ( 
         <rest:response>
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
@@ -235,7 +209,7 @@ declare
       try {
         (: create file entry :)
         let $file :=
-          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute xml:id { $id },
             attribute path { $path },
             attribute date { current-dateTime() },
@@ -245,13 +219,13 @@ declare
         
         (: create view entry :)
         let $view :=
-          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute file { $id },
             attribute label { $doc//tei:titleStmt/tei:title[1] }
           )}</view>
         let $sins := update insert $view into $meta/meta:projectMD/meta:struct[1]
         
-        return (
+        return ( 
           <rest:response>
             <http:response status="200">
               <http:header name="Content-Type" value="text/plain" />
@@ -260,7 +234,7 @@ declare
           </rest:response>,
           $path
         )
-      } catch * {(
+      } catch * {( 
         <rest:response>
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
@@ -274,7 +248,7 @@ declare
       (: file entry is present – update file (and struct if necessary) :)
       try {
       let $file :=
-          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute xml:id { $id },
             attribute path { $path },
             attribute date { current-dateTime() },
@@ -285,12 +259,12 @@ declare
       let $view := if (wdb:findProjectFunction(map{"pathToEd": $project}, "getRestView", 1))
       then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
       else
-          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{(
+          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute file { $id },
             attribute label { $doc//tei:titleStmt/tei:title[1] }
           )}</view>
       let $updv := update replace $meta//meta:view[@file = $id] with $view
-      return (
+      return ( 
         <rest:response>
           <http:response status="200">
             <http:header name="Content-Type" value="text/plain" />
@@ -298,7 +272,7 @@ declare
           <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
         </rest:response>,
         $path
-      )} catch * {(
+      )} catch * {( 
         <rest:response>
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
@@ -309,7 +283,9 @@ declare
       )}
 };
   
-declare function local:store($collection, $resource-name, $contents) {
+declare
+ %private
+ function wdbRAd:store($collection, $resource-name, $contents) {
   let $mime-type := switch (substring-after($resource-name, '.'))
     case "css" return "text/css"
     case "js" return "application/javascript"
@@ -324,27 +300,9 @@ declare function local:store($collection, $resource-name, $contents) {
     case "xsl" return "application/xslt+xml"
     default return "application/octet-stream"
     
-  (: when uploading programatically, we enforce the use of IDs – trying to replace a file entry in wdbmeta that has no
-     @xml:id with a file that has an ID will result in errorNoMatch :)
-  let $errorNoID := if ($mime-type = ('application/xml', 'application/tei+xml'))
-    then $contents/tei:TEI/@xml:id or $contents/*/@id
-    else false()
-
-  return if ($errorNoID)
-	then (
-      <rest:response>
-        <http:response status="500">
-          <http:header name="Content-Type" value="application/xml" />
-          <http:header name="rest-status" value="REST:ERROR" />
-					<http:header name="rest-reason" value="No ID supplied in XML file!" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
-      </rest:response>,
-      console:log("error storing XML " || $mime-type || " to " || $path)
-    )
-	else
   let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
   let $coll := if (not(xmldb:collection-available($collection)))
-    then local:createCollection($collection)
+    then wdbRAd:createCollection($collection)
     else ()
   let $path := try {
     xmldb:store($collection, $resource-name, $contents, $mime-type)
@@ -353,22 +311,25 @@ declare function local:store($collection, $resource-name, $contents) {
   }
   
   return if ($path[1] instance of node())
-    then (
+    then ( 
       <rest:response>
         <http:response status="500">
           <http:header name="Content-Type" value="application/xml" />
           <http:header name="rest-status" value="REST:ERROR" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
       </rest:response>,
       $path,
-      console:log("error storing XML " || $mime-type || " to " || $path)
+      console:log("error storing XML " || $mime-type || " to " || $path),
+      console:log($path)
     )
-    else (
+    else ( 
       <rest:response>
         <http:response status="200">
           <http:header name="Content-Type" value="text/plain" />
           <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
       </rest:response>,
       $path,
       sm:chown($path, "wdb:wdbusers"),
@@ -377,21 +338,24 @@ declare function local:store($collection, $resource-name, $contents) {
     )
 };
 
-declare function local:createCollection ($coll as xs:string) {
+declare
+ %private
+ function wdbRAd:createCollection ($coll as xs:string) {
     let $target-collection := xstring:substring-before-last($coll, '/')
     let $new-collection := xstring:substring-after-last($coll, '/')
     
     return if (xmldb:collection-available($target-collection))
       then 
-        (
+        ( 
           let $path := xmldb:create-collection($target-collection, $new-collection)
           let $chown := sm:chown($path, "wdb")
           let $chgrp := sm:chgrp($path, "wdbusers")
           
           return console:log("creating " || $new-collection || " in " || $target-collection)
         )
-      else (
-          local:createCollection($target-collection),
+      else ( 
+          wdbRAd:createCollection($target-collection),
           xmldb:create-collection($target-collection, $new-collection)
       )
 };
+
