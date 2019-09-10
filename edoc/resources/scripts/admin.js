@@ -52,7 +52,7 @@ async function dirupload (event) {
   $('#results').children().remove();
   $('p img').show();
   
-  let files = event.target[2].elements[0].files;
+  let files = event.target.elements.picker.files;
   let cred = Cookies.get("wdbplus");
   let headers = (typeof cred !== "undefined" && cred.length != 0)
     ? {"Authorization": "Basic " + cred}
