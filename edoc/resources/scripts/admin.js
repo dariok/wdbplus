@@ -96,3 +96,8 @@ async function dirupload (event) {
 
   $('p img').hide();
 }
+
+function ingestAction(event) {
+  if(event.target.id == "fi") { $('#picker').attr('webkitdirectory', null); }
+  else { $('#picker').attr('webkitdirectory', 'true'); }
+}
