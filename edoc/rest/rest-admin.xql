@@ -29,11 +29,9 @@ declare
     
     let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
     return 
-      if ($store instance of element())
+      if ($store instance of element() or $meta != 1)
       then $store
-      else if ($meta = 1)
-      then wdbRAd:enterMeta($store[2])
-      else $path
+      else wdbRAd:enterMeta($store[2])
 };
 
 declare
@@ -47,12 +45,6 @@ declare
     let $fullpath := $collection-path || '/' || $resource-path
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
-    
-    let $mime-type := switch (substring-after($resource-name, '.'))
-      case "xml" return
-        if ($contents/tei:TEI) then "application/tei+xml" else "application/xml"
-      case "xsl" return "application/xslt+xml"
-      default return "application/xml"
     
     (: when uploading programatically, we enforce the use of IDs – trying to
      replace a file entry in wdbmeta that has no @xml:id with a file that has an
@@ -68,14 +60,14 @@ declare
           <http:header name="rest-reason" value="No ID supplied in XML file!" />
         <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
       </rest:response>,
-      console:log("error storing XML " || $mime-type || " to " || $collection-uri || '/' || $resource-name || ": no ID supplied in XML file!")
+      console:log("error storing XML " || $mime-type || " to " || $path || ": no ID supplied in XML file!")
     )
     else
       let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
       return 
         if ($store[1]//http:response/@status = 500 or $meta != 1)
         then $store
-        else wdbRAd:enterMetaXML($store[2])
+        else wdbRAd:enterMeta($store[2])
 };
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
@@ -89,13 +81,14 @@ declare
     let $uuid := util:uuid($doc)
     let $metaFile := $meta//meta:file[@path = $path]
     
-    let $errNum := (count($metaFile) > 1)
+    let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
+      then true() else false()
+    let $errorNum := count($metaFile) > 2
     
-    return if ($errNum)
+    return if ($errorNum)
     then 
-        let $err := if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
-        else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path
-        else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path
+      let $err := if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
+        else if ($errorNum) then "More than 2 entries found for path " || $path
         else "unknown error"
     return( 
       <rest:response>
@@ -175,10 +168,10 @@ declare
 (: uploaded a single XML file with intent to create/update entry :)
 declare
   %private
-  function wdbRAd:enterMetaXML ($path as xs:anyURI) {
-    let $project := wdb:getEdFromPath($path, true())
+  function wdbRAd:enterMetaXML ($path as xs:anyURI, $fullpath as xs:anyURI) {
+    let $project := wdb:getEdFromPath($fullpath, true())
     let $meta := doc($project || '/wdbmeta.xml')
-    let $doc := doc($path)
+    let $doc := doc($fullpath)
     let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
     
