@@ -41,7 +41,7 @@ body {
 }
 
 /* hide right side on small broser windows, e.g. mobile */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: var(--mobile-width)) {
   body {
     margin: 0;
     height: 100vh;
