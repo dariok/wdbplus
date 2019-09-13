@@ -44,3 +44,10 @@ main div {
 header a {
   font-family: sans-serif;
 }
+
+/* Styles for smaller screens (e.g. mobile devices) */
+@media screen and (max-with: 768px) {
+  header h1 {
+    font-size: 1.1em;
+  }
+}

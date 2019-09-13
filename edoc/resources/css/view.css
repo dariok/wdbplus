@@ -8,7 +8,7 @@ body {
 }
 
 /* hide right side on small broser windows, e.g. mobile */
-@media screen and (max-width: var(--mobile-width)) {
+@media screen and (max-width: 768px) {
   body {
     grid-template-columns: none;
   }
@@ -36,7 +36,7 @@ main {
   flex-direction: row;
 }
 /* no showHide, so full width on small screens */
-@media screen and (max-width: var(--mobile-width)) {
+@media screen and (max-width: 768px) {
   #wdbContent {
     width: 100%;
   }
@@ -66,7 +66,7 @@ footer span {
   width: 0.5em;
 }
 /* do not display on small screens */
-@media screen and (max-width: var(--mobile-width)) {
+@media screen and (max-width: 768px) {
   #wdbShowHide {
     display: none;
   }

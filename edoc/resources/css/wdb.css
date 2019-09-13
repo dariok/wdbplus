@@ -10,7 +10,7 @@
 
 /* declare a global custom property to determine the width of the browser window
  * below which we start using a mobile friendly design */
-:root {
+@env {
   --mobile-width: 768px;
 }
 
@@ -41,7 +41,7 @@ body {
 }
 
 /* hide right side on small broser windows, e.g. mobile */
-@media screen and (max-width: var(--mobile-width)) {
+@media screen and (max-width: 768px) {
   body {
     margin: 0;
     height: 100vh;
