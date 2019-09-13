@@ -1,4 +1,8 @@
-/* layout of function pages (e.g. start.html, search.html, query.hmtl */
+/* wdbplus: CSS for function pages (e.g. start.html, search.html, query.html
+ * created: way back
+ * creator: DK Dario Kampkaspar <dario.kampkaspar@ulb.tu-darmstadt.de>
+ * sources: https://github.com/dariok/wdbplus */
+
 body {
   grid-template-columns: 3fr 7fr;
 }
