@@ -11,6 +11,9 @@ body {
 @media screen and (max-width: 768px) {
   body {
     grid-template-columns: none;
+    grid-template-areas: 'header'
+                         'left';
+    grid-template-rows: max-content;
   }
 }
 
