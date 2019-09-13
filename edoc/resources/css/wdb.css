@@ -5,7 +5,14 @@
 
 /* changes
  * 2019-06-06 Move to a grid-based layout
+ * 2019-09-13 use CSS custom properties to make responsive styling easier
  */
+
+/* declare a global custom property to determine the width of the browser window
+ * below which we start using a mobile friendly design */
+:root {
+  --mobile-width: 768px;
+}
 
 @font-face {
   font-family: 'mufi';
