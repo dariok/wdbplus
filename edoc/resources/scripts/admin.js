@@ -46,34 +46,39 @@ function rightSide ( url ) {
 }
 
 $('#picker').on("submit", dirupload);
+$(document).on("change", "#picker", function() {
+  $('#results').children().remove();
+  let dir = $(this).attr('webkitdirectory'),
+      files = this.files;
+  
+  for (let i = 0; i < files.length; i++) {
+    let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
+    $('#results').append("<li>" + path + "…</li>");
+  }
+});
 
 async function dirupload (event) {
   event.preventDefault();
-  $('#results').children().remove();
   $('p img').show();
   
-  let files = event.target.elements.picker.files;
   let cred = Cookies.get("wdbplus");
   let headers = (typeof cred !== "undefined" && cred.length != 0)
     ? {"Authorization": "Basic " + cred}
     : "";
   
   for (let i = 0; i < files.length; i++) {
-    $('#results').append("<li>" + files[i].webkitRelativePath + "…</li>");
-  }
-  
-  for (let i = 0; i < files.length; i++) {
     let file = files[i],
-        type = file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
+        task = $('#selectTask input:checked').attr("id"),
+        type = (task == "fi") ? file.name.substr(file.name.length - 3) : file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
         content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream",
         item = $('#results').children()[i],
-        text = item.innerText,
+        text = (task == "fi") ? file.name : item.innerText.substr(0, item.innerText.length - 1),
         collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection'],
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text.substr(0, text.length - 1),
-        mode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
+        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text,
+        mode = task == "do" ? "" : "?meta=1";
     
     try {
       await $.ajax({

@@ -49,7 +49,7 @@ declare
     (: when uploading programatically, we enforce the use of IDs – trying to
      replace a file entry in wdbmeta that has no @xml:id with a file that has an
      ID will result in errorNoMatch :)
-    let $errorNoID := $contents/*/@xml:id or $contents/*/@id
+    let $errorNoID := not($contents/*[1]/@xml:id or $contents/*[1]/@id)
     
     return if ($errorNoID)
     then ( 
@@ -60,7 +60,7 @@ declare
           <http:header name="rest-reason" value="No ID supplied in XML file!" />
         <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
       </rest:response>,
-      console:log("error storing XML " || $mime-type || " to " || $path || ": no ID supplied in XML file!")
+      console:log("error storing XML to " || $fullpath || ": no ID supplied in XML file!")
     )
     else
       let $store := wdbRAd:store($collection-uri, $resource-name, $contents)
