@@ -10,9 +10,9 @@
 
 /* declare a global custom property to determine the width of the browser window
  * below which we start using a mobile friendly design */
-@env {
+/*@env {
   --mobile-width: 768px;
-}
+}*/
 
 @font-face {
   font-family: 'mufi';
@@ -147,4 +147,24 @@ nav ul {
 
 nav li ul {
   margin-left: 1.25em;
+}
+
+@media screen and (max-width: 768px) {
+  header {
+    padding: 0 1%;
+  }
+  h1 {
+    font-size: 1.1em;
+  }
+  h2 {
+    font-size: 1.0em;
+  }
+  aside p, main p {
+    font-size: 0.9em;
+  }
+  header span {
+    padding-bottom: 0;
+    line-height: 1.2em;
+    font-size: 0.9em;
+  }
 }
