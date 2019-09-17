@@ -67,7 +67,7 @@ declare
       return 
         if ($store[1]//http:response/@status = 500 or $meta != 1)
         then $store
-        else wdbRAd:enterMeta($store[2])
+        else wdbRAd:enterMetaXML($store[2])
 };
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
@@ -104,10 +104,8 @@ declare
       (: new entry :)
     then try {
       (: create file entry :)
-      let $fid := 'f' || count($meta//meta:file) + 1
       let $file := 
         <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
-          attribute xml:id { $fid },
           attribute path { $path },
           attribute date { current-dateTime() },
           attribute uuid { $uuid }
@@ -168,10 +166,10 @@ declare
 (: uploaded a single XML file with intent to create/update entry :)
 declare
   %private
-  function wdbRAd:enterMetaXML ($path as xs:anyURI, $fullpath as xs:anyURI) {
-    let $project := wdb:getEdFromPath($fullpath, true())
+  function wdbRAd:enterMetaXML ($path as xs:anyURI) {
+    let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
-    let $doc := doc($fullpath)
+    let $doc := doc($path)
     let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
     
@@ -214,13 +212,14 @@ declare
           )}</file>
         let $fins := update insert $file into $meta//meta:files
         
-        (: create view entry :)
-        let $view :=
-          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
-            attribute file { $id },
-            attribute label { $doc//tei:titleStmt/tei:title[1] }
-          )}</view>
-        let $sins := update insert $view into $meta/meta:projectMD/meta:struct[1]
+        let $view := if (wdb:findProjectFunction(map{"pathToEd": $project}, "getRestView", 1))
+          then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
+          else
+            <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
+              attribute file { $id },
+              attribute label { $doc//tei:titleStmt/tei:title[1] }
+            )}</view>
+        let $updv := update insert $view into $meta//meta:struct[1]
         
         return ( 
           <rest:response>
