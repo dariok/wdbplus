@@ -1,4 +1,5 @@
 var rest = $("meta[name='rest']").attr("content");
+var files;
 
 $("document").ready(function() {
   if (params['id'] !== undefined && params['action'] == "dir")
@@ -48,8 +49,8 @@ function rightSide ( url ) {
 $('#picker').on("submit", dirupload);
 $(document).on("change", "#picker", function() {
   $('#results').children().remove();
-  let dir = $(this).attr('webkitdirectory'),
-      files = this.files;
+  let dir = $(this).attr('webkitdirectory');
+  files = this.files;
   
   for (let i = 0; i < files.length; i++) {
     let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
@@ -77,7 +78,7 @@ async function dirupload (event) {
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = collection.substr(collection.indexOf('/' + edRoot + '/') + edRoot.length + 2) + '/' + text,
+        relpath = collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
         mode = task == "do" ? "" : "?meta=1";
     
     try {
@@ -90,18 +91,18 @@ async function dirupload (event) {
         processData: false,
         success: function (response, textStatus, xhr) {
           console.log(response);
-          item.innerText = text.substring(0, text.length - 1) + "✓";
+          item.innerText = text.substring(0, text.length) + "✓";
         },
         error: function (response) {
           console.log(response);
-          item.innerText = text.substring(0, text.length - 1) + "✕";
+          item.innerText = text.substring(0, text.length) + "✕";
         }
       });
     } catch (e) {
       console.log(e);
     }
   }
-
+  
   $('p img').hide();
 }
 
