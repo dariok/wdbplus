@@ -2,7 +2,7 @@ var rest = $("meta[name='rest']").attr("content");
 var files;
 
 $("document").ready(function() {
-  if (params['id'] !== undefined && params['action'] == "dir")
+  if (params['id'] !== undefined)
   {
     let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
     let url = rest + delim + "collection/" + params["id"] + "/collections.json";
