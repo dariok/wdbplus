@@ -267,7 +267,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="ed" content="{$model("ed")}" />
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
-    <title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
+    <title>{$model("title")} – {normalize-space($wdb:configFile//config:short)}</title>
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
