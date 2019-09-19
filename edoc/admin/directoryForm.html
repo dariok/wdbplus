@@ -1,7 +1,7 @@
 <div data-template="templates:surround" data-template-with="templates/admin.html" data-template-at="container">
   <h1>Funktion</h1>
   <form action="#" method="post" onsubmit="dirupload(event);">
-    <fieldset id="selectTask">
+    <fieldset id="selectTask" onchange="ingestAction(event);">
       <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta (restore)</input>
       <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta (ingest)</input>
       <input type="radio" name="task" id="fi">Einzeldatei mit Eintragen in wdbmeta</input>
