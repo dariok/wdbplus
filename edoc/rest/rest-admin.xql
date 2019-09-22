@@ -219,7 +219,7 @@ declare
               attribute file { $id },
               attribute label { $doc//tei:titleStmt/tei:title[1] }
             )}</view>
-        let $updv := update insert $view into $meta//meta:struct[1]
+        let $updv := update insert $view into $meta/meta:projectMD/meta:struct
         
         return ( 
           <rest:response>
