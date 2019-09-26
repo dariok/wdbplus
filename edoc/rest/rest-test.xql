@@ -33,7 +33,7 @@ function wdbRt:test ($referer as xs:string*) {
               <dd><pre>{
                 let $s := util:eval($variable)
                 return typeswitch ($s)
-                case node() return util:serialize($s, ())
+                case node() return serialize($s, ())
                 default return $s
               }</pre></dd>
             )
