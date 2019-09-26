@@ -15,7 +15,7 @@ declare namespace wdbmeta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare
 %templates:default('ed', '')
 function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
-  wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()), $ed)
+  wdbs:projectList(smis-dba(sm:id()//sm:real/sm:username/string()), $ed)
 };
 
 declare function wdbs:projectList($admin as xs:boolean, $ed) {
