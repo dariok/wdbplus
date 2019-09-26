@@ -117,7 +117,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
           <dd><pre>{
             let $s := util:eval($variable)
             return typeswitch ($s)
-            case node() return util:serialize($s, ())
+            case node() return serialize($s)
             default return $s
           }</pre></dd>
         )
