@@ -48,7 +48,7 @@ function wdbRf:getResource ($id as xs:string) {
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    if ($mtype = "application/xml")
+    if (contains($mtype, "xml"))
     then $doc
     else util:binary-to-string(util:binary-doc($path))
   )
