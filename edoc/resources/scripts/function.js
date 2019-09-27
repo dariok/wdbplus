@@ -60,19 +60,19 @@ $(window).bind('hashchange', function () {
 });
 // when loading; or load p. 1 when no target is present
 $(document).ready(function () {
-    if($('.pagebreak').length > 0) {
-		var target = $('.pagebreak > a').first().attr('href');
-	    var tar = window.location.hash;
-	    
-	    if (tar !== '' && tar !== 'undefined') {
-	        loadTargetImage();
-	    } else {
-	        displayImage(target);
-	    }
+  if($('.pagebreak').length > 0) {
+    let target = $('.pagebreak a').first().attr('href');
+    let tar = window.location.hash;
+    
+    if (tar !== '' && tar !== 'undefined') {
+      loadTargetImage();
     } else {
-    	// TODO Text oder Image, wenn kein pb vorhanden
-    	// TODO ggf. getrennt für "verschollen"
+      displayImage(target);
     }
+  } else {
+    // TODO Text oder Image, wenn kein pb vorhanden
+    // TODO ggf. getrennt für "verschollen"
+  }
 });
 
 /* Login and logout */
