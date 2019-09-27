@@ -20,11 +20,11 @@ import module namespace wdbPN     = "https://github.com/dariok/wdbplus/ProjectNe
  : The following modules provide functions which will be called by the 
  : templating.
  :)
-import module namespace config		= "http://exist-db.org/xquery/apps/config" 	at "config.xqm";
+import module namespace config = "http://exist-db.org/xquery/apps/config" 	at "config.xqm";
 
 let $config := map {
-    $templates:CONFIG_APP_ROOT := $config:app-root,
-    $templates:CONFIG_STOP_ON_ERROR := true()
+  $templates:CONFIG_APP_ROOT: $config:app-root,
+  $templates:CONFIG_STOP_ON_ERROR: true()
 }
 
 (:
@@ -34,11 +34,11 @@ let $config := map {
  : below does see them.
  :)
 let $lookup := function($functionName as xs:string, $arity as xs:int) {
-    try {
-    	function-lookup(xs:QName($functionName), $arity)
-    } catch * {
-        ()
-    }
+  try {
+    function-lookup(xs:QName($functionName), $arity)
+  } catch * {
+    ()
+  }
 }
 (:
  : The HTML is passed in the request from the controller.
@@ -46,4 +46,4 @@ let $lookup := function($functionName as xs:string, $arity as xs:int) {
  :)
 let $content := request:get-data()
 return
-    templates:apply($content, $lookup, (), $config)
+  templates:apply($content, $lookup, (), $config)

@@ -15,7 +15,7 @@ declare namespace wdbmeta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare
 %templates:default('ed', '')
 function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
-  wdbs:projectList(xmldb:is-admin-user(xmldb:get-current-user()), $ed)
+  wdbs:projectList(sm:is-dba(sm:id()//sm:real/sm:username/string()), $ed)
 };
 
 declare function wdbs:projectList($admin as xs:boolean, $ed) {
@@ -83,28 +83,4 @@ declare function wdbs:getInstanceName($node as node(), $model as map(*)) {
 };
 declare function wdbs:getInstanceShort($node as node(), $model as map(*)) {
   <span>{$wdb:configFile//wdbc:meta/wdbc:short}</span>
-};
-
-declare function wdbs:chronologicalOrder($ed) {
-  for $fi in $ed
-    let $dates := $fi//tei:date/@when
-    
-    for $date in $dates
-      let $parsed := if (matches($date, '^\d{4}-\d{2}-\d{2}'))
-        then datetime:parse-date($date, 'yyyy-MM-dd')
-        else (if (matches($date, '^\d{4}-\d{2}'))
-          then datetime:parse-date($date, 'yyyy-MM')
-          else (if (matches($date, '^\d{4}'))
-            then datetime:parse-date($date, 'yyyy')
-            else ()))
-      let $cast :=  if ($date castable as xs:date)
-        then $date cast as xs:date
-        else '?'
-      where $parsed lt datetime:parse-date('1900-01-01', 'yyyy-MM-dd')
-      return
-        <dl>
-          <dd>{base-uri($fi)}</dd>
-          <dt>{$date}{$parsed}</dt>
-          <dt>{$cast}</dt>
-        </dl>
 };

@@ -12,7 +12,7 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
-import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
+import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
@@ -117,7 +117,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
           <dd><pre>{
             let $s := util:eval($variable)
             return typeswitch ($s)
-            case node() return util:serialize($s, ())
+            case node() return serialize($s)
             default return $s
           }</pre></dd>
         )
@@ -267,7 +267,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="ed" content="{$model("ed")}" />
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
-    <title>{normalize-space($wdb:configFile//main:short)} – {$model("title")}</title>
+    <title>{$model("title")} – {normalize-space($wdb:configFile//config:short)}</title>
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />

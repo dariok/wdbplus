@@ -2,10 +2,10 @@ xquery version "3.1";
 
 let $targetCollection := '/db/apps/edoc'
 
-let $cp := xmldb:copy($targetCollection || '/config/edoc', '/db/system/config/db/apps')
+let $cp := xmldb:copy-collection($targetCollection || '/config/edoc', '/db/system/config/db/apps')
 
 let $collsr := (
-  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/scripts/jquery-ui", "/resources/scripts/jquery-ui/images", "/resources/xsl"
+  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/xsl"
 )
 
 let $chmod := (
