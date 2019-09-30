@@ -437,11 +437,11 @@ declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:
 (:~
  : Return the relative path to the project
  : 
- : @param $path a path to a file within the project, usually wdbmeta.xml or mets.xml
+ : @param $id the ID of a resource within a project
  : @return the path relative to the app root
  :)
-declare function wdb:getEdPath($path as xs:string) as xs:string {
-  wdb:getEdPath($path, false())
+declare function wdb:getEdPath($id as xs:string) as xs:string {
+  wdb:getEdPath($id, false())
 };
 
 (: ~
