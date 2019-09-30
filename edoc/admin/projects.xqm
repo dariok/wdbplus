@@ -29,7 +29,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
     if (not($user//sm:group = 'dba'))
       then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
     else if ($job != '') then
-      let $edition := wdb:getEdPath($file)
+      let $edition := wdb:getEdFromPath($file, false())
       let $metaPath := $wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml'
       let $metaFile := doc($metaPath)
       let $relativePath := substring-after($file, $edition||'/')
@@ -47,8 +47,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
           return local:getFileStat($edition, $file)
         
         case 'uuid' return
-          let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" uuid="{util:uuid($xml)}"/>
-          let $up1 := update insert $ins/@uuid into $fileEntry
+          let $ins := attribute uuid {util:uuid($xml)}
+          let $up1 := if ($filesEntry/@uuid)
+            then update replace $fileEntry/@uuid with $ins
+            else update insert $ins into $fileEntry
           return local:getFileStat($edition, $file)
         
         case 'date' return
@@ -59,9 +61,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
           return local:getFileStat($edition, $file)
         
         case 'id' return
-          let $id := normalize-space($xml/tei:TEI/@xml:id)
-          let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="{$id}" />
-          let $upd1 := update insert $ins/@xml:id into $fileEntry
+          let $ins := attribute xml:id {normalize-space($xml/tei:TEI/@xml:id)}
+          let $upd1 := if ($fileEntry/@xml:id)
+            then update replace $fileEntry/@xml:id with $ins
+            else update insert $ins/@xml:id into $fileEntry
           return local:getFileStat($edition, $file)
         
         case 'private' return
