@@ -48,7 +48,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
         
         case 'uuid' return
           let $ins := attribute uuid {util:uuid($xml)}
-          let $up1 := if ($filesEntry/@uuid)
+          let $up1 := if ($fileEntry/@uuid)
             then update replace $fileEntry/@uuid with $ins
             else update insert $ins into $fileEntry
           return local:getFileStat($edition, $file)
@@ -201,6 +201,13 @@ declare function local:getFileStat($ed, $file) {
                     then <td>OK: {$uuid}</td>
                     else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
                   }
+                </tr>,
+                <tr>
+                  <td>externe PID</td>
+                  <td>{if ($entry/@pid)
+                    then string($entry/@pid)
+                    else "keine Angabe"
+                  }</td>
                 </tr>,
                 <tr>
                   <td>Timestamp in wdbMeta</td>
