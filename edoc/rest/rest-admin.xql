@@ -46,10 +46,11 @@ declare
     let $collection-uri := xstring:substring-before-last($fullpath, '/')
     let $resource-name := xstring:substring-after-last($fullpath, '/')
     
-    (: when uploading programatically, we enforce the use of IDs – trying to
-     replace a file entry in wdbmeta that has no @xml:id with a file that has an
-     ID will result in errorNoMatch :)
+    (: when uploading programatically, we enforce the use of IDs for XML (but
+       not XSLT!) files – trying to replace a file entry in wdbmeta that has no
+       @xml:id with a file that has an ID will result in errorNoMatch :)
     let $errorNoID := not($contents/*[1]/@xml:id or $contents/*[1]/@id)
+        and not(ends-with($name, 'xsl'))
     
     return if ($errorNoID)
     then ( 
