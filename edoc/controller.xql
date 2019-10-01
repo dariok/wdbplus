@@ -13,19 +13,17 @@ declare variable $exist:root external;
 
 (: von eXide geklaut :)
 declare function local:user-allowed() {
-    (
-        request:get-attribute("wd.user") and
-        request:get-attribute("wd.user") != "guest"
-    ) or config:get-configuration()/restrictions/@guest = "yes"
+  (
+    request:get-attribute("wd.user") and
+    request:get-attribute("wd.user") != "guest"
+  ) or config:get-configuration()/restrictions/@guest = "yes"
 };
 declare function local:query-execution-allowed() {
-    (
+  (
     config:get-configuration()/restrictions/@execute-query = "yes"
-        and
-    local:user-allowed()
-    )
-        or
-    sm:is-dba((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
+    and local:user-allowed()
+  )
+  or sm:is-dba((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
 
 if ($exist:resource eq '' or $exist:resource eq 'index.html') then
@@ -39,7 +37,7 @@ else if ($exist:resource = 'login') then
         <forward url="{$exist:controller}/auth.xql">
             <set-attribute name="xquery.report-errors" value="yes"/>
             <set-header name="Cache-Control" value="no-cache"/>
-            <set-header name="Access-Control-Allow-Origin" value="https://digitarium-app.acdh-dev.oeaw.ac.at"/>
+            <set-header name="Access-Control-Allow-Origin" value="*"/>
         </forward>
     </dispatch>
 (: Konfigurationsseiten :)
