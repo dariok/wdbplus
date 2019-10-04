@@ -70,7 +70,7 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
     
     let $chmod := (
-      sm:chmod(xs:anyURI($collection-uri), 'r--r--r--'),
+      sm:chmod(xs:anyURI($collection-uri), 'r-xr-xr-x'),
       sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--')
     )
     
