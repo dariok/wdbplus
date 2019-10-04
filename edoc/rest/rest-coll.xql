@@ -44,7 +44,6 @@ declare
     %rest:GET
     %rest:path("/edoc/collection.json")
     %rest:produces("application/json")
-    %output:method("json")
 function wdbRc:getCollectionsJSON () {
   wdbRc:getCollections("application/json")
 };
@@ -95,7 +94,6 @@ function wdbRc:getResourcesXML ($id) {
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.json")
-  %output:method("json")
 function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
 };
