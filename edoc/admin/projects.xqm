@@ -53,6 +53,13 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
             else update insert $ins into $fileEntry
           return local:getFileStat($edition, $file)
         
+        case 'pid' return
+          let $ins := attribut pid { string($xml//tei:publicationStmt/tei:idno[@type = 'URI']) }
+          let $up1 := if ($fileEntry/@pid)
+            then update replace $fileEntry/@pid with $ins
+            else update insert $ins into $fileEntry
+          return local:getFileStat($edition, $file)
+        
         case 'date' return
           let $ins := attribute date {xmldb:last-modified($subColl, $resource)}
           let $up1 := if ($fileEntry/@date)
@@ -156,6 +163,7 @@ declare function local:getFileStat($ed, $file) {
   let $relativePath := substring-after($file, $ed||'/')
   let $entry := $metaFile//meta:file[@path = $relativePath]
   let $uuid := util:uuid($doc)
+  let $pid := $doc//tei:titleStmt/tei:idno[@type = 'URI']
   let $date := xmldb:last-modified($subColl, $resource)
   let $id := normalize-space($doc/tei:TEI/@xml:id)
   
@@ -173,6 +181,10 @@ declare function local:getFileStat($ed, $file) {
             <tr>
               <td>UUID v3</td>
               <td>{$uuid}</td>
+            </tr>
+            <tr>
+              <td>externe PID</td>
+              <td>{$pid}</td>
             </tr>
             <tr>
               <td>Timestamp</td>
@@ -196,7 +208,7 @@ declare function local:getFileStat($ed, $file) {
             {if ($entry/@path != '')
               then (
                 <tr>
-                  <td>UUID in wdbMeta</td>
+                  <td style="border-top: 1px solid black;">UUID in wdbMeta</td>
                   {if ($entry/@uuid = $uuid)
                     then <td>OK: {$uuid}</td>
                     else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$file}')">UUID aktualisieren</a></td>
@@ -204,9 +216,9 @@ declare function local:getFileStat($ed, $file) {
                 </tr>,
                 <tr>
                   <td>externe PID</td>
-                  <td>{if ($entry/@pid)
-                    then string($entry/@pid)
-                    else "keine Angabe"
+                  <td>{if ($entry/@pid = $pid)
+                    then "OK: " || string($entry/@pid)
+                    else <a href="javascript:job('pid', '{$file}'">PID aus Datei übernehmen</a>
                   }</td>
                 </tr>,
                 <tr>
