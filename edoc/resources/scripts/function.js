@@ -151,7 +151,10 @@ function loadTargetImage () {
             console.log($(':target > a').attr('href'));
             displayImage($(':target > a').attr('href'));
         } else {
-            var pb = target.parents().has('.pagebreak').first().find('.pagebreak a');
+            let pagebreak = target.parents().has('.pagebreak').first();
+            let pb = (pagebreak.find('a').length > 1)
+              ? pagebreak.find('.pb a')
+              : pb = pagebreak.find('a');
             displayImage(pb.attr('href'));
         }
     } else {
