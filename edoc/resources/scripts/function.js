@@ -41,7 +41,7 @@ $(document).ready(function () {
         0);
         
         var pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
-        displayImage(pb.attr('href'));
+        displayImage(pb);
     }
 });
 $(document).ready(function() {
@@ -61,7 +61,7 @@ $(window).bind('hashchange', function () {
 // when loading; or load p. 1 when no target is present
 $(document).ready(function () {
   if($('.pagebreak').length > 0) {
-    let target = $('.pagebreak a').first().attr('href');
+    let target = $('.pagebreak a').first();
     let tar = window.location.hash;
     
     if (tar !== '' && tar !== 'undefined') {
@@ -136,8 +136,7 @@ function doLogout () {
 $(document).ready(function () {
     $('.pagebreak a').click(function (event) {
         event.preventDefault();
-        href = $(this).attr('href');
-        displayImage(href);
+        displayImage($(this));
     });
 });
 /* END GLOBAL FUNCTIONS */
@@ -149,13 +148,13 @@ function loadTargetImage () {
     if (target.length > 0) {
         if (target.attr('class') == 'pagebreak') {
             console.log($(':target > a').attr('href'));
-            displayImage($(':target > a').attr('href'));
+            displayImage($(':target > a'));
         } else {
             let pagebreak = target.parents().has('.pagebreak').first();
             let pb = (pagebreak.find('a').length > 1)
               ? pagebreak.find('.pb a')
               : pb = pagebreak.find('a');
-            displayImage(pb.attr('href'));
+            displayImage(pb);
         }
     } else {
         
@@ -528,7 +527,8 @@ function getUniqueId() {
 }
 
 /* display an image in the right div */
-function displayImage(href) {
+function displayImage(element) {
+    let href = element.attr('href');
     $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
     $('#facsimile').attr('src', href);
     $('#facsimile').css('display', 'block');
