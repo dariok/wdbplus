@@ -17,9 +17,9 @@ JavaScript functions, you are responsible to implement their functionality yours
 it.<sup id="a2">[2](#f2)</sup>
 
 ## Adapting function pages
-Some special function pages, such as [[start.html]] or `search.html` can be adapted to your needs. For `start.html`,
-this projess is documented separately. For `search.html`, you can provide two files: `projectSearch.css` and
-`search.xml` within `{$project}/resources` to create and style the HTML view.
+Pages using the `function.html` template (such as `start.html`, `search.html` or `query.html`) will load a `projectFunction.css` and/or `projectFunction.js` file in the project’s `resources` collection if available. This can be used for anything that is common to all variants of function pages.
+For each page, the can also be more specific files, e.g. `projectSearch.css`/`projectSearch.js` etc.
+For [[start.html]], there are additional options to create a start page.
 
 ## Complex extensions
 If the selection of a CSS or JS is more complex than allowed for by the methods above, for example if you need different
@@ -35,9 +35,9 @@ In order to easily use templating with any XQuery within a project, queries can 
 XQuery script MUST be a module in [[namespace `wdbq`|list-of-namespaces]] and implement a function
 `wdbq:query($map as map(*))` and SHOULD implement `wdbq:getTask()`.
 
-The URL should look like this: `query.html?ed={$pathToEd}&query={$pathToQueryWithinProject}&q={$mainQueryParameter}&p={$additionalParameters}`.
-Parameters `q` and `p` can be accessed via `$model` by `wdbq:query($model)`. Parameter `p` MUST be a JSON object and
-will be parsed into a `map(*)`. 
+The URL should look like this: `query.html?id={$projectID}&q={$pathToQueryWithinProject}&p={$additionalParameters}`.
+Parameters `q` and `p` can be accessed via `$model` by `wdbq:query($model)`. Parameter `p` MUST be a JSON object 
+and will be parsed into a `map(*)`. 
 
 ---
 

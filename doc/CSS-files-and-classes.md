@@ -7,7 +7,7 @@ replaced during an update or upgrade.
 
 |file|rules|
 |--|--|
-|resources/css/wdb.css|basic layout of any main page (includes general header layout)|
+|resources/css/wdb.css|basic layout of any page – this one is loaded first by all pages in the templating system|
 |resources/css/function.css| basic layout for function pages (small aside left, wide main right)|
 |[[resources/css/view.css\|css-files-and-classes#viewcss]]| main layout file for _header_, _nav_, _main_ and _aside_ in of view.html|
 |resources/css/search.css|additional layout for search page and results|

@@ -12,6 +12,9 @@ The base URL for these endpoints is `{$server}/restxq/edoc/`.
 |**collection/${id}**|GET|XML, JSON|list|use content negotiation to get the result of the next 2|
 |**collection/${id}/resources.xml**|GET|XML|list|get a list of all collections and resources with an ID in the project identified by `$id`|
 |**collection/${id}/resources.json**|GET|JSON|list|get a list of all collections and resources with an ID in the project identified by `$id`|
+|**collection/${id}/collections.xml**|GET|XML|list|get a list of all subcollections recursively in the project identified by `$id`|
+|**collection/${id}/collections.json**|GET|JSON|list|get a list of all subcollections recursively in the project identified by `$id`|
+
 |**collection/${id}/nav.xml**|GET|XML|wdbmeta:struct|return the navigation for the given project. All children structs are returned and for all other projects, their hierarchy|
 |**collection/${id}/nav.html**|GET|HTML|html:ul|the result of the former transformed by either a project specific or a generic XSLT|
 
@@ -19,9 +22,11 @@ The base URL for these endpoints is `{$server}/restxq/edoc/`.
 |Endpoint|Method|Data Type|Data schema|action|
 |--|--|--|--|--|
 |**resource/${id}**|GET|-|-|return the file identified by `$id` in whatever datatype it is present in the DB. A file’s ID is listed in `wdbmeta.xml` (or for TEI files, in `/tei:TEI/@xml:id`)|
+|**resource/${id}/f/${fragment}**|GET|-|-|return whatever is identified by $fragment in $id (as above). In most cases, this will be an element with an `@xml:id` in an XML file (but it can be anything that is by a schema defined as an ID)|
 |**resource/${id}/views**|GET|XML, JSON|(list)|-|return a list of views that are available for this file (e.g., „HTML“) – this is given by the processes defined in `wdbmeta.xml`|
-|**resource/${id}/${fragment}**|GET|-|-|return whatever is identified by $fragment in $id (as above). In most cases, this will be an element with an `@xml:id` in an XML file (but it can be anything that is by a schema defined as an ID)|
-|**resource/${id}.${view}**|GET|-|-|return the result of applying the process identified by $view to the file identified by $id|
+|**resource/${id}/view.xml**|GET|XML|(list)|-|return a list of views that are available for this file (e.g., „HTML“) – this is given by the processes defined in `wdbmeta.xml`|
+|**resource/${id}/view.json**|GET|JSON|(list)|-|return a list of views that are available for this file (e.g., „HTML“) – this is given by the processes defined in `wdbmeta.xml`|
+|**resource/view/${id}.${type}**|GET|-|-|return the result of applying the process identified by $type (e.g. html) to the file identified by $id; may optionally take `?view=` if there are distinctions to be passed to the XSLT|
 |**resource/iiif/${id}.json**|GET|JSON|IIIF manifest|return a IIIF manifest for this file if it is an edition file|
 |**resource/iiif/${id}/${image}.json**|GET|JSON|IIIF image descriptor|return a IIIF image descriptor for the image identified by $image in the edition file identified by $id|
 

@@ -1,5 +1,7 @@
 Welcome to the wdbplus wiki!
 
+To get started, please refer to the information in `project.md`.
+
 Some basic concepts etc. are to be documented here. Until there is a more definite documentation included within the app itself, this is the place for doc to go. It may also serve as a stable target for documentation of older releases.
 
 Your point of entry should be [[global-configuration]] which introduces you to the most important settings and caveats.

@@ -29,3 +29,7 @@ Scripts invoked via RESTXQ will not be able to use automatic resolution – if y
 A full URL which is the base for REST calls. This will be used by JavaScript functions, e.g. to load navigation or to insert/retrieve annotations. This must be set if the rest endpoint is not available under the usual location (i.e. `http://yourexist.tld/exist/restxq/edoc/` for the standard setup). This might be the case if you hid parts of the standard path by eXist's configuration or reverse proxying.
 
 NB: this needs to include the “edoc/” part
+
+## Projects
+In order to create a project, you have to create a collection for it and make the most important settings in `wdbmeta.xml`. The initial settings can be done using `admin/admin.html` (New Project).
+After that, you have to add at least one view and an entry for every file you want to access.

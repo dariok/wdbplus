@@ -35,3 +35,12 @@ _Template:_ `function.html`
 The main entry point to display an HTML representation of an XML file in any project.
 
 _Template:_ `layout.html`
+
+## Description of basic layout
+### `layout.html`
+- 100% width `header` (fixed)
+- below at initially 50% width each `main` (left), `aside` (right)
+- `main` and `aside` may contain a (globally defined or project specific) footer
+### `function.html`
+- 100% width `header` (fixed)
+- below `aside` (left) 30% width, `main` (right) 70% width

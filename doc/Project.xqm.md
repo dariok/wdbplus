@@ -20,3 +20,5 @@ return a sequence of nodes that will be the right hand side of `start.html`.
 
 ### wdbPF:getNavXSLT()
 return an `xs:anyURI` pointing to the XSLT that should be used to transform the response of `nav.xql` for displaying the navigation. This is only necessary if there is no `vav.xsl` present in the project collection and you don't want to use the global stylesheet ad `wdb:edocBaseDB/resources/nav.xsl`.
+
+### wdbPF:getRestView

@@ -11,6 +11,8 @@
   * [[Project.xqm]]
   * [[Writing scripts to display XML files|Writing-scripts-to-display-XML-files]]
   * [[start.html]]
+  * [[view.html]]
+  * [[How to include an image viewer via project Specifics|Include-an-image-viewer-via-projectSpecifics]]
 * Tech
   * [[List of pre-defined CSS files and classes|CSS-files-and-classes]]
   * [[List of globally available variables|Global-variables]]
