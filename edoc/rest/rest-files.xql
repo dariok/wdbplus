@@ -21,9 +21,11 @@ declare
 function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
-  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $files := (collection($wdb:data)//id($id)[self::meta:file or self::meta:projectMD])
   let $f := $files[1]
-  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
+  let $path := if ($f[self::meta:projectMD])
+    then base-uri($f)
+    else substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
   
   let $doc := doc($path)
   
@@ -40,10 +42,8 @@ function wdbRf:getResource ($id as xs:string) {
   
   return (
     <rest:response>
-      <http:response status="{$respCode}">{
-        if (string-length($type) = 0) then () else
-          <http:header name="Content-Type" value="{$type}" />
-        }
+      <http:response status="{$respCode}">
+        <http:header name="Content-Type" value="{$type}" />
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
@@ -158,7 +158,7 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
   let $file := $retrFile/tei:TEI
   
   let $fa := $file//tei:surface[@xml:id = $image]
-    let $page := substring-after($fa/@xml:id, '_')
+  let $page := substring-after($fa/@xml:id, '_')
     
     let $projectFileAvailable := wdb:findProjectFunction($map, "getImages", 2)
     let $resource := if ($projectFileAvailable)
@@ -170,22 +170,22 @@ declare function local:image ($fileID as xs:string, $image as xs:string, $map as
       else $wdb:restURL || "file/iiif/" || $fileID || "/images/" || $page
     
     let $tiles := map {
-      "scaleFactors": [1, 2, 4, 8, 16],
-      "width":        512,
-      "height":       512
-    }
+          "scaleFactors": [1, 2, 4, 8, 16],
+          "width": 512,
+          "height": 512
+        }
     
     let $errors := string-join($errorFile, ' - ')
     return if (string-length($errors) > 0)
       then "ERROR: " || $errors
       else map {
-        "@context": "http://iiif.io/api/image/2/context.json",
-        "profile":  "http://iiif.io/api/image/2/level2.json",
-        "@id":      $sid,
-        "height":   xs:int($fa/@lry),
-        "width":    xs:int($fa/@lrx),
+        "@context" : "http://iiif.io/api/image/2/context.json",
+        "profile" : "http://iiif.io/api/image/2/level2.json",
+        "@id" : $sid,
+        "height": xs:int($fa/@lry),
+        "width": xs:int($fa/@lrx),
         "protocol": "http://iiif.io/api/image",
-        "tiles":    [$tiles]
+        "tiles": [$tiles]
       }
       
       (:map {
