@@ -74,8 +74,12 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     )
     
     return
-        <p>
-            <span>{$collection-uri}</span>
-            <span>{$saveMetaFile}</span>
-        </p>
+        <dl>
+            <dd>Collection</dd>
+            <dt>{$collection-uri}</dt>
+            <dd>wdbmeta.xml:</dd>
+            <dt>{$saveMetaFile}</dt>
+            <dd>Admin</dd>
+            <dt><a href="{$wdb:edocBaseURL}/admin/directoryForm.html?id={$pID}">Upload</a></dt>
+        </dl>
 };
