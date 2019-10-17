@@ -133,7 +133,11 @@ declare
     return
     <collection id="$id" path="{$path}">{
       for $s in xmldb:get-child-collections($path)
-        return local:childCollections($path, $s)
+        return try {
+          local:childCollections($path, $s)
+        } catch * {
+          console:log($s || " not readable")
+        }
     }</collection>
 };
 declare function local:childCollections($path, $s) {
