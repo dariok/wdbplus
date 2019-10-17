@@ -70,7 +70,11 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     
     let $chmod := (
       sm:chmod(xs:anyURI($collection-uri), 'r-xr-xr-x'),
-      sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--')
+      sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--'),
+      sm:chown(xs:anyURI($collection-uri), "wdb"),
+      sm:chgrp(xs:anyURI($collection-uri), "wdbusers"),
+      sm:chown(xs:anyURI($saveMetaFile), "wdb"),
+      sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers")
     )
     
     return
