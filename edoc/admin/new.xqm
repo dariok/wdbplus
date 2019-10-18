@@ -59,14 +59,17 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         </legal>
       </metaData>
       <files></files>
-      <process target="">
-        <command type=""></command>
+      <!-- This is an example using standard XSLT scripts. -->
+      <process target="html">
+        <command type="xslt" regex="introduction">xslt/tei-introduction.xsl</command>
+        <command type="xslt">xslt/tei-transcript.xsl</command>
       </process>
       <struct></struct>
     </projectMD>
     
     let $collection-uri := xmldb:create-collection($wdb:data, $pColl)
     let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
+    let $copy := xmldb:copy($wdb:edocBaseDB || "/resources/xsl", $collection-uri)
     
     let $chmod := (
       sm:chmod(xs:anyURI($collection-uri), 'r-xr-xr-x'),
@@ -74,7 +77,9 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       sm:chown(xs:anyURI($collection-uri), "wdb"),
       sm:chgrp(xs:anyURI($collection-uri), "wdbusers"),
       sm:chown(xs:anyURI($saveMetaFile), "wdb"),
-      sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers")
+      sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers"),
+      sm:chmod(xs:anyURI($collection-uri), "r-xr-xr-x"),
+      sm:chown(xs:anyURI($collection-uri), "wdb:wdbusers")
     )
     
     return
