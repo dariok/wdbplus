@@ -61,8 +61,8 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       <files></files>
       <!-- This is an example using standard XSLT scripts. -->
       <process target="html">
-        <command type="xslt" regex="introduction">xslt/tei-introduction.xsl</command>
-        <command type="xslt">xslt/tei-transcript.xsl</command>
+        <command type="xslt" regex="introduction">xsl/tei-introduction.xsl</command>
+        <command type="xslt">xsl/tei-transcript.xsl</command>
       </process>
       <struct></struct>
     </projectMD>
@@ -78,8 +78,13 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       sm:chgrp(xs:anyURI($collection-uri), "wdbusers"),
       sm:chown(xs:anyURI($saveMetaFile), "wdb"),
       sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers"),
-      sm:chmod(xs:anyURI($collection-uri), "r-xr-xr-x"),
-      sm:chown(xs:anyURI($collection-uri), "wdb:wdbusers")
+      sm:chmod(xs:anyURI($collection-uri || "/xsl"), "r-xr-xr-x"),
+      sm:chown(xs:anyURI($collection-uri || "/xsl"), "wdb:wdbusers"),
+      for $f in xmldb:get-child-resources($collection-uri || "/xsl")
+        return (
+          sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "r-xr-xr-x"),
+          sm:chown(xs:anyURI($collection-uri || "/xsl/" || $f), "wdb:wdbusers")
+        )
     )
     
     return
