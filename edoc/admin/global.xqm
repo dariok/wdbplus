@@ -6,7 +6,9 @@ import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb" at ".
 import module namespace console  = "http://exist-db.org/xquery/console";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
-declare namespace exgit = "http://exist-db.org/xquery/exgit";
+declare namespace exgit  = "http://exist-db.org/xquery/exgit";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace system = "http://exist-db.org/xquery/system";
 
 declare function wdbGS:getRest ( $node as node(), $model as map(*) ) {
   <meta name="rest" content="{$wdb:restURL}" />
@@ -101,4 +103,8 @@ declare function local:roleForm($metaFile) {
       <input type="submit" />
     </form>
   </div>
+};
+
+declare function wdbGS:ingest($node as node(), $model as map(*)) {
+  <a href="directoryForm.html?id={doc($wdb:data || '/wdbmeta.xml')/meta:projectMD/@xml:id}">bestehendes Projekt hochladen</a>
 };

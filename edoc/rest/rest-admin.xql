@@ -173,6 +173,7 @@ declare
     let $doc := doc($path)
     let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
+    let $relPath := substring-after($path, $project || "/")
     
     let $metaFile := ( 
       $meta/id($id),
@@ -207,7 +208,7 @@ declare
         let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute xml:id { $id },
-            attribute path { $path },
+            attribute path { $relPath },
             attribute date { current-dateTime() },
             attribute uuid { $uuid }
           )}</file>
@@ -247,7 +248,7 @@ declare
       let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute xml:id { $id },
-            attribute path { $path },
+            attribute path { $relPath },
             attribute date { current-dateTime() },
             attribute uuid { $uuid }
           )}</file>
@@ -329,7 +330,8 @@ declare
         </http:response>
       </rest:response>,
       $path,
-      sm:chown($path, "wdb:wdbusers"),
+      sm:chown($path, "wdb"),
+      sm:chgrp($path, "wdbusers"),
       sm:chmod($path, $mode),
       console:log("storing " || $mime-type || " to " || $path)
     )
@@ -347,6 +349,7 @@ declare
           let $path := xmldb:create-collection($target-collection, $new-collection)
           let $chown := sm:chown($path, "wdb")
           let $chgrp := sm:chgrp($path, "wdbusers")
+          let $chmod := sm:chmod($path, "rwxrwxr-x")
           
           return console:log("creating " || $new-collection || " in " || $target-collection)
         )
