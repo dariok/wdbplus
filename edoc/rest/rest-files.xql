@@ -54,6 +54,44 @@ function wdbRf:getResource ($id as xs:string) {
   )
 };
 
+(: get a resource as plain text
+   – string value of tei:text for TEI files
+   – error otherwise :)
+declare
+    %rest:GET
+    %rest:path("/edoc/resource/{$id}.txt")
+  function wdbRf:getResourceTxt ($id as xs:string) {
+  (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
+   : To be on the safe side, we go for the first one anyway :)
+  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $f := $files[1]
+  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
+  
+  let $doc := doc($path)
+  
+  let $respCode := if (count($files) = 0)
+    then "404"
+    else if (count($files) = 1 and $doc/tei:TEI)
+    then "200"
+    else "500"
+  let $status := if ($respCode = "200")
+    then "REST:SUCCESS"
+    else "REST:ERR"
+  
+  return (
+    <rest:response>
+      <http:response status="{$respCode}">
+        <http:header name="Content-Type" value="text/plain" />
+        <http:header name="rest-status" value="{$status}" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    if ($respCode = "200")
+    then normalize-space($doc//tei:text)
+    else "ERROR: no TEI file by the ID of " || $id
+  )
+};
+
 (:  return a fragment from a file :)
 declare
     %rest:GET
