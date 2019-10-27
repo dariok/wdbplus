@@ -429,3 +429,34 @@ function wdbRf:getFileManifest ($id as xs:string) {
     ]
   })
 };
+
+declare
+  %rest:PUT("{$data}")
+  %rest:path("/edoc/resource/{$collection-id}")
+  function wdbRf:ingestFile($data as item()*, $collection-id as xs:string*) {
+      let $parsed := analyze-string($data, "------WebKitFormBoundary.+\s")//*:non-match
+      return for $m in $parsed return
+        <item>{
+          let $h := analyze-string($m, "^$", "m")
+          let $header := map:merge(
+            for $line in tokenize($h//*:non-match[1], "&#xA;")
+              let $name := substring-before($line, ": ")
+              let $value := substring-after($line, ": ")
+              let $cont := if (contains($value, "; "))
+                then map:merge(
+                  for $co at $pos in tokenize($value, "; ")
+                    return map:entry (
+                      if (contains($co, '=')) then substring-before($co, '=') else $name,
+                      if (contains($co, '=')) then substring-after($co, '=') else $co
+                    )
+                  )
+                else $value
+              return map:entry ( $name, $cont )
+            )
+          let $body := string-join($h//*:non-match[position() > 1], "")
+          return (
+              <header>{wdb:get($header, "")}</header>,
+              <body>{$body}</body>
+          )
+        }</item>
+};
