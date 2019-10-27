@@ -54,7 +54,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
           return local:getFileStat($edition, $file)
         
         case 'pid' return
-          let $ins := attribut pid { string($xml//tei:publicationStmt/tei:idno[@type = 'URI']) }
+          let $ins := attribute pid { string($xml//tei:publicationStmt/tei:idno[@type = 'URI']) }
           let $up1 := if ($fileEntry/@pid)
             then update replace $fileEntry/@pid with $ins
             else update insert $ins into $fileEntry
