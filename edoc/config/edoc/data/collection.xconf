@@ -1,5 +1,8 @@
 <collection xmlns="http://exist-db.org/collection-config/1.0">
-	<index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<index 
+		xmlns:tei="http://www.tei-c.org/ns/1.0"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta">
 		<!-- Lucene index is configured below -->
 		<lucene>
 			<analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
@@ -37,6 +40,9 @@
 			<create qname="@when" type="xs:date"/>
 			<create qname="@notBefore" type="xs:date"/>
 			<create qname="@notAfter" type="xs:date"/>
+			<create qname="meta:file">
+				<field name="file-path" match="@path" type="xs:string" />
+			</create>
 		</range>
 	</index>
 </collection>
