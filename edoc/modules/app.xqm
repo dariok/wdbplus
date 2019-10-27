@@ -655,3 +655,39 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
     }
 };
 (: END LOCAL HELPER FUNCTIONS :)
+
+(: HELPERS FOR REST AND HTTP REQUESTS :)
+declare function wdb:parseMultipart ( $data ) {
+  let $boundary := (analyze-string($data, "\s"))//fn:non-match[1]
+  let $parsed := analyze-string($data, $boundary)//fn:non-match
+  let $p := map:merge (
+    for $m in $parsed return
+      let $h := analyze-string($m, "^$", "m")
+      let $header := map:merge(
+        for $line in tokenize($h//*:non-match[1], "&#xA;")
+          let $name := substring-before($line, ": ")
+          let $value := substring-after($line, ": ")
+          let $cont := if (contains($value, "; "))
+            then map:merge(
+              for $co at $pos in tokenize($value, "; ")
+                return map:entry (
+                  if (contains($co, '=')) then substring-before($co, '=') else $name,
+                  if (contains($co, '=')) then substring-after($co, '=') else $co
+                )
+              )
+            else $value
+          return map:entry ( $name, $cont )
+        )
+      let $body := string-join($h//fn:non-match[position() > 1], "")
+      return if ($body = "") then ()
+        else map:entry ( 
+          $header?Content-Disposition?name,
+          map {
+            "header": $header,
+            "body": $body
+          }
+        )
+  )
+  return $p
+};
+(: END HELPERS FOR REST AND HTTP REQUESTS :)
