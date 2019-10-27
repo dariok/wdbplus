@@ -13,9 +13,7 @@ declare namespace rest = "http://exquery.org/ns/restxq";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
-declare
-  %private
-  function wdbRi:enterMeta ($path as xs:anyURI) {
+declare function wdbRi:enterMeta ($path as xs:anyURI) {
     (: non-XML files have no internally defined ID and in general no view :)
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
@@ -108,9 +106,7 @@ declare
     )}
 };
 (: uploaded a single XML file with intent to create/update entry :)
-declare
-  %private
-  function wdbRi:enterMetaXML ($path as xs:anyURI) {
+declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
@@ -224,9 +220,7 @@ declare
       )}
 };
   
-declare
- %private
- function wdbRi:store($collection, $resource-name, $contents) {
+declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item()) {
   let $mime-type := switch (substring-after($resource-name, '.'))
     case "css" return "text/css"
     case "js" return "application/javascript"
@@ -280,9 +274,7 @@ declare
     )
 };
 
-declare
- %private
- function wdbRi:createCollection ($coll as xs:string) {
+declare function wdbRi:createCollection ($coll as xs:string) {
     let $target-collection := xstring:substring-before-last($coll, '/')
     let $new-collection := xstring:substring-after-last($coll, '/')
     
