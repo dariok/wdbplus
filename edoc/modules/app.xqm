@@ -671,12 +671,12 @@ declare function wdb:parseMultipart ( $data ) {
             then map:merge(
               for $co at $pos in tokenize($value, "; ")
                 return map:entry (
-                  if (contains($co, '=')) then substring-before($co, '=') else $name,
-                  if (contains($co, '=')) then substring-after($co, '=') else $co
+                  normalize-space(translate(if (contains($co, '=')) then substring-before($co, '=') else $name, '"', '')),
+                  normalize-space(translate(if (contains($co, '=')) then substring-after($co, '=') else $co, '"', ''))
                 )
               )
-            else $value
-          return map:entry ( $name, $cont )
+            else normalize-space($value)
+          return map:entry ( translate($name, '"', ''), $cont )
         )
       let $body := string-join($h//fn:non-match[position() > 1], "")
       return if ($body = "") then ()
