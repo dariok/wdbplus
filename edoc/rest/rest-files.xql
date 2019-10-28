@@ -2,17 +2,20 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils" at "../include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
+import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
-declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
-declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
+declare namespace tei  = "http://www.tei-c.org/ns/1.0";
+declare namespace util = "http://exist-db.org/xquery/util";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
+declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 (: get a resource by its ID – whatever type it might be :)
 declare
@@ -35,10 +38,10 @@ function wdbRf:getResource ($id as xs:string) {
     else $mtype
   
   let $respCode := if (count($files) = 0)
-  then "404"
-  else if (count($files) = 1)
-  then "200"
-  else "500"
+    then "404"
+    else if (count($files) = 1)
+    then "200"
+    else "500"
   
   return (
     <rest:response>
@@ -90,6 +93,56 @@ declare
     then normalize-space($doc//tei:text)
     else "ERROR: no TEI file by the ID of " || $id
   )
+};
+
+(: upload a single file with known ID (i.e. one that is already present)
+   - if the ID is not found, return an error
+   - replace the file and update its meta:file
+   - unless the new path already is in use, in which case we return an error :)
+declare
+    %rest:PUT("{$data}")
+    %rest:path("/edoc/resource/{$id}")
+  function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
+    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
+    let $errNumID := not(count($fileEntry) = 1)
+    
+    let $parsed := wdb:parseMultipart($data)
+    let $path := normalize-space($parsed?filename?body)
+    let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
+    let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
+    
+    let $fullPath := substring-before(base-uri($fileEntry), "wdbmeta.xml") || $path
+    let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
+    let $user := sm:id()//sm:real/sm:username
+    
+    return if ($errNonMatch or $errNumID or $errNoAccess)
+    then
+      let $status := (
+        if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
+        if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
+        if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
+      )
+      return (
+        <rest:response>
+          <http:response status="500">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        $status
+      )
+    else
+      let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
+      let $collectionPath := xstring:substring-before-last($fullPath, '/')
+      let $resourceName := xstring:substring-after-last($fullPath, '/')
+      let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+        then parse-xml($parsed?file?body)
+        else $parsed?file?body
+      
+      let $store := wdbRi:store($collectionPath, $resourceName, $contents)
+      return if (substring-after($resourceName, '.') = ("xml", "xsl"))
+        then wdbRi:enterMetaXML($store[2])
+        else wdbRi:enterMeta($store[2])
 };
 
 (:  return a fragment from a file :)
@@ -174,7 +227,7 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     </rest:response>,
   if ($respCode != 200) then () else
     if ($mt = "application/json")
-    then json:xml-to-json($content)
+    then xml-to-json($content)
     else $content
   )
 };
@@ -188,7 +241,9 @@ function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as x
   return wdb:getContent(<void />, $model)
 };
 
-declare function local:image ($fileID as xs:string, $image as xs:string, $map as map(*)) {
+declare
+    %private
+  function wdbRf:image ($fileID as xs:string, $image as xs:string, $map as map(*)) {
   let $retrFile := wdbRf:getResource($fileID)
   let $errorFile := if ($retrFile//http:response/@status != 200)
     then "File not found or other error: " || $retrFile//http:response/@status
@@ -281,7 +336,7 @@ function wdbRf:getImages($id as xs:string) {
   let $map := wdb:populateModel($id, '', map{})
   
   let $canv := for $fa in $file//tei:surface
-    return local:image($id, $fa/@xml:id, $map)
+    return wdbRf:image($id, $fa/@xml:id, $map)
   
   return (
     <rest:response>
@@ -323,7 +378,7 @@ function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
     </rest:response>,
     if ($respCode != 200)
     then $errors
-    else local:image($id, $image, $map)
+    else wdbRf:image($id, $image, $map)
   )
 };
 
@@ -345,7 +400,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
   let $title := normalize-space($meta//meta:view[@file = $id]/@label)
   
   let $canv := for $fa in $file//tei:surface
-    return local:image($id, $fa/@xml:id, $map)
+    return wdbRf:image($id, $fa/@xml:id, $map)
     
   let $md := (
   	map { "label": "ID", "value": $id },
@@ -429,3 +484,4 @@ function wdbRf:getFileManifest ($id as xs:string) {
     ]
   })
 };
+
