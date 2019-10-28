@@ -117,19 +117,20 @@ declare
     
     return if ($errNonMatch or $errNumID or $errNoAccess)
     then
-      let $status := (
+      let $reason := (
         if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
         if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
         if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
       )
+      let $status := if ($errNoAccess) then 401 else 500
       return (
         <rest:response>
-          <http:response status="500">
+          <http:response status="{$status}">
             <http:header name="Content-Type" value="text/plain" />
             <http:header name="Access-Control-Allow-Origin" value="*"/>
           </http:response>
         </rest:response>,
-        $status
+        $reason
       )
     else
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
