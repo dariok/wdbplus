@@ -104,7 +104,8 @@ declare
     %rest:path("/edoc/resource/{$id}")
   function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
     let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
-    let $errNumID := not(count($fileEntry) = 1)
+    let $errNumID := (count($fileEntry) > 1)
+    let $errNoID := count($fileEntry) = 0
     
     let $parsed := wdb:parseMultipart($data)
     let $path := normalize-space($parsed?filename?body)
@@ -118,11 +119,12 @@ declare
     return if ($errNonMatch or $errNumID or $errNoAccess)
     then
       let $reason := (
+        if ($errNoID) then "no file found with ID " $id else ()
         if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
         if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
         if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
       )
-      let $status := if ($errNoAccess) then 401 else 500
+      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 401 else 500
       return (
         <rest:response>
           <http:response status="{$status}">
