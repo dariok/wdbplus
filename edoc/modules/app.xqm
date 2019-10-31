@@ -658,19 +658,19 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
 declare function wdb:parseMultipart ( $data ) {
-  let $boundary := (analyze-string($data, "\s"))//fn:non-match[1]
-  let $parsed := analyze-string($data, $boundary)//fn:non-match
-  let $p := map:merge (
-    for $m in $parsed return
-      let $h := analyze-string($m, "^$", "m")
-      let $header := map:merge(
+  let $boundary := normalize-space(substring-before($data, "
+"))
+  return map:merge( 
+    for $m in tokenize($data, $boundary) return
+      let $h := analyze-string($m, "^[\n\r]", "m")
+      let $header := map:merge( 
         for $line in tokenize($h//*:non-match[1], "&#xA;")
           let $name := substring-before($line, ": ")
           let $value := substring-after($line, ": ")
           let $cont := if (contains($value, "; "))
-            then map:merge(
+            then map:merge( 
               for $co at $pos in tokenize($value, "; ")
-                return map:entry (
+                return map:entry ( 
                   normalize-space(translate(if (contains($co, '=')) then substring-before($co, '=') else $name, '"', '')),
                   normalize-space(translate(if (contains($co, '=')) then substring-after($co, '=') else $co, '"', ''))
                 )
@@ -678,7 +678,13 @@ declare function wdb:parseMultipart ( $data ) {
             else normalize-space($value)
           return map:entry ( translate($name, '"', ''), $cont )
         )
-      let $body := string-join($h//fn:non-match[position() > 1], "")
+      let $tbody := string-join($h//fn:non-match[position() > 1], "
+")
+      let $body := if (starts-with(normalize-space($tbody), "&lt;?xml"))
+        then substring-after($tbody, "&gt;")
+        else if (starts-with(normalize-space($tbody), "<?xml"))
+        then substring-after($tbody, "?>")
+        else $tbody
       return if ($body = "") then ()
         else map:entry ( 
           $header?Content-Disposition?name,
@@ -688,6 +694,5 @@ declare function wdb:parseMultipart ( $data ) {
           }
         )
   )
-  return $p
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)
