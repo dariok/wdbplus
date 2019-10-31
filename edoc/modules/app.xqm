@@ -662,7 +662,7 @@ declare function wdb:parseMultipart ( $data ) {
   let $parsed := analyze-string($data, $boundary)//fn:non-match
   let $p := map:merge (
     for $m in $parsed return
-      let $h := analyze-string($m, "^$", "m")
+      let $h := analyze-string($m, "^[\n\r]", "m")
       let $header := map:merge(
         for $line in tokenize($h//*:non-match[1], "&#xA;")
           let $name := substring-before($line, ": ")
@@ -678,7 +678,8 @@ declare function wdb:parseMultipart ( $data ) {
             else normalize-space($value)
           return map:entry ( translate($name, '"', ''), $cont )
         )
-      let $body := string-join($h//fn:non-match[position() > 1], "")
+      let $body := string-join($h//fn:non-match[position() > 1], "
+")
       return if ($body = "") then ()
         else map:entry ( 
           $header?Content-Disposition?name,
