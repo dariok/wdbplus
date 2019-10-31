@@ -11,11 +11,68 @@ declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
-declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
-declare namespace tei  = "http://www.tei-c.org/ns/1.0";
-declare namespace util = "http://exist-db.org/xquery/util";
+declare namespace sm     = "http://exist-db.org/xquery/securitymanager";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace util   = "http://exist-db.org/xquery/util";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
+
+(: Creating / changing resources :)
+(: upload a single file with known ID (i.e. one that is already present)
+   - if the ID is not found, return an error
+   - replace the file and update its meta:file
+   - unless the new path already is in use, in which case we return an error :)
+declare
+    %rest:PUT("{$data}")
+    %rest:path("/edoc/resource/{$id}")
+  function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
+    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
+    let $errNumID := (count($fileEntry) > 1)
+    let $errNoID := count($fileEntry) = 0
+    
+    let $parsed := wdb:parseMultipart($data)
+    let $path := normalize-space($parsed?filename?body)
+    let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
+    let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
+    
+    let $fullPath := substring-before(base-uri($fileEntry), "wdbmeta.xml") || $path
+    let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
+    let $user := sm:id()//sm:real/sm:username
+    
+    let $resourceName := xstring:substring-after-last($fullPath, '/')
+    let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+      then parse-xml($parsed?file?body)
+      else $parsed?file?body
+    let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
+    
+    return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
+    then
+      let $reason := (
+        if ($errNoID) then "no file found with ID " $id else ()
+        if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
+        if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
+        if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
+      )
+      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 401 else 500
+      return (
+        <rest:response>
+          <http:response status="{$status}">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        $reason
+      )
+    else
+      let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
+      let $collectionPath := xstring:substring-before-last($fullPath, '/')
+      
+      let $store := wdbRi:store($collectionPath, $resourceName, $contents)
+      return if (substring-after($resourceName, '.') = ("xml", "xsl"))
+        then wdbRi:enterMetaXML($store[2])
+        else wdbRi:enterMeta($store[2])
+};
+
 
 (: get a resource by its ID – whatever type it might be :)
 declare
@@ -93,59 +150,6 @@ declare
     then normalize-space($doc//tei:text)
     else "ERROR: no TEI file by the ID of " || $id
   )
-};
-
-(: upload a single file with known ID (i.e. one that is already present)
-   - if the ID is not found, return an error
-   - replace the file and update its meta:file
-   - unless the new path already is in use, in which case we return an error :)
-declare
-    %rest:PUT("{$data}")
-    %rest:path("/edoc/resource/{$id}")
-  function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
-    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
-    let $errNumID := (count($fileEntry) > 1)
-    let $errNoID := count($fileEntry) = 0
-    
-    let $parsed := wdb:parseMultipart($data)
-    let $path := normalize-space($parsed?filename?body)
-    let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
-    let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
-    
-    let $fullPath := substring-before(base-uri($fileEntry), "wdbmeta.xml") || $path
-    let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
-    let $user := sm:id()//sm:real/sm:username
-    
-    return if ($errNonMatch or $errNumID or $errNoAccess)
-    then
-      let $reason := (
-        if ($errNoID) then "no file found with ID " $id else ()
-        if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
-        if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
-        if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
-      )
-      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 401 else 500
-      return (
-        <rest:response>
-          <http:response status="{$status}">
-            <http:header name="Content-Type" value="text/plain" />
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-          </http:response>
-        </rest:response>,
-        $reason
-      )
-    else
-      let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
-      let $collectionPath := xstring:substring-before-last($fullPath, '/')
-      let $resourceName := xstring:substring-after-last($fullPath, '/')
-      let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-        then parse-xml($parsed?file?body)
-        else $parsed?file?body
-      
-      let $store := wdbRi:store($collectionPath, $resourceName, $contents)
-      return if (substring-after($resourceName, '.') = ("xml", "xsl"))
-        then wdbRi:enterMetaXML($store[2])
-        else wdbRi:enterMeta($store[2])
 };
 
 (:  return a fragment from a file :)

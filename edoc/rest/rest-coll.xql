@@ -4,6 +4,7 @@ module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
 import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
+import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
 
@@ -12,6 +13,83 @@ declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+
+(: create a resource in a collection :)
+(: create a single file for which no entry has been created in wdbmeta.
+   - if a file with the same ID, MIME type and path is found, update it (if these are not a match, return 409)
+   - if no target collection is given, return 500
+   - if the specified target collection does not exist, return 404
+   - if creation is successful, return 201 and the full path where the file was stored :)
+declare
+  %rest:POST("{$data}")
+  %rest:path("/edoc/collection/{$collection}")
+function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
+  let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+  let $parsed := wdb:parseMultipart($data)
+  
+  let $errNoCollection := if (not($collectionFile)) then "collection " || $collection || " not found" else ()
+  
+  let $path := normalize-space($parsed?filename?body)
+  let $collectionPath := substring-before(base-uri($collectionFile), "/wdbmeta.xml")
+  let $fullPath := $collectionPath || '/' || $path
+  
+  let $resourceName := xstring:substring-after-last($fullPath, '/')
+  let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+    then parse-xml($parsed?file?body)
+    else $parsed?file?body
+  let $id := wdbRi:getID($contents, $collection, $path)
+  
+  (: check for conflicts :)
+  let $ids := collection($wdb:data)/id($id)
+  let $numIds := count($ids[self::meta:file])
+  let $errNumIds := if ($numIds > 1)
+    then "more than one entry found for ID " || $id
+    else ()
+  let $conflict := if ($numIds = 1)
+    then
+      let $testPath := $ids[self::meta:file]/@path
+      let $type := xmldb:get-mime-type($fullPath)
+      return $testPath = $path and $type = $parsed?file?header?Content-Type
+    else ()
+  let $errConflict := if ($conflict)
+    then "conflict for ID " || $id || " at " || $fullPath || " and type " || $parsed?file?header?Content-Type
+    else ()
+  
+  let $user := sm:id()//sm:real/sm:username
+  let $errNoAccess := if ($numIds = 1 and not(sm:has-access(xs:anyURI($fullPath), "w")))
+    then "user " || $user || " has no access to write to resource " || $fullPath
+    else if ($numIds = 0 and not(sm:has-access(xs:anyURI(xstring:substring-before-last($fullPath, '/')), "w")))
+    then "user " || $user || " has no access to write to collection " || xstring:substring-before-last($fullPath, '/')
+    else ()
+  
+  let $status :=
+    if ($errNoCollection) then "404"
+    else if ($errConflict) then "409"
+    else if ($errNoAccess) then "401"
+    else if ($errNumIds) then "500"
+    else "200"
+  
+  return if ($status != "200") then
+    (
+      <rest:response>
+        <http:response status="{$status}">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      string-join(($errNoCollection, $errNumIds, $errConflict, $errNoAccess), "\n")
+    )
+  else
+    (
+      <rest:response>
+        <http:response status="201">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "Pfad"
+    )
+};
 
 (: list all collections :)
 declare function local:getCollections() {

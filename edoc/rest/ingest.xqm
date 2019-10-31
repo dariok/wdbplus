@@ -276,21 +276,27 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
 };
 
 declare function wdbRi:createCollection ($coll as xs:string) {
-    let $target-collection := xstring:substring-before-last($coll, '/')
-    let $new-collection := xstring:substring-after-last($coll, '/')
-    
-    return if (xmldb:collection-available($target-collection))
-      then 
-        ( 
-          let $path := xmldb:create-collection($target-collection, $new-collection)
-          let $chown := sm:chown($path, "wdb")
-          let $chgrp := sm:chgrp($path, "wdbusers")
-          let $chmod := sm:chmod($path, "rwxrwxr-x")
-          
-          return console:log("creating " || $new-collection || " in " || $target-collection)
-        )
-      else ( 
-          wdbRi:createCollection($target-collection),
-          xmldb:create-collection($target-collection, $new-collection)
+  let $target-collection := xstring:substring-before-last($coll, '/')
+  let $new-collection := xstring:substring-after-last($coll, '/')
+  
+  return if (xmldb:collection-available($target-collection))
+    then 
+      ( 
+        let $path := xmldb:create-collection($target-collection, $new-collection)
+        let $chown := sm:chown($path, "wdb")
+        let $chgrp := sm:chgrp($path, "wdbusers")
+        let $chmod := sm:chmod($path, "rwxrwxr-x")
+        
+        return console:log("creating " || $new-collection || " in " || $target-collection)
       )
+    else ( 
+        wdbRi:createCollection($target-collection),
+        xmldb:create-collection($target-collection, $new-collection)
+    )
+};
+
+declare function wdbRi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
+  if ($element instance of node() and $element/*/@xml:id)
+  then string($element/*/@xml:id)
+  else $collection || '_' || replace($path, '/', '-')
 };
