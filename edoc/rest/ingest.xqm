@@ -24,14 +24,11 @@ declare function wdbRi:enterMeta ($path as xs:anyURI) {
     let $metaFile := $meta//meta:file[@path = $path]
     let $id := wdbRi:getID(<void />, $collectionID, $path)
     
-    let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
-      then true() else false()
     let $errorNum := count($metaFile) > 2
     
     return if ($errorNum)
     then 
-      let $err := if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database"
-        else if ($errorNum) then "More than 2 entries found for path " || $path
+      let $err := if ($errorNum) then "More than 2 entries found for path " || $path
         else "unknown error"
     return( 
       <rest:response>
@@ -123,14 +120,12 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
     let $errorNonMatch := if (count($metaFile) eq 0)
       then false()
       else not($metaFile[1] is $metaFile[2])
-    let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
-      then true() else false()
     let $errorNum := count($metaFile) > 2
     
-    return if ($errorUUID or $errorNonMatch or $errorNum)
+    return if ($errorNonMatch or $errorNum)
       then
-        let $err := if ($errorUUID) then "A file with UUID " || $uuid || " is already present in the database (see " || base-uri($meta) || ")"
-            else if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path || " in " || base-uri($meta)
+        let $err := 
+          if ($errorNonMatch) then "Conflicting entries for ID " || $id || " and path " || $path || " in " || base-uri($meta)
             else if ($errorNum) then "More than 2 entries found for ID " || $id || " and path " || $path || " in " || base-uri($meta)
             else "unknown error"
         return ( 
@@ -239,44 +234,39 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     
   return wdbRi:store($collection, $resource-name, $contents, $mime-type)
 };
-    
+
 declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string) {
-  let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
   let $coll := if (not(xmldb:collection-available($collection)))
     then wdbRi:createCollection($collection)
     else ()
-  let $path := try {
-    xmldb:store($collection, $resource-name, $contents, $mime-type)
-  } catch * {
-    <error>{$err:code}: {$err:description}</error>
-  }
+  let $hasAccess := sm:has-access(xs:anyURI($collection), 'w')
   
-  return if ($path[1] instance of node())
-    then ( 
-      <rest:response>
-        <http:response status="500">
-          <http:header name="Content-Type" value="application/xml" />
-          <http:header name="rest-status" value="REST:ERROR" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      "error storing XML " || $mime-type || " to " || $path,
-      console:log("error storing XML " || $mime-type || " to " || $path)
-    )
-    else ( 
-      <rest:response>
-        <http:response status="200">
-          <http:header name="Content-Type" value="text/plain" />
-          <http:header name="rest-status" value="REST:SUCCESS" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      $path,
-      sm:chown($path, "wdb"),
-      sm:chgrp($path, "wdbusers"),
-      sm:chmod($path, $mode),
-      console:log("storing " || $mime-type || " to " || $path)
-    )
+  return if (not($coll) or not($hasAccess)) then (
+    <rest:response>
+      <http:response status="403" />
+    </rest:response>,
+    "user " || sm:id//sm:username || " does not have sufficient rights to create or write to " || $collection
+  )
+  else
+    try {
+      let $path := xmldb:store($collection, $resource-name, $contents, $mime-type)
+      let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
+      let $ch := (
+        sm:chown($path, "wdb"),
+        sm:chgrp($path, "wdbusers"),
+        sm:chmod($path, $mode),
+        console:log("storing " || $mime-type || " to " || $path)
+      )
+      return $path
+    } catch * {
+      ( 
+        <rest:response>
+          <http:response status="500" />
+        </rest:response>,
+        "error storing " || $mime-type || " to " || $collection || '/' || $resource-name || ":
+" || $err:code || ": " || $err:description
+      )
+    }
 };
 
 declare function wdbRi:createCollection ($coll as xs:string) {
