@@ -80,15 +80,26 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
       string-join(($errNoCollection, $errNumIds, $errConflict, $errNoAccess), "\n")
     )
   else
-    (
-      <rest:response>
-        <http:response status="201">
-          <http:header name="Content-Type" value="text/plain" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      "Pfad"
-    )
+    let $store := wdbRi:store($collectionPath, $resourceName, $contents)
+    let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+      then wdbRi:enterMetaXML($store[2])
+      else wdbRi:enterMeta($store[2])
+    return if ($store[1]//http:response/@status = "200"
+        and $meta[1]//http:response/@status = "200")
+    then
+      (
+        <rest:response>
+          <http:response status="201">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="Access-Control-Allow-Origin" value="*" />
+            <http:header name="Location" value="{$store[2]}" />
+          </http:response>
+        </rest:response>,
+        $wdb:restURL || "/resource/" || $id
+      )
+    else if ($store[1]//http:response/@status != "200")
+    then $store
+    else $meta
 };
 
 (: list all collections :)
