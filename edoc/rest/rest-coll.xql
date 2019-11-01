@@ -24,84 +24,92 @@ declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collection}")
 function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
-  let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
-  let $parsed := wdb:parseMultipart($data)
-  
-  let $errNoCollection := if (not($collectionFile)) then "collection " || $collection || " not found" else ()
-  
-  let $path := normalize-space($parsed?filename?body)
-  let $collectionPath := substring-before(base-uri($collectionFile), "/wdbmeta.xml")
-  let $fullPath := $collectionPath || '/' || $path
-  
-  let $resourceName := xstring:substring-after-last($fullPath, '/')
-  let $contentType := $parsed?file?header?Content-Type
-  let $t := console:log($contentType)
-  let $contents := if (contains($contentType, "xml"))
-    then parse-xml($parsed?file?body)
-    else $parsed?file?body
-  let $id := wdbRi:getID($contents, $collection, $path)
-  
-  (: check for conflicts :)
-  let $ids := collection($wdb:data)/id($id)
-  let $numIds := count($ids[self::meta:file])
-  let $errNumIds := if ($numIds > 1)
-    then "more than one entry found for ID " || $id
-    else ()
-  let $conflict := if ($numIds = 1)
-    then
-      let $testPath := $ids[self::meta:file]/@path
-      let $type := xmldb:get-mime-type($fullPath)
-      return $testPath = $path and $type = $parsed?file?header?Content-Type
-    else ()
-  let $errConflict := if ($conflict)
-    then "conflict for ID " || $id || " at " || $fullPath || " and type " || $parsed?file?header?Content-Type
-    else ()
-  
-  let $user := sm:id()//sm:real/sm:username
-  let $errNoAccess := if ($numIds = 1 and not(sm:has-access(xs:anyURI($fullPath), "w")))
-    then "user " || $user || " has no access to write to resource " || $fullPath
-    else if ($numIds = 0 and not(sm:has-access(xs:anyURI(xstring:substring-before-last($fullPath, '/')), "w")))
-    then "user " || $user || " has no access to write to collection " || xstring:substring-before-last($fullPath, '/')
-    else ()
-  
-  let $status :=
-    if ($errNoCollection) then "404"
-    else if ($errConflict) then "409"
-    else if ($errNoAccess) then "401"
-    else if ($errNumIds) then "500"
-    else "200"
-  
-  return if ($status != "200") then
-    (
-      <rest:response>
-        <http:response status="{$status}">
-          <http:header name="Content-Type" value="text/plain" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      string-join(($errNoCollection, $errNumIds, $errConflict, $errNoAccess), "\n")
-    )
+  if (sm:id()//sm:username = "guest")
+  then
+    <rest:response>
+      <http:response status="401">
+        <http:header name="WWW-Authenticate" value="Basic"/>
+      </http:response>
+    </rest:response>
   else
-    let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType)
-    let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-      then wdbRi:enterMetaXML($store[2])
-      else wdbRi:enterMeta($store[2])
-    return if ($store[1]//http:response/@status = "200"
-        and $meta[1]//http:response/@status = "200")
-    then
+    let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+    let $parsed := wdb:parseMultipart($data)
+    
+    let $errNoCollection := if (not($collectionFile)) then "collection " || $collection || " not found" else ()
+    
+    let $path := normalize-space($parsed?filename?body)
+    let $collectionPath := substring-before(base-uri($collectionFile), "/wdbmeta.xml")
+    let $fullPath := $collectionPath || '/' || $path
+    
+    let $resourceName := xstring:substring-after-last($fullPath, '/')
+    let $contentType := $parsed?file?header?Content-Type
+    let $t := console:log($contentType)
+    let $contents := if (contains($contentType, "xml"))
+      then parse-xml($parsed?file?body)
+      else $parsed?file?body
+    let $id := wdbRi:getID($contents, $collection, $path)
+    
+    (: check for conflicts :)
+    let $ids := collection($wdb:data)/id($id)
+    let $numIds := count($ids[self::meta:file])
+    let $errNumIds := if ($numIds > 1)
+      then "more than one entry found for ID " || $id
+      else ()
+    let $conflict := if ($numIds = 1)
+      then
+        let $testPath := $ids[self::meta:file]/@path
+        let $type := xmldb:get-mime-type($fullPath)
+        return $testPath = $path and $type = $parsed?file?header?Content-Type
+      else ()
+    let $errConflict := if ($conflict)
+      then "conflict for ID " || $id || " at " || $fullPath || " and type " || $parsed?file?header?Content-Type
+      else ()
+    
+    let $user := sm:id()//sm:real/sm:username
+    let $errNoAccess := if ($numIds = 1 and not(sm:has-access(xs:anyURI($fullPath), "w")))
+      then "user " || $user || " has no access to write to resource " || $fullPath
+      else if ($numIds = 0 and not(sm:has-access(xs:anyURI(xstring:substring-before-last($fullPath, '/')), "w")))
+      then "user " || $user || " has no access to write to collection " || xstring:substring-before-last($fullPath, '/')
+      else ()
+    
+    let $status :=
+      if ($errNoCollection) then "404"
+      else if ($errConflict) then "409"
+      else if ($errNoAccess) then "401"
+      else if ($errNumIds) then "500"
+      else "200"
+    
+    return if ($status != "200") then
       (
         <rest:response>
-          <http:response status="201">
+          <http:response status="{$status}">
             <http:header name="Content-Type" value="text/plain" />
-            <http:header name="Access-Control-Allow-Origin" value="*" />
-            <http:header name="Location" value="{$store[2]}" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
           </http:response>
         </rest:response>,
-        $wdb:restURL || "/resource/" || $id
+        string-join(($errNoCollection, $errNumIds, $errConflict, $errNoAccess), "\n")
       )
-    else if ($store[1]//http:response/@status != "200")
-    then $store
-    else $meta
+    else
+      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType)
+      let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+        then wdbRi:enterMetaXML($store[2])
+        else wdbRi:enterMeta($store[2])
+      return if ($store[1]//http:response/@status = "200"
+          and $meta[1]//http:response/@status = "200")
+      then
+        (
+          <rest:response>
+            <http:response status="201">
+              <http:header name="Content-Type" value="text/plain" />
+              <http:header name="Access-Control-Allow-Origin" value="*" />
+              <http:header name="Location" value="{$store[2]}" />
+            </http:response>
+          </rest:response>,
+          $wdb:restURL || "/resource/" || $id
+        )
+      else if ($store[1]//http:response/@status != "200")
+      then $store
+      else $meta
 };
 
 (: list all collections :)

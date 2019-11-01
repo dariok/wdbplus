@@ -25,7 +25,15 @@ declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 declare
     %rest:PUT("{$data}")
     %rest:path("/edoc/resource/{$id}")
-  function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
+function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
+  if (sm:id()//sm:username = "guest")
+  then
+    <rest:response>
+      <http:response status="401">
+        <http:header name="WWW-Authenticate" value="Basic"/>
+      </http:response>
+    </rest:response>
+  else
     let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
     let $errNumID := (count($fileEntry) > 1)
     let $errNoID := count($fileEntry) = 0
