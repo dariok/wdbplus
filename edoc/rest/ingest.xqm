@@ -112,9 +112,9 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
-    let $id := $doc/*[1]/@xml:id
     let $uuid := util:uuid($doc)
     let $relPath := substring-after($path, $project || "/")
+    let $id := wdbRi:getID($doc, string($meta/meta:projectMD/@xml:id), $relPath)
     
     let $metaFile := ( 
       $meta/id($id),
@@ -256,9 +256,8 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
           <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
       </rest:response>,
-      $path,
-      console:log("error storing XML " || $mime-type || " to " || $path),
-      console:log($path)
+      "error storing XML " || $mime-type || " to " || $path,
+      console:log("error storing XML " || $mime-type || " to " || $path)
     )
     else ( 
       <rest:response>
@@ -281,19 +280,18 @@ declare function wdbRi:createCollection ($coll as xs:string) {
   let $new-collection := xstring:substring-after-last($coll, '/')
   
   return if (xmldb:collection-available($target-collection))
-    then 
-      ( 
-        let $path := xmldb:create-collection($target-collection, $new-collection)
-        let $chown := sm:chown($path, "wdb")
-        let $chgrp := sm:chgrp($path, "wdbusers")
-        let $chmod := sm:chmod($path, "rwxrwxr-x")
-        
-        return console:log("creating " || $new-collection || " in " || $target-collection)
-      )
-    else ( 
-        wdbRi:createCollection($target-collection),
-        xmldb:create-collection($target-collection, $new-collection)
-    )
+  then ( 
+    let $path := xmldb:create-collection($target-collection, $new-collection)
+    let $chown := sm:chown($path, "wdb")
+    let $chgrp := sm:chgrp($path, "wdbusers")
+    let $chmod := sm:chmod($path, "rwxrwxr-x")
+    
+    return console:log("creating " || $new-collection || " in " || $target-collection)
+  )
+  else ( 
+    wdbRi:createCollection($target-collection),
+    xmldb:create-collection($target-collection, $new-collection)
+  )
 };
 
 declare function wdbRi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
