@@ -18,10 +18,11 @@ declare function wdbRi:enterMeta ($path as xs:anyURI) {
     (: non-XML files have no internally defined ID and in general no view :)
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
+    let $collectionID := $meta/meta:projectMD/@xml:id
     let $doc := doc($path)
     let $uuid := util:uuid($doc)
     let $metaFile := $meta//meta:file[@path = $path]
-    let $id := $meta/meta:projectMD/@xml:id || '-' || translate($path, '/', '_')
+    let $id := wdbRi:getID(<void />, $collectionID, $path)
     
     let $errorUUID := if ($meta//meta:file[@uuid = $uuid])
       then true() else false()
@@ -296,7 +297,7 @@ declare function wdbRi:createCollection ($coll as xs:string) {
 };
 
 declare function wdbRi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
-  if ($element instance of node() and $element/*/@xml:id)
+  if ($element instance of document-node() and $element/*/@xml:id)
   then string($element/*/@xml:id)
-  else $collection || '_' || replace($path, '/', '-')
+  else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
 };
