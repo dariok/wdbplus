@@ -40,7 +40,8 @@ declare
     let $user := sm:id()//sm:real/sm:username
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
-    let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+    let $contentType := $parsed?file?header?Content-Type
+    let $contents := if (contains($contentType, "xml"))
       then parse-xml($parsed?file?body)
       else $parsed?file?body
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
@@ -67,10 +68,26 @@ declare
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
       let $collectionPath := xstring:substring-before-last($fullPath, '/')
       
-      let $store := wdbRi:store($collectionPath, $resourceName, $contents)
-      return if (substring-after($resourceName, '.') = ("xml", "xsl"))
-        then wdbRi:enterMetaXML($store[2])
-        else wdbRi:enterMeta($store[2])
+      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType)
+      let $meta := if (contains($contentType, "xml"))
+      then wdbRi:enterMetaXML($store[2])
+      else wdbRi:enterMeta($store[2])
+    return if ($store[1]//http:response/@status = "200"
+        and $meta[1]//http:response/@status = "200")
+    then
+      (
+        <rest:response>
+          <http:response status="201">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="Access-Control-Allow-Origin" value="*" />
+            <http:header name="Location" value="{$store[2]}" />
+          </http:response>
+        </rest:response>,
+        $wdb:restURL || "/resource/" || $id
+      )
+    else if ($store[1]//http:response/@status != "200")
+    then $store
+    else $meta
 };
 
 
