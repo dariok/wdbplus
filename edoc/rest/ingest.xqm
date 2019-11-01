@@ -237,6 +237,10 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     case "xsl" return "application/xslt+xml"
     default return "application/octet-stream"
     
+  return wdbRi:store($collection, $resource-name, $contents, $mime-type)
+};
+    
+declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string) {
   let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
   let $coll := if (not(xmldb:collection-available($collection)))
     then wdbRi:createCollection($collection)

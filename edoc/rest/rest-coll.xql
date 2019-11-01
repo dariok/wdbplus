@@ -34,7 +34,9 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
   let $fullPath := $collectionPath || '/' || $path
   
   let $resourceName := xstring:substring-after-last($fullPath, '/')
-  let $contents := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+  let $contentType := $parsed?file?header?Content-Type
+  let $t := console:log($contentType)
+  let $contents := if (contains($contentType, "xml"))
     then parse-xml($parsed?file?body)
     else $parsed?file?body
   let $id := wdbRi:getID($contents, $collection, $path)
@@ -80,7 +82,7 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
       string-join(($errNoCollection, $errNumIds, $errConflict, $errNoAccess), "\n")
     )
   else
-    let $store := wdbRi:store($collectionPath, $resourceName, $contents)
+    let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType)
     let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
       then wdbRi:enterMetaXML($store[2])
       else wdbRi:enterMeta($store[2])
