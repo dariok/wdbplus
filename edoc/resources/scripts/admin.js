@@ -79,15 +79,19 @@ async function dirupload (event) {
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
         relpath = collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
-        mode = task == "do" ? "" : "?meta=1";
+        mode = task == "do" ? "" : "?meta=1",
+        data = new FormData($('form')[0]);
+    
+    data.append("file", file);
+    data.append("filename", relpath);
     
     try {
       await $.ajax({
         method: "post",
-        url: rest + delim + "admin/ingest/" + params['id'] + "/" + encodeURIComponent(relpath) + mode,
+        url: rest + delim + "collection/ingest/" + params['id'],
         headers: headers,
-        data: file,
-        contentType: content,
+        data: data,
+        contentType: false,
         processData: false,
         success: function (response, textStatus, xhr) {
           console.log(response);
