@@ -23,7 +23,8 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collection}")
-function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
+  %rest:header-param("Content-Type", "{$ct}")
+function wdbRc:createFile ($data as xs:string, $collection as xs:string, $ct as xs:string*) {
   if (sm:id()//sm:username = "guest")
   then
     <rest:response>
@@ -33,7 +34,7 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
     </rest:response>
   else
     let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
-    let $parsed := wdb:parseMultipart($data)
+    let $parsed := wdb:parseMultipart($data, $ct)
     
     let $errNoCollection := if (not($collectionFile)) then "collection " || $collection || " not found" else ()
     
