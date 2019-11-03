@@ -516,4 +516,3 @@ function wdbRf:getFileManifest ($id as xs:string) {
     ]
   })
 };
-

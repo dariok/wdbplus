@@ -68,8 +68,10 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
     let $user := sm:id()//sm:real/sm:username
     let $errNoAccess := if ($numIds = 1 and not(sm:has-access(xs:anyURI($fullPath), "w")))
       then "user " || $user || " has no access to write to resource " || $fullPath
-      else if ($numIds = 0 and not(sm:has-access(xs:anyURI(xstring:substring-before-last($fullPath, '/')), "w")))
-      then "user " || $user || " has no access to write to collection " || xstring:substring-before-last($fullPath, '/')
+      else
+        let $highest := wdbRc:available($fullPath)
+        return if ($numIds = 0 and not(sm:has-access(xs:anyURI($highest), "w")))
+      then "user " || $user || " has no access to write to collection " || $highest
       else ()
     
     let $status :=
@@ -110,6 +112,12 @@ function wdbRc:createFile ($data as xs:string, $collection as xs:string) {
       else if ($store[1]//http:response/@status != "200")
       then $store
       else $meta
+};
+
+declare %private function wdbRc:available ($path as xs:string) {
+  if (xmldb:collection-available($path))
+  then $path
+  else wdbRc:available(xstring:substring-before-last($path, '/'))
 };
 
 (: list all collections :)
