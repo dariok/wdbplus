@@ -1,17 +1,18 @@
-window.addEventListener("load", function(){
-window.cookieconsent.initialise({
-  "palette": {
-    "popup": {
-      "background": "#eaf7f7",
-      "text": "#5c7291"
-    },
-    "button": {
-      "background": "#56cbdb",
-      "text": "#ffffff"
+$(function(){
+  let consent = Cookies.get("wdbplus_consent");
+  if (consent != "dismissed") {
+    $('main').prepend('<div id="cookieConsent"\
+        style="background-color: black; color: white; padding: 15px;\
+        display: flex;"><span>This website uses cookies to enable you to sign up\
+      to our services and improve your experience. We do not knowingly share any\
+      information with third parties. <a href="imprint.html">Learn more</a></span>\
+      <br /><a href="javascript:cookieConsent();" onclick="cookieConsent()"\
+        style="background-color: yellow; padding: 10px; border-radius: 7.5px; \
+        height: 1.5rem; flex: 1 0 auto;">Got it!</a></div>');
     }
-  },
-  "content": {
-    "message": "This website uses cookies to enable you to sign up to our services. We do not knowingly share any information with third parties.",
-    "href": "imprint.html"
-  }
-})});
+});
+
+function cookieConsent() {
+  Cookies.set("wdbplus_consent", "dismissed");
+  $('#cookieConsent').hide();
+}
