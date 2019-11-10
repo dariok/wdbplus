@@ -238,14 +238,14 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
 declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string) {
   let $coll := if (not(xmldb:collection-available($collection)))
     then wdbRi:createCollection($collection)
-    else ()
+    else $collection
   let $hasAccess := sm:has-access(xs:anyURI($collection), 'w')
   
   return if (not($coll) or not($hasAccess)) then (
     <rest:response>
       <http:response status="403" />
     </rest:response>,
-    "user " || sm:id//sm:username || " does not have sufficient rights to create or write to " || $collection
+    "user " || normalize-space(sm:id()//sm:username) || " does not have sufficient rights to create or write to " || $collection
   )
   else
     try {
@@ -273,14 +273,17 @@ declare function wdbRi:createCollection ($coll as xs:string) {
   let $target-collection := xstring:substring-before-last($coll, '/')
   let $new-collection := xstring:substring-after-last($coll, '/')
   
-  return if (xmldb:collection-available($target-collection))
+  return if (not(sm:has-access(xs:anyURI($target-collection), "w")))
+  then false()
+  else if (xmldb:collection-available($target-collection))
   then ( 
     let $path := xmldb:create-collection($target-collection, $new-collection)
     let $chown := sm:chown($path, "wdb")
     let $chgrp := sm:chgrp($path, "wdbusers")
     let $chmod := sm:chmod($path, "rwxrwxr-x")
     
-    return console:log("creating " || $new-collection || " in " || $target-collection)
+    let $t := console:log("creating " || $new-collection || " in " || $target-collection)
+    return $path
   )
   else ( 
     wdbRi:createCollection($target-collection),
