@@ -1,5 +1,5 @@
-needed modules:
+required modules:
 
 requests
 GitPython
-progressbar
+tqdm
