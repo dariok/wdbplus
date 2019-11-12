@@ -506,7 +506,7 @@ function load (url, target, me) {
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
-              $(me).html('↑');
+              $(me).html($(me).html().replace('→', '↑'));
           },
           error: function (xhr, status, error) {
             console.log("error");
@@ -517,7 +517,7 @@ function load (url, target, me) {
       );
     } else {
       $('#' + target).slideToggle();
-      $(me).html('→');
+      $(me).html($(me).html().replace('↑', '→'));
     }
 }
 
