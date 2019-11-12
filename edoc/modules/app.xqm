@@ -576,11 +576,13 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @returns The path to the XSLT
 :)
 declare
-function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
+function wdb:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
   let $metaFile := doc($infoFileLoc)
   
-  let $process := ($metaFile//meta:process[@target = $target],
-    $metaFile//meta:process[1])[1]
+  let $process := (
+    $metaFile//meta:process[@target = $target],
+    $metaFile//meta:process[1]
+  )[1]
   
   let $sel := for $c in $process/meta:command
     return if ($c/@refs)
@@ -591,13 +593,15 @@ function local:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $t
       else if ($c/@regex and matches($id, $c/@regex))
         (: if a regex is given and $id matches that regex, the command matches :)
       then $c
-      else if (not($c/@refs or $c/@regex))
+      else if ($c/@group and $metaFile/id($id)/parent::meta:fileGroup/@xml:id = $c/@group)
+      then $c
+      else if (not($c/@refs or $c/@regex or $c/@group))
         (: if no selection method is given, the command is considered the default :)
         then $c
       else () (: neither refs nor regex match and no default given :)
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return $sel[1]/text()
+  return $sel (:)[1]/text():)
 };
 declare function local:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
