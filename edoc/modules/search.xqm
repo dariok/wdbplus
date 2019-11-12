@@ -6,7 +6,7 @@ declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
 import module namespace console = "http://exist-db.org/xquery/console";
-import module namespace http = "http://expath.org/ns/http-client";
+import module namespace http    = "http://expath.org/ns/http-client";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
 declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
@@ -72,14 +72,12 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
     let $url := xs:anyURI($ln || $start)
       
     return try {
-      let $request-headers := <headers>
-        <header name="cache-control" value="no-cache" />
-      </headers>
+      let $request-headers := <http:header name="cache-control" value="no-cache" />
     
       return http:send-request(
-        <http:request href="{$url}">
+        <http:request href="{$url}" method="GET">
           {$request-headers}
-        </http:request>)//httpclient:body/*
+        </http:request>)//http:body/*
     } catch * {
       <div>
         <a href="{$url}">klick</a>
