@@ -2,4 +2,4 @@
 /.settings/
 build
 /legacy/
-python/wdbplus/__pycache__
+/python/wdbplus/__pycache__
