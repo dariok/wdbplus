@@ -33,6 +33,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
       <http:response status="200">
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Controle" value="no-cache" />
       </http:response>
     </rest:response>,
     <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
@@ -69,6 +70,7 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
       <http:response status="200">
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Controle" value="no-cache" />
       </http:response>
     </rest:response>,
     transform:transform(wdbRs:collectionText($id, $q, $start), doc($xsl), $params)
