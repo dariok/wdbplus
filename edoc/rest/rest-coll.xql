@@ -232,7 +232,16 @@ declare
   %rest:path("/edoc/collection/{$id}/collections.json")
   %rest:produces("application/json")
   function wdbRc:getSubcollJson ($id) {
-    json:xml-to-json(wdbRc:getSubcollXML($id))
+    (
+      <rest:response>
+        <http:response status="200" message="OK">
+          <http:header name="Content-Type" value="application/json; charset=UTF-8" />
+          <http:header name="REST-Status" value="REST:SUCCESS" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      json:xml-to-json(wdbRc:getSubcollXML($id))
+    )
 };
 declare
   %rest:GET
