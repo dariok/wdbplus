@@ -25,7 +25,8 @@ declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 declare
     %rest:PUT("{$data}")
     %rest:path("/edoc/resource/{$id}")
-function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
+    %rest:header-param("Content-Type", "{$header}")
+function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:string*) {
   if (sm:id()//sm:username = "guest")
   then
     <rest:response>
@@ -38,7 +39,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
     let $errNumID := (count($fileEntry) > 1)
     let $errNoID := count($fileEntry) = 0
     
-    let $parsed := wdb:parseMultipart($data)
+    let $parsed := wdb:parseMultipart($data, $hedaer)
     let $path := normalize-space($parsed?filename?body)
     let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
     let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
@@ -57,7 +58,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string) {
     return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
     then
       let $reason := (
-        if ($errNoID) then "no file found with ID " $id else ()
+        if ($errNoID) then "no file found with ID " || $id else (),
         if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
         if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
         if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
