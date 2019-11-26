@@ -102,7 +102,7 @@ async function sendData (file, i, fileid, headers) {
   }
 }
 
-async function dirupload (event) {
+function dirupload (event) {
   event.preventDefault();
   $('p img').show();
   
@@ -127,15 +127,19 @@ async function dirupload (event) {
         console.log("error parsing XML from " + file.name);
         let item = $('#results').children()[i],
             text = item.innerText.substr(0, item.innerText.length - 1);
-        item.innerText = text.substring(0, text.length) + "✕";
+        item.innerText = text.substring(0, text.length) + "✕ Parser Error ";
       }
       
-      if (fileid !== "undefined" && fileid !== 0) {
+      if (fileid !== undefined && fileid !== 0) {
         console.log("parsed file’s ID: " + fileid);
         sendData(file, i, fileid, headers);
+      } else {
+        let item = $('#results').children()[i],
+            text = item.innerText.substr(0, item.innerText.length - 1);
+        item.innerText = text.substring(0, text.length) + "✕ Parser Error ";
       }
     };
-    await reader.readAsText(file);
+    reader.readAsText(file, "UTF-8");
   }
   
   $('p img').hide();
