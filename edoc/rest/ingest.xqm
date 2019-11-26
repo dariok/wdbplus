@@ -115,7 +115,7 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
     
     let $metaFile := ( 
       $meta/id($id),
-      $meta//meta:file[@path = $path]
+      $meta//meta:file[@path = $relPath]
     )
     let $errorNonMatch := if (count($metaFile) eq 0)
       then false()
