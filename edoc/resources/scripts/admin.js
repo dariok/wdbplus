@@ -58,18 +58,9 @@ $(document).on("change", "#picker", function() {
   }
 });
 
-async function dirupload (event) {
-  event.preventDefault();
-  $('p img').show();
-  
-  let cred = Cookies.get("wdbplus");
-  let headers = (typeof cred !== "undefined" && cred.length != 0)
-    ? {"Authorization": "Basic " + cred}
-    : "";
-  
-  for (let i = 0; i < files.length; i++) {
-    let file = files[i],
-        task = $('#selectTask input:checked').attr("id"),
+async function sendData (file, i, fileid, headers) {
+  try {
+    let task = $('#selectTask input:checked').attr("id"),
         type = (task == "fi") ? file.name.substr(file.name.length - 3) : file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
         content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream",
         item = $('#results').children()[i],
@@ -81,13 +72,17 @@ async function dirupload (event) {
         relpath = collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
         mode = task == "do" ? "" : "?meta=1";
     
-    try {
+    console.log("fileid: " + fileid);
+    if (fileid !== "undefined" && fileid !== 0) {
+      let formdata = new FormData();
+      formdata.append("file", file);
+      formdata.append("filename", relpath);
       await $.ajax({
-        method: "post",
-        url: rest + delim + "admin/ingest/" + params['id'] + "/" + encodeURIComponent(relpath) + mode,
+        method: "put",
+        url: rest + delim + "resource/" + fileid,
         headers: headers,
-        data: file,
-        contentType: content,
+        data: formdata,
+        contentType: false,
         processData: false,
         success: function (response, textStatus, xhr) {
           console.log(response);
@@ -98,9 +93,47 @@ async function dirupload (event) {
           item.innerText = text.substring(0, text.length) + "✕";
         }
       });
-    } catch (e) {
-      console.log(e);
     }
+  } catch (e) {
+    console.log(e);
+    console.log(e.stack);
+  }
+}
+
+async function dirupload (event) {
+  event.preventDefault();
+  $('p img').show();
+  
+  let cred = Cookies.get("wdbplus");
+  let headers = (typeof cred !== "undefined" && cred.length != 0)
+    ? {"Authorization": "Basic " + cred}
+    : "";
+  
+  for (let i = 0; i < files.length; i++) {
+    let file = files[i];
+    console.log("processing " + file.name);
+    
+    let reader = new FileReader();
+    reader.onload = function(readFile) {
+      let text = readFile.target.result,
+          fileid = 0;
+      try {
+        let parsed = $.parseXML(text.substring(text.indexOf("<TEI")));
+        let xml = $(parsed);
+        fileid = xml.find("TEI").attr("xml:id");
+      } catch (e) {
+        console.log("error parsing XML from " + file.name);
+        let item = $('#results').children()[i],
+            text = item.innerText.substr(0, item.innerText.length - 1);
+        item.innerText = text.substring(0, text.length) + "✕";
+      }
+      
+      if (fileid !== "undefined" && fileid !== 0) {
+        console.log("parsed file’s ID: " + fileid);
+        sendData(file, i, fileid, headers);
+      }
+    };
+    await reader.readAsText(file);
   }
   
   $('p img').hide();
