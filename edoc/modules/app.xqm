@@ -661,8 +661,7 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
 declare function wdb:parseMultipart ( $data ) {
-  let $boundary := normalize-space(substring-before($data, "
-"))
+  let $boundary := "--" || substring-after($header, "boundary=")
   return map:merge( 
     for $m in tokenize($data, $boundary) return
       let $h := analyze-string($m, "^[\n\r]", "m")
