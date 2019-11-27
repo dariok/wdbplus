@@ -211,8 +211,8 @@ try {
     else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
   
   let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-    then local:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-    else local:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+    then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+    else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
   
   let $xslt := if (doc-available($xsl))
     then $xsl
@@ -602,7 +602,7 @@ function wdb:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $tar
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return $sel (:)[1]/text():)
 };
-declare function local:getXslFromMets ($metsLoc, $id, $ed) {
+declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
   let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
   
