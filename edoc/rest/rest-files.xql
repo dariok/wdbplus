@@ -50,9 +50,10 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
     let $contentType := $parsed?file?header?Content-Type
-    let $contents := if (contains($contentType, "xml"))
+(:    let $contents := if (contains($contentType, "xml"))
       then parse-xml($parsed?file?body)
-      else $parsed?file?body
+      else $parsed?file?body:)
+    let $contents := $parsed?file?body
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
     return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
