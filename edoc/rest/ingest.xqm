@@ -76,12 +76,14 @@ declare function wdbRi:enterMeta ($path as xs:anyURI) {
       try {
       (: create file entry :)
       let $fid := $metaFile/@xml:id
+      let $pid := $metaFile/@pid
       let $file :=
         <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
           attribute xml:id { $fid },
           attribute path { $path },
           attribute date { current-dateTime() },
-          attribute uuid { $uuid }
+          attribute uuid { $uuid },
+          if ($pid != "") then attribute pid { $pid } else ()
         )}</file>
       let $fins := update replace $metaFile with $file
       
@@ -181,32 +183,35 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
     else
       (: file entry is present – update file (and struct if necessary) :)
       try {
-      let $file :=
+        let $pid := $metaFile[1]/@pid
+        let $file :=
           <file xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
             attribute xml:id { $id },
             attribute path { $relPath },
             attribute date { current-dateTime() },
-            attribute uuid { $uuid }
+            attribute uuid { $uuid },
+            if ($pid != "") then attribute pid { $pid } else ()
           )}</file>
-      let $updf := update replace $metaFile[1] with $file
-      
-      let $view := if (wdb:findProjectFunction(map{"pathToEd": $project}, "getRestView", 1))
-      then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
-      else
-          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
-            attribute file { $id },
-            attribute label { $doc//tei:titleStmt/tei:title[1] }
-          )}</view>
-      let $updv := update replace $meta//meta:view[@file = $id] with $view
-      return ( 
-        <rest:response>
-          <http:response status="200">
-            <http:header name="Content-Type" value="text/plain" />
-            <http:header name="rest-status" value="REST:SUCCESS" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
-        </rest:response>,
-        $path
-      )} catch * {( 
+        let $updf := update replace $metaFile[1] with $file
+        
+        let $view := if (wdb:findProjectFunction(map{"pathToEd": $project}, "getRestView", 1))
+          then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
+          else
+            <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
+              attribute file { $id },
+              attribute label { $doc//tei:titleStmt/tei:title[1] }
+            )}</view>
+        let $updv := update replace $meta//meta:view[@file = $id] with $view
+        return ( 
+          <rest:response>
+            <http:response status="200">
+              <http:header name="Content-Type" value="text/plain" />
+              <http:header name="rest-status" value="REST:SUCCESS" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
+          </rest:response>,
+          $path
+        )
+      } catch * {( 
         <rest:response>
           <http:response status="500">
             <http:header name="Content-Type" value="text/plain" />
@@ -245,7 +250,7 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     <rest:response>
       <http:response status="403" />
     </rest:response>,
-    "user " || sm:id//sm:username || " does not have sufficient rights to create or write to " || $collection
+    "user " || sm:id()//sm:username || " does not have sufficient rights to create or write to " || $collection
   )
   else
     try {
@@ -257,7 +262,12 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
         sm:chmod($path, $mode),
         console:log("storing " || $mime-type || " to " || $path)
       )
-      return $path
+      return (
+        <rest:response>
+          <http:response status="200" />
+        </rest:response>,
+        $path
+      )
     } catch * {
       ( 
         <rest:response>
