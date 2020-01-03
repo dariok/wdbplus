@@ -114,21 +114,23 @@ function dirupload (event) {
     : "";
   
   for (let i = 0; i < files.length; i++) {
-    let file = files[i];
+    let file = files[i],
+        item = $('#results').children()[i],
+        text = item.innerText;
     console.log("processing " + file.name);
     
     let reader = new FileReader();
     reader.onload = function(readFile) {
-      let text = readFile.target.result,
+      item.innerText = text + '…';
+      let content = readFile.target.result,
           fileid = 0;
       try {
-        let parsed = $.parseXML(text.substring(text.indexOf("<TEI")));
+        let parsed = $.parseXML(content.substring(content.indexOf("<TEI")));
         let xml = $(parsed);
         fileid = xml.find("TEI").attr("xml:id");
       } catch (e) {
         console.log("error parsing XML from " + file.name);
-        let item = $('#results').children()[i],
-            text = item.innerText.substr(0, item.innerText.length - 1);
+        console.log(e);
         item.innerText = text.substring(0, text.length) + "✕ Parser Error ";
       }
       
@@ -136,9 +138,8 @@ function dirupload (event) {
         console.log("parsed file’s ID: " + fileid);
         sendData(file, i, fileid, headers);
       } else {
-        let item = $('#results').children()[i],
-            text = item.innerText.substr(0, item.innerText.length - 1);
-        item.innerText = text.substring(0, text.length) + "✕ Parser Error ";
+        console.log("no @xml:id found in " + file.name);
+        item.innerText = text.substring(0, text.length) + "✕ No xml:id found ";
       }
     };
     reader.readAsText(file, "UTF-8");
