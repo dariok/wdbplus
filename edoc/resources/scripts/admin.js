@@ -69,7 +69,9 @@ async function sendData (file, i, fileid, headers) {
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = text.substr(0, edRoot.length) == edRoot
+        relpath = task == "fi"
+          ? collection.substr(pathToEd.length + 1) + '/' + text
+          : text.substr(0, edRoot.length) == edRoot
             ? text.substr(edRoot.length + 1)
             : collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
         mode = task == "do" ? "" : "?meta=1";
