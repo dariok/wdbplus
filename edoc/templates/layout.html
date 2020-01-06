@@ -11,6 +11,7 @@
     </main>
     <aside id="wdbRight">
       <div id="annotationDialog" style="display: none;" title="Annotationen">
+	<h1>Annotationstools</h1>
         <p style="text-align: center;">
           <i id="annText"></i> (<span id="annFrom"></span>
           <span id="annTo"></span>)</p>
@@ -35,7 +36,7 @@
           </ul>
           <div id="annotationTab1">
             <form id="fta">
-              <h1>Volltextanmerkung</h1>
+              <h2>Volltextanmerkung</h2>
               <p>Freier Text zur markierten Stelle</p>
               <textarea style="width: 100%;" id="ftaText"></textarea>
               <label for="public">Anmerkung ist öffentlich: </label>
@@ -46,7 +47,7 @@
           </div>
           <div id="annotationTab2">
             <form id="la">
-              <h1>Layout anpassen</h1>
+              <h2>Layout anpassen</h2>
 	      <label for="layout">Spezifische Anmerkungen zum Layout dieser Stelle</label>
               <select id="layout">
                 <option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
@@ -59,7 +60,7 @@
           </div>
           <div id="annotationTab3">
             <form id="ea">
-              <h1>Entitäten markieren und identifizieren</h1>
+              <h2>Entitäten markieren und identifizieren</h2>
 	      <label for="type">Auszeichnen und identifizieren von Personen, Orten, Sachen</label>
               <select id="type">
                 <option value="person">Person</option>
@@ -71,12 +72,12 @@
           </div>
           <div id="annotationTab4">
             <form id="sa">
-              <h1>Abschnitte verschlagworten</h1>
+              <h2>Abschnitte verschlagworten</h2>
               <p>Zuweisen von Schlagworten zu Abschnitten</p>
             </form>
           </div>
           <div id="annotationTab5">
-            <h1>Korrekturen</h1>
+            <h2>Korrekturen</h2>
             <p>
               <a href="javascript:void(0);" onclick="fshow('#tCorr')">Korrekturen im Wort</a>, <a
                 href="javascript:void(0);" onclick="fshow('#tComb')">Wörter zusammenziehen</a> oder
