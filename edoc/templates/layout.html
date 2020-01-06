@@ -47,7 +47,7 @@
           <div id="annotationTab2">
             <form id="la">
               <h1>Layout anpassen</h1>
-              <p>Spezifische Anmerkungen zum Layout dieser Stelle</p>
+	      <label for="layout">Spezifische Anmerkungen zum Layout dieser Stelle</label>
               <select id="layout">
                 <option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
                 <option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
@@ -60,7 +60,7 @@
           <div id="annotationTab3">
             <form id="ea">
               <h1>Entitäten markieren und identifizieren</h1>
-              <p>Auszeichnen und identifizieren von Personen, Orten, Sachen</p>
+	      <label for="type">Auszeichnen und identifizieren von Personen, Orten, Sachen</label>
               <select id="type">
                 <option value="person">Person</option>
                 <option value="place">Ort</option>
@@ -94,11 +94,12 @@
                   Korrekturen als Volltextanmerkung hinterlegen.</label>
               </fieldset>
               <fieldset id="tComb" name="tComb" style="display: none;">
-                <label for="combine">Zusammenziehen: </label>
-                <input type="submit" formaction="javascript:combineWord();" />
+		<p>Zusammenziehen: </p>
+                <input name="combine" type="submit" formaction="javascript:combineWord();" />
               </fieldset>
               <fieldset id="tSplit" name="tSplit" style="display: none;">
-                <label for="combine">trennen: </label>
+                <label for="split">trennen: </label>
+		<input type="text" id="split" />
                 <input type="submit" formaction="javascript:splitWord();" />
               </fieldset>
             </form>
