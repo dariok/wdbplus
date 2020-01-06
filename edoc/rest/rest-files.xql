@@ -64,7 +64,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
         if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
         if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
       )
-      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 401 else 500
+      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 403 else 500
       return (
         <rest:response>
           <http:response status="{$status}">
