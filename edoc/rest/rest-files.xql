@@ -59,7 +59,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
     then
       let $reason := (
-        if ($errNoID) then "no file found with ID " $id else ()
+        if ($errNoID) then "no file found with ID " || $id else (),
         if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
         if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
         if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
