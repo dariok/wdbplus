@@ -271,9 +271,44 @@ declare
     %rest:GET
     %rest:path("/edoc/resource/view/{$id}.{$type}")
     %rest:query-param("view", "{$view}", "")
-function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*) as node() {
+function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*)  {
   let $model := wdb:populateModel($id, $view, map {})
-  return wdb:getContent(<void />, $model)
+  
+  return if ($type = "html")
+  then
+    (: HTML will be dealt with via the XSLT selection mechanism :)
+    wdb:getContent(<void />, $model)
+  else
+    (: all other return types are to be defined as views with processing steps in wdbmeta.xml.
+       If a view is not defined in wdbmeta.xml (or there is not wdbmeta.xml), this is an error :)
+    let $wdbmeta := if (ends-with($model?infoFileLoc, "wdbmeta.xml"))
+      then doc($model?infoFileLoc)
+      else ()
+    let $process := $wdbmeta//meta:process[@target = $view]
+    let $status := if ($wdbmeta = ())
+      then (500, "no wdbmeta found for " || $id || " (project with mets.xml?)")
+      else if ($view = "")
+      then (400, "no view given!")
+      else if (not($process))
+      then (404, "no process found for view " || $view)
+      else (200, wdbRf:getContent($id, $process))
+    let $namespace := if ($status[1] = 200 and $status[2] instance of element())
+      then $status[2]/*[1]/namespace-uri()
+      else ()
+    
+    return ( 
+      <rest:response>
+        <http:response status="{$status[1]}">
+          <http:header name="Access-Control-Allow-Origin" value="*" />
+          <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
+        </http:response>
+      </rest:response>,
+      $status[2]
+    )
+};
+
+declare function wdbRf:getContent($id as xs:string, $view as element()) {
+  $view
 };
 
 declare
