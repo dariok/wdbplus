@@ -697,4 +697,20 @@ declare function wdb:parseMultipart ( $data ) {
         )
   )
 };
+
+declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace as xs:anyURI?) {
+  switch ($extension)
+    case "css" return "text/css"
+    case "js" return "application/javascript"
+    case "xql"
+    case "xqm" return "application/xquery"
+    case "html" return "text/html"
+    case "gif" return "image/gif"
+    case "png" return "image/png"
+    case "json" return "application/json"
+    case "xml" return
+      if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
+    case "xsl" return "application/xslt+xml"
+    default return "application/octet-stream"
+};
 (: END HELPERS FOR REST AND HTTP REQUESTS :)
