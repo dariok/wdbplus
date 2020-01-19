@@ -274,41 +274,72 @@ declare
 function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*)  {
   let $model := wdb:populateModel($id, $view, map {})
   
-  return if ($type = "html")
-  then
-    (: HTML will be dealt with via the XSLT selection mechanism :)
-    wdb:getContent(<void />, $model)
-  else
-    (: all other return types are to be defined as views with processing steps in wdbmeta.xml.
-       If a view is not defined in wdbmeta.xml (or there is not wdbmeta.xml), this is an error :)
-    let $wdbmeta := if (ends-with($model?infoFileLoc, "wdbmeta.xml"))
+  (: This mechanism can only be used with wdbmeta. A METS-only project will return an error :)
+  let $wdbmeta := if (ends-with($model?infoFileLoc, "wdbmeta.xml"))
       then doc($model?infoFileLoc)
       else ()
-    let $process := $wdbmeta//meta:process[@target = $view]
-    let $status := if ($wdbmeta = ())
+  
+  (: by definition in wdbmeta.rng and in analogy to the behaviour of view.html: $type maps to process/@target,
+     $view is used as a parameter. If there is only one process for $type, $view will be handed over as a parameter;
+     if there are multiple processes for $type, $view will be used to select via process/@view. If the are multiple
+     processes but none with the given $view, this is an error :)
+  let $processes := $wdbmeta//meta:process[@target = $type]
+  let $process := if (count($processes) = 1)
+    then ($processes[1])
+    else ($processes[@view = $view])
+  
+  let $status := if ($wdbmeta = ())
       then (500, "no wdbmeta found for " || $id || " (project with mets.xml?)")
-      else if ($view = "")
-      then (400, "no view given!")
+      else if (not($processes))
+      then (404, "no process found for target type " || $type)
       else if (not($process))
-      then (404, "no process found for view " || $view)
-      else (200, wdbRf:getContent($id, $process))
-    let $namespace := if ($status[1] = 200 and $status[2] instance of element())
-      then $status[2]/*[1]/namespace-uri()
-      else ()
+      then (400, "no process found for target type " || $type || " that has a view " || $view)
+      else wdbRf:getContent($id, $process, $view, $model)
+   
+  let $namespace := if ($status[2] instance of element())
+    then $status[2]/*[1]/namespace-uri()
+    else ""
     
-    return ( 
-      <rest:response>
-        <http:response status="{$status[1]}">
-          <http:header name="Access-Control-Allow-Origin" value="*" />
-          <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
-        </http:response>
-      </rest:response>,
-      $status[2]
-    )
+  return ( 
+    <rest:response>
+      <http:response status="{$status[1]}">
+        <http:header name="Access-Control-Allow-Origin" value="*" />
+        <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
+      </http:response>
+    </rest:response>,
+    $status[2]
+  )
 };
 
-declare function wdbRf:getContent($id as xs:string, $view as element()) {
-  $view
+declare function wdbRf:getContent($id as xs:string, $process as element(), $view as xs:string, $model as map(*)) as item()* {
+  (: TODO if multiple commands are defined, check that one is actually applicable – #395 :)
+  (: TODO pass the position of this command on to the processing function or pass target and view on :)
+  (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
+  let $type := $process[1]/meta:command/@type
+  return if ($type = "xsl")
+    then wdbRf:processXSL($id, $process, $model)
+    else if ($type = "xquery")
+    then wdbRf:processXQuery($id, $process, $model)
+    else (500, "Invalid command type " || $type)
+};
+
+declare function wdbRf:processXSL($id as xs:string, $process as element(), $model as map(*)) as item()* {
+  ()
+};
+
+
+declare function wdbRf:processXQuery($id as xs:string, $process as element(), $model as map(*)) as item()* {
+  let $function := $process/meta:command/text()
+  return if (starts-with($function, 'http') or starts-with($function, '/'))
+  then () (: TODO :)
+  else
+    let $fn := wdb:findProjectFunction($model, $function, 2)
+    return if ($fn) then try {
+      (200, wdb:eval($function || "($id, $process)", false(), (xs:QName("id"), $id, xs:QName("process"), $process)))
+    } catch * {
+      (500, $err:description)
+    }
+    else (500, "function " || $function || " not found")
 };
 
 declare
