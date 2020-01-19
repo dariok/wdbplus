@@ -248,8 +248,11 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
   
   let $content := if ($respCode != 200) then () else
     <views>{
-    for $process in $f/ancestor::meta:projectMD//meta:process
-      return <view process="{$process/@target}" />
+      for $process in $f/ancestor::meta:projectMD//meta:process[@target] return
+        <view>
+          {$process/@*}
+          /edoc/resource/view/{$id}.{string($process/@target)}{if($process/@view) then "?view=" || string($process/@view) else ()}
+        </view>
     }</views>
   
   return (
