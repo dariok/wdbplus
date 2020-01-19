@@ -23,6 +23,7 @@ declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
@@ -660,7 +661,7 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data ) {
+declare function wdb:parseMultipart ( $data, $header ) {
   let $boundary := "--" || substring-after($header, "boundary=")
   return map:merge( 
     for $m in tokenize($data, $boundary) return
