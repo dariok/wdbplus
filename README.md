@@ -9,7 +9,7 @@ You need a working instance of eXist (4.0 or later). It is recommended that you 
 during installation. The default memory settings usually work very well but you can, of course, always give eXist a
 little more RAM.
 ### Using the .xar package
-1. Clone this repo
+1. Clone this repo including its submodules (xstring, wdbmeta) 
 1. `cd edoc`
 1. run `ant`
 1. install the `.xar` file created in `edoc/build/` using eXist's dashboard
