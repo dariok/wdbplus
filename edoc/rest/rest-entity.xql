@@ -60,7 +60,7 @@ function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
   let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
     else if (doc-available($coll || '/resources/entity.xsl'))
     then xs:anyURI($coll || '/resources/entity.xsl')

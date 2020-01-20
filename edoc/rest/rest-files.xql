@@ -265,7 +265,9 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     </rest:response>,
   if ($respCode != 200) then () else
     if ($mt = "application/json")
-    then xml-to-json($content)
+    then if (system:function-available(xs:QName("xml-to-json"), 1))
+      then xml-to-json($content)
+      else json:xml-to-json($content)
     else $content
   )
 };
@@ -298,11 +300,11 @@ function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as x
       else if (not($process))
       then (400, "no process found for target type " || $type || " that has a view " || $view)
       else wdbRf:getContent($id, $process, $view, $model)
-   
+  
   let $namespace := if ($status[2] instance of element())
     then $status[2]/*[1]/namespace-uri()
     else ""
-    
+  
   return ( 
     <rest:response>
       <http:response status="{$status[1]}">
@@ -326,10 +328,9 @@ declare function wdbRf:getContent($id as xs:string, $process as element(), $view
     else (500, "Invalid command type " || $type)
 };
 
-declare function wdbRf:processXSL($id as xs:string, $process as element(), $model as map(*)) as item()* {
+declare function wdbRf:processXSL($id as xs:string, $process as element(), $model as map(*)) {
   ()
 };
-
 
 declare function wdbRf:processXQuery($id as xs:string, $process as element(), $model as map(*)) as item()* {
   let $function := $process/meta:command/text()
@@ -588,4 +589,3 @@ function wdbRf:getFileManifest ($id as xs:string) {
     ]
   })
 };
-
