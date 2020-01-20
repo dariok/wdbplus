@@ -265,10 +265,8 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     </rest:response>,
   if ($respCode != 200) then () else
     if ($mt = "application/json")
-    then if (system:function-available(xs:QName("xml-to-json"), 1))
-      then xml-to-json($content)
-      else json:xml-to-json($content)
-    else $content
+      then json:xml-to-json($content)
+      else $content
   )
 };
 
