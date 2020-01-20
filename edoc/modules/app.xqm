@@ -518,13 +518,14 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
  :)
 declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
   let $location := wdb:findProjectXQM($model("pathToEd"))
+  let $functionName := if (starts-with($name, 'wdbPF:')) then $name else 'wdbPF:' || $name
   
   return if ($location instance of xs:boolean and $location = false())
   then false()
   else
     let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
         xs:anyURI($location))
-    return system:function-available(xs:QName("wdbPF:" || $name), $arity)
+    return system:function-available(xs:QName("wdbPF:" || $functionName), $arity)
 };
 
 (:~
