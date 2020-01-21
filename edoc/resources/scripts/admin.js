@@ -81,6 +81,7 @@ async function sendData (file, i, fileid, headers) {
       let formdata = new FormData();
       formdata.append("file", file);
       formdata.append("filename", relpath);
+      formdata.append("targetCollection", collection)
       
       $.ajax({
         method: "get",

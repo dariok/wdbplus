@@ -55,7 +55,7 @@ function wdbRf:createFile ($id as xs:string*, $data as xs:string, $header as xs:
     let $id := $contents/*[1]/@xml:id
     let $errPresent := collection($wdb:data)/id($id)
     
-    let $errNoAccess := not(sm:has-access(xs:anyURI($targetPath), "w"))
+    let $errNoAccess := not(sm:has-access(xs:anyURI($parsed?targetCollection?body), "w"))
     
     return if ($errNoID or $errPresent or $errNoAccess)
       then
