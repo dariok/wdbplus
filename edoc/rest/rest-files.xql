@@ -18,6 +18,14 @@ declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 (: Creating / changing resources :)
+declare
+    %rest:POST("{$data}")
+    %rest:path("/edoc/resource")
+    %rest:header-param("id", "{$id}")
+    %rest:header-param("Content-Type", "{$header}")
+function wdbRf:createFile ($id as xs:string, $data as xs:string, $header as xs:string) {
+  
+};
 (: upload a single file with known ID (i.e. one that is already present)
    - if the ID is not found, return an error
    - replace the file and update its meta:file
@@ -26,7 +34,7 @@ declare
     %rest:PUT("{$data}")
     %rest:path("/edoc/resource/{$id}")
     %rest:header-param("Content-Type", "{$header}")
-function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:string*) {
+function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:string) {
   if (sm:id()//sm:username = "guest")
   then
     <rest:response>
@@ -128,7 +136,15 @@ function wdbRf:getResource ($id as xs:string) {
     then "200"
     else "500"
   
-  return (
+  return if ($respCode = "404")
+  then
+    <rest:response>
+      <http:response status="404">
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>
+  else
+  (
     <rest:response>
       <http:response status="{$respCode}">
         <http:header name="Content-Type" value="{$type}" />
