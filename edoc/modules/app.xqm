@@ -525,7 +525,7 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
   else
     let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
         xs:anyURI($location))
-    return system:function-available(xs:QName("wdbPF:" || $functionName), $arity)
+    return system:function-available(xs:QName($functionName), $arity)
 };
 
 (:~
