@@ -46,9 +46,14 @@ function wdbRf:createFile ($id as xs:string*, $data as xs:string, $header as xs:
       "//", "/")
     
     let $contentType := $parsed?file?header?Content-Type
-    let $contents := if ($parsed?file?body instance of element())
-      then $parsed?file?body
-      else parse-xml($parsed?file?body)
+    let $prepped := if (string-to-codepoints(substring($parsed?file?body, 1, 2)) = (10, 65279))
+      then substring($parsed?file?body, 3)
+      else $parsed?file?body
+    
+    let $ct := $parsed?file?header?Content-Type
+    let $contents := if ((contains($ct, "text/xml") or contains($ct, "application/xml")) and not($prepped instance of element()))
+      then parse-xml($prepped)
+      else  $prepped
     
     let $errNoID := $contents instance of element() and not($contents/*[1]/@xml:id)
     
