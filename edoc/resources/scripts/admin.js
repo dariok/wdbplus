@@ -54,7 +54,7 @@ $(document).on("change", "#picker", function() {
   
   for (let i = 0; i < files.length; i++) {
     let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
-    $('#results').append("<li>" + path + "…</li>");
+    $('#results').append("<li>" + path + "<span></span></li>");
   }
 });
 
@@ -64,7 +64,7 @@ async function sendData (file, i, fileid, headers) {
         type = (task == "fi") ? file.name.substr(file.name.length - 3) : file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
         content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream",
         item = $('#results').children()[i],
-        text = (task == "fi") ? file.name : item.innerText.substr(0, item.innerText.length - 1),
+        text = (task == "fi") ? file.name : item.innerText,
         collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection'],
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
@@ -87,19 +87,23 @@ async function sendData (file, i, fileid, headers) {
         method: "get",
         url: rest + delim + "resource/" + fileid,
         success: function (response, textStatus, xhr) {
-          if (response.status == 200) {
+          if (xhr.status == 200) {
+            $(item).children("span")[0].innerText = "…";
             doUpload("put", rest + delim + "resource/" + fileid, headers, formdata, item, text);
           } else {
             console.log(response);
-            item.innerText = text.substring(0, text.length) + "✕";
+            $(item).children("span").innerText = "✕";
+            $(item).children("span").attr("title", "Unexpected return code: " + xhr.status);
           }
         },
         error: function (response) {
           if (response.status == 404) {
+            $(item).children("span")[0].innerText = "…";
             doUpload("post", rest + delim + "resource?id=" + params["id"], headers, formdata, item, text);
           } else {
             console.log(response);
-            item.innerText = text.substring(0, text.length) + "✕";
+            $(item).children("span")[0].innerText = "✕";
+            $(item).children("span").attr("title", "Unexpected return code: " + response.status);
           }
         }
       });
@@ -118,12 +122,12 @@ async function doUpload(method, url, headers, formdata, item, text) {
     contentType: false,
     processData: false,
     success: function (response, textStatus, xhr) {
-      console.log(response);
-      item.innerText = text.substring(0, text.length) + "✓";
+      $(item).children("span")[0].innerText = "✓";
+      $(item).append('<span class="success">' + textStatus + '</span>');
     },
     error: function (response) {
-      console.log(response);
-      item.innerText = text.substring(0, text.length) + "✕";
+      $(item).children("span")[0].innerText = "✕";
+      $(item).append('<span class="error">Error: ' + response.status + "</span>");
     }
   });
 }
@@ -145,7 +149,7 @@ function dirupload (event) {
     
     let reader = new FileReader();
     reader.onload = function(readFile) {
-      item.innerText = text + '…';
+      $(item).children("span").innerText = "…";
       let content = readFile.target.result,
           fileid = 0;
       try {
