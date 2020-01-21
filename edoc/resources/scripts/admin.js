@@ -81,20 +81,25 @@ async function sendData (file, i, fileid, headers) {
       let formdata = new FormData();
       formdata.append("file", file);
       formdata.append("filename", relpath);
-      await $.ajax({
-        method: "put",
+      
+      $.ajax({
+        method: "get",
         url: rest + delim + "resource/" + fileid,
-        headers: headers,
-        data: formdata,
-        contentType: false,
-        processData: false,
         success: function (response, textStatus, xhr) {
-          console.log(response);
-          item.innerText = text.substring(0, text.length) + "✓";
+          if (response.status == 200) {
+            doUpload("put", rest + delim + "resource/" + fileid, headers, formdata, item, text);
+          } else {
+            console.log(response);
+            item.innerText = text.substring(0, text.length) + "✕";
+          }
         },
         error: function (response) {
-          console.log(response);
-          item.innerText = text.substring(0, text.length) + "✕";
+          if (response.status == 404) {
+            doUpload("post", rest + delim + "resource?id=" + params["id"], headers, formdata, item, text);
+          } else {
+            console.log(response);
+            item.innerText = text.substring(0, text.length) + "✕";
+          }
         }
       });
     }
@@ -102,6 +107,24 @@ async function sendData (file, i, fileid, headers) {
     console.log(e);
     console.log(e.stack);
   }
+}
+async function doUpload(method, url, headers, formdata, item, text) {
+  $.ajax({
+    method: method,
+    url: url,
+    headers: headers,
+    data: formdata,
+    contentType: false,
+    processData: false,
+    success: function (response, textStatus, xhr) {
+      console.log(response);
+      item.innerText = text.substring(0, text.length) + "✓";
+    },
+    error: function (response) {
+      console.log(response);
+      item.innerText = text.substring(0, text.length) + "✕";
+    }
+  });
 }
 
 function dirupload (event) {

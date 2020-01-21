@@ -2,6 +2,8 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
+import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace functx="http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
 import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
@@ -21,11 +23,79 @@ declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 declare
     %rest:POST("{$data}")
     %rest:path("/edoc/resource")
-    %rest:header-param("id", "{$id}")
+    %rest:query-param("id", "{$id}")
     %rest:header-param("Content-Type", "{$header}")
-function wdbRf:createFile ($id as xs:string, $data as xs:string, $header as xs:string) {
+function wdbRf:createFile ($id as xs:string*, $data as xs:string, $header as xs:string*) {
+  let $user := sm:id()//sm:real/sm:username/string()
   
+  return if ($user = "guest")
+  then
+    <rest:response>
+      <http:response status="401">
+        <http:header name="WWW-Authenticate" value="Basic"/>
+      </http:response>
+    </rest:response>
+  else
+    let $parsed := wdb:parseMultipart($data, $header)
+    
+    let $path := normalize-space($parsed?filename?body)
+    let $resourceName := xstring:substring-after-last($path, '/')
+    let $collectionPath := wdb:getEdPath($id)
+    let $targetPath := replace(
+      $wdb:edocBaseDB || '/' || $collectionPath || '/' || xstring:substring-before-last($path, '/'),
+      "//", "/")
+    
+    let $contentType := $parsed?file?header?Content-Type
+    let $contents := if ($parsed?file?body instance of element())
+      then $parsed?file?body
+      else parse-xml($parsed?file?body)
+    
+    let $errNoID := $contents instance of element() and not($contents/*[1]/@xml:id)
+    
+    let $id := $contents/*[1]/@xml:id
+    let $errPresent := collection($wdb:data)/id($id)
+    
+    let $errNoAccess := not(sm:has-access(xs:anyURI($targetPath), "w"))
+    
+    return if ($errNoID or $errPresent or $errNoAccess)
+      then
+        let $reason := (
+          if ($errNoID) then "no ID found in file" else (),
+          if ($errPresent) then "a file with id " || $id || " is already present in the database" else (),
+          if ($errNoAccess) then "user " || $user || " has no access to resource " || $targetPath else ()
+        )
+        let $status := if ($errNoID) then 400 else if ($errPresent) then 409 else if ($errNoAccess) then 403 else 400
+        return (
+          <rest:response>
+            <http:response status="{$status}">
+              <http:header name="Content-Type" value="text/plain" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          $reason
+        )
+      else
+        let $store := wdbRi:store($targetPath, $resourceName, $contents, $contentType)
+        let $meta := if (contains($contentType, "xml"))
+          then wdbRi:enterMetaXML($store[2])
+          else wdbRi:enterMeta($store[2])
+        return if ($store[1]//http:response/@status = "200" and $meta[1]//http:response/@status = "200")
+          then
+            (
+              <rest:response>
+                <http:response status="201">
+                  <http:header name="Content-Type" value="text/plain" />
+                  <http:header name="Access-Control-Allow-Origin" value="*" />
+                  <http:header name="Location" value="{$store[2]}" />
+                </http:response>
+              </rest:response>,
+              $wdb:restURL || "/resource/" || $id
+            )
+          else if ($store[1]//http:response/@status != "200")
+          then $store
+          else $meta
 };
+
 (: upload a single file with known ID (i.e. one that is already present)
    - if the ID is not found, return an error
    - replace the file and update its meta:file
@@ -34,7 +104,7 @@ declare
     %rest:PUT("{$data}")
     %rest:path("/edoc/resource/{$id}")
     %rest:header-param("Content-Type", "{$header}")
-function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:string) {
+function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:string*) {
   if (sm:id()//sm:username = "guest")
   then
     <rest:response>
@@ -95,7 +165,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     then
       (
         <rest:response>
-          <http:response status="201">
+          <http:response status="200">
             <http:header name="Content-Type" value="text/plain" />
             <http:header name="Access-Control-Allow-Origin" value="*" />
             <http:header name="Location" value="{$store[2]}" />
