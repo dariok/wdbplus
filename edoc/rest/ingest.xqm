@@ -178,7 +178,8 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
             <http:header name="rest-reason" value="{$err:code}: {$err:description}" />
           <http:header name="Access-Control-Allow-Origin" value="*"/></http:response>
         </rest:response>,
-        <error>Error creating new entry: {$err:code}: {$err:description}</error>
+        <error>Error creating new entry: {$err:code}: {$err:description}
+        {$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
       )}
     else
       (: file entry is present – update file (and struct if necessary) :)
@@ -246,12 +247,19 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     else ()
   let $hasAccess := sm:has-access(xs:anyURI($collection), 'w')
   
-  return if (not($coll) or not($hasAccess)) then (
-    <rest:response>
-      <http:response status="403" />
-    </rest:response>,
-    "user " || sm:id()//sm:username || " does not have sufficient rights to create or write to " || $collection
-  )
+  return if ($coll = () or not($hasAccess))
+  then
+      let $status := if (not($coll)) then "404" else "403"
+      let $reason := if (not($coll))
+        then "Collection " || $collection || " not found"
+        else "user " || sm:id()//sm:username || " does not have sufficient rights to create or write to " || $collection
+        
+      return (
+        <rest:response>
+          <http:response status="{$status}" />
+        </rest:response>,
+        $reason
+      )
   else
     try {
       let $path := xmldb:store($collection, $resource-name, $contents, $mime-type)
