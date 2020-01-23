@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <xmlproperty file="edoc/expath-pkg.xml"/>
+  
+  <target name="clean">
+    <delete dir="edoc/build/" />
+    <delete dir="build" />
+  </target>
+  
+  <target name="compile" depends="clean">
+    <ant dir="." antfile="edoc/build.xml" />
+  </target>
+  
+  <target name="docker" depends="compile">
+    <copy file="build/${package(abbrev)}-${package(version)}.xar" tofile="docker/wdb.xar" />
+    <exec executable="docker" dir="docker">
+      <arg value="build" />
+      <arg value="--tag=wdbplus" />
+      <arg value="." />
+    </exec>
+  </target>
+</project>
