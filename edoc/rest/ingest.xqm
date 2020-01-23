@@ -311,3 +311,12 @@ declare function wdbRi:getID ($element as item(), $collection as xs:string, $pat
   then string($element/*/@xml:id)
   else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
 };
+
+declare function wdbRi:replaceWs($string) {
+  if (matches($string, "^\s+<"))
+  then replace($string, "^\s+<", "<")
+  else replace($string,
+      ".*<\?xml ([^>]+)\?>\s+<",
+      "<?xml $1?><"
+    )
+};
