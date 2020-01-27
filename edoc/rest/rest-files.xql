@@ -116,38 +116,44 @@ function wdbRf:getResource ($id as xs:string) {
     then base-uri($f)
     else substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
   
-  let $doc := doc($path)
+  let $doc := try {
+    doc($path)
+  } catch * { () }
   
-  let $mtype := xmldb:get-mime-type($path)
+  let $mtype := try {
+    xmldb:get-mime-type($path)
+  } catch * { () }
   let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
     then "application/tei+xml"
     else $mtype
   
   let $respCode := if (count($files) = 0)
-    then "404"
-    else if (count($files) = 1)
-    then "200"
-    else "500"
+  then 404
+  else if (count($doc) = 0) (: file with ID exists but doc throws error: wrong permission :)
+  then 401
+  else if (count($files) = 1)
+  then 200
+  else 500
   
-  return if ($respCode = "404")
-  then
+  return (
     <rest:response>
-      <http:response status="404">
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>
-  else
-  (
-    <rest:response>
-      <http:response status="{$respCode}">
-        <http:header name="Content-Type" value="{$type}" />
+      <http:response status="{$respCode}">{
+        if (string-length($type) = 0) then () else
+          <http:header name="Content-Type" value="{$type}" />
+        }{
+        if ($respCode = 401) then
+          <http:header name="WWW-Authenticate" value="Basic"/>
+          else ()
+        }
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    if (contains($mtype, "xml"))
-    then $doc
-    else util:binary-to-string(util:binary-doc($path))
+    if ($respCode = 200) then
+        if ($mtype = "application/xml")
+        then $doc
+        else util:binary-to-string(util:binary-doc($path))
+    else ()
   )
 };
 
