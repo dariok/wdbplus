@@ -93,6 +93,7 @@
         </options>
     </meta>
     <projectTree name="wdbplus.xpr">
+        <folder path="../wdbplus.wiki/"/>
         <folder path="."/>
     </projectTree>
 </project>
