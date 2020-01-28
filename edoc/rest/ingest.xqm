@@ -294,7 +294,7 @@ declare function wdbRi:createCollection ($coll as xs:string) {
   return if (xmldb:collection-available($target-collection))
   then ( 
     let $path := xmldb:create-collection($target-collection, $new-collection)
-    let $chown := sm:chown($path, "wdb")
+(:    let $chown := sm:chown($path, "wdb"):)
     let $chgrp := sm:chgrp($path, "wdbusers")
     let $chmod := sm:chmod($path, "rwxrwxr-x")
     
