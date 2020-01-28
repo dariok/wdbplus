@@ -130,6 +130,7 @@ function wdbRf:getResource ($id as xs:string) {
   let $method := switch ($type)
     case "application/xml"
     case "application/xsl+xml"
+    case "application/tei+xml"
       return "xml"
     default return "binary"
   
