@@ -101,42 +101,51 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     else $meta
 };
 
-
 (: get a resource by its ID – whatever type it might be :)
 declare
     %rest:GET
     %rest:path("/edoc/resource/{$id}")
-    %output:indent("no")
 function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
-  let $files := (collection($wdb:data)//id($id)[self::meta:file or self::meta:projectMD])
+  let $files := (collection($wdb:data)//id($id)[self::meta:file])
   let $f := $files[1]
-  let $path := if ($f[self::meta:projectMD])
-    then base-uri($f)
-    else substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
+  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
   
-  let $doc := try {
-    doc($path)
-  } catch * { () }
+  let $readable := sm:has-access($path, "r")
+  let $doc := if (not($readable)) then ()
+    else if (doc-available($path))
+    then doc($path)
+    else if (util:binary-doc-available($path))
+    then util:binary-doc($path)
+    else ()
   
-  let $mtype := try {
-    xmldb:get-mime-type($path)
-  } catch * { () }
+  let $mtype := if (count($doc) = 1)
+    then xmldb:get-mime-type($path)
+    else ()
   let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
     then "application/tei+xml"
     else $mtype
   
+  let $method := switch ($type)
+    case "application/xml"
+    case "application/xsl+xml"
+      return "xml"
+    default return "binary"
+  
   let $respCode := if (count($files) = 0)
   then 404
-  else if (count($doc) = 0) (: file with ID exists but doc throws error: wrong permission :)
+  else if (not($readable))
   then 401
-  else if (count($files) = 1)
+  else if (count($files) = 1 and count($doc) = 1)
   then 200
   else 500
   
   return (
     <rest:response>
+      <output:serialization-parameters>
+        <output:method value="{$method}"/>
+      </output:serialization-parameters>
       <http:response status="{$respCode}">{
         if (string-length($type) = 0) then () else
           <http:header name="Content-Type" value="{$type}" />
@@ -144,16 +153,17 @@ function wdbRf:getResource ($id as xs:string) {
         if ($respCode = 401) then
           <http:header name="WWW-Authenticate" value="Basic"/>
           else ()
+        }{
+        if ($respCode = 200)
+          then <http:header name="rest-status" value="REST:SUCCESS" />
+          else <http:header name="rest-status" value="REST:ERROR" />
         }
-        <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    if ($respCode = 200) then
-        if ($mtype = "application/xml")
-        then $doc
-        else util:binary-to-string(util:binary-doc($path))
-    else ()
+    if ($respCode = 200)
+      then $doc
+      else ()
   )
 };
 
