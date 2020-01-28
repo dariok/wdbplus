@@ -10,8 +10,6 @@ $("document").ready(function() {
       method: "get",
       url: url,
       success: function (data) {
-        let json = JSON.parse(data);
-        getPaths(json);
       }
     });
     $('#selectTarget').show();

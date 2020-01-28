@@ -251,9 +251,9 @@ declare function local:listResources ($mfile, $subcollection) {
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.json")
-  %rest:produces("application/json")
+  %output:method("json")
   function wdbRc:getSubcollJson ($id) {
-    json:xml-to-json(wdbRc:getSubcollXML($id))
+    wdbRc:getSubcollXML($id)
 };
 declare
   %rest:GET
