@@ -7,7 +7,6 @@ import module namespace json    = "http://www.json.org";
 import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
-import module namespace functx ="http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
