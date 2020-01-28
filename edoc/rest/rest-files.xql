@@ -128,6 +128,7 @@ function wdbRf:getResource ($id as xs:string) {
     else $mtype
   
   let $method := switch ($type)
+    case "text/xml"
     case "application/xml"
     case "application/xsl+xml"
     case "application/tei+xml"
