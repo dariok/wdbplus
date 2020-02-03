@@ -301,6 +301,7 @@ declare function local:pM($meta) {
   let $uri := base-uri($meta)
   
   return for $s in $meta/meta:projectMD/meta:struct/*
+    order by $s/@order
     let $f := $meta//meta:files/*[@xml:id = $s/@file]
     return if ($f[self::meta:ptr])
     then
