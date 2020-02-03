@@ -69,7 +69,15 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     
     let $collection-uri := xmldb:create-collection($wdb:data, $pColl)
     let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
-    let $copy := xmldb:copy-collection($wdb:edocBaseDB || "/resources/xsl", $collection-uri)
+    let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
+      then util:eval("xmldb:copy-collection($source, $destination)", false(), (
+          xs:QName("source"), $wdb:edocBaseDB || "/resources/xsl",
+          xs:QName("destination"), $collection-uri
+        ))
+      else util:eval("xmldb:copy($source, $destination)", false(), (
+          xs:QName("source"), $wdb:edocBaseDB || "/resources/xsl",
+          xs:QName("destination"), $collection-uri
+        ))
     
     let $chmod := (
       sm:chmod(xs:anyURI($collection-uri), 'r-xr-xr-x'),

@@ -294,7 +294,7 @@ declare function wdbRi:createCollection ($coll as xs:string) {
   return if (xmldb:collection-available($target-collection))
   then ( 
     let $path := xmldb:create-collection($target-collection, $new-collection)
-    let $chown := sm:chown($path, "wdb")
+(:    let $chown := sm:chown($path, "wdb"):)
     let $chgrp := sm:chgrp($path, "wdbusers")
     let $chmod := sm:chmod($path, "rwxrwxr-x")
     
@@ -310,4 +310,13 @@ declare function wdbRi:getID ($element as item(), $collection as xs:string, $pat
   if ($element instance of document-node() and $element/*/@xml:id)
   then string($element/*/@xml:id)
   else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
+};
+
+declare function wdbRi:replaceWs($string) {
+  if (matches($string, "^\s+<"))
+  then replace($string, "^\s+<", "<")
+  else replace($string,
+      ".*<\?xml ([^>]+)\?>\s+<",
+      "<?xml $1?><"
+    )
 };

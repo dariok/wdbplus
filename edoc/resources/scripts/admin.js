@@ -10,8 +10,6 @@ $("document").ready(function() {
       method: "get",
       url: url,
       success: function (data) {
-        let json = JSON.parse(data);
-        getPaths(json);
       }
     });
     $('#selectTarget').show();
@@ -99,7 +97,7 @@ async function sendData (file, i, fileid, headers) {
         error: function (response) {
           if (response.status == 404) {
             $(item).children("span")[0].innerText = "…";
-            doUpload("post", rest + delim + "resource?id=" + params["id"], headers, formdata, item, text);
+            doUpload("post", rest + delim + "collection/" + params["id"], headers, formdata, item, text);
           } else {
             console.log(response);
             $(item).children("span")[0].innerText = "✕";
