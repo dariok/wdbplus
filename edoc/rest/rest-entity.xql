@@ -119,7 +119,7 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:stri
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
   let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
     else if (doc-available($coll || '/resources/entity.xsl'))
     then xs:anyURI($coll || '/resources/entity.xsl')
@@ -175,7 +175,7 @@ declare
 function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $coll := substring-before(wdb:findProjectXQM(base-uri(collection($wdb:data)/id($id)[self::meta:file])), 'project.xqm')
   
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
     else if (doc-available($coll || '/resources/entity.xsl'))
     then xs:anyURI($coll || '/resources/entity.xsl')
@@ -241,7 +241,7 @@ function wdbRe:listCollectionEntitiesHtml ($collection as xs:string*, $q as xs:s
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
   let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
   
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" := $coll}, "getSearchXSLT", 0))
+  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
     else if (doc-available($coll || '/resources/entity.xsl'))
     then xs:anyURI($coll || '/resources/entity.xsl')
