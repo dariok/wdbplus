@@ -296,8 +296,7 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$id}/nav.html")
 function wdbRc:getCollectionNavHTML ($id as xs:string) {
-  let $md := collection($wdb:data)/id($id)[self::meta:projectMD]
-  let $ed := substring-before(base-uri($md), '/wdbmeta.xml')
+  let $ed := wdb:getProjectPathFromId($id)
   let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $ed}, "getNavXSLT", 0))
     then wdb:eval("wdbPF:getNavXSLT()")
     else if (doc-available($ed || '/nav.xsl'))
