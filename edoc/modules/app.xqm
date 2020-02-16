@@ -205,11 +205,7 @@ try {
   let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
   
   (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-  let $infoFileLoc := if (doc-available($pathToEd||'/wdbmeta.xml'))
-    then $pathToEd || '/wdbmeta.xml'
-    else if (doc-available($pathToEd || '/mets.xml'))
-    then $pathToEd || '/mets.xml'
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+  let $infoFileLoc := wdb:getMetaFile($pathToEd)
   
   let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
     then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
@@ -573,6 +569,17 @@ declare function wdb:getProjectPathFromId ($id as xs:string) {
     collection($wdb:data)/mets:mets[@OBJID = $id]
   )
   return substring-before(base-uri($md)[1], '/mets.xml')
+};
+
+(:~
+ : Get the meta data file from the ed path
+ :)
+declare function wdb:getMetaFile($pathToEd) {
+  if (doc-available($pathToEd||'/wdbmeta.xml'))
+    then $pathToEd || '/wdbmeta.xml'
+    else if (doc-available($pathToEd || '/mets.xml'))
+    then $pathToEd || '/mets.xml'
+    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 };
 (: END GENERAL HELPER FUNCTIONS :)
 
