@@ -296,23 +296,37 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$id}/nav.html")
 function wdbRc:getCollectionNavHTML ($id as xs:string) {
-  let $ed := wdb:getProjectPathFromId($id)
-  let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $ed}, "getNavXSLT", 0))
-    then wdb:eval("wdbPF:getNavXSLT()")
-    else if (doc-available($ed || '/nav.xsl'))
-    then xs:anyURI($ed || '/nav.xsl')
-    else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
-  let $struct := wdbRc:getCollectionNavXML($id)
+  let $pathToEd := wdb:getProjectPathFromId($id)
+  let $mf := wdb:getMetaFile($pathToEd)
+  
+  let $html := try {
+    if(ends-with($mf, 'wdbmeta.xml'))
+      then
+        let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0))
+          then wdb:eval("wdbPF:getNavXSLT()")
+          else if (doc-available($pathToEd || '/nav.xsl'))
+          then xs:anyURI($pathToEd || '/nav.xsl')
+          else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+        let $struct := wdbRc:getCollectionNavXML($id)
+        return transform:transform($struct, doc($xsl), ())
+      else
+        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), ())
+  } catch * {
+    <p>Error transforming meta data file {$mf} to navigation using
+      {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
+  }
+  
+  let $status := if ($html[self::*:p]) then '500' else '200'
   
   return (
     <rest:response>
-      <http:response status="200">
+      <http:response status="{$status}">
         <http:header name="Access-Control-Allow-Origin" value="*" />
         <http:header name="Content-Type" value="text/html" />
         <http:header name="REST-Status" value="REST:SUCCESS" />
       </http:response>
     </rest:response>,
-    transform:transform($struct, doc($xsl), ())
+    $html
   )
 };
 
