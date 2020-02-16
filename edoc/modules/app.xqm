@@ -564,6 +564,16 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
   util:eval($function, $cache-flag, $external-variable)
 };
 
+(:~
+ : Return the full path to the project collection by trying to find the meta file by ID
+ :)
+declare function wdb:getProjectPathFromId ($id as xs:string) {
+  let $md := (
+    collection($wdb:data)/id($id)[self::meta:projectMD],
+    collection($wdb:data)/mets:mets[@OBJID = $id]
+  )
+  return substring-before(base-uri($md)[1], '/mets.xml')
+};
 (: END GENERAL HELPER FUNCTIONS :)
 
 (: LOCAL HELPER FUNCTIONS :)
