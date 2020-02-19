@@ -207,6 +207,10 @@ try {
   (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
   let $infoFileLoc := wdb:getMetaFile($pathToEd)
   
+  let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+    then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
+    else string(doc($infoFileLoc)/mets:mets/@OBJID)
+  
   let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
     then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
     else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
@@ -224,7 +228,7 @@ try {
   
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
-    "ed":               normalize-space(doc($infoFileLoc)/*[1]/@xml:id),
+    "ed":               $ed,
     "fileLoc":          $pathToFile,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
