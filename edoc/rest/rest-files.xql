@@ -352,8 +352,20 @@ declare function wdbRf:getContent($id as xs:string, $process as element(), $view
     else (500, "Invalid command type " || $type)
 };
 
-declare function wdbRf:processXSL($id as xs:string, $process as element(), $model as map(*)) {
-  ()
+declare function wdbRf:processXSL($id as xs:string, $process as element(), $model as map(*)) as item()* {
+  let $content := try {
+      let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
+      let $params := <parameters><param name="view" value="{$model?view}" /></parameters>
+      
+      return transform:transform(doc($model?fileLoc), doc($model?xslt), $params, $attr, "expand-xincludes=no")
+    } catch * {
+      let $t0 := console:log($err:description)
+      return ("error", $err:description)
+    }
+    
+  return if ($content[1] = "error")
+    then (500, $content[2])
+    else (200, $content)
 };
 
 declare function wdbRf:processXQuery($id as xs:string, $process as element(), $model as map(*)) as item()* {

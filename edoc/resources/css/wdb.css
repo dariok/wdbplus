@@ -36,7 +36,8 @@ body {
   
   display: grid;
   grid-template-areas: 'header header'
-                       'left right';
+                       'left right'
+                       'bottom bottom';
   grid-template-rows: max-content;
 }
 

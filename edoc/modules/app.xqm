@@ -423,7 +423,8 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
  : @returns the path (relative) to the app root
  :)
 declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD]
+  let $file := (collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD or self::mets:mets],
+                collection($wdb:data)//mets:file[@ID = $id])[1]
   
   let $edPath := if (count($file) = 1)
     then xstring:substring-before-last(base-uri($file), '/')
