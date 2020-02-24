@@ -32,7 +32,9 @@ try {
     "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
     "p": $pp, "q": $q, "id": $pid }
   
-  return map:merge(($map, $mmap))
+  return if ($map instance of map(*))
+    then map:merge(($map, $mmap))
+    else $map (: if it is an element, this usually means that populateModel has returned an error :)
 } catch * {
   wdbErr:error(map {
     "code":  "wdbErr:wdb3001",
