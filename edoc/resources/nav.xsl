@@ -16,7 +16,7 @@
 				<xsl:attribute name="style">display: none;</xsl:attribute>
 			</xsl:if>
 			<xsl:if test="meta:struct">
-				<a href="javascript: void(0);" onclick="switchnav({$file}, this);">
+				<a href="javascript: void(0);" onclick="switchnav('{$file}', this);">
 					<xsl:choose>
 						<xsl:when test="descendant::meta:struct[@file = $id] or @file = $id">↑</xsl:when>
 						<xsl:otherwise>→</xsl:otherwise>
