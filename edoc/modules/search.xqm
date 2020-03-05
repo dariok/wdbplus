@@ -77,7 +77,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
       return http:send-request(
         <http:request href="{$url}" method="GET">
           {$request-headers}
-        </http:request>)//http:body/*
+        </http:request>)//(*:div)[1]
     } catch * {
       <div>
         <a href="{$url}">klick</a>
