@@ -573,7 +573,7 @@ declare function wdb:getProjectPathFromId ($id as xs:string) {
     collection($wdb:data)/id($id)[self::meta:projectMD],
     collection($wdb:data)/mets:mets[@OBJID = $id]
   )
-  return substring-before(base-uri($md)[1], '/mets.xml')
+  return xstring:substring-before-last(base-uri(($md)[1]), '/')
 };
 
 (:~

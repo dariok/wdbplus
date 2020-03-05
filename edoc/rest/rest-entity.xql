@@ -173,7 +173,7 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
 function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $coll := substring-before(wdb:findProjectXQM(base-uri(collection($wdb:data)/id($id)[self::meta:file])), 'project.xqm')
+  let $coll := wdb:getEdPath($id, true())
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
