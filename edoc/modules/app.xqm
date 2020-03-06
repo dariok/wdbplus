@@ -328,6 +328,11 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         then <param name="view" value="{$model("view")}" />
         else ()
       }
+      {
+        if ($model("p") != '')
+        then <param name="p" value="{$model("p")}" />
+        else ()
+      }
       <param name="xml" value="{$file}" />
       <param name="xsl" value="{$xslt}" />
     </parameters>
