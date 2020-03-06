@@ -88,6 +88,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
         | $file//tei:table[ft:query(., $query)]
         | $file//tei:item[ft:query(., $query)]
         | $file//tei:head[ft:query(., $query)]
+        | $file//tei:l[ft:query(., $query)]
   let $max := count($res)
   
   return
