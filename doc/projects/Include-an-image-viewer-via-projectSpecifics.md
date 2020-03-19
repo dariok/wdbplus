@@ -1,3 +1,5 @@
+# Image Viewer
+
 As an example how to use projectSpecifics and as a how-to for embedding a viewer, we will have a look at how to include the OpenSeaDragon viewer in your project or instance.
 
 1. Images are usually displayed to the right. So we need to include the viewer in the right part of `view.html`, which is the element `aside` (on the basic page layout cf. [[main-html-files]]). To include the necessary files, we will create a footer here. A globally defined footer will live in `edoc/resource/rightFooter.html` while a project specific footer will be located in `edoc/data/yourProject/resource/projectRightFooter.html` or defined by a function `wdbPF:getProjectRightFooter`.

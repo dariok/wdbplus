@@ -30,10 +30,14 @@ author = 'Dario Kampkaspar et al'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'recommonmark',
 ]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = {
+    '.md': 'markdown',
+    '.rst': 'restructuredtext',
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -12,3 +12,6 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
    install/install
    basic/index
+   projects/index
+   tech/index
+   contribution

@@ -70,24 +70,25 @@ The following describes a manual installation and assumes that you work with a s
 #. create ``wdbmeta.xml`` in ``/db/apps/edoc/data/yourproject``, either by copying, pasting and editing the example below or by using ``admin/admin.html`` for the basic settings (it also creates the collection) and adding the other settings.
 
     .. code-block:: xml
-    <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
-      xml:id="yourProjectID">
-        <projectID>yourProjectID</projectID>
-        <titleData>
-            <title>Project Title</title>
-        </titleData>
-        <files>
-            <file path="pathTo.xml" xml:id="xml-id" />
-        </files>
-        <process target="html">
-            <command type="xsl">/db/apps/edoc/resources/xsl/tei-transcript.xsl</command>
-        </process>
-        <struct label="1722" order="1722">
-            <view file="xml-id" label="Title of File" />
-        </struct>
-    </projectMD>
+
+        <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.xsd"
+          xml:id="yourProjectID">
+            <projectID>yourProjectID</projectID>
+            <titleData>
+                <title>Project Title</title>
+            </titleData>
+            <files>
+                <file path="pathTo.xml" xml:id="xml-id" />
+            </files>
+            <process target="html">
+                <command type="xsl">/db/apps/edoc/resources/xsl/tei-transcript.xsl</command>
+            </process>
+            <struct label="1722" order="1722">
+                <view file="xml-id" label="Title of File" />
+            </struct>
+        </projectMD>
 
     You have to set at least one ``process``; the example above points to a standard XSLT provided by wdb+.
 #. add project's XML/XSLT etc. files to your projects, e.g. into a subcollection ``/db/apps/edoc/data/yourproject/texts``
@@ -108,7 +109,7 @@ All global configuration options, i.e. those that affect how the app works, are 
 If you use the [[default setup|basic-collection-structure#default-structure]], ``$approot := /db/apps/edoc``.
 
 Settings in ``config.xml``
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 meta
 ````
