@@ -91,6 +91,24 @@ Settings for a project are set in the project's `wdbmeta.xml`.
 
 See the Wiki for details!
 
+### Building the documentation
+
+To build the documentation, set up a virtual environment and install sphinx with `pip`. You only need to this once and it does no harm to your system.
+    ```
+    python3 -m venv .env
+    source .env/bin/activate
+    pip install -r requirements-doc.txt
+    ```
+To build the documentation, make sure to have your virtual environment enabled.
+    ```
+    source .env/bin/activate
+    ```
+Then go to `doc` and simply call
+    ```
+    make html
+    ```
+Your newly build documentation is in `doc/_build/html` and you can view it with your favourite browser.
+
 ----
 
 ## Currently used in these projects:

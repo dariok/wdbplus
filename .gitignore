@@ -3,3 +3,10 @@
 build
 /legacy/
 /docker/*.xar
+
+# Editor specific files
+*.swp
+
+# Documentation
+.env
+doc/_build
