@@ -11,6 +11,7 @@ xquery version "3.0";
 
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
 
+import module namespace wdbRc     = "https://github.com/dariok/wdbplus/RestCollections" at "../rest/rest-coll.xql";
 import module namespace templates = "http://exist-db.org/xquery/templates"  at "/db/apps/shared-resources/content/templates.xql";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
@@ -32,7 +33,8 @@ declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()
   then templates:apply(doc($model("projectResources") || '/startLeft.html'),  $wdbst:lookup, $model)
   else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
   then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
-  else (<h1>Inhalt</h1>,())
+  else (<h1>Inhalt</h1>, wdbRc:getCollectionNavHTML($model?id))
+  (: this is currently necessary due to some eXist bug that throws an error when trying to open the REST URL via doc() or unparsed-text() :)
 };
 
 (: get the main part of the start page from either projectSpec HTML, projectSpec function or return an empty seq :)
