@@ -1,5 +1,12 @@
+# Eclipse project settings
 /.project
 /.settings/
+
+# directories that contain generated files
 build
 /legacy/
 /docker/*.xar
+
+# Python-related directories or files
+__pycache__/
+.pydevproject
