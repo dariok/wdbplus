@@ -10,17 +10,18 @@ $("document").ready(function() {
       method: "get",
       url: url,
       success: function (data) {
+        getPaths(data);
       }
     });
     $('#selectTarget').show();
   }
 });
 function getPaths (data) {
-  if (data.hasOwnProperty("@path"))
-    $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
+  if (data.hasOwnProperty("path"))
+    $('#selectTarget select').append("<option>" + data["path"] + "</option>");
   if (data.hasOwnProperty("collection"))
     if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-    else $('#selectTarget select').append("<option>" + data.collection["@path"] + "</option>");
+    else $('#selectTarget select').append("<option>" + data.collection["path"] + "</option>");
 }
 
 function show ( ed, file ) {
