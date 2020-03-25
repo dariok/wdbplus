@@ -16,31 +16,42 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
-  let $coll := wdb:getEdPath($collection, true())
+  let $coll := try { wdb:getEdPath($collection, true()) } catch * { "" }
   let $query := xmldb:decode($q) || '*'
   
-  let $res := switch ($type)
-    case "bib" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
-    case "per" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
-    case "pla" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
-    case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
-    case "evt" return collection($coll)//tei:event[ft:query(., $query)][ancestor::tei:listEvent]
-    default return ()
-    
+  let $errNoColl := if ($coll eq "")
+    then "Project " || $collection || " not found"
+    else ()
+  let $errWrongType := if($type = ("bib", "per", "pla", "org", "evt"))
+    then ()
+    else "Error: no or wrong type"
+  
   return
-  if ($res = ())
-  then (
+  if ($errWrongType or $errNoColl)
+  then 
+    let $status := if ($errNoColl) then 404 else 400
+    return (
     <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:ERR" />
+      <http:response status="{$status}">
+        <http:header name="X-Rest-Status" value="REST:{if($status = 400) then 422 else $status}" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    "Error: no or wrong type")
-  else (
+    string-join(($errWrongType, $errNoColl), "&#x0A;")
+    )
+  else
+    let $res := switch ($type)
+      case "bib" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
+      case "per" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
+      case "pla" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
+      case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
+      case "evt" return collection($coll)//tei:event[ft:query(., $query)][ancestor::tei:listEvent]
+      default return ()
+    
+    return (
     <rest:response>
       <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="X-Rest-Status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
@@ -48,7 +59,7 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
     for $r in $res
     group by $id := $r/ancestor::*[@xml:id][1]/@xml:id
     return
-      <result id="{$id}" />
+      <result id="{$id}"/>
     }</results>)
 };
 declare
