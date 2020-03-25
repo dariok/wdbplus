@@ -74,13 +74,13 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then replace($wdb:edocBaseDB  || '/' ||  wdb:getEdPath($collection), "//", "/")
         else ()
       
-      let $resourceName := xstring:substring-after-last($path, '/')
-      let $targetPath := $parsed?targetCollection?body
-      
       let $errNoAccess := if (not($errNoCollection)
-          and not(sm:has-access(xs:anyURI($targetPath), "w")))
-        then "user " || $user || " has no access to write to collection " || $targetPath
+          and not(sm:has-access(xs:anyURI($collectionPath), "w")))
+        then "user " || $user || " has no access to write to collection " || $collectionPath
         else ()
+      
+      let $resourceName := xstring:substring-after-last($path, '/')
+      let $targetPath := normalize-space($parsed?targetCollection?body) || '/' || xstring:substring-after-last($path, '/')
       
       (: all this to make sure we really have an ID in the file :)
       let $prepped := wdbRi:replaceWs($parsed?file?body)
