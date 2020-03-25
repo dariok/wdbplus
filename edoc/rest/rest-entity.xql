@@ -24,7 +24,7 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
     case "per" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
     case "pla" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
     case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
-    case "evt" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
+    case "evt" return collection($coll)//tei:event[ft:query(., $query)][ancestor::tei:listEvent]
     default return ()
     
   return
