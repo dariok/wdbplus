@@ -55,11 +55,23 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results q="{$query}" type="{$type}" collection="{$collection}">{
-    for $r in $res
-    group by $id := $r/ancestor::*[@xml:id][1]/@xml:id
-    return
-      <result id="{$id}"/>
+    <results q="{$query}" type="{$type}" collection="{$collection}" n="{count($res)}">{
+      for $r in $res
+        let $id := $r/ancestor::*[@xml:id][1]/@xml:id
+        return
+          <result id="{$id}">{
+            switch ($type)
+              case "per" return
+                let $name := $r/tei:surname
+                let $fo := if ($r/tei:forename) then ", " || $r/tei:forename else ()
+                let $nl := if ($r/tei:nameLink) then " " || $r/tei:nameLink else ()
+                let $da := if($r/parent::*/tei:birth or $r/parent::*/tei:death)
+                  then " (" || $r/parent::*/tei:birth || "–" || $r/parent::*/tei:death || ")"
+                  else ()
+                return concat($name, $fo, $nl, $da)
+              case "pla" return normalize-space($r)
+              default return ""
+          }</result>
     }</results>)
 };
 declare
