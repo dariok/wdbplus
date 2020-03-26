@@ -77,8 +77,17 @@ $(function() {
 // get the selected word(s), show them in the dialogue and open it
 function anno() {
   let selection = window.getSelection();
-  if (selection.focusNode === null && selection.anchorNode === null)
+  
+  // no selection has been made
+  if (selection.focusNode == null && selection.anchorNode == null) {
+    alert("keine Auswahl!");
     return false;
+  }
+  // a selection has been made outside main (hence, not in the annotateable area
+  if (selection.anchorNode.parentElement.closest("main") == null) {
+    alert("Nur im Text auswählen!");
+    return false;
+  }
   
   let backwards = (selection.focusNode === selection.getRangeAt(0).startContainer);
   
