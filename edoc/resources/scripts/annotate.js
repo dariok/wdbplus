@@ -3,20 +3,6 @@
  * author: Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  */
 
-// current file’s ID (= /*[1]/@xml:id) */
-var id = $("meta[name='id']").attr("content");
-
-// base URL for REST requests
-var rest = $("meta[name='rest']").attr("content");
-
-// set authentication header for REST request
-var headers = (function() {
-  let cred = Cookies.get("wdbplus");
-  if (typeof cred !== "undefined" && cred.length != 0)
-    return { "Authorization": "Basic " + cred };
-    else return "";
-})();
-
 // to contain the dialogue box object
 var dialogue;
 
@@ -37,14 +23,14 @@ $(function() {
   });
   $("#annotationDialogTabs").tabs();
   $('#annButton').on("click", function() {
-  	anno();
+    anno();
   });
   
   // get all full text annotations (all public and private if created by current user) for the current file
   $.ajax({
     method: "get",
-    url: rest + "anno/" + id,
-    headers: headers,
+    url: wdb.meta.rest+ "anno/" + wdb.meta.id,
+    headers: wdb.restheaders,
     success: function(data){
       $.each(
         data.entry,
@@ -132,8 +118,8 @@ function parsefta() {
   // POST the the fta
   $.ajax({
     method: "post",
-    url: rest + "anno/" + id,
-    headers: headers,
+    url: wdb.meta.rest+ "anno/" + wdb.meta.id,
+    headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
       to: end,
@@ -146,7 +132,7 @@ function parsefta() {
   
   // GET all annotations from server
   $.getJSON(
-    rest + "anno/" + id,
+   wdb.meta.rest+ "anno/" + wdb.meta.id,
     function(data){ console.log(data); }
   );
   
@@ -177,8 +163,8 @@ function identifyEntity() {
   
   $.ajax({
     method: "post",
-    url: rest + "anno/entity/" + id,
-    headers: headers,
+    url: wdb.meta.rest+ "anno/entity/" + wdb.meta.id,
+    headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
       to: end,
@@ -200,7 +186,7 @@ function identifyEntity() {
  * change full text
  */
 function editText() {
-  let edit = $("#corr").val(),        // the new text for the selection
+  let edit = $("#corr").val(),          // the new text for the selection
       start = $('#annFrom').test(),     // first ID in annotation range
       end = $('#annTo').text();         // last ID in annotation range
   dialogue.dialog("close");
@@ -211,8 +197,8 @@ function editText() {
   else
     $.ajax({
       method: "post",
-      url: rest + "anno/word/" + id,
-      headers: headers,
+      url: wdb.meta.rest+ "anno/word/" + wdb.meta.id,
+      headers: wdb.restheaders,
       data: JSON.stringify({
         id: start,
         text: edit,
