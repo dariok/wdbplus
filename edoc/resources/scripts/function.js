@@ -4,16 +4,40 @@
  */
 
 /* global variables */
-var timer;                 // timer for marginalia positioning
-var internalUniqueId = 0;  // basis for globally unique IDs
-var id = $("meta[name='id']").attr("content");
-var rest = $("meta[name='rest']").attr("content");
-let ar = window.location.search.substr(1).split("&");
-var params = new Object();
-for (let i = 0; i < ar.length; i++) {
-  let te = ar[i].split("=");
-  params[te[0]] = te[1];
-}
+// global object for reused variables and functions
+var wdb = (function() {
+  // all meta elements
+  let meta = {};
+  metas = document.getElementsByTagName("meta");
+  for (i = 0; i < metas.length; i++) {
+    meta[metas[i].name] = metas[i].content;
+  }
+  
+  // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
+  let ar = window.location.search.substr(1).split("&"),
+      params = new Object();
+  for (let i = 0; i < ar.length; i++) {
+    let te = ar[i].split("=");
+    params[te[0]] = te[1];
+  }
+  
+  // authentication header for REST request
+  let headers = (function() {
+    let cred = Cookies.get("wdbplus");
+    if (typeof cred !== "undefined" && cred.length != 0)
+      return { "Authorization": "Basic " + cred };
+      else return "";
+  })();
+  
+  return {
+    meta:         meta,
+    search:       params,
+    restheaders:  headers
+  }
+})();
+
+var timer,                              // timer for marginalia positioning
+    internalUniqueId = 0;               // basis for globally unique IDs
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
