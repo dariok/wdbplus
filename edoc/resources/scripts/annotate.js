@@ -153,6 +153,89 @@ function chgLayout(rend) {
 /* 
  * identify entities
  */
+// GET entity information from the server
+$(document).ready(function(){
+  // select2 to GET info while typing (at least 2 chars)
+  $('#search-entity').select2({
+    dropdownParent: $('#annotationDialog'),
+    placeholder: "Auszeichnen und identifizieren von Personen, Orten, Sachen",
+    minimumInputLength: 2,
+    escapeMarkup: function (markup) {
+      return markup;
+    },
+    templateResult: function (data) {
+      return data.text;
+    },
+    templateSelection: function (data) {
+      return data.text;
+    },
+    ajax: {
+      url: function (params) {
+        let url = wdb.meta.rest + "entities/scan/" + $("#type").val() + "/"
+          + wdb.meta.ed + ".xml";
+        return url;
+      },
+      processResults: function (data) {
+        return {
+          results: process(data, $('#type').val())
+        };
+      },
+      error: function ( jqXHR, textStatus, errorThrown ) {
+        console.log (jqXHR);
+        console.log (textStatus, errorThrown );
+      }
+    }
+  });
+  $('#search-entity').on('mousedown', positionResults);
+});
+
+function positionResults() {
+  let sel = $('.select2-dropdown.select2-dropdown--below');
+  sel.css('position', 'fixed');
+  sel.css('left',
+    sel.parent().position().left
+      + sel.closest("[role = 'dialog']").position().left
+      + parseInt(sel.closest("[role = 'dialog']").css('borderLeftWidth'))
+      + parseInt($('#annotationDialogTabs').css('borderLeftWidth'))
+      + parseInt($('.select2-selection.select2-selection--single').css('borderLeftWidth'))
+      + 1
+    );
+}
+// process reply from server (overwrite if a special format is required)
+function process(data, type) {
+//  let result = { results: [] };
+  results = [];
+  $(data).find('result').each(function (index, element) {
+    let sn = element.getElementsByTagName("surname").length > 0
+          ? element.getElementsByTagName("surname")[0].textContent : "",
+        fn = element.getElementsByTagName("forename").length > 0
+          ? Array.from(element.getElementsByTagName("forename")) : "",
+        fo = (fn.length > 0)
+          ? fn.map(function(elem){ return elem.textContent; }).join(" ") : "",
+        sc = (sn.length > 0 && fo.length > 0)
+          ? ", " : "",
+        nl = element.getElementsByTagName("nameLink").length > 0
+          ? " " + element.getElementsByTagName("nameLink")[0].textContent : "",
+        bi = element.getElementsByTagName("birth"),
+        de = element.getElementsByTagName("death"),
+        da = "";
+    if (bi.length > 0 || de.length > 0) {
+      da = ` (${bi.length > 0 ? bi[0].textContent : ""}
+        ${bi.length > 0 && de.length > 0 ? "–" : ""}
+        ${de.length > 0 ? de[0].textContent : ""}
+        ${bi.length > 0 || de.length > 0 ? ")" : ""}`;
+    }
+    let text = sn + nl + sc + fo + da;
+    results.push({
+      id: element.id,
+      "text": text
+    });
+  });
+  
+  positionResults();
+  
+  return results;
+}
 // POST the data entered to the server
 function identifyEntity() {
   let text = $("#search-entity").val(), // the content of the text input
