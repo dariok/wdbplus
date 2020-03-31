@@ -83,9 +83,9 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         ))
     
     let $chmod := (
-      sm:chmod(xs:anyURI($collection-uri), 'rwxr-xr-x'),
-      sm:chmod(xs:anyURI($textCollection), 'rwxr-xr-x'),
-      sm:chmod(xs:anyURI($resourcesCollection), 'rwxr-xr-x'),
+      sm:chmod(xs:anyURI($collection-uri), 'rwxrwxr-x'),
+      sm:chmod(xs:anyURI($textCollection), 'rwxrwxr-x'),
+      sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
       sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--'),
       sm:chown(xs:anyURI($collection-uri), "wdb"),
       sm:chown(xs:anyURI($textCollection), "wdb"),
@@ -95,11 +95,11 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       sm:chgrp(xs:anyURI($resourcesCollection), "wdbusers"),
       sm:chown(xs:anyURI($saveMetaFile), "wdb"),
       sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers"),
-      sm:chmod(xs:anyURI($collection-uri || "/xsl"), "rwxr-xr-x"),
+      sm:chmod(xs:anyURI($collection-uri || "/xsl"), "rwxrwxr-x"),
       sm:chown(xs:anyURI($collection-uri || "/xsl"), "wdb:wdbusers"),
       for $f in xmldb:get-child-resources($collection-uri || "/xsl")
         return (
-          sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "rwxr-xr-x"),
+          sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "rwxrwxr-x"),
           sm:chown(xs:anyURI($collection-uri || "/xsl/" || $f), "wdb:wdbusers")
         )
     )
