@@ -12,8 +12,6 @@ xquery version "3.1";
 
 module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
-
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
@@ -25,12 +23,13 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
  : an xml:id but is not “registered” with its project’s metadata, it wont’t be returned. Also, this function will
  : return all files; it is up to the caller to act upon this accordingly.
  :
- : @param $id         the ID value to be used
+ : @parem $collection as xs:string: ID of the collection in which to search
+ : @param $id as xs:string: the ID value to be used
  : @return xs:string* the paths to the files as stored in the meta data files
  :)
- declare function wdbFiles:getFilePaths ( $id ) as xs:string* {
+ declare function wdbFiles:getFilePaths ( $collection, $id ) as xs:string* {
   (
-    collection($wdb:data)//meta:file[@xml:id = $id]/@path,
-    collection($wdb:data)//meta:file[@ID = $id]/mets:FLocat/@xlink:href
+    collection($collection)//meta:file[@xml:id = $id]/@path,
+    collection($collection)//meta:file[@ID = $id]/mets:FLocat/@xlink:href
   )
 };
