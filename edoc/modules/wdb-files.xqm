@@ -30,6 +30,6 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
  declare function wdbFiles:getFilePaths ( $collection, $id ) as xs:string* {
   (
     collection($collection)//meta:file[@xml:id = $id]/@path,
-    collection($collection)//meta:file[@ID = $id]/mets:FLocat/@xlink:href
+    collection($collection)//mets:file[@ID = $id]/mets:FLocat/@xlink:href
   )
 };
