@@ -14,13 +14,13 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
+import module namespace wdbFile   = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
@@ -396,26 +396,17 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
  : @return xs:string the full URI to the file within the database
  :)
 declare function wdb:getFilePath($id as xs:string) as xs:string {
-  let $files := collection($wdb:data)/id($id)
+  let $files := wdbFiles:getFilePaths($wdb:data, $id)
   
   (: do not just return a random URI but add some checks for better error messages:
    : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
   let $pathToFile := if (count($files) = 0)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
-    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
-    then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-    else if (count($files[self::meta:file]) = 1
-        and (starts-with($files[1]/@path, '/') or contains($files[1]/@path, '://')))
-    then $files[1]/@path
-    else if (contains(base-uri($files[1]), 'wdbmeta.xml'))
-    then
-        let $p := base-uri($files[1])
-        return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-    else
-    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no single file with given @xml:id (" || $id || ") and no fallback")
-    
+      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
+    else if (count($files) > 1)
+      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'), "multiple files with ID " || $id || " in " || $wdb:data)
+    else (: (count($files) = 1) :)
+      xstring:substring-before-last(base-uri($files[1]), '/') || '/' || $files[1]
+  
   return $pathToFile
 };
 

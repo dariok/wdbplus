@@ -25,9 +25,9 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
  :
  : @parem $collection as xs:string: ID of the collection in which to search
  : @param $id as xs:string: the ID value to be used
- : @return xs:string* the paths to the files as stored in the meta data files
+ : @return attribute()* the path attributes to the files as stored in the meta data files
  :)
- declare function wdbFiles:getFilePaths ( $collection, $id ) as xs:string* {
+ declare function wdbFiles:getFilePaths ( $collection, $id ) as attribute()* {
   (
     collection($collection)//meta:file[@xml:id = $id]/@path,
     collection($collection)//mets:file[@ID = $id]/mets:FLocat/@xlink:href
