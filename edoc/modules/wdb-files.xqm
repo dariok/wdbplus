@@ -58,16 +58,16 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
  : @param $collection: the collection in which to search for the ID
  : @param $id as xs:string: the ID value to be used
  : @param $mode as xs:string: the access mode
- : @return xs:boolean
+ : @return false() if access is not possible, xs:anyURI (full path) otherwise
  :)
 declare function wdbFiles:hasAccess ( $collection as xs:string, $id as xs:string, $mode as xs:string ) {
   let $file := wdbFiles:getFilePaths($collection, $id)
-  
+
   return if (count($file) = 0)
   then wdbErr:error(map { "code": "wdbErr:wdb0000", "id": $id, "collection": $collection })
   else if (count($file) = 1)
   then
     let $path := wdbFiles:getAbsolutePath($file[1])
-    return (sm:has-access($path, $mode), $path)
+    return if (sm:has-access($path, $mode)) then $path else false()
   else wdbErr:error(map { "code": "wdbErr:wdb0001", "id": $id, "collection": $collection })
 };
