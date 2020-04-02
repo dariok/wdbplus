@@ -64,10 +64,10 @@ declare function wdbFiles:hasAccess ( $collection as xs:string, $id as xs:string
   let $file := wdbFiles:getFilePaths($collection, $id)
 
   return if (count($file) = 0)
-  then wdbErr:error(map { "code": "wdbErr:wdb0000", "id": $id, "collection": $collection })
+  then error(xs:QName("wdbErr:wdb0000"))
   else if (count($file) = 1)
   then
     let $path := wdbFiles:getAbsolutePath($file[1])
     return if (sm:has-access($path, $mode)) then $path else false()
-  else wdbErr:error(map { "code": "wdbErr:wdb0001", "id": $id, "collection": $collection })
+  else error(xs:QName("wdbErr:wdb0001"))
 };
