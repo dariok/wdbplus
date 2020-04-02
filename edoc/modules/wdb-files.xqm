@@ -12,6 +12,8 @@ xquery version "3.1";
 
 module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
+import module namespace functx = "http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
+
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
@@ -32,4 +34,19 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
     collection($collection)//meta:file[@xml:id = $id]/@path,
     collection($collection)//mets:file[@ID = $id]/mets:FLocat/@xlink:href
   )
+};
+
+(:~
+ : Return the absolute Path to the file identified by the path attribute
+ : 
+ : @param $path as attribute() an attribute node from wdbmeta or METS
+ : @return xs:anyURI
+ :)
+declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
+  let $base := functx:substring-before-last(base-uri($path), '/')
+  let $val := string($path)
+  
+  return if (starts-with($val, $base))
+    then xs:anyURI($val)
+    else xs:anyURI($base || '/' || $val)
 };
