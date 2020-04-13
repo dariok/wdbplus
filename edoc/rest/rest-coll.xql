@@ -10,6 +10,7 @@ import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
@@ -189,30 +190,32 @@ declare
     %rest:path("/edoc/collection/{$id}")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $md := collection($wdb:data)//meta:projectMD[@xml:id = $id]
+  let $acceptable := ("application/json", "application/xml")
+  let $content := if ($mt = $acceptable)
+    then wdbRc:listCollection($id)
+    else (406, string-join($acceptable, '&#x0A;'))
   
-  return if (count($md)  != 1)
-  then
+  return (
     <rest:response>
-      <http:response status="500">
-        <http:header name="REST-Status" value="REST:404 – ID not found" />
+      <http:response status="{$content[1]}">
+        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
+        {
+          if ($content[1] != 200)
+          then
+            <http:header name="REST-Status" value="{$content[2]}" />
+          else ()
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
-    </rest:response>
-  else
-    let $content := local:listCollection($md)
-    return
-    switch ($mt)
-    case "application/json" return
-      (<rest:response>
-        <http:response status="200" message="OK">
-          <http:header name="Content-Type" value="application/json; charset=UTF-8" />
-          <http:header name="REST-Status" value="REST:SUCCESS" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      json:xml-to-json($content))
-    default return $content
+    </rest:response>,
+    if ($content[1] = 200)
+      then if ($mt = "application/json")
+          then json:xml-to-json($content[2])
+          else $content[2]
+      else $content[2]
+  )
 };
+
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.xml")
@@ -225,26 +228,6 @@ declare
   %rest:produces("application/json")
 function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
-};
-declare function local:listCollection ($md as element()) {
-  let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
-  return
-  <collection id="{$md/@xml:id}" path="{$collection}" title="{$md//meta:title[1]}">{
-    for $coll in xmldb:get-child-collections($collection)
-      let $mfile := $collection || '/' || $coll || '/wdbmeta.xml'
-      order by $coll
-      return if (doc-available($mfile))
-      then <collection id="{doc($mfile)/meta:projectMD/@xml:id}" />
-      else <collection name="{$coll}">{
-        local:listResources($md, $coll)
-      }</collection>,
-    local:listResources($md, "")
-  }</collection>
-};
-declare function local:listResources ($mfile, $subcollection) {
-  for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
-    order by $file/@path
-    return <resource id="{$file/@xml:id}" path="{$file/@path}" />
 };
 
 declare
@@ -364,4 +347,25 @@ declare function local:pM($meta) {
           }
         </struct>
     else $s
+};
+
+(: helper functions :)
+declare %private function wdbRc:listCollection ($id as xs:string) {
+  let $md := collection($wdb:data)/id($id)[self::meta:projectMD or self::mets:mets]
+  let $errNoProject := if (count($md) = 0)
+    then (404, "No project found with this ID")
+    else ()
+  let $errMetsOnly := if (count($md) gt 0 and not($md[self::meta:projectMD]))
+    then (500, "Requested project uses an unsupported meta data scheme")
+    else ()
+  
+  return if (count($errNoProject) or count($errMetsOnly))
+  then ($errNoProject, $errMetsOnly)
+  else (
+    200,
+    <collection id="{$id}" title="{$md//meta:title[1]}">{
+      for $resource in $md//meta:file return
+        <resource id="{$resource/@xml:id}" timestamp="{$resource/@date}" hash="{$resource/@uuid}" />
+    }</collection>
+  )
 };
