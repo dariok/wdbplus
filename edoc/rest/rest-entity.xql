@@ -18,27 +18,27 @@ declare
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
   let $coll := try { wdb:getEdPath($collection, true()) } catch * { "" }
   let $query := xmldb:decode($q) || '*'
-  
+
   let $errNoColl := if ($coll eq "")
-    then "Project " || $collection || " not found"
+    then (404, "Project " || $collection || " not found")
     else ()
   let $errWrongType := if($type = ("bib", "per", "pla", "org", "evt"))
     then ()
-    else "Error: no or wrong type"
-  
+    else (400, "Error: no or wrong type")
+  let $errors := ($errNoColl, $errWrongType)
+
   return
-  if ($errWrongType or $errNoColl)
+  if (count($errors) gt 0)
   then 
-    let $status := if ($errNoColl) then 404 else 400
-    return (
+    (
     <rest:response>
-      <http:response status="{$status}">
-        <http:header name="X-Rest-Status" value="REST:{if($status = 400) then 422 else $status}" />
+      <http:response status="{$errors[1]}">
+        <http:header name="X-Rest-Status" value="REST:ERR, {$errors[2]}" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    string-join(($errWrongType, $errNoColl), "&#x0A;")
-    )
+    string-join($errors, "&#x0A;")
+    )  
   else
     let $res := switch ($type)
       case "bib" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
