@@ -220,10 +220,11 @@ function process(data, type) {
         de = element.getElementsByTagName("death"),
         da = "";
     if (bi.length > 0 || de.length > 0) {
-      da = ` (${bi.length > 0 ? bi[0].textContent : ""}
-        ${bi.length > 0 && de.length > 0 ? "–" : ""}
-        ${de.length > 0 ? de[0].textContent : ""}
-        ${bi.length > 0 || de.length > 0 ? ")" : ""}`;
+      da = " (";
+      da += bi.length > 0 ? bi[0].textContent : "";
+      da += bi.length > 0 && de.length > 0 ? "–" : "";
+      da += de.length > 0 ? de[0].textContent : "";
+      da += bi.length > 0 || de.length > 0 ? ")" : "";
     }
     let text = sn + nl + sc + fo + da;
     results.push({
@@ -240,7 +241,7 @@ function process(data, type) {
 function identifyEntity() {
   let text = $("#search-entity").val(), // the content of the text input
       type = $("#type").val(),          // the type of entity to be used
-      start = $('#annFrom').test(),     // first ID in annotation range
+      start = $('#annFrom').text(),     // first ID in annotation range
       end = $('#annTo').text();         // last ID in annotation range
   dialogue.dialog("close");
   
