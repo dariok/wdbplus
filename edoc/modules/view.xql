@@ -21,6 +21,7 @@ import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"    
 import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"          at "search.xqm";
 import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"         at "start.xqm";
 import module namespace wdbfp     = "https://github.com/dariok/wdbplus/functionpages" at "function.xqm";
+import module namespace _utl      = "https://github.com/dariok/wdbplus/util"          at "util.xqm";
 
 declare option output:method "html5";
 declare option output:media-type "text/html";
