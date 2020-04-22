@@ -231,7 +231,7 @@ declare
 function wdbRa:check ($fileID, $data, $mode) {
   let $user := xs:string(sm:id()//sm:real/sm:username)
   (: check whether all necessary data are present :)
-  let $checkData := if (not($data("text") or $data("from")))
+  let $checkData := if (not($data("text") and $data("from")))
     then (400, "Missing content in message body: at least start and text must be supplied")
     else ()
   
