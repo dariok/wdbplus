@@ -230,9 +230,12 @@ declare
   %private
 function wdbRa:check ($fileID, $data, $mode) {
   let $user := xs:string(sm:id()//sm:real/sm:username)
+  
   (: check whether all necessary data are present :)
-  let $checkData := if (not($data("text") and $data("from")))
-    then (400, "Missing content in message body: at least start and text must be supplied")
+  let $keyCheck := for $key in map:keys($data)
+    return $key = $keys
+  let $checkData := if (false() = $keyCheck)
+    then (400, "Missing content in message body. Expected keys: " || string-join($keys, ', '))
     else ()
   
   let $noID := if ($fileID = "")
