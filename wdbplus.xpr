@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="21.1">
+<project version="22.0">
     <meta>
         <filters directoryPatterns="" filePatterns="\Qwdbplus.xpr\E" positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized version="21.1" xml:space="preserve">
+            <serialized version="22.0" xml:space="preserve">
                 <serializableOrderedMap>
                     <entry>
                         <String>validation.scenario.associations</String>
@@ -22,6 +22,9 @@
                                         <String>Validation_scenario</String>
                                     </list>
                                 </field>
+                                <field name="scenarioStorageLocations">
+                                    <list/>
+                                </field>
                             </scenarioAssociation>
                             <scenarioAssociation>
                                 <field name="url">
@@ -36,6 +39,9 @@
                                     <list>
                                         <String>Validation_scenario</String>
                                     </list>
+                                </field>
+                                <field name="scenarioStorageLocations">
+                                    <list/>
                                 </field>
                             </scenarioAssociation>
                         </scenarioAssociation-array>
@@ -95,5 +101,6 @@
     <projectTree name="wdbplus.xpr">
         <folder path="../wdbplus.wiki/"/>
         <folder path="."/>
+        <folder path="../../../../media/p5/home/dario/git/wdbmeta/"/>
     </projectTree>
 </project>
