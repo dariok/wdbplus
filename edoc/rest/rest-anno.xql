@@ -125,7 +125,7 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
   let $data := parse-json(util:base64-decode($body))
   let $user := xs:string(sm:id()//sm:real/sm:username)
   
-  let $check := wdbRa:check($fileID, $data, "w")
+  let $check := wdbRa:check($fileID, $data, "w", ("from", "to", "type", "identity"))
   
   return if ($check[1] != 200)
   then (
@@ -141,30 +141,57 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
   )
   else
     let $file := doc($check[2])
-    return false()
-    (:let $content := (
-      $file/id($data("from")), 
-      if ($data("from") != $data("to"))
-        then (
-          $file/id($data("from"))/following-sibling::node() intersect $file/id($data("to"))/preceding-sibling::node(), 
-          $file/id($data("to")))
-        else () 
-    )
     
-    let $ins := element { QName("http://www.tei-c.org/ns/1.0", "rs") } {
-      attribute type { $data("type") },
-      attribute ref { 'per:' || translate($data("identity"), ' ,', '_') },
-      $content }
-      return (
-        <rest:response>
-          <http:response status="200">
-            <http:header name="rest-status" value="REST:SUCCESS" />
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-          </http:response>
-        </rest:response>,
-        update replace $content[1] with $ins,
-        update delete $content[position() > 1]
-      ):)
+    let $from := $file/id($data?from)
+    let $to := if ($data?to = '')
+      then $from
+      else $file/id($data?to)
+    
+    let $ancs := wdbRa:commons($from, $to)
+    
+    let $common := util:node-by-id($file, $ancs?common)
+    let $value := $data?type || ':' || $data?identity
+    
+    let $change := try {
+    if ($common/self::tei:rs)
+      then (: change identification :)
+        update value $common/@ref with $value
+      else (: create a new identification :)
+        let $type := switch ($data?type)
+          case "per" return "person"
+          case "pla" return "place"
+          case "org" return "organization"
+          case "evt" return "event"
+          case "bib" return "bibl"
+          default return "unknown"
+        
+        let $sequence :=
+          let $A := util:node-by-id($file, $ancs?A)
+          let $B := util:node-by-id($file, $ancs?B)
+          return ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
+        
+        let $replacement :=
+          <rs xmlns="http://www.tei-c.org/ns/1.0" type="{$type}" ref="{$data?type}:{$data?identity}">{
+            $sequence
+          }</rs>
+          
+        return (
+          update replace $sequence[1] with $replacement,
+          update delete $sequence[position() gt 1]
+        )
+    } catch * {
+      (500)
+    }
+    
+    return ( 
+      <rest:response>
+        <http:response status="{if ($change = 500) then 500 else 200}">
+          <http:header name="rest-status" value="REST:SUCCESS" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      $change
+    )
 };
 
 declare
@@ -291,7 +318,7 @@ declare %private function wdbRa:checkToken ($doc, $id) {
  : 
  : @return map(*) of the three node IDs
  : :)
-declare function wdbRa:commons ($a as node(), $b as node(), $file as node()) as map(*) {
+declare function wdbRa:commons ($a as node(), $b as node()) as map(*) {
   if ($a = $b)
   then $a
   else
