@@ -255,7 +255,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
 
 declare
   %private
-function wdbRa:check ($fileID, $data, $mode) {
+function wdbRa:check ($fileID, $data, $mode, $keys) {
   let $user := xs:string(sm:id()//sm:real/sm:username)
   
   (: check whether all necessary data are present :)
