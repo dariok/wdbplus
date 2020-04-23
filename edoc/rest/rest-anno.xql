@@ -277,31 +277,32 @@ declare %private function wdbRa:checkToken ($doc, $id) {
       else "Wrong number of items for ID " || $id || ": " || count($token)
 };
 
-
 (: ~
- : returns the common section of 2 elements $a and $b in $file.
- : The common section is a sequence of those two ancestors of $a and $b that
- : are siblings and all the siblings in between
- : $a must be before $b, else only their ancestor-or-selfs will be returned
+ : returns the node IDs of the first common ancestor and the sibling ancestor
+ :
+ : The ancestor are the first two ancestors of $a and $b that are siblings
+ : The common ancestor is the first node that is the parent of these two
+ :
+ : $a must be before $b in the document order, else only their ancestor-or-selfs will be returned
  : 
  : @param $a the first, “from”-sibling
  : @param $b the second, “to”-sibling
  : @param $file the node within which to search
  : 
- : @return element()* the common section
+ : @return map(*) of the three node IDs
  : :)
-declare %private function wdbRa:commonSection ($a as node(), $b as node(), $file as node()) as node()* {
+declare function wdbRa:commons ($a as node(), $b as node(), $file as node()) as map(*) {
   if ($a = $b)
-    then $a
-    else
-      let $as := for $node in $a/ancestor-or-self::* return util:node-id($node)
-      let $bs := for $node in $b/ancestor-or-self::* return util:node-id($node)
-      
-      let $commons := for $id in $as return if ($id = $bs) then $id else ()
-      let $common := $commons[last()]
-      
-      let $A := util:node-by-id($file, $as[count($commons) + 1])
-      let $B := util:node-by-id($file, $bs[index-of($bs, $common) + 1])
-      
-      return ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
+  then $a
+  else
+    let $as := for $node in $a/ancestor-or-self::* return util:node-id($node)
+    let $bs := for $node in $b/ancestor-or-self::* return util:node-id($node)
+    
+    let $commons := for $id in $as return if ($id = $bs) then $id else ()
+    let $common := $commons[last()]
+    
+    let $A := $as[count($commons) + 1]
+    let $B := $bs[index-of($bs, $common) + 1]
+    
+    return map { "common": $common, "A": $A, "B": $B }
 };
