@@ -168,7 +168,9 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
         let $sequence :=
           let $A := util:node-by-id($file, $ancs?A)
           let $B := util:node-by-id($file, $ancs?B)
-          return ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
+          return if ($A is $B)
+            then $A
+            else ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
         
         let $replacement :=
           <rs xmlns="http://www.tei-c.org/ns/1.0" type="{$type}" ref="{$data?type}:{$data?identity}">{
