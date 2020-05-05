@@ -182,8 +182,9 @@ declare function wdb:getServerApp() as xs:string {
 declare
     %templates:wrap
     %templates:default("view", "")
-function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) as item() {
-  wdb:populateModel($id, $view, $model)
+    %templates:default("p", "")
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item() {
+  wdb:populateModel($id, $view, $model, $p)
 };
 
 (:~
@@ -192,9 +193,13 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : 
  : @param $id the id for the file to be displayed
  : @param $view a string to be passed to the processing XSLT
+ : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
+    wdb:populateModel($id, $view, $model, "")
+};
+declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*), $p as xs:string) as item() {
 try {
   let $pTF := wdb:getFilePath($id)
   let $pathToFile := if (sm:has-access($pTF, "r"))
@@ -232,6 +237,7 @@ try {
     "fileLoc":          $pathToFile,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
+    "p":                $p,
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,
     "projectResources": $resource,
