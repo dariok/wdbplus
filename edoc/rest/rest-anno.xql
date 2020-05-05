@@ -320,7 +320,7 @@ declare %private function wdbRa:checkToken ($doc, $id) {
  : :)
 declare function wdbRa:commons ($a as node(), $b as node()) as map(*) {
   if ($a = $b)
-  then $a
+  then map { "common": util:node-id($a), "A": util:node-id($a), "B": util:node-id($a) }
   else
     let $as := for $node in $a/ancestor-or-self::* return util:node-id($node)
     let $bs := for $node in $b/ancestor-or-self::* return util:node-id($node)
