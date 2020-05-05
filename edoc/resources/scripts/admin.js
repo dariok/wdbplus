@@ -9,7 +9,12 @@ $("document").ready(function() {
     $.ajax({
       method: "get",
       url: url,
+      dataType: "json",
       success: function (data) {
+        getPaths(data);
+      },
+      error: function (data) {
+          console.log(data);
       }
     });
     $('#selectTarget').show();
