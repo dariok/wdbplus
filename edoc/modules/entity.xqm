@@ -15,9 +15,12 @@ declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:str
   (: TODO check calls; entry ID and project ID should be the only necessary parameters :)
   (: TODO support project specific views :)
   
+  let $edPath := wdb:getEdPath($ed)
+  let $regFile := $edPath || '/' || $reg
+  let $testPath := $wdb:data || '/' || $ed || '/' || $reg
   let $entryEd := doc($wdb:data || '/' || $ed || '/' || $reg)/id($id)
   (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
-  
+  let $t := console:dump("default", ("edPath", "regFile", "testPath", "entryEd"))
   return map { "entry": $entryEd, "id": $id, "ed": $ed }
 };
 
@@ -33,7 +36,7 @@ declare function wdbe:getEntityName($node as node(), $model as map(*)) {
     case element(tei:bibl)
       return wdbe:shortTitle($entryEd, $model)
     case element(tei:place)
-      return wdbe:shortPlace($entryEd)
+      return normalize-space($entryEd/tei:placeName)
     default
       return name($entryEd[1])
   }</h1>
