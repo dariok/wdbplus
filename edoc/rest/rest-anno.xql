@@ -153,7 +153,7 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
     let $value := $data?type || ':' || $data?identity
     
     let $change := try {
-    if ($common/self::tei:rs)
+      if ($common/self::tei:rs)
       then (: change identification :)
         update value $common/@ref with $value
       else (: create a new identification :)
@@ -168,14 +168,18 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
         let $sequence :=
           let $A := util:node-by-id($file, $ancs?A)
           let $B := util:node-by-id($file, $ancs?B)
-          return ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
+          return if ($A is $B)
+            then if ($A/parent::*[self::tei:rs])
+              then update value $A/parent::tei:rs/@ref with $value
+              else $A
+            else ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
         
         let $replacement :=
           <rs xmlns="http://www.tei-c.org/ns/1.0" type="{$type}" ref="{$data?type}:{$data?identity}">{
             $sequence
           }</rs>
           
-        return (
+        return ( 
           update replace $sequence[1] with $replacement,
           update delete $sequence[position() gt 1]
         )
@@ -304,6 +308,7 @@ declare %private function wdbRa:checkToken ($doc, $id) {
       else "Wrong number of items for ID " || $id || ": " || count($token)
 };
 
+
 (: ~
  : returns the node IDs of the first common ancestor and the sibling ancestor
  :
@@ -320,7 +325,7 @@ declare %private function wdbRa:checkToken ($doc, $id) {
  : :)
 declare function wdbRa:commons ($a as node(), $b as node()) as map(*) {
   if ($a = $b)
-  then $a
+  then map { "common": util:node-id($a), "A": util:node-id($a), "B": util:node-id($a) }
   else
     let $as := for $node in $a/ancestor-or-self::* return util:node-id($node)
     let $bs := for $node in $b/ancestor-or-self::* return util:node-id($node)
