@@ -206,31 +206,43 @@ function process(data, type) {
 //  let result = { results: [] };
   results = [];
   $(data).find('result').each(function (index, element) {
-    let sn = element.getElementsByTagName("surname").length > 0
-          ? element.getElementsByTagName("surname")[0].textContent : "",
-        fn = element.getElementsByTagName("forename").length > 0
-          ? Array.from(element.getElementsByTagName("forename")) : "",
-        fo = (fn.length > 0)
-          ? fn.map(function(elem){ return elem.textContent; }).join(" ") : "",
-        sc = (sn.length > 0 && fo.length > 0)
-          ? ", " : "",
-        nl = element.getElementsByTagName("nameLink").length > 0
-          ? " " + element.getElementsByTagName("nameLink")[0].textContent : "",
-        bi = element.getElementsByTagName("birth"),
-        de = element.getElementsByTagName("death"),
-        da = "";
-    if (bi.length > 0 || de.length > 0) {
-      da = " (";
-      da += bi.length > 0 ? bi[0].textContent : "";
-      da += bi.length > 0 && de.length > 0 ? "–" : "";
-      da += de.length > 0 ? de[0].textContent : "";
-      da += bi.length > 0 || de.length > 0 ? ")" : "";
+    switch (type) {
+      case "per":
+        let sn = element.getElementsByTagName("surname").length > 0
+              ? element.getElementsByTagName("surname")[0].textContent : "",
+            fn = element.getElementsByTagName("forename").length > 0
+              ? Array.from(element.getElementsByTagName("forename")) : "",
+            fo = (fn.length > 0)
+              ? fn.map(function(elem){ return elem.textContent; }).join(" ") : "",
+            sc = (sn.length > 0 && fo.length > 0)
+              ? ", " : "",
+            nl = element.getElementsByTagName("nameLink").length > 0
+              ? " " + element.getElementsByTagName("nameLink")[0].textContent : "",
+            bi = element.getElementsByTagName("birth"),
+            de = element.getElementsByTagName("death"),
+            da = "";
+        if (bi.length > 0 || de.length > 0) {
+          da = " (";
+          da += bi.length > 0 ? bi[0].textContent : "";
+          da += bi.length > 0 && de.length > 0 ? "–" : "";
+          da += de.length > 0 ? de[0].textContent : "";
+          da += bi.length > 0 || de.length > 0 ? ")" : "";
+        }
+        let text = sn + nl + sc + fo + da;
+        results.push({
+          id: element.id,
+          "text": text
+        });
+        break;
+      case "pla":
+        let placeName = element.getElementsByTagName("placeName")[0].textContent,
+            id = element.id;
+        results.push({
+          id: id,
+          text: placeName
+        });
+        break;
     }
-    let text = sn + nl + sc + fo + da;
-    results.push({
-      id: element.id,
-      "text": text
-    });
   });
   
   positionResults();
