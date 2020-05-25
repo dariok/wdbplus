@@ -206,24 +206,24 @@ declare
   %output:method("json")
 function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
   let $data := parse-json(util:base64-decode($body))
-  let $filePath := wdb:getFilePath(xs:anyURI($fileID))
-  let $doc := doc($filePath)
-  
-  (: check the job :)
-  let $checkJob := if ($data("job") = ("edit"))
-    then ()
-    else <error>Unknown job description</error>
-  
-  return if ($checkData | $checkWrite | $checkID | $checkJob)
-    then (
-      <rest:response>
-        <http:response status="500">
-          <http:header name="rest-status" value="REST:ERR" />
-        </http:response>
-      </rest:response>,
-      string-join(($checkData, $checkWrite, $checkID, $checkJob), ' – ')
-    )
-    else (
+    let $check := wdbRa:check($fileID, $data, "w", ("from", "job", "text"))
+  (: TODO check for correct value of job, else 400 :)
+  return if ($check[1] != 200)
+  then (
+    <rest:response>
+      <http:response status="{$check[1]}">
+        <http:header name="X-Rest-Status" value="{$check[2]}" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Content-Type" value="text/plain" />
+      </http:response>
+    </rest:response>,
+    for $err in $check
+      return $err || "&#x0A;"
+  )
+  else
+    let $file := doc($check[2])
+    let $token := $file/id($data?from)
+    return (
       <rest:response>
         <http:response status="200">
           <http:header name="rest-status" value="REST:SUCCESS" />
@@ -252,7 +252,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
               }</w>
             return update replace $token with $repl
           else update value $token with $data("text")
-        return $doc/id($data("id"))
+        return $doc/id($data?from)
       default return ""
     )
 };

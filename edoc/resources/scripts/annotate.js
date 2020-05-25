@@ -296,7 +296,7 @@ function editText() {
       url: wdb.meta.rest+ "anno/word/" + wdb.meta.id,
       headers: wdb.restheaders,
       data: JSON.stringify({
-        id: start,
+        from: start,
         text: edit,
         job: "edit"
       }),
