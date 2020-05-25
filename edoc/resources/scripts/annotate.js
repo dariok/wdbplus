@@ -283,7 +283,7 @@ function identifyEntity() {
  */
 function editText() {
   let edit = $("#corr").val(),          // the new text for the selection
-      start = $('#annFrom').test(),     // first ID in annotation range
+      start = $('#annFrom').text(),     // first ID in annotation range
       end = $('#annTo').text();         // last ID in annotation range
   dialogue.dialog("close");
   
