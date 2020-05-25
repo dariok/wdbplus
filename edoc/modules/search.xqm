@@ -65,7 +65,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
     
     let $ln := switch ($job)
       case "fts"      return $wdb:restURL || "/search/collection/" || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
-      case "search"   return $wdb:restURL || "/entities/scan/" || $model?p?type || '/' || $model?id || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
+      case "search"   return $wdb:restURL || "/entities/collection/" || $model?id || "/" || $model?p?type || "/" || $model?q || ".html?p=" || encode-for-uri($json)
       case "list"     return $wdb:restURL || "/entities/collection/" || $model?id || "/" || $model?p?type || "/" || $model?p?id || ".html?p=" || encode-for-uri($json)
       case "entries"  return $wdb:restURL || "/entities/list/collection/" || $model?id || "/" || $model?q || ".html?p=" || encode-for-uri($json)
       default return ""
