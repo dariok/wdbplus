@@ -11,6 +11,12 @@ $("document").ready(function() {
       url: url,
       success: function (data) {
         getPaths(data);
+        $("input[type='submit']").prop("disabled", false);
+        $("aside").html("");
+      },
+      error: function (response) {
+        console.log(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + params["id"] + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
     $('#selectTarget').show();
