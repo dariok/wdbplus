@@ -241,7 +241,7 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.xml")
   function wdbRc:getSubcollXML ($id) {
-    let $path := wdb:getEdPath($id)
+    let $path := wdb:getEdPath($id, true())
     
     return
     <collection id="$id" path="{$path}">{
