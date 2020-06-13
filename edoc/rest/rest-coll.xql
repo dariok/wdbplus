@@ -14,6 +14,7 @@ declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (: create a resource in a collection :)
 (: create a single file for which no entry has been created in wdbmeta.
@@ -241,17 +242,28 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.xml")
   function wdbRc:getSubcollXML ($id) {
-    let $path := wdb:getEdPath($id, true())
-    
-    return
-    <collection id="$id" path="{$path}">{
-      for $s in xmldb:get-child-collections($path)
-        return try {
-          local:childCollections($path, $s)
-        } catch * {
-          console:log($s || " not readable")
-        }
-    }</collection>
+    try {
+      let $path := wdb:getEdPath($id, true())
+      return
+        <collection id="$id" path="{$path}">{
+          for $s in xmldb:get-child-collections($path)
+            return try {
+              local:childCollections($path, $s)
+            } catch * {
+              console:log($s || " not readable")
+            }
+        }</collection>
+    }
+    catch *:wdb0200 {
+      <rest:response>
+        <http:response status="404" />
+      </rest:response>
+    }
+    catch * {
+      <rest:response>
+        <http:response status="400" />
+      </rest:response>
+    }
 };
 declare function local:childCollections($path, $s) {
   let $p := $path || '/' || $s
