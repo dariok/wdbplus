@@ -241,8 +241,8 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.xml")
   function wdbRc:getSubcollXML ($id) {
-    let $md := collection($wdb:data)/id($id)[descendant::meta:*]
-    let $path := xstring:substring-before-last(base-uri($md), '/')
+    let $path := wdb:getEdPath($id)
+    
     return
     <collection id="$id" path="{$path}">{
       for $s in xmldb:get-child-collections($path)
