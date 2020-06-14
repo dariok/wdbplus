@@ -441,6 +441,20 @@ declare function wdb:getEdPath($id as xs:string) as xs:string {
   wdb:getEdPath($id, false())
 };
 
+(:~
+ : Return the ID of a project from a resource ID within the project
+ : 
+ : @param $id the ID of a resource within a project
+ : @return the ID of the project
+ :)
+declare function wdb:getEdFromFileId ($id as xs:string) as xs:string {
+  let $file := (collection($wdb:data)/id($id)[self::meta:file],
+                collection($wdb:data)//mets:file[@ID = $id])[1]
+  return if ($file[self::meta:file])
+    then $file/ancestor::meta:projectMD/@xml:id
+    else $file/ancestor::mets:mets/@OBJID
+};
+
 (: ~
  : Return the path to a project
  : 
