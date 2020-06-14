@@ -12,29 +12,53 @@ import module namespace xstring   = "https://github.com/dariok/XStringUtils"   a
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 
+(:~
+ : populate the model for functions pages (similar but not identical to wdb:populateModel)
+ : 
+ : @param $ed The ID of a _project_
+ : @param $id The ID of a _resource_
+ : @param $p  A string or a JSON-like string containing additional query parameters
+ : @param $q  The main query parameter
+ : @return    The model
+ :)
 declare
     %templates:default("q", "")
     %templates:default("p", "")
     %templates:default("id", "")
-function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) {
+    %templates:default("ed", "")
+function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
 try {
-  let $pid := if ($id = "")
+  (: assume a function for the whole instance if no $ed is explicitly stated :)
+  let $projectID := if ($ed = "")
     then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-    else $id
+    else $ed
   
-  let $map := wdb:populateModel($pid, "", $model)
+  (: if $p is not JSON-like, assume it is a normal string :)
   let $pp := try {
-    parse-json($p)
-  } catch * {
-    normalize-space($p)
-  }
-  let $mmap := map {
-    "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
-    "p": $pp, "q": $q, "id": $pid }
+      parse-json($p)
+    } catch * {
+      normalize-space($p)
+    }
   
-  return if ($map instance of map(*))
-    then map:merge(($map, $mmap))
-    else $map (: if it is an element, this usually means that populateModel has returned an error :)
+  let $projectId := if ($ed != "")
+    then $ed
+    else wdb:getEdFromFileId ($id)
+  
+  let $projectPath := wdb:getProjectPathFromId($projectId)
+  let $projectFile := wdb:findProjectXQM($projectPath)
+  let $infoFileLoc := wdb:getMetaFile($projectPath)
+  
+  return map {
+    "title": (doc($infoFileLoc)//*:title)[1]/text(),
+    "p": $pp,
+    "q": $q,
+    "id": $id,
+    "ed": $projectId,
+    "pathToEd": $projectPath,
+    "infoFileLoc": $infoFileLoc,
+    "projectFile": $projectFile,
+    "projectResources": substring-before($projectFile, "project.xqm") || "resources/"
+  }
 } catch * {
   wdbErr:error(map {
     "code":  "wdbErr:wdb3001",
