@@ -562,12 +562,15 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
 };
 
 (:~
- : Return the full path to the project collection by trying to find the meta file by ID
+ : Return the full path to the project collection by trying to find the meta file by the project ID
+ :
+ : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id or mets:mets/@OBJID
+ : @return The path to the project 
  :)
-declare function wdb:getProjectPathFromId ($id as xs:string) {
+declare function wdb:getProjectPathFromId ($ed as xs:string) {
   let $md := (
-    collection($wdb:data)/id($id)[self::meta:projectMD],
-    collection($wdb:data)/mets:mets[@OBJID = $id]
+    collection($wdb:data)/id($ed)[self::meta:projectMD],
+    collection($wdb:data)/mets:mets[@OBJID = $ed]
   )
   return xstring:substring-before-last(base-uri(($md)[1]), '/')
 };
