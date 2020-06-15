@@ -107,35 +107,53 @@ declare variable $wdb:peer :=
 declare function wdb:test($node as node(), $model as map(*)) as node() {
 <div>
   <h1>APP CONTEXT test on {$wdb:configFile//config:name}</h1>
-  <h2>global variables (app.xqm)</h2>
-  <dl>
-    {
-      for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
-        where not(contains($var/@name, 'lookup'))
-        let $variable := '$' || normalize-space($var/@name)
-        return (
-          <dt>{$variable}</dt>,
-          <dd><pre>{
-            let $s := util:eval($variable)
-            return typeswitch ($s)
-            case node() return serialize($s)
-            default return $s
-          }</pre></dd>
-        )
-    }
-  </dl>
-  <h2>HTTP request parameters</h2>
-  <dl>
-    {
-      for $var in request:get-header-names()
-        return (
-          <dt>{$var}</dt>,
-          <dd><pre>{request:get-header($var)}</pre></dd>
-        )
-    }
-  </dl>
-  <h2>$model</h2>
-  { local:get($model, "") }
+  <div>
+    <h2>global variables (function.xqm)</h2>
+    <dl>
+      {
+        for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
+          where not(contains($var/@name, 'lookup'))
+          let $variable := '$' || normalize-space($var/@name)
+          return (
+            <dt>{$variable}</dt>,
+            <dd><pre>{
+              let $s := util:eval($variable)
+              return typeswitch ($s)
+              case node() return serialize($s)
+              default return $s
+            }</pre></dd>
+          )
+      }
+    </dl>
+  </div>
+    <div>
+    <h2>populateModel (app.xqm)</h2>
+    <dl>
+      {
+        if ($id != "")
+        then
+          let $computedModel := wdb:populateModel($id, "", map {})
+          return local:get($computedModel, "")
+        else "Keine ID zur Auswertung vorhanden"
+      }
+    </dl>
+  </div>
+  <div>
+    <h2>HTTP request parameters</h2>
+    <dl>
+      {
+        for $var in request:get-header-names()
+          return (
+            <dt>{$var}</dt>,
+            <dd><pre>{request:get-header($var)}</pre></dd>
+          )
+      }
+    </dl>
+  </div>
+  <div>
+    <h2>$model (from function.xqm)</h2>
+    { local:get($model, "") }
+  </div>
 </div>
 };
  
