@@ -58,8 +58,17 @@ $(document).on("change", "#picker", function() {
   files = this.files;
   
   for (let i = 0; i < files.length; i++) {
-    let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
-    $('#results').append("<li>" + path + "<span></span></li>");
+    let task = $('#selectTask input:checked').attr("id"),
+        text = task == "fi" ? files[i].name : files[i].webkitRelativePath,
+        pathToEd = $('#selectTarget').find('option')[0].innerHTML,
+        edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
+        collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection'],
+        relPath = task == "fi"
+          ? collection.substr(pathToEd.length + 1) + '/' + text
+          : text.substr(0, edRoot.length) == edRoot
+            ? text.substr(edRoot.length + 1)
+            : collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text
+    $('#results').append("<li>" + relPath + "<span></span></li>");
   }
 });
 
@@ -74,11 +83,7 @@ async function sendData (file, i, fileid, headers) {
         delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
         pathToEd = $('#selectTarget').find('option')[0].innerHTML,
         edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = task == "fi"
-          ? collection.substr(pathToEd.length + 1) + '/' + text
-          : text.substr(0, edRoot.length) == edRoot
-            ? text.substr(edRoot.length + 1)
-            : collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
+        relpath = text,
         mode = task == "do" ? "" : "?meta=1";
     
     console.log("fileid: " + fileid);
@@ -184,11 +189,11 @@ function dirupload (event) {
 function ingestAction(event) {
   if(event.target.id == "fi") {
     $('#picker').attr('webkitdirectory', null);
-    $('#selectInputDir label')[0].text("Datei auswählen");
+    $('#selectInputDir label').text("Datei auswählen");
   }
   else {
     $('#picker').attr('webkitdirectory', 'true');
-    $('#selectInputDir label')[0].text("Verzeichnis auswählen");
+    $('#selectInputDir label').text("Verzeichnis auswählen");
   }
 }
 
