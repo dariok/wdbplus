@@ -182,7 +182,13 @@ function dirupload (event) {
 }
 
 function ingestAction(event) {
-  if(event.target.id == "fi") { $('#picker').attr('webkitdirectory', null); }
-  else { $('#picker').attr('webkitdirectory', 'true'); }
+  if(event.target.id == "fi") {
+    $('#picker').attr('webkitdirectory', null);
+    $('#selectInputDir label')[0].text("Datei auswählen");
+  }
+  else {
+    $('#picker').attr('webkitdirectory', 'true');
+    $('#selectInputDir label')[0].text("Verzeichnis auswählen");
+  }
 }
 
