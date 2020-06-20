@@ -584,10 +584,10 @@ function close() {
 
 /* toggle TOC level visibility */
 function switchnav(id) {	
-  $(id).children('ul').children().toggle();
+  $('#' + id).toggle();
 }
 function switchnav(id, a) {	
-  $(id).children('ul').children().toggle();
+  $('#' + id).toggle();
   $(a).html() == '→' ? $(a).html('↑') : $(a).html('→');
 }
 

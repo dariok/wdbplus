@@ -293,6 +293,10 @@ declare
 function wdbRc:getCollectionNavHTML ($id as xs:string) {
   let $pathToEd := wdb:getProjectPathFromId($id)
   let $mf := wdb:getMetaFile($pathToEd)
+  let $params :=
+    <parameters>
+      <param name="id" value="{$id}"/>
+    </parameters>
   
   let $html := try {
     if(ends-with($mf, 'wdbmeta.xml'))
@@ -303,9 +307,9 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
           then xs:anyURI($pathToEd || '/nav.xsl')
           else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
         let $struct := wdbRc:getCollectionNavXML($id)
-        return transform:transform($struct, doc($xsl), ())
+        return transform:transform($struct, doc($xsl), $params)
       else
-        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), ())
+        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), $params)
   } catch * {
     <p>Error transforming meta data file {$mf} to navigation using
       {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
