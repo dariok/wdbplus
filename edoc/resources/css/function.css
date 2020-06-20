@@ -13,8 +13,7 @@ h1 {
 
 aside {
   grid-area: left;
-  
-/*  width: calc(20% - 2.5px);*/
+  overflow: auto;
   padding-right: 5px;
 }
 
