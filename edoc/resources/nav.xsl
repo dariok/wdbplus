@@ -27,7 +27,7 @@
       <a>
         <xsl:choose>
           <xsl:when test="@file">
-            <xsl:attribute name="href" select="'start.html?id=' || @file" />
+            <xsl:attribute name="href" select="'start.html?ed=' || @file" />
           </xsl:when>
           <xsl:otherwise>
             <xsl:attribute name="href">javascript: void(0);</xsl:attribute>
