@@ -116,7 +116,10 @@ return if (not($data('from') or $data('text')))
               <cat>{$data('text')}</cat>
               <user>{$username}</user>
             </entry>
-          let $annoFile := wdbanno:getAnnoFile(base-uri($file), $username)
+          let $annoFile := if ($data?public = "on")
+            then wdbanno:getAnnoFile(base-uri($file), "")
+            else wdbanno:getAnnoFile(base-uri($file), $username)
+          
           return (
             <rest:response>
               <http:response status="200">
