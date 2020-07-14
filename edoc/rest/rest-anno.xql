@@ -74,7 +74,7 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
 return if (not($data('from') or $data('text')))
   then (
     <rest:response>
-      <http:response status="200">
+      <http:response status="400">
         <http:header name="rest-status" value="REST:ERR" />
       </http:response>
     </rest:response>,
@@ -86,32 +86,36 @@ return if (not($data('from') or $data('text')))
     (: check whether the user may write :)
     return if ($username = 'guest')
     then
-        (<rest:response>
-            <http:response status="200">
+      (
+        <rest:response>
+            <http:response status="401">
                 <http:header name="rest-status" value="REST:ERR" />
+                <http:header name="rest-user" value="{$username}" />
             </http:response>
         </rest:response>,
-        "User guest is not allowed to create annotations")
+        "User " || $username || " is not allowed to create annotations"
+      )
     else
-    let $ann := 
-        <entry xmlns="https://github.com/dariok/wdbplus/annotations">
-            <id>{util:uuid()}</id>
-            <file>{$fileID}</file>
-            <range from="{$data('from')}" to="{$data('to')}" />
-            <cat>{$data('text')}</cat>
-            <user>{$username}</user>
-        </entry>
-    let $file := $wdb:data/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
+      let $file := doc(wdb:getFilePath($fileID))
     
-    return if (count($file) = 0)
-        then
-    (<rest:response>
-        <http:response status="200">
-            <http:header name="rest-status" value="REST:ERR" />
-        </http:response>
-    </rest:response>,
-    "no file found for ID " || $fileID)
-        else 
+      return if (count($file) = 0)
+        then (
+          <rest:response>
+            <http:response status="404">
+              <http:header name="rest-status" value="REST:notFound" />
+            </http:response>
+          </rest:response>,
+          "no file found for ID " || $fileID
+        )
+        else
+          let $ann := 
+            <entry xmlns="https://github.com/dariok/wdbplus/annotations">
+              <id>{util:uuid()}</id>
+              <file>{$fileID}</file>
+              <range from="{$data('from')}" to="{$data('to')}" />
+              <cat>{$data('text')}</cat>
+              <user>{$username}</user>
+            </entry>
           let $annoFile := wdbanno:getAnnoFile(base-uri($file), $username)
           return (
             <rest:response>
@@ -120,7 +124,10 @@ return if (not($data('from') or $data('text')))
                 <http:header name="Access-Control-Allow-Origin" value="*"/>
               </http:response>
             </rest:response>,
-            update insert $ann into $annoFile/anno:anno
+            (
+              update insert $ann into $annoFile/anno:anno,
+              $ann
+            )
           )
 };
 
