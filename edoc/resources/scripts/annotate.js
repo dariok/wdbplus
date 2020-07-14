@@ -31,31 +31,35 @@ $(function() {
     method: "get",
     url: wdb.meta.rest+ "anno/" + wdb.meta.id,
     headers: wdb.restheaders,
-    success: function(data){
-      $.each(
-        data.entry,
-        function( index, value ) {
-          if (index > 0 && value.range.from != '') {
-            let start = $('#' + value.range.from);
-            
-            let end = (value.range.to == '' || value.range.to === undefined)
-              ? start
-              : $('#' + value.range.to);
-            
-            let cat = value.range.from + "–" + value.range.to + ": " + value.cat;
-            
-            let from = value.range.from.substring(1),
-                to = value.range.to.substring(1);
-            
-            if(to > from)
-              highlightAll(start, end, 'red', cat);
-              else highlightAll(end, start, 'red', cat);
-          } else {
-            console.log("annotation error: unexpected full text annotation:\n"
-              + index + ": " + value.from + "–" + value.to + " = " + value.cat);
+    success: function(data, textStatus, jqXHR){
+      if (jqXHR.status == 200) {
+        $.each(
+          data.entry,
+          function( index, value ) {
+            if (index > 0 && value.range.from != '') {
+              let start = $('#' + value.range.from);
+              
+              let end = (value.range.to == '' || value.range.to === undefined)
+                ? start
+                : $('#' + value.range.to);
+              
+              let cat = value.range.from + "–" + value.range.to + ": " + value.cat;
+              
+              let from = value.range.from.substring(1),
+                  to = value.range.to.substring(1);
+              
+              if(to > from)
+                highlightAll(start, end, 'red', cat);
+                else highlightAll(end, start, 'red', cat);
+            } else {
+              console.log("annotation error: unexpected full text annotation:\n"
+                + index + ": " + value.from + "–" + value.to + " = " + value.cat);
+            }
           }
-        }
-      );
+        );
+      } else {
+        console.log("GETting annotations returned status " + jqXHR.status);
+      }
     }
   });
 });

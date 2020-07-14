@@ -31,10 +31,19 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
   let $username := xs:string(sm:id()//sm:real/sm:username)
   let $fileURI := xs:anyURI(wdb:getFilePath($fileID))
   
-  let $public := wdbanno:getAnnoFile($fileURI, "")
-  let $private := wdbanno:getAnnoFile($fileURI, $username)
+  let $public := wdbanno:getAnnoFile($fileURI, "")//anno:entry
+  let $private := wdbanno:getAnnoFile($fileURI, $username)//anno:entry
+  let $numEntries := count($public) + count($private)
   
-  return (
+  return if ($numEntries = 0)
+  then
+    <rest:response>
+      <http:response status="204">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>
+  else (
     <rest:response>
       <http:response status="200">
         <http:header name="rest-status" value="REST:SUCCESS" />
@@ -42,9 +51,10 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
       </http:response>
     </rest:response>,
     <anno:anno>
-      <anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
-      {for $entry in ($public//anno:entry, $private//anno:entry)
-        return $entry
+      <anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user><anno:entries>{$numEntries}</anno:entries></anno:entry>
+      {
+        for $entry in ($public//anno:entry, $private//anno:entry)
+          return $entry
       }
     </anno:anno>
   )
