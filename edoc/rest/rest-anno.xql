@@ -69,69 +69,47 @@ declare
   %rest:consumes("application/json")
 function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
   let $data := parse-json(util:base64-decode($body))
-  (: TODO update these checks like in changeWords! :)
-  (: check for minimum data before continuing :)
-return if (not($data('from') or $data('text')))
-  then (
-    <rest:response>
-      <http:response status="400">
-        <http:header name="rest-status" value="REST:ERR" />
-      </http:response>
-    </rest:response>,
-    "Missing content in message body: at least start and text must be supplied"
-  )
-  else
-    let $username := xs:string(sm:id()//sm:real/sm:username)
-    
-    (: check whether the user may write :)
-    return if ($username = 'guest')
-    then
-      (
-        <rest:response>
-            <http:response status="401">
-                <http:header name="rest-status" value="REST:ERR" />
-                <http:header name="rest-user" value="{$username}" />
-            </http:response>
-        </rest:response>,
-        "User " || $username || " is not allowed to create annotations"
-      )
+  let $check := wdbRa:check($fileID, $data, "w", ("from", "to", "text"))
+  
+  return if ($check[1] != 200)
+    then (
+      <rest:response>
+        <http:response status="{$check[1]}">
+          <http:header name="X-Rest-Status" value="{$check[2]}" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+          <http:header name="Content-Type" value="text/plain" />
+        </http:response>
+      </rest:response>,
+      for $err in $check
+        return $err || "&#x0A;"
+    )
     else
-      let $file := doc(wdb:getFilePath($fileID))
-    
-      return if (count($file) = 0)
-        then (
-          <rest:response>
-            <http:response status="404">
-              <http:header name="rest-status" value="REST:notFound" />
-            </http:response>
-          </rest:response>,
-          "no file found for ID " || $fileID
+      let $username := xs:string(sm:id()//sm:real/sm:username)
+      let $ann := 
+        <entry xmlns="https://github.com/dariok/wdbplus/annotations">
+          <id>{util:uuid()}</id>
+          <file>{$fileID}</file>
+          <range from="{$data('from')}" to="{$data('to')}" />
+          <cat>{$data('text')}</cat>
+          <user>{$username}</user>
+        </entry>
+      
+      let $annoFile := if ($data?public)
+        then wdbanno:getAnnoFile(xs:anyURI($check[2]), "")
+        else wdbanno:getAnnoFile(xs:anyURI($check[2]), $username)
+      let $t := console:log($annoFile)
+      return (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="rest-status" value="REST:SUCCESS" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        (
+          update insert $ann into $annoFile/anno:anno,
+          $ann
         )
-        else
-          let $ann := 
-            <entry xmlns="https://github.com/dariok/wdbplus/annotations">
-              <id>{util:uuid()}</id>
-              <file>{$fileID}</file>
-              <range from="{$data('from')}" to="{$data('to')}" />
-              <cat>{$data('text')}</cat>
-              <user>{$username}</user>
-            </entry>
-          let $annoFile := if ($data?public = "on")
-            then wdbanno:getAnnoFile(base-uri($file), "")
-            else wdbanno:getAnnoFile(base-uri($file), $username)
-          
-          return (
-            <rest:response>
-              <http:response status="200">
-                <http:header name="rest-status" value="REST:SUCCESS" />
-                <http:header name="Access-Control-Allow-Origin" value="*"/>
-              </http:response>
-            </rest:response>,
-            (
-              update insert $ann into $annoFile/anno:anno,
-              $ann
-            )
-          )
+      )
 };
 
 (:~
