@@ -3,8 +3,7 @@
  * author: Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  */
 
-// to contain the dialogue box object
-var dialogue;
+var dialogue; // to contain the dialogue box object 
 
 /* 
  * when loading the page:
@@ -116,7 +115,8 @@ function anno() {
 function parsefta() {
   let start = $('#annFrom').text(),     // first ID in annotation range
       end = $('#annTo').text(),         // last ID in annotation range
-      annoText = $('#ftaText').val();   // text of the fta
+      annoText = $('#ftaText').val(),   // text of the fta
+      chkPublic = $("#public").prop("checked");
   dialogue.dialog("close");
   
   // POST the the fta
@@ -128,7 +128,7 @@ function parsefta() {
       from: start,
       to: end,
       text: annoText,
-      public: $('#public').val()
+      public: chkPublic
     }),
     contentType: "application/json; charset=UTF-8",
     dataType: 'json'
