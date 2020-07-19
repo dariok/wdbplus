@@ -50,11 +50,11 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <anno:anno>
-      <anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user><anno:entries>{$numEntries}</anno:entries></anno:entry>
+    <anno:anno collection="{$fileURI}" file="{$fileID}" user="{$username}" entries="{$numEntries}">
       {
-        for $entry in ($public//anno:entry, $private//anno:entry)
-          return $entry
+        $public,
+        for $entry in $private return
+          <entry private="private">{$entry/*}</entry>
       }
     </anno:anno>
   )
