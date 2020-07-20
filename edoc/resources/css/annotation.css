@@ -1,0 +1,27 @@
+/* CSS styles for a tooltip-like span visible on hover
+ * 
+ * Due to limits of CSS, there is no real timeout here and 
+ * margin-left is small (so it is not too far left even for short words
+ * on the left margin) which means there is little room to meneouver
+ * with the mouse.
+ * relative positioning leaves the original width of the ul;
+ * absolute positioning may mean the span leaves the visible area. */
+
+ul.annotations {
+    display: none;
+}
+
+span.w:hover .annotations {
+    z-index: 20;
+    min-width: 100px;
+    position: fixed;
+    display: inline-block;
+    background-color: wheat;
+    padding: 5px;
+    margin-left: -15px;
+    margin-top: 20px;
+}
+
+#contents {
+    position: relative;
+}
