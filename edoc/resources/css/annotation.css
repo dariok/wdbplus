@@ -62,8 +62,12 @@ span.w:hover .annotations {
 dt {
     text-indent: 0;
 }
-
 dd {
     margin-left: 20px;
     text-indent: 0;
+}
+dd button {
+  border: none;
+  background-color: wheat;
+  cursor: pointer;
 }
