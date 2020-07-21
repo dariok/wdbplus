@@ -2,14 +2,13 @@ xquery version "3.1";
 
 module namespace wdbRa = "https://github.com/dariok/wdbplus/RestAnnotations";
 
-declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
-
 import module namespace util     = "http://exist-db.org/xquery/util"         at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"  at "/db/apps/edoc/modules/annotations.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace console  = "http://exist-db.org/xquery/console";
 
+declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 declare namespace http    = "http://expath.org/ns/http-client";
 declare namespace output  = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest    = "http://exquery.org/ns/restxq";
@@ -97,7 +96,7 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
       let $annoFile := if ($data?public)
         then wdbanno:getAnnoFile(xs:anyURI($check[2]), "")
         else wdbanno:getAnnoFile(xs:anyURI($check[2]), $username)
-      let $t := console:log($annoFile)
+      
       return (
         <rest:response>
           <http:response status="200">
@@ -110,6 +109,19 @@ function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
           $ann
         )
       )
+};
+
+(:~
+  : delete a full text annotation
+  :)
+declare
+  %rest:DELETE
+  %rest:path("/edoc/anno/{$id}")
+function wdbRa:deleteFTA ( $id as xs:string) {
+  let $annoCollection := $wdb:edocBaseDB || "/annotations"
+  let $target := collection($annoCollection)//anno:entry[anno:id = $id]
+  
+  return update delete $target
 };
 
 (:~

@@ -111,6 +111,21 @@ function anno() {
   dialogue.dialog("open");
 }
 
+function annoDelete ( id ) {
+  console.log("Delete " + id);
+  $.ajax({
+    method: "delete",
+    url: wdb.meta.rest + "anno/" + id,
+    headers: wdb.restheaders,
+    success: function (data, textStatus, jqXHR) {
+      console.log (textStatus);
+    },
+    error: function (data, textStatus, jqXHR) {
+      console.log (textStatus);
+    }
+  });
+}
+
 /* 
  * full text annotations
  */
