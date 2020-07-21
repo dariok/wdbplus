@@ -1,27 +1,69 @@
 /* CSS styles for a tooltip-like span visible on hover
  * 
- * Due to limits of CSS, there is no real timeout here and 
- * margin-left is small (so it is not too far left even for short words
- * on the left margin) which means there is little room to meneouver
- * with the mouse.
- * relative positioning leaves the original width of the ul;
- * absolute positioning may mean the span leaves the visible area. */
+ * This is a try at creating a CSS-only version of a tooltip that stays visible long enough so user interaction is
+ * possible.
+ * Limitations: positioning needs to be fixed so the right edge of an ancestor div does not cut off text. This means
+ * that positioning relative to the previous sibling needs to be done by negative margins. This cannot be too big or
+ * else it could leave to the left if a short word is at the left edge.
+ */
 
-ul.annotations {
-    display: none;
+.annotations {
+  z-index: 20;
+  min-width: 100px;
+  display: inline-block;
+  background-color: wheat;
+  opacity: 0;
+  
+  /* move slightly left and below the current line */
+  position: fixed;
+  margin-left: -25px;
+  margin-top: 20px;
+  padding: 5px;
+  
+  /* use a combined animation/transition so the area stays visible for a few seconds in order to allow mouse movement */
+  animation: hideAnnotation 0s forwards;
+  animation-iteration-count: 1;
+  animation-delay: 2s;
+  transition: opacity 3s;
+}
+@keyframes hideAnnotation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
 }
 
+/* show annotations on hover of parent element */
 span.w:hover .annotations {
-    z-index: 20;
-    min-width: 100px;
-    position: fixed;
-    display: inline-block;
-    background-color: wheat;
+    animation: showAnnotation 0.3s ease-in 0.3s forwards;
+    opacity: 1;
+}
+@keyframes showAnnotation {
+  to {
+    width: initial;
+    height: initial;
+    overflow: auto;
     padding: 5px;
-    margin-left: -15px;
+    margin-left: -25px;
     margin-top: 20px;
+  }
 }
 
 #contents {
     position: relative;
+}
+
+dt {
+    text-indent: 0;
+}
+
+dd {
+    margin-left: 20px;
+    text-indent: 0;
 }
