@@ -267,8 +267,16 @@ function getPosition(el) {
  *  Display annotations – footnotes, critical apparatus and similar on mouseover
  *****/
 /* when hovering over a footnote, display it in the right div */
+/* when hovering over a footnote, display it in the right div;
+ * when hovering over an annotation parent, show the annotation below */
 $(document).ready(function () {
     $('.fn_number').hover(mouseIn, mouseOut);
+    $('.w').hover(wdbTooltipMouseIn, wdbTooltipMouseOut);
+    $('.annotations').hover(function ( event ) {
+      $(this).clearQueue();
+    }, function ( event ) {
+      $(this).delay(1000).fadeOut(500);
+    });
 });
 /* load notes into right div on hover */
 function mouseIn (event) {
@@ -281,35 +289,40 @@ function mouseIn (event) {
     // nowrap to get the length of the string in pixels
     $('#ann').html(content.html());
     $('#ann').append('<a onclick="clear();" href="javascript:clear()">[x]</a>')
-    
-    // legacy code for an advanced mouseover 
-    /*var fn = cont.append(content);
-    me.after(fn);
-    
-    var tPos, lPos, fWidth;
-    if (fn.innerWidth() > maxWidth) fWidth = maxWidth;
-    else fWidth = fn.innerWidth();
-    
-    if ((fWidth + me.offset().left + 20) > window.innerWidth) {								// position the info window
-    lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
-    tPos = me.position().top + 20;
-    fn.offset({ left: lPos, top: tPos});
-    fn.css('top', tPos);
-    }
-    else {
-    lPos = me.position().left + 20;
-    tPos = me.position().top + 20;
-    fn.css('left', lPos).css('top', tPos);
-    }
-    
-    fn.css('max-width' , maxWidth);
-    content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
-    fn.outerWidth(fWidth);*/
 }
 function mouseOut (event) {
     var id = '#i' + $(this).attr('href').substring(1);
     console.log(id);
     setTimeout($(id).detach(), 2000, id);
+}
+
+function wdbTooltipMouseIn ( event ) {
+  let tPos, lPos, fWidth,
+      maxWidth = 500,
+      annotationElement = $(this).children(".annotations");
+  
+  if (annotationElement.innerWidth() > maxWidth)
+    fWidth = maxWidth;
+  else fWidth = annotationElement.innerWidth();
+  
+  if ((fWidth + $(this).offset().left + 20) > window.innerWidth) {								// position the info window
+    lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
+    tPos = $(this).position().top + 5;
+    annotationElement.offset({ left: lPos, top: tPos});
+    annotationElement.css('top', tPos);
+  } else {
+    lPos = $(this).position().left;
+    tPos = $(this).position().top + 5;
+    annotationElement.css('left', lPos).css('top', tPos);
+  }
+  
+  annotationElement.css('max-width' , maxWidth);
+  annotationElement.css('white-space', 'normal');								   // allow word wrapping to fit into max width
+  annotationElement.outerWidth(fWidth);
+  annotationElement.show();
+}
+function wdbTooltipMouseOut ( event ) {
+  $(this).children('.annotations').delay(1000).fadeOut(500);
 }
 /*****
  * Display “external” (i.e. not found within the current view) information such as (but not limited to) entities
