@@ -35,23 +35,25 @@ $(function() {
         $.each(
           data.entry,
           function( index, value ) {
-            if (index > 0 && value.range.from != '') {
-              let start = $('#' + value.range.from);
+            if (value.range.from != '') {
+              /* find the target elements */
+              let start = $('#' + value.range.from),
+                  end = (value.range.to == '' || value.range.to === undefined)
+                    ? start
+                    : $('#' + value.range.to);
               
-              let end = (value.range.to == '' || value.range.to === undefined)
-                ? start
-                : $('#' + value.range.to);
-              
-              let cat = value.range.from + "–" + value.range.to + ": " + value.cat;
-              
+              /* hightlight the target elements */
               let from = value.range.from.substring(1),
                   to = value.range.to.substring(1);
+              let entry = '<dd id="' + value.id + '"><dd id="' + value.id + '"><i>' + value.user + ':</i>&nbsp;'
+                  + value.cat + '&nbsp; <button onclick="annoDelete(\'' 
+                  + value.id + '\')" title="Eintrag löschen">&#x1F5D1;</button></dd>';
               
               if(to > from)
-                highlightAll(start, end, 'red', cat);
-                else highlightAll(end, start, 'red', cat);
+                highlightAll(start, end, 'red', entry);
+                else highlightAll(end, start, 'red', entry);
             } else {
-              console.log("annotation error: unexpected full text annotation:\n"
+              console.log("annotation error: incorrect full text annotation:\n"
                 + index + ": " + value.from + "–" + value.to + " = " + value.cat);
             }
           }
