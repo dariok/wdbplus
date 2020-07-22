@@ -281,10 +281,10 @@ declare
 function wdbRc:getCollectionNavXML ($id as xs:string) {
   let $md := collection($wdb:data)/id($id)[self::meta:projectMD]
   
-  let $st := local:pM(doc(local:findImporter(base-uri($md))))
-  return if (count($st) = 1)
-    then $st
-    else <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$id}">{$st}</struct>
+  return
+    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$id}">{
+      local:pM(doc(local:findImporter(base-uri($md))))
+    }</struct>
 };
 
 declare
