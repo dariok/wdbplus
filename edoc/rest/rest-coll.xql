@@ -16,6 +16,96 @@ declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
+(: create a (sub-)collection :)
+declare
+  %rest:POST("{$data}")
+  %rest:path("/edoc/collection/{$collectionID}/subcollection")
+  %rest:consumes("application/json")
+function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:string ) {
+  if (string-length($data) eq 0) then
+    (
+      <rest:response>
+        <http:response status="400">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "no configuration data submitted"
+    )
+  else if (not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys(parse-json(util:base64-decode($data)))))) then
+    (
+      <rest:response>
+        <http:response status="400">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "missing data; needed information: collectionName, id, name"
+    )
+  else if (not (collection($wdb:data)/id($collectionID)[self::meta:projectMD])) then
+    (
+      <rest:response>
+        <http:response status="404">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "no project with ID " || $collectionID || " or project not using wdbmeta.xml"
+    )
+  else
+    let $collection := wdb:getEdPath($collectionID, true())
+    
+    let $parentMeta := doc($collection || "/wdbmeta.xml")
+    let $errUser := not(sm:has-access(base-uri($parentMeta), "w"))
+    
+    let $collectionData := parse-json(util:base64-decode($data))
+    let $errCollectionPresent := try {
+        wdb:getEdPath($collectionData?id)
+      } catch * {
+        false()
+      }
+    
+    return if ($errUser) then
+      (
+        <rest:response>
+          <http:response status="403">
+            <http:header name="Content-Type" value="text/plain" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        "user " || sm:id()//sm:real/sm:username/string() || " does not have access to collection " || $collection
+      )
+    else if ($errCollectionPresent instance of xs:string) then
+      <rest:response>
+        <http:response status="409" />
+      </rest:response>
+    else 
+      try {
+        let $create := xmldb:create-collection($collection, $collectionData?collectionName)
+        (: TODO update to xmldb:copy-resource(3) when eXist 5 is more firmly established :)
+        let $co := xmldb:copy($wdb:edocBaseDB || "/resources", $create, "wdbmeta.xml")
+        let $copy := $create || "/wdbmeta.xml"
+        let $meta := doc ($copy)
+        
+        let $insID := update value $meta/meta:projectMD/@xml:id with $collectionData?id
+        let $insTitle := update value $meta//meta:title[1] with $collectionData?name
+        
+        let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}" /> into $parentMeta//meta:files
+        let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$collectionData?id}" label="{$collectionData?name}" /> into $parentMeta/meta:projectMD/meta:struct
+        
+        return
+          <rest:response>
+            <http:response status="201">
+              <http:header name="x-rest-status" value="{$create}" />
+            </http:response>
+          </rest:response>
+      } catch * {
+        <rest:reponse>
+          <http:response status="500" />
+        </rest:reponse>
+      }
+};
+
 (: create a resource in a collection :)
 (: create a single file for which no entry has been created in wdbmeta.
    - if a file with the same ID, MIME type and path is found, update it (if these are not a match, return 409)
