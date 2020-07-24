@@ -34,8 +34,25 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
   
   return map {
     "ed": $ed,
-    "pathToEd": $pathToEd,
     "infoFileLoc": $infoFileLoc,
+    "job": substring-after(request:get-uri(), "admin/"),
+    "pathToEd": $pathToEd,
     "title": $title
   }
+};
+
+declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as element() {
+  <aside>
+    {
+      switch ($model?job)
+        case "projects.html" return
+          <button type="button">(Unter-)Projekt erstellen</button>
+        default return ()
+    }
+    <hr />
+    <div class="info" role="contentinfo">
+      <h2>Projekt-Info</h2>
+      {wdb:get($model, "")}
+    </div>
+  </aside>
 };
