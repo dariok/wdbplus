@@ -41,6 +41,23 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
   }
 };
 
+declare function wdbAdmin:heading ($node as node(), $model as map(*)) {
+  let $title := if ($model?page = 'admin.html')
+    then "Admin-Seite"
+    else if ($model?page = 'global.html')
+    then "Globale Einstellungen"
+    else if ($model?ed = '')
+    then "Projekte"
+    else "Projekt " || $model?ed
+  
+  let $opts := if (request:get-parameter('job', '') != '')
+    then <span class="dispOpts"><a href="global.html">globale Optionen</a></span>
+    else ()
+    
+  return (<h1>{$title}</h1>,
+    $opts)
+};
+
 declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as element() {
   <aside>
     {
