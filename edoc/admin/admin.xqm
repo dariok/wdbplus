@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace console   = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace templates ="http://exist-db.org/xquery/templates"   at "/db/apps/shared-resources/content/templates.xql";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
@@ -19,7 +19,9 @@ declare namespace mods   = "http://www.loc.gov/mods/v3";
 declare
     %templates:default("ed", "")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
-  let $pathToEd := try {
+  let $pathToEd := if ($ed = "") then
+    $wdb:data
+  else try {
     wdb:getEdPath($ed, true())
   } catch * {()}
   
@@ -35,7 +37,7 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
   return map {
     "ed": $ed,
     "infoFileLoc": $infoFileLoc,
-    "job": substring-after(request:get-uri(), "admin/"),
+    "page": substring-after(request:get-uri(), "admin/"),
     "pathToEd": $pathToEd,
     "title": $title
   }
@@ -63,7 +65,7 @@ declare function wdbAdmin:heading ($node as node(), $model as map(*)) {
 declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as element() {
   <aside>
     {
-      switch ($model?job)
+      switch ($model?page)
         case "projects.html" return
           <button type="button">(Unter-)Projekt erstellen</button>
         default return ()
