@@ -80,30 +80,38 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
         <http:response status="409" />
       </rest:response>
     else 
-      try {
-        let $create := xmldb:create-collection($collection, $collectionData?collectionName)
-        (: TODO update to xmldb:copy-resource(3) when eXist 5 is more firmly established :)
-        let $co := xmldb:copy($wdb:edocBaseDB || "/resources", $create, "wdbmeta.xml")
-        let $copy := $create || "/wdbmeta.xml"
-        let $meta := doc ($copy)
-        
-        let $insID := update value $meta/meta:projectMD/@xml:id with $collectionData?id
-        let $insTitle := update value $meta//meta:title[1] with $collectionData?name
-        
-        let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}" /> into $parentMeta//meta:files
-        let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$collectionData?id}" label="{$collectionData?name}" /> into $parentMeta/meta:projectMD/meta:struct
-        
-        return
-          <rest:response>
-            <http:response status="201">
-              <http:header name="x-rest-status" value="{$create}" />
-            </http:response>
-          </rest:response>
-      } catch * {
-        <rest:reponse>
-          <http:response status="500" />
-        </rest:reponse>
-      }
+      let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
+      
+      (: TODO update to xmldb:copy-resource(3) when eXist 5 is more firmly established :)
+      let $co := xmldb:copy($wdb:edocBaseDB || "/resources", $subCollection, "wdbmeta.xml")
+      let $newMetaPath := $subCollection || "/wdbmeta.xml"
+      
+      let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
+      let $metaPermissions := sm:get-permissions(xs:anyURI($collection || "/wdbmeta.xml"))
+      
+      let $setSubcollPermissions := (
+        sm:chown(xs:anyURI($subCollection), $collectionPermissions//@owner || ":" || $collectionPermissions//@group),
+        sm:chmod(xs:anyURI($subCollection), $collectionPermissions//@mode)
+      )
+      let $setMetaPermissions := (
+        sm:chown(xs:anyURI($newMetaPath), $metaPermissions//@owner || ":" || $metaPermissions//@group),
+        sm:chmod(xs:anyURI($newMetaPath), $metaPermissions//@mode)
+      )
+      
+      let $meta := doc ($newMetaPath)
+      
+      let $insID := update value $meta/meta:projectMD/@xml:id with $collectionData?id
+      let $insTitle := update value $meta//meta:title[1] with $collectionData?name
+      
+      let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}" /> into $parentMeta//meta:files
+      let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$collectionData?id}" label="{$collectionData?name}" /> into $parentMeta/meta:projectMD/meta:struct
+      
+      return
+        <rest:response>
+          <http:response status="201">
+            <http:header name="x-rest-status" value="{$subCollection}" />
+          </http:response>
+        </rest:response>
 };
 
 (: create a resource in a collection :)
