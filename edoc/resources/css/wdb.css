@@ -150,6 +150,19 @@ nav li ul {
   margin-left: 1.25em;
 }
 
+/* login dialogue (usually placed in header) */
+#auth {
+    display: inline-block;
+}
+
+#auth button {
+    background-color: transparent;
+    cursor: pointer;
+    color: #098AB2;
+    border: 0;
+    font-size: 1rem;
+}
+
 @media screen and (max-width: 768px) {
   header {
     padding: 0 1%;
