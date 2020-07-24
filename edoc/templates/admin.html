@@ -1,28 +1,29 @@
-<html>
+<!DOCTYPE html>
+<html data-template="wdbAdmin:start">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="wdb-template" content="templates/admin.html" />
-    <meta name="rest" data-template="wdbGS:getRest" />
-    <title data-template="wdbPL:pageTitle"/>
-    <link rel="stylesheet" type="text/css" href="../resources/css/wdb.css" />
-    <link rel="stylesheet" type="text/css" href="../resources/css/function.css" />
-    <link rel="stylesheet" type="text/css" href="../resources/css/admin.css" />
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
-    <script src="../resources/scripts/js.cookie.js" />
-    <script src="../resources/scripts/function.js" type="text/javascript"></script>
-    <script src="../resources/scripts/admin.js" type="text/javascript"></script>
+    <meta name="wdb-template" content="templates/admin.html"/>
+    <meta name="rest" content="" data-template="wdbGS:getRest"/>
+    <title data-template="wdbPL:pageTitle">[template: title]</title>
+    <link rel="stylesheet" type="text/css" href="../resources/css/wdb.css"/>
+    <link rel="stylesheet" type="text/css" href="../resources/css/function.css"/>
+    <link rel="stylesheet" type="text/css" href="../resources/css/admin.css"/>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="../resources/scripts/js.cookie.js"></script>
+    <script src="../resources/scripts/function.js"></script>
+    <script src="../resources/scripts/admin.js"></script>
   </head>
   <body>
     <header>
-      <h1 data-template="wdbPL:head"/>
-      <h2 data-template="wdba:getAuth"/>
+      <h1 data-template="wdbPL:head">[template: heading]</h1>
+      <h2 data-template="wdba:getAuth">[template: authentication]</h2>
       <span class="dispOpts"><a href="admin.html">Admin-Seite</a></span>
       <hr/>
     </header>
-    <aside />
+    <aside data-template="wdbPL:getAside">[template: aside]</aside>
     <main>
-      <div id="container" />
+      <div id="container"></div>
     </main>
   </body>
 </html>
