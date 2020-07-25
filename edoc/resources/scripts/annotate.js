@@ -45,7 +45,7 @@ $(function() {
               /* hightlight the target elements */
               let from = value.range.from.substring(1),
                   to = value.range.to.substring(1);
-              let entry = '<dd id="' + value.id + '"><dd id="' + value.id + '"><i>' + value.user + ':</i>&nbsp;'
+              let entry = '<dd id="' + value.id + '"><i>' + value.user + ':</i>&nbsp;'
                   + value.cat + '&nbsp; <button onclick="annoDelete(\'' 
                   + value.id + '\')" title="Eintrag löschen">&#x1F5D1;</button></dd>';
               
@@ -118,7 +118,15 @@ function annoDelete ( id ) {
     url: wdb.meta.rest + "anno/" + id,
     headers: wdb.restheaders,
     success: function (data, textStatus, jqXHR) {
-      console.log (textStatus);
+      let container = $('#' + id).parent(),
+          ancestor = $('#' + id).closest(".w");
+      $('#' + id).detach();
+      if (container.children("dd").length === 0) {
+        container.detach();
+      }
+      if (ancestor.children("ul").length === 0) {
+        ancestor.css("background-color", "unset");
+      }
     },
     error: function (data, textStatus, jqXHR) {
       console.log (textStatus);
