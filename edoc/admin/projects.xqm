@@ -10,6 +10,7 @@ import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
@@ -98,15 +99,15 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 };
 
 declare function local:getFiles($model) {
-  let $filesInEd := collection($model?pathToEd)//tei:TEI
+  let $infoFile := doc($model?infoFileLoc)
+  let $filesInEd := (
+    $infoFile//meta:file,
+    $infoFile//mets:file
+  )
+  
   return 
     <div id="content">
       <h1>Insgesamt {count($filesInEd)} Texte</h1>
-      {
-        if (not(doc-available($model?infoFileLoc)))
-          then <p>keine <code>wdbmeta.xml</code> vorhanden!</p>
-          else ()
-      }
       <table class="noborder">
         <tbody>
           <tr>
@@ -117,17 +118,41 @@ declare function local:getFiles($model) {
           </tr>
           {
             for $doc in $filesInEd
-              let $docUri := base-uri($doc)
+              let $info := if ($doc[self::meta:file])
+                then
+                  let $id := $doc/@xml:id
+                  let $view := $infoFile//meta:view[@file = $id]
+                  return (
+                    $id,
+                    if ($view/@order castable as xs:int)
+                      then number($infoFile//meta:view[@file = $id]/@order)
+                      else "",
+                    $model?pathToEd || "/" || $doc/@path,
+                    $view/@label
+                  )
+                else
+                  let $id := $doc/@ID
+                  let $struct := $infoFile//mets:fptr[@FILEID = $id]/parent::tei:div
+                  return (
+                    $id,
+                    if ($struct/@ORDERLABEL castable as xs:int)
+                      then number($struct/@ORDERLABEL)
+                      else string($struct/@ORDERLABEL),
+                    $model?pathToEd || "/" || $doc/mets:FLocat/@*:href,
+                    $struct/@LABEL
+                  )
+              
+              order by $info[3]
               return
                 <tr>
-                  <td>{$doc/@n}</td>
-                  <td>{$docUri}</td>
+                  <td>{$info[2]}</td>
+                  <td>{$info[3]}</td>
                   <td>
-                    <a href="../view.html?id={$doc/@xml:id}">
-                      {substring(string-join($doc//tei:titleStmt/*, ' - '), 1, 100)}
+                    <a href="../view.html?id={$info[1]}">
+                      {substring($info[4], 1, 100)}
                     </a>
                   </td>
-                  <td><a href="javascript:show('{$model?ed}', '{$docUri}')">anzeigen</a></td>
+                  <td><a href="javascript:show('{$model?ed}', '{$info[1]}')">anzeigen</a></td>
                 </tr>
           }
         </tbody>
@@ -135,18 +160,15 @@ declare function local:getFiles($model) {
     </div>
 };
 
-declare function local:getFileStat($ed, $file) {
-  let $doc := doc($file)
-  let $subColl := xstring:substring-before-last($file, '/')
-  let $resource := xstring:substring-after-last($file, '/')
-  let $metaPath := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
-  let $metaFile := doc($metaPath)
-  let $relativePath := substring-after($file, $ed||'/')
-  let $entry := $metaFile//meta:file[@path = $relativePath]
+declare function local:getFileStat($model, $file) {
+  let $filePath := wdb:getFilePath($file)
+  let $doc := doc($filePath)
+  let $metaFile := doc($model?infoFileLoc)
+  let $entry := $metaFile/id($file)
   let $uuid := util:uuid($doc)
-  let $pid := $doc//tei:titleStmt/tei:idno[@type = 'URI']
-  let $date := xmldb:last-modified($subColl, $resource)
-  let $id := normalize-space($doc/tei:TEI/@xml:id)
+  let $pid := $entry/@pid
+  let $date := xmldb:last-modified(xstring:substring-before-last($filePath, "/"),
+      xstring:substring-after-last($filePath, "/"))
   
   return
     <div id="data">
@@ -173,11 +195,11 @@ declare function local:getFileStat($ed, $file) {
             </tr>
             <tr>
               <td>Metadaten-Datei</td>
-              <td>{$metaPath}</td>
+              <td>{$model?infoFileLoc}</td>
             </tr>
             <tr>
               <td>relativer Pfad zur Datei</td>
-              <td>{$relativePath}</td>
+              <td>{string($entry/@path)}</td>
             </tr>
             <tr>
               <td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
@@ -211,8 +233,8 @@ declare function local:getFileStat($ed, $file) {
                 </tr>,
                 <tr>
                   <td><code>@xml:id</code> in wdbMeta</td>
-                  {if ($entry/@xml:id = $id)
-                    then <td>OK: {$id}</td>
+                  {if ($entry/@xml:id = $doc/tei:TEI/@xml:id)
+                    then <td>OK: {$entry/@xml:id/string()}</td>
                     else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$file}')">ID aktualisieren</a></td>
                   }
                 </tr>
@@ -223,15 +245,16 @@ declare function local:getFileStat($ed, $file) {
         </table>
         {
           if ($wdb:role = 'workbench') then
+            let $remoteMetaFilePath := $wdb:peer || '/' || substring-after($model?pathToEd, $wdb:data) || '/wdbmeta.xml'
             let $remoteMetaFile := try {
-               doc($wdb:peer || '/' || $ed || '/wdbmeta.xml')
+               doc($remoteMetaFilePath)
             } catch * {
-              console:log("Peer meta file not found: " || $wdb:peer || '/' || $ed || '/wdbmeta.xml --' ||
+              console:log("Peer meta file not found: " || $remoteMetaFilePath ||
                 'e: ' ||  $err:code || ': ' || $err:description || ' @ ' || $err:line-number ||':'||$err:column-number || '
                 c: ' || $err:value || ' in ' || $err:module || '
                 a: ' || $err:additional)
             }
-            let $remoteEntry := $remoteMetaFile//meta:file[@path = $relativePath]
+            let $remoteEntry := $remoteMetaFile//meta:file[@xml:id = $file]
             
             return (
               <h3>Peer Info</h3>,
@@ -266,8 +289,8 @@ declare function local:getFileStat($ed, $file) {
                       </tr>,
                       <tr>
                         <td><code>@xml:id</code> in wdbMeta</td>
-                        {if ($remoteEntry/@xml:id = $id)
-                          then <td>OK: {$id}</td>
+                        {if ($remoteEntry/@xml:id = $file)
+                          then <td>OK: {$file}</td>
                           else <td>Diff: {normalize-space($remoteEntry/@xml:id)}</td>
                         }
                       </tr>
@@ -281,9 +304,9 @@ declare function local:getFileStat($ed, $file) {
         }
         {
           if ($wdb:role = 'standalone') then
-            let $status := if ($metaFile//meta:view[@file = $id])
+            let $status := if ($metaFile//meta:view[@file = $file])
               then
-                let $view := ($metaFile//meta:view[@file = $id])[1]
+                let $view := ($metaFile//meta:view[@file = $file])[1]
                 return if ($view/@private = true())
                   then 'intern'
                   else 'sichtbar'
