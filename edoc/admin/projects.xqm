@@ -2,11 +2,11 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
+import module namespace console  = "http://exist-db.org/xquery/console";
+import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
 import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
-import module namespace console  = "http://exist-db.org/xquery/console";
 import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
-import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -19,20 +19,19 @@ declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
 };
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
-  let $ed := xstring:substring-before-if-ends(request:get-parameter('ed', ''), '/')
   let $file := request:get-parameter('file', '')
   let $job := request:get-parameter('job', '')
-  
   let $user := sm:id()
   
   return
     if (not($user//sm:group = 'dba'))
       then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
     else if ($job != '') then
-      let $edition := wdb:getEdFromPath($file, false())
-      let $metaPath := $wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml'
+      let $editionID := $model?id
+      let $metaPath := $model?infoFileLoc
       let $metaFile := doc($metaPath)
-      let $relativePath := substring-after($file, $edition||'/')
+      
+      let $relativePath := substring-after($file, $model?pathToEd || '/')
       let $subColl := xstring:substring-before-last($file, '/')
       let $resource := xstring:substring-after-last($file, '/')
       let $fileEntry := $metaFile//meta:file[@path = $relativePath]
@@ -44,35 +43,35 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
             date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"
             xml:id="{$xml/tei:TEI/@xml:id}" />
           let $up1 := update insert $ins into $metaFile//meta:files
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model , $file)
         
         case 'uuid' return
           let $ins := attribute uuid {util:uuid($xml)}
           let $up1 := if ($fileEntry/@uuid)
             then update replace $fileEntry/@uuid with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'pid' return
           let $ins := attribute pid { string($xml//tei:publicationStmt/tei:idno[@type = 'URI']) }
           let $up1 := if ($fileEntry/@pid)
             then update replace $fileEntry/@pid with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'date' return
           let $ins := attribute date {xmldb:last-modified($subColl, $resource)}
           let $up1 := if ($fileEntry/@date)
             then update replace $fileEntry/@date with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'id' return
           let $ins := attribute xml:id {normalize-space($xml/tei:TEI/@xml:id)}
           let $upd1 := if ($fileEntry/@xml:id)
             then update replace $fileEntry/@xml:id with $ins
             else update insert $ins/@xml:id into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'private' return
           let $id := normalize-space($xml/tei:TEI/@xml:id)
@@ -82,29 +81,29 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
             else if ($view/@private = 'false')
               then update value $view/@private with 'true'
               else update insert attribute private {'true'} into $view
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         default return
           <div id="data"><div><h3>Strange Error</h3></div></div>
-          
-    else if ($ed = '' and $file = '') then
+    (: no job given :)
+    else if (($model?ed = 'data' or $model?ed = '') and $file = '') then
       <div id="content">
         <h3>Liste der Projekte</h3>
         {wdbs:projectList(true(), '')}
       </div>
-    else if ($ed != '' and $file = '') then
-      local:getFiles($ed)
+    else if ($model?ed != 'data' and $model?ed != ''and $file = '') then
+      local:getFiles($model)
     else
-      local:getFileStat($ed, $file)
+      local:getFileStat($model, $file)
 };
 
-declare function local:getFiles($edoc as xs:string) {
-  let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:TEI
+declare function local:getFiles($model) {
+  let $filesInEd := collection($model?pathToEd)//tei:TEI
   return 
     <div id="content">
-      <h1>Insgesamt {count($ed)} EE</h1>
+      <h1>Insgesamt {count($filesInEd)} Texte</h1>
       {
-        if (not(doc-available($wdb:edocBaseDB || '/' || $edoc || '/wdbmeta.xml')))
+        if (not(doc-available($model?infoFileLoc)))
           then <p>keine <code>wdbmeta.xml</code> vorhanden!</p>
           else ()
       }
@@ -117,7 +116,7 @@ declare function local:getFiles($edoc as xs:string) {
             <th>Status</th>
           </tr>
           {
-            for $doc in $ed
+            for $doc in $filesInEd
               let $docUri := base-uri($doc)
               return
                 <tr>
@@ -128,7 +127,7 @@ declare function local:getFiles($edoc as xs:string) {
                       {substring(string-join($doc//tei:titleStmt/*, ' - '), 1, 100)}
                     </a>
                   </td>
-                  <td><a href="javascript:show('{$edoc}', '{$docUri}')">anzeigen</a></td>
+                  <td><a href="javascript:show('{$model?ed}', '{$docUri}')">anzeigen</a></td>
                 </tr>
           }
         </tbody>
