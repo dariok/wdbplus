@@ -85,3 +85,19 @@ aside {
 #fac {
   height: 100%;
 }
+
+/* Buttons to display entity information */
+button.entity {
+  appearance: none;
+  color: #098AB2;
+  background-color: white;
+  border: 0;
+  padding: 0;
+  font-family: mufi;
+  font-size: 1rem;
+  user-select: text;
+  cursor: pointer;
+}
+button.entity:focus {
+  outline: none;
+}

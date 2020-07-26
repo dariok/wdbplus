@@ -8,6 +8,9 @@
 	
 	<xsl:output method="html"/>
 	
+	<xsl:param name="ed" />
+	<xsl:param name="projectDir" />
+	
 	<!-- damit nicht bei jedem bibl neu geladen werden muß; 2016-06-01 DK -->
 	<xsl:variable name="biblFile"><listBibl /></xsl:variable>
 	
@@ -421,49 +424,64 @@
 	
 	<xsl:template match="tei:rs">
 		<xsl:variable name="ref">
-			<xsl:text>'entity.html?id=thbw&amp;q=</xsl:text>
-			<xsl:value-of select="@ref"/>
-			<xsl:text>'</xsl:text>
+			<xsl:apply-templates select="@ref" />
 		</xsl:variable>
-		<xsl:variable name="link" select="'javascript:showAnnotation(' || $ref || ')'"/>
+		<xsl:variable name="reg">
+			<xsl:choose>
+				<xsl:when test="@type='person'">register/listperson.xml</xsl:when>
+				<xsl:otherwise>register/listplace.xml</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:variable name="att" as="attribute()*">
+			<xsl:attribute name="type">button</xsl:attribute>
+			<xsl:attribute name="class">entity</xsl:attribute>
+			<xsl:attribute name="onclick">javascript:show_annotation('<xsl:value-of select="$ref"/>', '<xsl:value-of select="$reg"/>', '<xsl:value-of select="$ed"/>')</xsl:attribute>
+		</xsl:variable>
+		
 		<xsl:choose>
 			<xsl:when test="descendant::tei:pb">
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:value-of select="text()[following-sibling::tei:w]"/>
 					<xsl:value-of select="tei:w/text()[following-sibling::tei:pb]"/>
-				</a>
+				</button>
 				<xsl:apply-templates select="descendant::tei:pb[1]"/>
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:value-of select="tei:w/text()[preceding-sibling::tei:pb]"/>
 					<xsl:value-of select="text()[preceding-sibling::tei:w]"/>
-				</a>
+				</button>
 			</xsl:when>
 			<xsl:when test="tei:note[@place]">
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="node()[not(self::tei:note[@place])]"/>
-				</a>
+				</button>
 				<xsl:apply-templates select="tei:note[@place]" />
 			</xsl:when>
 			<xsl:when test="tei:note">
 				<xsl:if test="node()[following-sibling::tei:note]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:note]"/>
-					</a>
+					</button>
 				</xsl:if>
 				<xsl:apply-templates select="tei:note" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:note]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-					</a>
+					</button>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:subst">
 				<xsl:if test="node()[following-sibling::tei:subst]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:subst]"/>
-					</a>
+					</button>
 				</xsl:if>
 				<xsl:if test="contains(tei:subst/tei:add, ' ')">
 					<xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
@@ -471,23 +489,26 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:subst/tei:add"/>
-				</a>
+				</button>
 				<xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:subst]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:subst]"/>
-					</a>
+					</button>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:choice">
 				<xsl:if test="node()[following-sibling::tei:choice]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:choice]"/>
-					</a>
+					</button>
 				</xsl:if>
 				<xsl:if test="contains(tei:choice/tei:corr[1], ' ')">
 					<xsl:apply-templates select="tei:choice" mode="fnLink">
@@ -495,23 +516,26 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:choice/tei:corr"/>
-				</a>
+				</button>
 				<xsl:apply-templates select="tei:choice" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:choice]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-					</a>
+					</button>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:app">
 				<xsl:if test="node()[following-sibling::tei:app]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:app]"/>
-					</a>
+					</button>
 				</xsl:if>
 				<xsl:if test="contains(tei:app/tei:lem, ' ')">
 					<xsl:apply-templates select="tei:app" mode="fnLink">
@@ -519,22 +543,40 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:app"/>
-				</a>
+				</button>
 				<xsl:apply-templates select="tei:app" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:app]">
-					<a href="{$link}">
+					<button>
+						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:app]"/>
-					</a>
+					</button>
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
-				<a href="{$link}">
+				<button>
+					<xsl:sequence select="$att" />
 					<xsl:apply-templates/>
-				</a>
+				</button>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	<xsl:template match="tei:rs/@ref">
+		<!-- this template should be overwritten by projects if the value of tei:rs/@ref does not fall into one of the
+			categories 1) #identifier or 2) type:identifier -->
+		<xsl:choose>
+			<xsl:when test="starts-with(., '#')">
+				<xsl:value-of select="substring(@ref, 2)" />
+			</xsl:when>
+			<xsl:when test="contains(., ':')">
+				<xsl:value-of select="substring-after(@ref, ':')"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="."/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
