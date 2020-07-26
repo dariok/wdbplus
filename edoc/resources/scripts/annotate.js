@@ -82,26 +82,69 @@ function anno() {
   
   let backwards = (selection.focusNode === selection.getRangeAt(0).startContainer);
   
-  let end, start;
-  // start may only be the text node within the element; also, a text-only node may be selected
+  let end, start, an, ao, fn, fo;
   if (backwards) {
-    end = selection.anchorNode.wholeText.trim() == ''
-      ? selection.anchorNode.previousElementSibling.id
-      : selection.anchorNode.parentNode.id;
-    start = selection.focusNode.wholeText.trim() == ''
-      ? selection.focusNode.nextElementSibling.id
-      : (selection.focusNode.parentNode.id == ''
-        ? selection.focusNode.parentNode.parentNode.id
-        : selection.focusNode.parentNode.id);
+    // an, ao are the start = leftmost part of the selection
+    an = selection.focusNode;
+    ao = selection.focusOffset;
+    fn = selection.anchorNode;
+    fo = selection.anchorOffset;
   } else {
-    start = selection.anchorNode.wholeText.trim() == ''
-      ? selection.anchorNode.nextElementSibling.id
-      : (selection.anchorNode.parentNode.id == ''
-        ? selection.anchorNode.parentNode.parentNode.id
-        : selection.anchorNode.parentNode.id);
-    end = selection.focusNode.wholeText.trim() == ''
-      ? selection.focusNode.previousElementSibling.id
-      : selection.focusNode.parentNode.id;
+    an = selection.anchorNode;
+    ao = selection.anchorOffset;
+    fn = selection.focusNode;
+    fo = selection.focusOffset;
+  }
+  
+  // get start
+  if (an.parentNode.classList.contains("w") && ao < an.length) {  // selection started in .w
+    start = an.parentNode.id;
+  } else {
+    // selection starts between elements – first, check whether we have a sibling to work from
+    let lookForSibling;
+    if (an.nextElementSibling !== null) {
+      lookForSibling = an;
+    } else if (an.parentNode.nextElementSibling !== null) {
+      // we’re at the end of a .w which has a sibling 
+      lookForSibling = an.parentNode;
+    } else {
+      // we’re at the end of a .w which is inside another element
+      lookForSibling = an.parentNode.parentNode;
+    }
+    
+    if (lookForSibling.nextElementSibling.classList.contains("w")) {
+      // next sibling is a .w, this is our start node
+      start = lookForSibling.nextElementSibling.id;
+    } else {
+      // some other element follows, find the first .w in there
+      start = $(lookForSibling.nextElementSibling).find(".w").first()[0].id;
+    }
+  }
+  
+  // get the end
+  if (fn.parentNode.classList.contains("w") && fo > 0){
+    // within a .w, so this is the end of the selection
+    end = fn.parentNode.id;
+  } else {
+    // selection ended between elements; first, check whether we ha a sibling to work from
+    let lookForSibling;
+    if (fn.previousElementSibling !== null) {
+      lookForSibling = fn;
+    } else if (fn.parentNode.previousElementSibling !== null) {
+      // our parent .w has a previous sibling
+      lookForSibling = fn.parentNode;
+    } else {
+      // our parent .w is within another element
+      lookForSibling = fn.parentNode.parentNode;
+    }
+    
+    if (lookForSibling.previousElementSibling.classList.contains("w")) {
+      // previous sibling is a .w, which is the end of the selection
+      end = lookForSibling.previousElementSibling.id;
+    } else {
+      // previous sibling is sth. else, whose last .w is the end of the selection
+      end = $(lookForSibling.previousElementSibling).find(".w").last()[0].id;
+    }
   }
   
   $('#annText').text(selection.toString());
