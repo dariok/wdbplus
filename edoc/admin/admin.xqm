@@ -71,6 +71,8 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
         default return ()
     }
     <hr />
+    <div id="rightSide" role="contentinfo"/>
+    <hr />
     <div class="info" role="contentinfo">
       <h2>Projekt-Info</h2>
       {wdb:get($model, "")}
