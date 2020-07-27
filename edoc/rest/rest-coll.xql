@@ -102,6 +102,7 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
       
       let $insID := update value $meta/meta:projectMD/@xml:id with $collectionData?id
       let $insTitle := update value $meta//meta:title[1] with $collectionData?name
+      let $insParent := update insert <ptr path="../wdbmeta.xml" /> into $meta/meta:projectMD/meta:struct
       
       let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}" /> into $parentMeta//meta:files
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$collectionData?id}" label="{$collectionData?name}" /> into $parentMeta/meta:projectMD/meta:struct
