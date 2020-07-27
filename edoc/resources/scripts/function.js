@@ -272,11 +272,6 @@ function getPosition(el) {
 $(document).ready(function () {
     $('.fn_number').hover(mouseIn, mouseOut);
     $('.w').hover(wdbTooltipMouseIn, wdbTooltipMouseOut);
-    $('.annotations').hover(function ( event ) {
-      $(this).clearQueue();
-    }, function ( event ) {
-      $(this).delay(1000).fadeOut(500);
-    });
 });
 /* load notes into right div on hover */
 function mouseIn (event) {
@@ -299,20 +294,37 @@ function mouseOut (event) {
 function wdbTooltipMouseIn ( event ) {
   let tPos, lPos, fWidth,
       maxWidth = 500,
-      annotationElement = $(this).children(".annotations");
+      annotationElement,
+      target = event.target;
+  
+  if (target.classList.contains("annotations")) {
+    annotationElement = $(target);
+  } else if ($(target).children(".annotations").length > 0) {
+    annotationElement = target.children(".annotations");
+  } else {
+    let annotationID;
+    if (target.hasAttribute("aria-describedby")) {
+      annotationID = target.attributes["aria-describedby"].value;
+    } else if (target.parentNode.hasAttribute("aria-describedby")) {
+      annotationID = target.parentNode.attributes["aria-describedby"].value;
+    }
+    annotationElement = $('#' + annotationID);
+  }
+  
+  $(annotationElement).clearQueue();
   
   if (annotationElement.innerWidth() > maxWidth)
     fWidth = maxWidth;
   else fWidth = annotationElement.innerWidth();
   
-  if ((fWidth + $(this).offset().left + 20) > window.innerWidth) {								// position the info window
+  if ((fWidth + $(target).offset().left + 20) > window.innerWidth) {								// position the info window
     lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
-    tPos = $(this).position().top + 5;
+    tPos = $(target).position().top + 5;
     annotationElement.offset({ left: lPos, top: tPos});
     annotationElement.css('top', tPos);
   } else {
-    lPos = $(this).position().left;
-    tPos = $(this).position().top + 5;
+    lPos = $(target).position().left;
+    tPos = $(target).position().top + 5;
     annotationElement.css('left', lPos).css('top', tPos);
   }
   
@@ -322,7 +334,34 @@ function wdbTooltipMouseIn ( event ) {
   annotationElement.show();
 }
 function wdbTooltipMouseOut ( event ) {
-  $(this).children('.annotations').delay(1000).fadeOut(500);
+/*  $(this).children('.annotations').delay(1000).fadeOut(500);*/
+  let annotationElement,
+      target = event.target;
+      
+  if (target.classList.contains("annotations")) {
+    annotationElement = $(target);
+  } else if ($(target).children(".annotations").length > 0) {
+    annotationElement = $(target).children(".annotations");
+  } else {
+    let annotationID;
+    if (target.hasAttribute("aria-describedby")) {
+      annotationID = target.attributes["aria-describedby"].value;
+    } else if (target.parentNode.hasAttribute("aria-describedby")) {
+      annotationID = target.parentNode.attributes["aria-describedby"].value;
+    }
+    annotationElement = $('#' + annotationID);
+  }
+  
+  $(annotationElement).delay(1000).fadeOut(500);
+}
+function annotationMouseIn ( event ) {
+  let target = event.target;
+  $(target).closest(".annotations").stop(true);
+}
+function annotationMouseOut ( event ) {
+  let target = event.target;
+  $(target).closest(".annotations").stop(true);
+  $(target).closest(".annotations").delay(1000).fadeOut(500);
 }
 /*****
  * Display “external” (i.e. not found within the current view) information such as (but not limited to) entities
@@ -515,6 +554,20 @@ function highlightAll (startMarker, endMarker, color, alt) {
             });
         }
     }
+}
+
+var annotationsCount = 0;
+function addAnnotation ( targetElement, content ) {
+  // create element for annotations
+  if ( $(targetElement).children(".annotations").length === 0 ) {
+    /*$(targetElement).append('<ul class="annotations" role="complementary"><dt>Annotationen an dieser Stelle:</dt></ul>');*/
+    $('<ul class="annotations" role="complementary" id="ann' + annotationsCount + '" '
+        + 'onmouseover="annotationMouseIn(event)" onmouseout="annotationMouseOut(event)" '
+        + 'onmousemove="annotationMouseIn(event)"><dt>Annotationen an dieser Stelle:</dt></ul>').insertAfter(targetElement);
+    $(targetElement).attr("aria-describedby", "ann" + annotationsCount);
+  }
+  $("#ann" + annotationsCount).append(content);
+  annotationsCount++;
 }
 /* END highlighting */
 

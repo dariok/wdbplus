@@ -63,6 +63,18 @@ $(function() {
       }
     }
   });
+  
+  // for all entity annotations, add their info to the list, too
+  var entityEntryID = 0;
+  $("button.entity").each(function () {
+    let start = $(this).first(),
+        end = $(this).last(),
+        content = '<dd id="ent' + entityEntryID + '">Entitäten-Verknüpfung&nbsp;'
+            + '&nbsp; <button onclick="entityDelete(\'ent' + entityEntryID 
+            + '\')" title="Eintrag löschen">&#x1F5D1;</button></dd>';
+    highlightAll(start, end, "white", content);
+    entityEntryID++;
+  });
 });
 
 // get the selected word(s), show them in the dialogue and open it
