@@ -49,7 +49,7 @@ $(window).on('load resize', function (event) {
 
 // Für Hervorhebung einer Abfolge von Elementen
 $(document).ready(function () {
-    if (params.hasOwnProperty('l')) {
+    if (wdb.search.hasOwnProperty('l')) {
         var range = window.location.search.split('&l=')[1];
         var from = range.split('-')[0];
         var to = range.split('-')[1];
@@ -69,8 +69,8 @@ $(document).ready(function () {
     }
 });
 $(document).ready(function() {
-  if (params.hasOwnProperty('i')) {
-    let ids = params.i.split(',');
+  if (wdb.search.hasOwnProperty('i')) {
+    let ids = wdb.search.i.split(',');
     for (let i = 0; i < ids.length; i++) {
       $('#' + ids[i]).css('background-color', 'lightblue');
     }
