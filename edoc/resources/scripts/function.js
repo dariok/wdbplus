@@ -177,7 +177,7 @@ function loadTargetImage () {
             let pagebreak = target.parents().has('.pagebreak').first();
             let pb = (pagebreak.find('a').length > 1)
               ? pagebreak.find('.pb a')
-              : pb = pagebreak.find('a');
+              : pagebreak.find('a');
             displayImage(pb);
         }
     } else {
