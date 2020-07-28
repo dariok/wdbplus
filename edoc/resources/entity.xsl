@@ -49,7 +49,7 @@
 				<xsl:value-of select="normalize-space(@id)"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}entities/collection/{ancestor::results/@collection}/{@id}.html', '{@id}', this)">→</a>
+			<a href="javascript:void(0);" onclick="load('{$rest}/entities/collection/{ancestor::results/@collection}/{ancestor::results/@type}/{@id}.html', '{@id}', this)">→</a>
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
@@ -60,7 +60,7 @@
 				<xsl:value-of select="*:titleStmt/*[descendant::text()][1]"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
+			<a href="javascript:void(0);" onclick="load('{$rest}/entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
