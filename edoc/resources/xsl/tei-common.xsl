@@ -570,10 +570,10 @@
 			categories 1) #identifier or 2) type:identifier -->
 		<xsl:choose>
 			<xsl:when test="starts-with(., '#')">
-				<xsl:value-of select="substring(@ref, 2)" />
+				<xsl:value-of select="substring(., 2)" />
 			</xsl:when>
 			<xsl:when test="contains(., ':')">
-				<xsl:value-of select="substring-after(@ref, ':')"/>
+				<xsl:value-of select="substring-after(., ':')"/>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:value-of select="."/>
