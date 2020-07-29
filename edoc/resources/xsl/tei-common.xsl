@@ -433,55 +433,55 @@
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:variable name="att" as="attribute()*">
-			<xsl:attribute name="type">button</xsl:attribute>
+			<xsl:attribute name="role">button</xsl:attribute>
 			<xsl:attribute name="class">entity</xsl:attribute>
 			<xsl:attribute name="onclick">javascript:show_annotation('<xsl:value-of select="$ref"/>', '<xsl:value-of select="$reg"/>', '<xsl:value-of select="$ed"/>')</xsl:attribute>
 		</xsl:variable>
 		
 		<xsl:choose>
 			<xsl:when test="descendant::tei:pb">
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:value-of select="text()[following-sibling::tei:w]"/>
 					<xsl:value-of select="tei:w/text()[following-sibling::tei:pb]"/>
-				</button>
+				</span>
 				<xsl:apply-templates select="descendant::tei:pb[1]"/>
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:value-of select="tei:w/text()[preceding-sibling::tei:pb]"/>
 					<xsl:value-of select="text()[preceding-sibling::tei:w]"/>
-				</button>
+				</span>
 			</xsl:when>
 			<xsl:when test="tei:note[@place]">
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="node()[not(self::tei:note[@place])]"/>
-				</button>
+				</span>
 				<xsl:apply-templates select="tei:note[@place]" />
 			</xsl:when>
 			<xsl:when test="tei:note">
 				<xsl:if test="node()[following-sibling::tei:note]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:note]"/>
-					</button>
+					</span>
 				</xsl:if>
 				<xsl:apply-templates select="tei:note" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:note]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-					</button>
+					</span>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:subst">
 				<xsl:if test="node()[following-sibling::tei:subst]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:subst]"/>
-					</button>
+					</span>
 				</xsl:if>
 				<xsl:if test="contains(tei:subst/tei:add, ' ')">
 					<xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
@@ -489,26 +489,26 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:subst/tei:add"/>
-				</button>
+				</span>
 				<xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:subst]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:subst]"/>
-					</button>
+					</span>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:choice">
 				<xsl:if test="node()[following-sibling::tei:choice]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:choice]"/>
-					</button>
+					</span>
 				</xsl:if>
 				<xsl:if test="contains(tei:choice/tei:corr[1], ' ')">
 					<xsl:apply-templates select="tei:choice" mode="fnLink">
@@ -516,26 +516,26 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:choice/tei:corr"/>
-				</button>
+				</span>
 				<xsl:apply-templates select="tei:choice" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:choice]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-					</button>
+					</span>
 				</xsl:if>
 			</xsl:when>
 			<xsl:when test="tei:app">
 				<xsl:if test="node()[following-sibling::tei:app]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[following-sibling::tei:app]"/>
-					</button>
+					</span>
 				</xsl:if>
 				<xsl:if test="contains(tei:app/tei:lem, ' ')">
 					<xsl:apply-templates select="tei:app" mode="fnLink">
@@ -543,25 +543,25 @@
 						<xsl:with-param name="type">crit</xsl:with-param>
 					</xsl:apply-templates>
 				</xsl:if>
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:apply-templates select="tei:app"/>
-				</button>
+				</span>
 				<xsl:apply-templates select="tei:app" mode="fnLink">
 					<xsl:with-param name="type">crit</xsl:with-param>
 				</xsl:apply-templates>
 				<xsl:if test="node()[preceding-sibling::tei:app]">
-					<button>
+					<span>
 						<xsl:sequence select="$att" />
 						<xsl:apply-templates select="node()[preceding-sibling::tei:app]"/>
-					</button>
+					</span>
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
-				<button>
+				<span>
 					<xsl:sequence select="$att" />
 					<xsl:apply-templates/>
-				</button>
+				</span>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
