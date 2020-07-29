@@ -455,7 +455,7 @@ function highlightAll (startMarker, endMarker, color, alt) {
     if (startMarker.is(endMarker)) {
         // just one element selected
         startMarker.css("background-color", color);
-        if (alt != '') startMarker.attr('title', alt);
+        if (alt != '') addAnnotation (startMarker, alt);
     } else if (startMarker.parent().is(endMarker.parent())) {
         // both elements have the same parent
         // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -465,16 +465,16 @@ function highlightAll (startMarker, endMarker, color, alt) {
         
         // Colour and info for the start marker
         $(startMarker).css("background-color", color);
-        if (alt != '') $(startMarker).attr('title', alt);
+        if (alt != '') addAnnotation (startMarker, alt);
         
         // Colour and info for the siblings until the end marker
         sib = $(startMarker).nextUntil(endMarker);
         sib.css("background-color", color);
-        if (alt != '') sib.attr('title', alt);
+        if (alt != '') addAnnotation (sib, alt);
         
         // Colour and info for the end marker
         $(endMarker).css("background-color", color);
-        if (alt != '') $(endMarker).attr('title', alt);
+        if (alt != '') addAnnotation (endMarker, alt);
         //DONE
     } else {
         // check further down the ancestry
@@ -492,7 +492,7 @@ function highlightAll (startMarker, endMarker, color, alt) {
         startMarker.nextAll().addBack().each(function () {
             if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return; else {
                 $(this).css("background-color", color);
-                if (alt != '') $(this).attr('title', alt);
+                if (alt != '') addAnnotation (this, alt);
             }
         });
         
@@ -513,7 +513,7 @@ function highlightAll (startMarker, endMarker, color, alt) {
                         return;
                     } else {
                         $(this).css("background-color", color);
-                        if (alt != '') $(this).attr('title', alt);
+                        if (alt != '') addAnnotation (this, alt);
                     }
                 });
             });
@@ -529,7 +529,7 @@ function highlightAll (startMarker, endMarker, color, alt) {
         $(endMarker.prevAll().addBack(). get ().reverse()).each(function () {
             if ($(this).has(startMarker).length > 0 || $(this).is(startMarker) || $(this).nextAll().has(startMarker).length > 0) return; else {
                 $(this).css("background-color", color);
-                if (alt != '') $(this).attr('title', alt);
+                if (alt != '') addAnnotation (this, alt);
             }
         });
         
@@ -548,7 +548,7 @@ function highlightAll (startMarker, endMarker, color, alt) {
                         return;
                     } else {
                         $(this).css("background-color", color);
-                        if (alt != '') $(this).attr('title', alt);
+                        if (alt != '') addAnnotation (this, alt);
                     }
                 });
             });
