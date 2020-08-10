@@ -208,6 +208,42 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
     )
 };
 
+(:~
+ : remove entity by type and containted token (by ID)
+ :)
+declare
+  %rest:DELETE
+  %rest:path("/edoc/anno/entity/{$fileID}/{$type}/{$tokenID}")
+function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID as xs:string) {
+  let $check := wdbRa:check ($fileID, map { "from": $tokenID }, "w", "from")
+  
+  return if ($check[1] != 200)
+    then
+      (
+        <rest:response>
+          <http:response status="{$check[1]}">
+            <http:header name="X-Rest-Status" value="{$check[2]}" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+            <http:header name="Content-Type" value="text/plain" />
+          </http:response>
+        </rest:response>,
+        for $err in $check
+          return $err || "&#x0A;"
+      )
+    else
+      let $t := ""
+      return
+        (
+          <rest:response>
+            <http:response status="205">
+              <http:header name="X-Rest-Status" value="delete operation successful" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          ""
+        )
+};
+
 declare
   %rest:POST("{$body}")
   %rest:path("/edoc/anno/word/{$fileID}")
