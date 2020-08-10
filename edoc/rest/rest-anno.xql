@@ -231,7 +231,17 @@ function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID
           return $err || "&#x0A;"
       )
     else
-      let $t := ""
+      let $token := doc($check[2])/id($tokenID)
+      let $longType := switch ($type)
+          case "per" return "person"
+          case "pla" return "place"
+          case "org" return "organization"
+          case "evt" return "event"
+          case "bib" return "bibl"
+          default return "unknown"
+      let $entity := $token/ancestor::tei:rs[@type = $longType][1]
+      let $content := $entity/node()
+      
       return
         (
           <rest:response>
@@ -240,7 +250,9 @@ function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID
               <http:header name="Access-Control-Allow-Origin" value="*"/>
             </http:response>
           </rest:response>,
-          ""
+          (: must be done as 2 steps as replace can only replace one node by exactly one other :)
+          update insert $content following $entity,
+          update delete $entity
         )
 };
 
