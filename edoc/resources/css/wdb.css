@@ -6,6 +6,7 @@
 /* changes
  * 2019-06-06 Move to a grid-based layout
  * 2019-09-13 use CSS custom properties to make responsive styling easier
+ * 2020-08-14 styling for annotation dialogue
  */
 
 /* declare a global custom property to determine the width of the browser window
@@ -148,6 +149,24 @@ nav ul {
 
 nav li ul {
   margin-left: 1.25em;
+}
+
+/* Annotation dialogue */
+#annotationDialog h2 {
+  color: initial;
+}
+#annotationDialog div:last-child span {
+  margin-top: 10px;
+}
+#annoAuth {
+  float: left;
+}
+#annoInfo {
+  display: inline-block;
+  width: 80%;
+  float: right;
+  text-align: right;
+  padding-right: 2px;
 }
 
 @media screen and (max-width: 768px) {
