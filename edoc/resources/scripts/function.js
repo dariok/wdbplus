@@ -22,12 +22,7 @@ var wdb = (function() {
   }
   
   // authentication header for REST request
-  let headers = (function() {
-    let cred = Cookies.get("wdbplus");
-    if (typeof cred !== "undefined" && cred.length != 0)
-      return { "Authorization": "Basic " + cred };
-      else return "";
-  })();
+  let headers = getHeaders();
   
   return {
     meta:         meta,
@@ -40,6 +35,14 @@ var timer,                              // timer for marginalia positioning
     internalUniqueId = 0;               // basis for globally unique IDs
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
+
+/* (helper) functions */
+function getHeaders () {
+  let cred = Cookies.get("wdbplus");
+  if (typeof cred !== "undefined" && cred.length != 0)
+    return { "Authorization": "Basic " + cred };
+    else return "";
+}
 
 /* set/reset timer for marginalia positioning and invoke actual function */
 $(window).on('load resize', function (event) {
@@ -100,11 +103,7 @@ $(document).ready(function () {
 });
 
 /* Login and logout */
-// url: 'edoc/modules/auth.xql'
-$(document).ready(function () {
-	$('#login').submit(function (e) { login(e) });
-})
-function login (e) {
+function login (t, e) {
 	e.preventDefault();
 	username = $('#user').val();
 	password = $('#password').val();
@@ -121,6 +120,7 @@ function login (e) {
 		success: function (data) {
 			try {
 				$('#auth').replaceWith(data);
+				wdb.restheaders = getHeaders();
 				console.log('logged in');
 				console.log(data);
 			} catch (e) {
@@ -145,6 +145,7 @@ function doLogout () {
 		success: function (data) {
 			try {
 				$('#auth').replaceWith(data);
+				wdb.restheaders = getHeaders();
 				console.log('trying to log off' + data);
 			} catch (e) {
 				console.log('logging out, tried to replace #logout with:');
