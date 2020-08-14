@@ -242,8 +242,17 @@ function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID
       let $entity := $token/ancestor::tei:rs[@type = $longType][1]
       let $content := $entity/node()
       
-      return
-        (
+      return if (count($entity) = 0)
+        then (
+          <rest:response>
+            <http:response status="400">
+              <http:header name="X-Rest-Status" value="ERR:entity not found" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          "no entity of type " || $type || " was found as ancestor of " || $tokenID
+        )
+        else (
           <rest:response>
             <http:response status="205">
               <http:header name="X-Rest-Status" value="delete operation successful" />
