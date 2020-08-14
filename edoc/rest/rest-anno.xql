@@ -250,7 +250,7 @@ function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID
               <http:header name="Access-Control-Allow-Origin" value="*"/>
             </http:response>
           </rest:response>,
-          "no entity of type " || $type || " was found as ancestor of " || $tokenID
+          "400&#x0A;no entity of type " || $type || " was found as ancestor of " || $tokenID
         )
         else (
           <rest:response>
