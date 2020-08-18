@@ -343,7 +343,7 @@ function identifyEntity() {
   
   $.ajax({
     method: "post",
-    url: wdb.meta.rest+ "anno/entity/" + wdb.meta.id,
+    url: wdb.meta.rest + "anno/entity/" + wdb.meta.id,
     headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
@@ -360,6 +360,36 @@ function identifyEntity() {
       $('#' + start).html(ins);
     }
   });
+}
+
+// DELETE an entity = replace tei:rs by its contents
+function deleteEntity() {
+  let type = $("#deleteType").val(),    // the type of entity to be deleted
+      start = $('#annFrom').text(),     // first ID in annotation range
+      end = $('#annTo').text();         // last ID in annotation range
+  
+  if (start !== end) {
+    alert("Es darf nur ein Wort ausgewählt werden!");
+    return false;
+  } else {
+    let url = wdb.meta.rest + "anno/entity/" + wdb.meta.id + "/" + type + "/" + start;
+    
+    $.ajax({
+      method: "delete",
+      url: url,
+      headers: wdb.restheaders,
+      success: function (data) {
+        console.info("deleted entity (ancestor of " + start + ")");
+        $('#annoInfo').text("Erfolgreich gelöscht").css("background-color", "white");
+        return true;
+      },
+      error: function ( jqXHR, textStatus, errorThrown ) {
+        let errorText = jqXHR.responseText.split("\n");
+        $('#annoInfo').text(errorText[1]).css("background-color", "lightcoral");
+        console.error(errorThrown, textStatus, jqXHR);
+      }
+    });
+  }
 }
 
 /* 

@@ -208,6 +208,63 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
     )
 };
 
+(:~
+ : remove entity by type and containted token (by ID)
+ :)
+declare
+  %rest:DELETE
+  %rest:path("/edoc/anno/entity/{$fileID}/{$type}/{$tokenID}")
+function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID as xs:string) {
+  let $check := wdbRa:check ($fileID, map { "from": $tokenID }, "w", "from")
+  
+  return if ($check[1] != 200)
+    then
+      (
+        <rest:response>
+          <http:response status="{$check[1]}">
+            <http:header name="X-Rest-Status" value="{$check[2]}" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+            <http:header name="Content-Type" value="text/plain" />
+          </http:response>
+        </rest:response>,
+        for $err in $check
+          return $err || "&#x0A;"
+      )
+    else
+      let $token := doc($check[2])/id($tokenID)
+      let $longType := switch ($type)
+          case "per" return "person"
+          case "pla" return "place"
+          case "org" return "organization"
+          case "evt" return "event"
+          case "bib" return "bibl"
+          default return "unknown"
+      let $entity := $token/ancestor::tei:rs[@type = $longType][1]
+      let $content := $entity/node()
+      
+      return if (count($entity) = 0)
+        then (
+          <rest:response>
+            <http:response status="400">
+              <http:header name="X-Rest-Status" value="ERR:entity not found" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          "400&#x0A;no entity of type " || $type || " was found as ancestor of " || $tokenID
+        )
+        else (
+          <rest:response>
+            <http:response status="205">
+              <http:header name="X-Rest-Status" value="delete operation successful" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          (: must be done as 2 steps as replace can only replace one node by exactly one other :)
+          update insert $content following $entity,
+          update delete $entity
+        )
+};
+
 declare
   %rest:POST("{$body}")
   %rest:path("/edoc/anno/word/{$fileID}")
