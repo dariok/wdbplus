@@ -379,11 +379,36 @@ declare
     %rest:path("/edoc/collection/{$id}/nav.xml")
 function wdbRc:getCollectionNavXML ($id as xs:string) {
   let $md := collection($wdb:data)/id($id)[self::meta:projectMD]
+  let $uri := base-uri($md)
+  let $struct := $md/meta:struct
   
-  return
-    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$id}">{
-      local:pM(doc(local:findImporter(base-uri($md))))
-    }</struct>
+  let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$id}">{(
+      $struct/@*,
+      $struct/*
+    )}</struct>
+  
+  return if ($struct/meta:import)
+    then local:imported($struct/meta:import, $content)
+    else $content
+};
+
+declare function local:imported ( $import, $child ) {
+  let $uri := base-uri($import)
+  let $path := substring-before($uri, "wdbmeta.xml") || $import/@path
+  let $meta := doc($path)
+  
+  let $content := $meta/meta:projectMD/meta:struct
+  let $struct := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$meta/meta:projectMD/@xml:id}">{(
+        $content/@*,
+        for $st in $content/* return
+          if ($st/@file = $child/@ed)
+            then $child
+            else $st
+      )}</struct>
+  
+  return if ($content/meta:import)
+    then local:imported ( $content/meta:import, $struct)
+    else $struct
 };
 
 declare
@@ -422,42 +447,6 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
     </rest:response>,
     $html
   )
-};
-
-declare function local:findImporter($path) {
-  let $f := doc($path)
-  
-  return if ($f//meta:import)
-  then
-    let $base := substring-before($path, "wdbmeta.xml")
-    return local:findImporter($base || $f//meta:import/@path)
-  else $path
-};
-
-declare function local:pM($meta) {
-  let $uri := base-uri($meta)
-  
-  return for $s in $meta/meta:projectMD/meta:struct/*
-    order by $s/@order
-    let $f := $meta//meta:files/*[@xml:id = $s/@file]
-    return if ($f[self::meta:ptr])
-    then
-      let $base := substring-before($uri, 'wdbmeta.xml')
-      return
-        <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-          {$s/@*}
-          {local:pM(doc($base || $f/@path))}
-        </struct>
-    else if ($s[self::meta:struct]/meta:view) then
-      <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-          {$s/@*}
-          {
-            for $v in $s/* return
-              if ($v[@private = 'true'] and not(sm:has-access($uri, 'w'))) then ()
-              else $v
-          }
-        </struct>
-    else $s
 };
 
 (: helper functions :)
