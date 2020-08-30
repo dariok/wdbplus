@@ -507,42 +507,36 @@ function highlightAll (startMarker, endMarker, color, alt) {
 
 /** Navigation **/
 function toggleNavigation() {
-    if ($('nav').css('display') == 'none')
+  if ($('nav').css('display') == 'none')
     $('#showNavLink').text('Navigation ausblenden'); else $('#showNavLink').text('Navigation einblenden');
     
-    if ($('nav').text() === '') {
-        $('nav').text('lädt...');
-        id = $('meta[name="ed"]').attr('content');
-        res = $. get (rest + '/collection/' + id + '/nav.html', '',
-        function (data) {
-            $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
-        },
-        'html');
-    }
-    $('nav').slideToggle();
+  if ($('nav').text() === '') {
+    $('nav').text('lädt...');
+    let id = $('meta[name="ed"]').attr('content'),
+        url = rest + 'collection/' + id + '/nav.html';
+    $.ajax({
+      method: "get",
+      url: url,
+      success: function (data) {
+        $('nav').replaceWith($(data));
+      }
+    });
+  }
 }
 
-function load (url, target, me) {
-    if ($('#' + target).css('display') == 'none') {
-      res = $.ajax(url,
-        {
-          dataType: "html",
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
-          },
-          error: function (xhr, status, error) {
-            console.log("error");
-            console.log(status);
-            console.log(error);
-          }
-        }
-      );
-    } else {
-      $('#' + target).slideToggle();
-      $(me).html($(me).html().replace('↑', '→'));
+function loadNavigation (url, target, me) {
+  $.ajax({
+    method: "get",
+    url: url,
+    success: function (data) {
+      $('#' + target).replaceWith($(data).find('#' + target));
+    },
+    error: function (xhr, status, error) {
+      console.log("error");
+      console.log(status);
+      console.log(error);
     }
+  });
 }
 
 /* create a runtime unique global ID */
