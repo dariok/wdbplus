@@ -1,14 +1,51 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta"
+	exclude-result-prefixes="#all"
+	version="3.0">
+	
+	<xsl:output method="html" />
 	
 	<xsl:param name="id"/>
 	
-	<xsl:template match="/">
+	<xsl:template match="/meta:struct">
+		<h2>
+			<xsl:value-of select="@label" />
+		</h2>
 		<ul>
-			<xsl:apply-templates select="meta:struct"/>
+			<xsl:apply-templates />
 		</ul>
 	</xsl:template>
 	
-	<xsl:template match="meta:struct[descendant::meta:view]">
+	<xsl:template match="meta:struct[@file]">
+		<li id="{@file}">
+			<button title="Navigation einblenden" type="button" onclick="switchnav('{@file}', this)">
+				<xsl:value-of select="@label"/>
+			</button>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="meta:struct[@ed and parent::*]">
+		<li id="{@ed}">
+			<button title="Navigation einblenden" type="button" onclick="$('#{@ed}').children('ul').toggle;">
+				<xsl:value-of select="@label" />
+			</button>
+			<ul>
+				<xsl:apply-templates select="meta:struct" />
+			</ul>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="meta:struct[not(@file or @ed)]">
+		<button type="button" title="Navigation einblenden" onclick="$('#{parent::meta:struct/@ed}-{@label}').toggle()">
+			<xsl:value-of select="@label"/>
+		</button>
+		<ul id="{parent::meta:struct/@ed}-{@label}" style="display: none;">
+			<xsl:apply-templates />
+		</ul>
+	</xsl:template>
+	
+	<!--<xsl:template match="meta:struct[descendant::meta:view]">
 		<xsl:variable name="file" select="translate((@file, parent::*/@file, @label)[1], ' .', '_')" />
 		<li id="{$file}">
 			<xsl:variable name="hidden" select="parent::meta:struct and not(@file = $id     or descendant::meta:struct[@file = $id]     or ancestor::meta:struct[@file= $id]     or parent::meta:struct/meta:struct[@file = $id])"/>
@@ -46,7 +83,7 @@
 				</ul>
 			</xsl:if>
 		</li>
-	</xsl:template>
+	</xsl:template>-->
 	
 	<xsl:template match="meta:view">
 		<li>
