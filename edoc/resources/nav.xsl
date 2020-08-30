@@ -19,7 +19,7 @@
 	
 	<xsl:template match="meta:struct[@file]">
 		<li id="{@file}">
-			<button title="Navigation einblenden" type="button" onclick="switchnav('{@file}', this)">
+			<button title="Navigation einblenden" type="button" onclick="loadnav('{@file}')">
 				<xsl:value-of select="@label"/>
 			</button>
 		</li>
@@ -27,7 +27,7 @@
 	
 	<xsl:template match="meta:struct[@ed and parent::*]">
 		<li id="{@ed}">
-			<button title="Navigation einblenden" type="button" onclick="$('#{@ed}').children('ul').toggle;">
+			<button title="Navigation einblenden" type="button" onclick="$('#{@ed}').children('ul').toggle();">
 				<xsl:value-of select="@label" />
 			</button>
 			<ul>
@@ -37,12 +37,14 @@
 	</xsl:template>
 	
 	<xsl:template match="meta:struct[not(@file or @ed)]">
-		<button type="button" title="Navigation einblenden" onclick="$('#{parent::meta:struct/@ed}-{@label}').toggle()">
-			<xsl:value-of select="@label"/>
-		</button>
-		<ul id="{parent::meta:struct/@ed}-{@label}" style="display: none;">
-			<xsl:apply-templates />
-		</ul>
+		<li>
+			<button type="button" title="Navigation einblenden" onclick="$('#{parent::meta:struct/@ed}-{@label}').toggle()">
+				<xsl:value-of select="@label"/>
+			</button>
+			<ul id="{parent::meta:struct/@ed}-{@label}" style="display: none;">
+				<xsl:apply-templates />
+			</ul>
+		</li>
 	</xsl:template>
 	
 	<!--<xsl:template match="meta:struct[descendant::meta:view]">
