@@ -83,8 +83,7 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
-      (: TODO update to xmldb:copy-resource(3) when eXist 5 is more firmly established :)
-      let $co := xmldb:copy($wdb:edocBaseDB || "/resources", $subCollection, "wdbmeta.xml")
+      let $co := xmldb:copy-resource($wdb:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
       let $newMetaPath := $subCollection || "/wdbmeta.xml"
       
       let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
