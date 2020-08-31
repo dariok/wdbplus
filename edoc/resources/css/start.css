@@ -4,3 +4,13 @@
 aside div div {
     padding-bottom: 1em;
 }
+
+/* start.xqm fetches navigation via REST which return a full nav element including h2; 
+ * on start.html, we dont want full styling in aside */
+aside nav {
+    border: 0;
+}
+
+aside nav h2 {
+    display: none;
+}
