@@ -2,8 +2,10 @@
  * author: Dario Kampkaspar, dario.kampkaspar@oeaw.ac.at
  * https://github.com/dariok/wdbplus
  */
+/* jshint browser: true */
 
 /* global variables */
+<<<<<<< Updated upstream
 var timer;                 // timer for marginalia positioning
 var internalUniqueId = 0;  // basis for globally unique IDs
 var id = $("meta[name='id']").attr("content");
@@ -14,15 +16,123 @@ for (let i = 0; i < ar.length; i++) {
   let te = ar[i].split("=");
   params[te[0]] = te[1];
 }
+=======
+// global object for reused variables and functions
+var wdb = (function() {
+  // all meta elements
+  let meta = {},
+      metas = document.getElementsByTagName("meta");
+  for (let i = 0; i < metas.length; i++) {
+    meta[metas[i].name] = metas[i].content;
+  }
+  
+  // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
+  /* TODO https://github.com/dariok/wdbplus/issues/429
+      current support data: c. 91% should support URLSearchParams – switch when support > 95% */
+  let ar = window.location.search.substr(1).split("&"),
+      params = {};
+  for (let i = 0; i < ar.length; i++) {
+    let te = ar[i].split("=");
+    params[te[0]] = te[1];
+  }
+  
+  // unique IDs
+  let internalUniqueId = 0;               // basis for globally unique IDs
+  function getUniqueId() {
+    return 'd' + internalUniqueId++;
+  }
+
+  /* Login and logout */
+  function login (that, event) {
+	  event.preventDefault();
+  
+    let username = $('#user').val(),
+        password = $('#password').val();
+    console.log('login request');
+    
+    $.ajax({
+      url: 'login',
+      method: 'post',
+      data: {
+        user: username,
+        password: password,
+        edition: $('#edition').val()
+      },
+      success: function (data) {
+        try {
+          $('#auth').replaceWith(data);
+          wdb.restheaders = restHeaders();
+          console.log('logged in');
+          //console.log(data);
+        } catch (e) {
+          /*console.log('logged in, tried to replace #login with:');
+          console.log(data);
+          console.log(e);*/ 
+        }
+      },
+      dataType: 'text'
+    });
+    Cookies.set('wdbplus', btoa(username + ':' + password));
+  }
+  function logout () {
+    console.log('logout request');
+    Cookies.remove('wdbplus');
+    $.ajax({
+      url: 'login',
+      method: 'post',
+      data: {
+        logout: 'logout'
+      },
+      success: function (data) {
+        try {
+          $('#auth').replaceWith(data);
+          wdb.restheaders = restHeaders();
+          console.log('trying to log off' + data);
+        } catch (e) {
+          console.log('logging out, tried to replace #logout with:');
+          console.log(data);
+        }
+      },
+      dataType: 'text'
+    });
+  }
+  /* END login and logout */
+
+  /* globals Cookies */
+  /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
+  // function to set REST headers
+  function restHeaders () {
+    let cred = Cookies.get("wdbplus");
+    if (typeof cred !== "undefined" && cred.length != 0)
+      return { "Authorization": "Basic " + cred };
+      else return "";
+  }
+  // authentication header for REST request
+  let headers = restHeaders();
+
+  return {
+    meta:           meta,
+    search:         params,
+    restHeaders:    headers,
+    setRestHeaders: restHeaders(),
+    getUniqueId:    getUniqueId(),
+    login:          login(),
+    logout:         logout()
+  };
+})();
+
+var timer;                              // timer for marginalia positioning
+>>>>>>> Stashed changes
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
 /* set/reset timer for marginalia positioning and invoke actual function */
-$(window).on('load resize', function (event) {
-    clearTimeout(timer);
-    timer = setTimeout(marginPos, 500);
+$(window).on('load resize', function () {
+  clearTimeout(timer);
+  timer = setTimeout(documentFunctions.positionMarginalia(), 500);
 });
 
+<<<<<<< Updated upstream
 // Für Hervorhebung einer Abfolge von Elementen
 $(document).ready(function () {
     if (params.hasOwnProperty('l')) {
@@ -41,40 +151,94 @@ $(document).ready(function () {
         0);
         
         var pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
+=======
+var documentFunctions = {
+  highlightRange: function ( range ) {
+    let from = range.split('-')[0],
+        to = range.split('-')[1];
+    
+    highlightAll (from, to, 'red', '');
+
+    let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
+    // minus fixed header height
+    // console.log($('#' + from).offset().top);
+    $('html, body').animate({scrollTop: scrollto}, 0);
+      
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
+    displayImage(pb);
+  },
+
+  loadTargetImage: function () {
+    let target = $(':target');
+    if (target.length > 0) {
+      if (target.attr('class') == 'pagebreak') {
+        console.log("trying to load image: " + $(':target > a').attr('href'));
+        displayImage($(':target > a'));
+      } else {
+        let pagebreak = target.parents().has('.pagebreak').first(),
+            pb = (pagebreak.find('a').length > 1) ? pagebreak.find('.pb a') : pagebreak.find('a');
+>>>>>>> Stashed changes
         displayImage(pb);
+      }
     }
+<<<<<<< Updated upstream
 });
 $(document).ready(function() {
   if (params.hasOwnProperty('i')) {
     let ids = params.i.split(',');
+=======
+  },
+
+  /* postioning of marginalia */
+  positionMarginalia: function () {
+    let mRefs = $("a.mref");
+    if (mRefs.length > 0) {
+      // Show margin container only if any are to be shown
+      let tar = window.location.hash;
+      if (tar !== '' && tar !== 'undefined') {
+        window.location.hash = '#';
+      }
+      
+      mRefs.each(mPosition);
+      $('#marginalia_container').children('span').css('visibility', 'visible');
+      
+      if (tar !== '' && tar !== 'undefined') {
+        window.location.hash = tar;
+      }
+    }
+  }
+};
+
+// call highlighting and image loading functions when document is ready
+$(function () {
+  // highlight a range of elements given by the »l« query parameter and scroll there
+  if (wdb.search.hasOwnProperty('l')) {
+    documentFunctions.highlightRange(wdb.search.l);
+  }
+
+  // highlight several elements given by a comma separated list in the »i« query parametter
+  if (wdb.search.hasOwnProperty('i')) {
+    let ids = wdb.search.i.split(',');
+>>>>>>> Stashed changes
     for (let i = 0; i < ids.length; i++) {
       $('#' + ids[i]).css('background-color', 'lightblue');
     }
   }
-});
 
-/* autoload image */
-// ... when jumping to target
-$(window).bind('hashchange', function () {
-    loadTargetImage();
-});
-// when loading; or load p. 1 when no target is present
-$(document).ready(function () {
+  // load image for target page (or first page if not target)
   if($('.pagebreak').length > 0) {
-    let target = $('.pagebreak a').first();
-    let tar = window.location.hash;
+    let target = $('.pagebreak a').first(),
+        tar = window.location.hash;
     
     if (tar !== '' && tar !== 'undefined') {
-      loadTargetImage();
+      documentFunctions.loadTargetImage();
     } else {
       displayImage(target);
     }
-  } else {
-    // TODO Text oder Image, wenn kein pb vorhanden
-    // TODO ggf. getrennt für "verschollen"
   }
 });
 
+<<<<<<< Updated upstream
 /* Login and logout */
 // url: 'edoc/modules/auth.xql'
 $(document).ready(function () {
@@ -131,16 +295,22 @@ function doLogout () {
 	});
 }
 /* END login and logout */
+=======
+/* autoload image */
+// ... when jumping to target
+$(window).bind('hashchange', function () {
+  documentFunctions.loadTargetImage();
+});
+
+>>>>>>> Stashed changes
 
 // load image in right div when clicking on a page number
-$(document).ready(function () {
-    $('.pagebreak a').click(function (event) {
-        event.preventDefault();
-        displayImage($(this));
-    });
+$('.pagebreak a').click(function (event) {
+  event.preventDefault();
+  displayImage($(this));
 });
-/* END GLOBAL FUNCTIONS */
 
+<<<<<<< Updated upstream
 /* OTHER FUNCTIONS */
 /* autoloading of images */
 function loadTargetImage () {
@@ -156,62 +326,40 @@ function loadTargetImage () {
               : pb = pagebreak.find('a');
             displayImage(pb);
         }
+=======
+function mPosition (index, element) {
+  let thisRefID = $(element).attr('id'),
+      thisRefPos = getPosition(document.getElementById(thisRefID)).y,
+      targetMargID = "#text_" + thisRefID,
+      marginalie = $(targetMargID),
+      previous = marginalie.prev(),
+      targetTop;
+  
+  if (previous.length == 0) {
+    targetTop = thisRefPos - $('header').height();
+  } else {
+    let pHeight = parseFloat(previous.height()),
+        pTop = parseFloat(previous.css('top').match(/^\d+/)),
+        hHeight = $('header').height(),
+        mTop = pHeight + pTop;
+
+    /*console.log(previous.css('top')),
+    console.log(thisRefID + ": pT: " + pTop + "; pH: " + pHeight + "; mTop: " + mTop + "; preTop: " + previous.position().top);*/
+
+    if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
+      targetTop = (pTop + pHeight) + "px";
+>>>>>>> Stashed changes
     } else {
-        
-        console.log('no target - logout?');
+      targetTop = thisRefPos - hHeight;
     }
+  }
+  
+  console.log("position for " + thisRefID + ': ' + targetTop);
+  // offset is relative to the document, so the header has to be substracted if top is set via
+  // CSS - which is necessary because setting the offset will change position and left
+  $(targetMargID).css('top', targetTop);
 }
 
-/* postioning of marginalia */
-function marginPos () {
-    var mRefs = $("a.mref");
-    if (mRefs.length > 0) {
-        // Show margin container only if any are to be shown
-        var tar = window.location.hash;
-        if (tar !== '' && tar !== 'undefined') {
-            window.location.hash = '#';
-        }
-        
-        //$('#content').css('width', 'calc(80% - 1em)');
-        //$('#content').css('padding-left', '1em');
-        mRefs.each(positionMarginalia);
-        $('#marginalia_container').children('span').css('visibility', 'visible');
-        
-        if (tar !== '' && tar !== 'undefined') {
-            window.location.hash = tar;
-        }
-    }
-};
-function positionMarginalia (index, element) {
-    thisRefID = $(element).attr('id');
-    thisRefPos = getPosition(document.getElementById(thisRefID)).y;
-    targetMargID = "#text_" + thisRefID;
-    
-    marginalie = $(targetMargID);
-    previous = marginalie.prev();
-    pid = previous.attr('id');
-    
-    if (previous.length == 0) {
-        targetTop = thisRefPos - $('header').height();
-    } else {
-        pHeight = parseFloat(previous.height());
-        pTop = parseFloat(previous.css('top').match(/^\d+/));
-        hHeight = $('header').height();
-        mTop = pHeight + pTop;
-        console.log(previous.css('top'));
-        console.log(thisRefID + ": pT: " + pTop + "; pH: " + pHeight + "; mTop: " + mTop + "; preTop: " + previous.position().top);
-        if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
-            //targetTop = 'calc(' + (thisRefPos - $('header').height()) + 'px + ' + pHeight + 'px)';
-            targetTop = (pTop + pHeight) + "px";
-        } else {
-            targetTop = thisRefPos - hHeight;
-        }
-    }
-    console.log(thisRefID + ': ' + targetTop);
-    // offset is relative to the document, so the header has to be substracted if top is set via
-    // CSS - which is necessary because setting the offset will change position and left
-    $(targetMargID).css('top', targetTop);
-};
 function getPosition(el) {
     var xPos = 0;
     var yPos = 0;
@@ -519,11 +667,6 @@ function load (url, target, me) {
       $('#' + target).slideToggle();
       $(me).html($(me).html().replace('↑', '→'));
     }
-}
-
-/* create a runtime unique global ID */
-function getUniqueId() {
-    return 'd' + internalUniqueId++;
 }
 
 /* display an image in the right div */
