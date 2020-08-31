@@ -522,6 +522,8 @@ function toggleNavigation() {
       }
     });
   }
+  
+  $('nav').slideToggle();
 }
 
 function loadNavigation (url, target, me) {
