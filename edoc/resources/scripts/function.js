@@ -529,7 +529,10 @@ function loadNavigation (url, target, me) {
     method: "get",
     url: url,
     success: function (data) {
-      $('#' + target).replaceWith($(data).find('#' + target));
+      let replacement = $(data).find('#' + target);
+      if (replacement.length > 0) {
+        $('#' + target).replaceWith(replacement);
+      }
     },
     error: function (xhr, status, error) {
       console.log("error");
