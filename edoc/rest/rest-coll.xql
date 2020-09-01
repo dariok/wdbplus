@@ -270,11 +270,12 @@ declare
 function wdbRc:getCollectionsXML () {
   wdbRc:getCollections("application/xml")
 };
+(: END list all collections :)
 
-(: resources within a collection :)
+(: list resources within a collection :)
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$id}")
+    %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
   let $content := if ($mt = $wdbRc:acceptable)
@@ -301,7 +302,6 @@ function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
       else $content[2]
   )
 };
-
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.xml")
@@ -315,6 +315,7 @@ declare
 function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
 };
+(: END list resources within a collection
 
 declare
   %rest:GET
