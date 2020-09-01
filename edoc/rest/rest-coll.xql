@@ -17,6 +17,8 @@ declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
+declare variable $wdbRc:acceptable := ("application/json", "application/xml");
+
 (: create a (sub-)collection :)
 declare
   %rest:POST("{$data}")
@@ -243,31 +245,16 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
 };
 
 (: list all collections :)
-declare function local:getCollections() {
-  <collections base="{$wdb:data}/">{
-    for $p in collection($wdb:data)//meta:projectMD
-      let $path := substring-before(substring-after(base-uri($p), $wdb:data || '/'), 'wdbmeta.xml')
-      order by $path
-      return <collection id="{$p/@xml:id}" path="{$path}" title="{$p//meta:title[1]}"/>
-  }</collections>
-};
 declare
     %rest:GET
     %rest:path("/edoc/collection")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getCollections ($mt as xs:string*) {
   if ($mt = "application/json")
-  then (
-    <rest:response>
-      <http:response status="200" message="OK">
-        <http:header name="Content-Type" value="application/json; charset=UTF-8" />
-        <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    json:xml-to-json(local:getCollections())
-  )
-  else local:getCollections()
+    then wdbRc:getSubcollJson("data")
+  else if ($mt = "application/xml")
+    then wdbRc:getSubcollXML("data")
+    else (406, string-join($wdbRc:acceptable, '&#x0A;'))
 };
 declare
     %rest:GET
@@ -290,10 +277,9 @@ declare
     %rest:path("/edoc/collection/{$id}")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $acceptable := ("application/json", "application/xml")
-  let $content := if ($mt = $acceptable)
+  let $content := if ($mt = $wdbRc:acceptable)
     then wdbRc:listCollection($id)
-    else (406, string-join($acceptable, '&#x0A;'))
+    else (406, string-join($wdbRc:acceptable, '&#x0A;'))
   
   return (
     <rest:response>
