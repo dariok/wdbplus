@@ -358,7 +358,7 @@ declare function wdbRf:processXSL($id as xs:string, $process as element(), $mode
       let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
       let $params := <parameters><param name="view" value="{$model?view}" /></parameters>
       
-      return transform:transform(doc($model?fileLoc), doc($model?xslt), $params, $attr, "expand-xincludes=no")
+      return transform:transform(doc($model?fileLoc), doc(normalize-space($process/meta:command)), $params, $attr, "expand-xincludes=no")
     } catch * {
       let $t0 := console:log($err:description)
       return ("error", $err:description)
