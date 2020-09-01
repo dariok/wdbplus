@@ -270,6 +270,34 @@ function wdbRc:getCollectionsXML () {
 };
 (: END list all collections :)
 
+(: get a full list of a collection (= subcolls and resources entered into wdbmeta.xml) :)
+declare
+    %rest:GET
+    %rest:path("/edoc/collection/{$id}")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
+  local:getGeneral ($id, $mt,
+    '(
+      for $s in $meta//meta:struct[@file] return
+        <collection id="{$s/@file}" label="{$s/@label}" />,
+      for $s in $meta//meta:view return
+        <resources id="{$s/@file}" label="{$s/@label}" />)')
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}.xml")
+function wdbRc:getCollectionXML ($id) {
+  wdbRc:getCollection($id, "application/xml")
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}.json")
+  %rest:produces("application/json")
+function wdbRc:getCollectionJSON ($id) {
+  wdbRc:getCollection($id, "application/json")
+};
+(: END list a collection :)
+
 (: list resources within a collection (= those entered into wdbmeta.xml) :)
 declare
     %rest:GET
