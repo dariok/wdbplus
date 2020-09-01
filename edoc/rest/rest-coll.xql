@@ -278,9 +278,32 @@ declare
     %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $content := if ($mt = $wdbRc:acceptable)
-    then wdbRc:listCollection($id)
-    else (406, string-join($wdbRc:acceptable, '&#x0A;'))
+  let $content := if ($mt != $wdbRc:acceptable)
+  then
+    try {
+      let $path := wdb:getEdPath($id, true())
+      let $meta := doc(wdb:getMetaFile($path))
+      
+      return if ($meta/*[self::meta:projectMD])
+      then if (count($meta//meta:view) gt 0)
+        then (
+          200,
+          <collection id="{$id}">{
+            for $s in $meta//meta:view return
+              <resource id="{$s/@file}" label="{$s/@label}" />
+          }</collection>
+        )
+        else ( 204, "" )
+      else
+        ( 400, "no a wdbmeta project" )
+    }
+    catch *:wdb0200 {
+      ( 404, "no collection with ID " || $id )
+    }
+    catch * {
+      ( 400, "" )
+    }
+  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
   
   return (
     <rest:response>
@@ -459,26 +482,5 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
       </http:response>
     </rest:response>,
     $html
-  )
-};
-
-(: helper functions :)
-declare %private function wdbRc:listCollection ($id as xs:string) {
-  let $md := collection($wdb:data)/id($id)[self::meta:projectMD or self::mets:mets]
-  let $errNoProject := if (count($md) = 0)
-    then (404, "No project found with this ID")
-    else ()
-  let $errMetsOnly := if (count($md) gt 0 and not($md[self::meta:projectMD]))
-    then (500, "Requested project uses an unsupported meta data scheme")
-    else ()
-  
-  return if (count($errNoProject) or count($errMetsOnly))
-  then ($errNoProject, $errMetsOnly)
-  else (
-    200,
-    <collection id="{$id}" title="{$md//meta:title[1]}">{
-      for $resource in $md//meta:file return
-        <resource id="{$resource/@xml:id}" timestamp="{$resource/@date}" hash="{$resource/@uuid}" />
-    }</collection>
   )
 };
