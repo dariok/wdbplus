@@ -250,11 +250,9 @@ declare
     %rest:path("/edoc/collection")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getCollections ($mt as xs:string*) {
-  if ($mt = "application/json")
-    then wdbRc:getSubcollJson("data")
-  else if ($mt = "application/xml")
-    then wdbRc:getSubcollXML("data")
-    else (406, string-join($wdbRc:acceptable, '&#x0A;'))
+  local:getGeneral ("data", $mt,
+    'for $s in $meta//meta:struct[@file] return
+      <collection id="{$s/@file}" label="{$s/@label}" />')
 };
 declare
     %rest:GET
@@ -278,52 +276,10 @@ declare
     %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $content := if ($mt != $wdbRc:acceptable)
-  then
-    try {
-      let $path := wdb:getEdPath($id, true())
-      let $meta := doc(wdb:getMetaFile($path))
-      
-      return if ($meta/*[self::meta:projectMD])
-      then if (count($meta//meta:view) gt 0)
-        then (
-          200,
-          <collection id="{$id}">{
-            for $s in $meta//meta:view return
-              <resource id="{$s/@file}" label="{$s/@label}" />
-          }</collection>
-        )
-        else ( 204, "" )
-      else
-        ( 400, "no a wdbmeta project" )
-    }
-    catch *:wdb0200 {
-      ( 404, "no collection with ID " || $id )
-    }
-    catch * {
-      ( 400, "" )
-    }
-  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
-  
-  return (
-    <rest:response>
-      <http:response status="{$content[1]}">
-        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
-        {
-          if ($content[1] != 200)
-          then
-            <http:header name="REST-Status" value="{$content[2]}" />
-          else ()
-        }
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    if ($content[1] = 200)
-      then if ($mt = "application/json")
-          then json:xml-to-json($content[2])
-          else $content[2]
-      else $content[2]
-  )
+local:getGeneral ($id, $mt,
+  'for $s in $meta//meta:view return
+    <resources id="{$s/@file}" label="{$s/@label}" />'
+)
 };
 declare
   %rest:GET
@@ -346,52 +302,10 @@ declare
   %rest:path("/edoc/collection/{$id}/collections")
   %rest:header-param("Accept", "{$mt}")
 function wdbRc:getSubcoll ( $id as xs:string, $mt as xs:string* ) {
-  let $content := if ($mt != $wdbRc:acceptable)
-  then
-    try {
-      let $path := wdb:getEdPath($id, true())
-      let $meta := doc(wdb:getMetaFile($path))
-      
-      return if ($meta/*[self::meta:projectMD])
-      then if (count($meta//meta:struct[@file]) gt 0)
-        then (
-          200,
-          <collection id="{$id}">{
-            for $s in $meta//meta:struct[@file] return
-              <collecion id="{$s/@file}" label="{$s/@label}" />
-          }</collection>
-        )
-        else ( 204, "" )
-      else
-        ( 400, "no a wdbmeta project" )
-    }
-    catch *:wdb0200 {
-      ( 404, "no collection with ID " || $id )
-    }
-    catch * {
-      ( 400, "" )
-    }
-  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
-  
-  return (
-    <rest:response>
-      <http:response status="{$content[1]}">
-        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
-        {
-          if ($content[1] != 200)
-          then
-            <http:header name="REST-Status" value="{$content[2]}" />
-          else ()
-        }
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    if ($content[1] = 200)
-      then if ($mt = "application/json")
-          then json:xml-to-json($content[2])
-          else $content[2]
-      else $content[2]
-  )
+local:getGeneral ($id, $mt,
+  'for $s in $meta//meta:struct[@file] return
+    <collection id="{$s/@file}" label="{$s/@label}" />'
+)
 };
 declare
   %rest:GET
@@ -482,5 +396,58 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
       </http:response>
     </rest:response>,
     $html
+  )
+};
+
+
+declare
+  %private
+function local:getGeneral ($id, $mt, $content) {
+  let $content := if ($mt != $wdbRc:acceptable)
+  then
+    try {
+      let $path := wdb:getEdPath($id, true())
+      let $meta := doc(wdb:getMetaFile($path))
+      
+      return if ($meta/*[self::meta:projectMD])
+      then
+        let $eval := wdb:eval ( $content, false(), (xs:QName("meta"), $meta))
+        return if (count($eval) gt 0)
+        then (
+          200,
+          <collection id="{$id}">{
+            $eval
+          }</collection>
+        )
+        else ( 204, "" )
+      else
+        ( 400, "no a wdbmeta project" )
+    }
+    catch *:wdb0200 {
+      ( 404, "no collection with ID " || $id )
+    }
+    catch * {
+      ( 400, "" )
+    }
+  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
+  
+  return (
+    <rest:response>
+      <http:response status="{$content[1]}">
+        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
+        {
+          if ($content[1] != 200)
+          then
+            <http:header name="REST-Status" value="{$content[2]}" />
+          else ()
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    if ($content[1] = 200)
+      then if ($mt = "application/json")
+          then json:xml-to-json($content[2])
+          else $content[2]
+      else $content[2]
   )
 };
