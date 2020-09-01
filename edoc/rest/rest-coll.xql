@@ -272,7 +272,7 @@ function wdbRc:getCollectionsXML () {
 };
 (: END list all collections :)
 
-(: list resources within a collection :)
+(: list resources within a collection (= those entered into wdbmeta.xml) :)
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$id}/resources")
@@ -315,46 +315,76 @@ declare
 function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
 };
-(: END list resources within a collection
+(: END list resources within a collection :)
 
+(: list subcollections of a collection (= those entered into wdbmeta.xml) :)
 declare
   %rest:GET
-  %rest:path("/edoc/collection/{$id}/collections.json")
-  %output:method("json")
-  function wdbRc:getSubcollJson ($id) {
-    wdbRc:getSubcollXML($id)
-};
-
-declare
-  %rest:GET
-  %rest:path("/edoc/collection/{$id}/collections.xml")
-  function wdbRc:getSubcollXML ($id) {
+  %rest:path("/edoc/collection/{$id}/collections")
+  %rest:header-param("Accept", "{$mt}")
+function wdbRc:getSubcoll ( $id as xs:string, $mt as xs:string* ) {
+  let $content := if ($mt != $wdbRc:acceptable)
+  then
     try {
       let $path := wdb:getEdPath($id, true())
       let $meta := doc(wdb:getMetaFile($path))
       
       return if ($meta/*[self::meta:projectMD])
-        then
-          <collection id="{$id}" path="{$path}">{
+      then if (count($meta//meta:struct[@file]) gt 0)
+        then (
+          200,
+          <collection id="{$id}">{
             for $s in $meta//meta:struct[@file] return
               <collecion id="{$s/@file}" label="{$s/@label}" />
           }</collection>
-        else
-          <rest:response>
-            <http:response status="204" />
-          </rest:response>
+        )
+        else ( 204, "" )
+      else
+        ( 400, "no a wdbmeta project" )
     }
     catch *:wdb0200 {
-      <rest:response>
-        <http:response status="404" />
-      </rest:response>
+      ( 404, "no collection with ID " || $id )
     }
     catch * {
-      <rest:response>
-        <http:response status="400" />
-      </rest:response>
+      ( 400, "" )
     }
+  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
+  
+  return (
+    <rest:response>
+      <http:response status="{$content[1]}">
+        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
+        {
+          if ($content[1] != 200)
+          then
+            <http:header name="REST-Status" value="{$content[2]}" />
+          else ()
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    if ($content[1] = 200)
+      then if ($mt = "application/json")
+          then json:xml-to-json($content[2])
+          else $content[2]
+      else $content[2]
+  )
 };
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/collections.json")
+  %output:method("json")
+function wdbRc:getSubcollJson ($id) {
+  wdbRc:getSubcoll($id, "application/json")
+};
+
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/collections.xml")
+function wdbRc:getSubcollXML ($id) {
+  wdbRc:getSubcoll($id, "application/xml")
+};
+(: END list subcollections :)
 
 (: navigation :)
 declare
