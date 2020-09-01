@@ -337,21 +337,25 @@ declare
   function wdbRc:getSubcollJson ($id) {
     wdbRc:getSubcollXML($id)
 };
+
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.xml")
   function wdbRc:getSubcollXML ($id) {
     try {
       let $path := wdb:getEdPath($id, true())
-      return
-        <collection id="$id" path="{$path}">{
-          for $s in xmldb:get-child-collections($path)
-            return try {
-              local:childCollections($path, $s)
-            } catch * {
-              console:log($s || " not readable")
-            }
-        }</collection>
+      let $meta := doc(wdb:getMetaFile($path))
+      
+      return if ($meta/*[self::meta:projectMD])
+        then
+          <collection id="{$id}" path="{$path}">{
+            for $s in $meta//meta:struct[@file] return
+              <collecion id="{$s/@file}" label="{$s/@label}" />
+          }</collection>
+        else
+          <rest:response>
+            <http:response status="204" />
+          </rest:response>
     }
     catch *:wdb0200 {
       <rest:response>
@@ -363,14 +367,6 @@ declare
         <http:response status="400" />
       </rest:response>
     }
-};
-declare function local:childCollections($path, $s) {
-  let $p := $path || '/' || $s
-  return
-  <collection path="{$p}">{
-    for $sc in xmldb:get-child-collections($p)
-      return local:childCollections($p, $sc)
-  }</collection>
 };
 
 (: navigation :)
