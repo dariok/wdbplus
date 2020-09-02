@@ -4,20 +4,6 @@
  */
 /* jshint browser: true */
 
-/* global variables */
-<<<<<<< Updated upstream
-var timer;                 // timer for marginalia positioning
-var internalUniqueId = 0;  // basis for globally unique IDs
-var id = $("meta[name='id']").attr("content");
-var rest = $("meta[name='rest']").attr("content");
-let ar = window.location.search.substr(1).split("&");
-var params = new Object();
-for (let i = 0; i < ar.length; i++) {
-  let te = ar[i].split("=");
-  params[te[0]] = te[1];
-}
-=======
-// global object for reused variables and functions
 var wdb = (function() {
   // all meta elements
   let meta = {},
@@ -122,7 +108,6 @@ var wdb = (function() {
 })();
 
 var timer;                              // timer for marginalia positioning
->>>>>>> Stashed changes
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
@@ -132,26 +117,6 @@ $(window).on('load resize', function () {
   timer = setTimeout(documentFunctions.positionMarginalia(), 500);
 });
 
-<<<<<<< Updated upstream
-// Für Hervorhebung einer Abfolge von Elementen
-$(document).ready(function () {
-    if (params.hasOwnProperty('l')) {
-        var range = window.location.search.split('&l=')[1];
-        var from = range.split('-')[0];
-        var to = range.split('-')[1];
-        $('#' + from).css('background-color', 'red');
-        $('#' + from).nextUntil('#' + to).css('background-color', 'red');
-        $('#' + to).css('background-color', 'red');
-        var scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
-        // minus fixed header height
-        console.log($('#' + from).offset().top);
-        $('html, body').animate({
-            scrollTop: scrollto
-        },
-        0);
-        
-        var pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
-=======
 var documentFunctions = {
   highlightRange: function ( range ) {
     let from = range.split('-')[0],
@@ -177,16 +142,9 @@ var documentFunctions = {
       } else {
         let pagebreak = target.parents().has('.pagebreak').first(),
             pb = (pagebreak.find('a').length > 1) ? pagebreak.find('.pb a') : pagebreak.find('a');
->>>>>>> Stashed changes
         displayImage(pb);
       }
     }
-<<<<<<< Updated upstream
-});
-$(document).ready(function() {
-  if (params.hasOwnProperty('i')) {
-    let ids = params.i.split(',');
-=======
   },
 
   /* postioning of marginalia */
@@ -219,7 +177,6 @@ $(function () {
   // highlight several elements given by a comma separated list in the »i« query parametter
   if (wdb.search.hasOwnProperty('i')) {
     let ids = wdb.search.i.split(',');
->>>>>>> Stashed changes
     for (let i = 0; i < ids.length; i++) {
       $('#' + ids[i]).css('background-color', 'lightblue');
     }
@@ -238,71 +195,12 @@ $(function () {
   }
 });
 
-<<<<<<< Updated upstream
-/* Login and logout */
-// url: 'edoc/modules/auth.xql'
-$(document).ready(function () {
-	$('#login').submit(function (e) { login(e) });
-})
-function login (e) {
-	e.preventDefault();
-	username = $('#user').val();
-	password = $('#password').val();
-	console.log('login request');
-	
-	$.ajax({
-		url: 'login',
-		method: 'post',
-		data: {
-			user: username,
-			password: password,
-			edition: $('#edition').val()
-		},
-		success: function (data) {
-			try {
-				$('#auth').replaceWith(data);
-				console.log('logged in');
-				console.log(data);
-			} catch (e) {
-				console.log('logged in, tried to replace #login with:');
-				console.log(data);
-				console.log(e);
-			}
-		},
-		dataType: 'text'
-	});
-	Cookies.set('wdbplus', btoa(username + ':' + password));
-}
-function doLogout () {
-	console.log('logout request');
-	Cookies.remove('wdbplus');
-	$.ajax({
-		url: 'login',
-		method: 'post',
-		data: {
-			logout: 'logout'
-		},
-		success: function (data) {
-			try {
-				$('#auth').replaceWith(data);
-				console.log('trying to log off' + data);
-			} catch (e) {
-				console.log('logging out, tried to replace #logout with:');
-				console.log(data);
-			}
-		},
-		dataType: 'text'
-	});
-}
-/* END login and logout */
-=======
 /* autoload image */
 // ... when jumping to target
 $(window).bind('hashchange', function () {
   documentFunctions.loadTargetImage();
 });
 
->>>>>>> Stashed changes
 
 // load image in right div when clicking on a page number
 $('.pagebreak a').click(function (event) {
@@ -310,23 +208,6 @@ $('.pagebreak a').click(function (event) {
   displayImage($(this));
 });
 
-<<<<<<< Updated upstream
-/* OTHER FUNCTIONS */
-/* autoloading of images */
-function loadTargetImage () {
-    var target = $(':target');
-    if (target.length > 0) {
-        if (target.attr('class') == 'pagebreak') {
-            console.log($(':target > a').attr('href'));
-            displayImage($(':target > a'));
-        } else {
-            let pagebreak = target.parents().has('.pagebreak').first();
-            let pb = (pagebreak.find('a').length > 1)
-              ? pagebreak.find('.pb a')
-              : pb = pagebreak.find('a');
-            displayImage(pb);
-        }
-=======
 function mPosition (index, element) {
   let thisRefID = $(element).attr('id'),
       thisRefPos = getPosition(document.getElementById(thisRefID)).y,
@@ -348,7 +229,6 @@ function mPosition (index, element) {
 
     if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
       targetTop = (pTop + pHeight) + "px";
->>>>>>> Stashed changes
     } else {
       targetTop = thisRefPos - hHeight;
     }
