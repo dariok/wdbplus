@@ -108,15 +108,8 @@ var wdb = (function() {
 
 var timer;                              // timer for marginalia positioning
 
-/* Collect all $(document).ready() .on('load') etc. functions*/
-
-/* set/reset timer for marginalia positioning and invoke actual function */
-$(window).on('load resize', function () {
-  clearTimeout(timer);
-  timer = setTimeout(documentFunctions.positionMarginalia(), 500);
-});
-
-var documentFunctions = {
+/* function for manipulating the HTML document */
+var wdbDocument = {
   highlightRange: function ( range ) {
     let from = range.split('-')[0],
         to = range.split('-')[1];
@@ -170,7 +163,7 @@ var documentFunctions = {
 $(function () {
   // highlight a range of elements given by the »l« query parameter and scroll there
   if (wdb.search.hasOwnProperty('l')) {
-    documentFunctions.highlightRange(wdb.search.l);
+    wdbDocument.highlightRange(wdb.search.l);
   }
 
   // highlight several elements given by a comma separated list in the »i« query parametter
@@ -187,25 +180,31 @@ $(function () {
         tar = window.location.hash;
     
     if (tar !== '' && tar !== 'undefined') {
-      documentFunctions.loadTargetImage();
+      wdbDocument.loadTargetImage();
     } else {
       displayImage(target);
     }
   }
 });
 
-/* autoload image */
-// ... when jumping to target
+// load image when jumping to target
 $(window).bind('hashchange', function () {
-  documentFunctions.loadTargetImage();
+  wdbDocument.loadTargetImage();
 });
 
-
-// load image in right div when clicking on a page number
+// load image when clicking on a page number
 $('.pagebreak a').click(function (event) {
   event.preventDefault();
   displayImage($(this));
 });
+
+/* set/reset timer for marginalia positioning and invoke actual function */
+$(window).on('load resize', function () {
+  clearTimeout(timer);
+  timer = setTimeout(wdbDocument.positionMarginalia(), 500);
+});
+
+
 
 function mPosition (index, element) {
   let thisRefID = $(element).attr('id'),
