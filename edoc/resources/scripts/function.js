@@ -24,12 +24,12 @@ var wdb = (function() {
   
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
-  function getUniqueId() {
+  let getUniqueId = function () {
     return 'd' + internalUniqueId++;
-  }
+  };
 
   /* Login and logout */
-  function login (that, event) {
+  let login = function (that, event) {
 	  event.preventDefault();
   
     let username = $('#user').val(),
@@ -59,8 +59,9 @@ var wdb = (function() {
       dataType: 'text'
     });
     Cookies.set('wdbplus', btoa(username + ':' + password));
-  }
-  function logout () {
+  };
+
+  let logout = function () {
     console.log('logout request');
     Cookies.remove('wdbplus');
     $.ajax({
@@ -81,18 +82,18 @@ var wdb = (function() {
       },
       dataType: 'text'
     });
-  }
+  };
   /* END login and logout */
 
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
   // function to set REST headers
-  function restHeaders () {
+  let restHeaders = function () {
     let cred = Cookies.get("wdbplus");
     if (typeof cred !== "undefined" && cred.length != 0)
       return { "Authorization": "Basic " + cred };
       else return "";
-  }
+  };
   // authentication header for REST request
   let headers = restHeaders();
 
@@ -100,10 +101,10 @@ var wdb = (function() {
     meta:           meta,
     search:         params,
     restHeaders:    headers,
-    setRestHeaders: restHeaders(),
-    getUniqueId:    getUniqueId(),
-    login:          login(),
-    logout:         logout()
+    setRestHeaders: restHeaders,
+    getUniqueId:    getUniqueId,
+    login:          login,
+    logout:         logout
   };
 })();
 
