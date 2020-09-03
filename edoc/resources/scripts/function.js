@@ -47,13 +47,11 @@ var wdb = (function() {
       success: function (data) {
         try {
           $('#auth').replaceWith(data);
-          wdb.restheaders = restHeaders();
+          setAuthorizationHeader();
           console.log('logged in');
-          //console.log(data);
         } catch (e) {
-          /*console.log('logged in, tried to replace #login with:');
-          console.log(data);
-          console.log(e);*/ 
+          console.error('error logging in:');
+          console.error(e);
         }
       },
       dataType: 'text'
@@ -73,11 +71,11 @@ var wdb = (function() {
       success: function (data) {
         try {
           $('#auth').replaceWith(data);
-          wdb.restheaders = restHeaders();
-          console.log('trying to log off' + data);
+          setAuthorizationHeader();
+          console.log('logging off');
         } catch (e) {
-          console.log('logging out, tried to replace #logout with:');
-          console.log(data);
+          console.error('error logging out:');
+          console.error(e);
         }
       },
       dataType: 'text'
@@ -88,20 +86,20 @@ var wdb = (function() {
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
   // function to set REST headers
-  let restHeaders = function () {
+  let restHeaderVal = { };
+  let setAuthorizationHeader = function () {
     let cred = Cookies.get("wdbplus");
-    if (typeof cred !== "undefined" && cred.length != 0)
-      return { "Authorization": "Basic " + cred };
-      else return "";
+    if (typeof cred == "undefined" || cred.length == 0)
+      restHeaderVal.Authorization = "";
+      else restHeaderVal = { "Authorization": "Basic " + cred };
   };
-  // authentication header for REST request
-  let headers = restHeaders();
-
+  setAuthorizationHeader();
+  
   return {
     meta:           meta,
     search:         params,
-    restHeaders:    headers,
-    setRestHeaders: restHeaders,
+    restHeaders:    restHeaderVal,
+    setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
     login:          login,
     logout:         logout
