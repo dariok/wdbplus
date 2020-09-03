@@ -149,13 +149,43 @@ var wdbDocument = {
         window.location.hash = '#';
       }
       
-      mRefs.each(mPosition);
+      mRefs.each(wdbDocument.mPosition);
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = tar;
       }
     }
+  },
+
+  /* actual positioning */
+  mPosition: function (index, element) {
+    let referenceElementID = $(element).attr('id'),
+        referenceElementPosition = getPosition(document.getElementById(referenceElementID)).y,
+        marginNoteID = "#text_" + referenceElementID,
+        marginNote = $(marginNoteID),
+        previousMarginNote = marginNote.prev(),
+        targetTop;
+    
+    if (previousMarginNote.length == 0) {
+      targetTop = referenceElementPosition - $('header').height();
+    } else {
+      let previousNoteHeight = parseFloat(previousMarginNote.height()),
+          previousNoteTop = parseFloat(previousMarginNote.css('top').match(/^\d+/)),
+          headerHeight = $('header').height(),
+          minimumTargetTop = previousNoteHeight + previousNoteTop;
+  
+      if (Math.floor(referenceElementPosition - headerHeight) < minimumTargetTop) {
+        targetTop = (previousNoteTop + previousNoteHeight) + "px";
+      } else {
+        targetTop = referenceElementPosition - headerHeight;
+      }
+    }
+    
+    console.info("position for " + referenceElementID + ': ' + targetTop);
+    // offset is relative to the document, so the header has to be substracted if top is set via
+    // CSS - which is necessary because setting the offset will change position and left
+    marginNote.css('top', targetTop);
   }
 };
 
@@ -206,37 +236,7 @@ $(window).on('load resize', function () {
 
 
 
-function mPosition (index, element) {
-  let thisRefID = $(element).attr('id'),
-      thisRefPos = getPosition(document.getElementById(thisRefID)).y,
-      targetMargID = "#text_" + thisRefID,
-      marginalie = $(targetMargID),
-      previous = marginalie.prev(),
-      targetTop;
-  
-  if (previous.length == 0) {
-    targetTop = thisRefPos - $('header').height();
-  } else {
-    let pHeight = parseFloat(previous.height()),
-        pTop = parseFloat(previous.css('top').match(/^\d+/)),
-        hHeight = $('header').height(),
-        mTop = pHeight + pTop;
 
-    /*console.log(previous.css('top')),
-    console.log(thisRefID + ": pT: " + pTop + "; pH: " + pHeight + "; mTop: " + mTop + "; preTop: " + previous.position().top);*/
-
-    if (Math.floor(thisRefPos - hHeight) < pTop + pHeight) {
-      targetTop = (pTop + pHeight) + "px";
-    } else {
-      targetTop = thisRefPos - hHeight;
-    }
-  }
-  
-  console.log("position for " + thisRefID + ': ' + targetTop);
-  // offset is relative to the document, so the header has to be substracted if top is set via
-  // CSS - which is necessary because setting the offset will change position and left
-  $(targetMargID).css('top', targetTop);
-}
 
 function getPosition(el) {
     var xPos = 0;
