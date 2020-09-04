@@ -6,19 +6,17 @@
 
 var wdb = (function() {
   // all meta elements
-  let meta = {},
-      metas = document.getElementsByTagName("meta");
-  for (let i = 0; i < metas.length; i++) {
-    meta[metas[i].name] = metas[i].content;
+  let meta = {};
+  for (let m of document.getElementsByTagName("meta")) {
+    meta[m.name] = m.content;
   }
   
   // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
   /* TODO https://github.com/dariok/wdbplus/issues/429
       current support data: c. 91% should support URLSearchParams – switch when support > 95% */
-  let ar = window.location.search.substr(1).split("&"),
-      params = {};
-  for (let i = 0; i < ar.length; i++) {
-    let te = ar[i].split("=");
+  let params = {};
+  for (let ar of window.location.search.substr(1).split("&")) {
+    let te = ar.split("=");
     params[te[0]] = te[1];
   }
   
