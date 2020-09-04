@@ -95,7 +95,7 @@ var wdb = (function() {
   
   return {
     meta:           meta,
-    search:         params,
+    parameters:     params,
     restHeaders:    restHeaderVal,
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
@@ -190,15 +190,14 @@ var wdbDocument = {
 // call highlighting and image loading functions when document is ready
 $(function () {
   // highlight a range of elements given by the »l« query parameter and scroll there
-  if (wdb.search.hasOwnProperty('l')) {
-    wdbDocument.highlightRange(wdb.search.l);
+  if (wdb.parameters.hasOwnProperty('l')) {
+    wdbDocument.highlightRange(wdb.parameters.l);
   }
 
   // highlight several elements given by a comma separated list in the »i« query parametter
-  if (wdb.search.hasOwnProperty('i')) {
-    let ids = wdb.search.i.split(',');
-    for (let i = 0; i < ids.length; i++) {
-      $('#' + ids[i]).css('background-color', 'lightblue');
+  if (wdb.parameters.hasOwnProperty('i')) {
+    for (let ids of wdb.parameters.i.split(',')) {
+      $('#' + ids).css('background-color', 'lightblue');
     }
   }
 
