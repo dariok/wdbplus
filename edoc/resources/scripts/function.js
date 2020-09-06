@@ -205,15 +205,12 @@ $(function () {
     }
   }
 
-  // load image for target page (or first page if not target)
+  // load image for target page (or first page if no fragment requested)
   if($('.pagebreak').length > 0) {
-    let target = $('.pagebreak a').first(),
-        tar = window.location.hash;
-    
-    if (tar !== '' && tar !== 'undefined') {
+    if (window.location.hash != "") {
       wdbDocument.loadTargetImage();
     } else {
-      displayImage(target);
+      displayImage($('.pagebreak a').first());
     }
   }
 });
