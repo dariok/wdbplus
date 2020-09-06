@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdbdocument_object">
+    <title>wdbDocument object</title>
+    <shortdesc>Members of the central wdbDocument object, defined in function.js</shortdesc>
+    <refbody>
+        <section>
+            <p><codeph>wdbDocument</codeph> collects central functions for dealing with the HTML such
+            as highlighting. It is an immutable const.</p>
+        </section>
+        <properties>
+            <property>
+                <proptype>highlightRange(range)</proptype>
+                <propdesc>highlight a rande of elements (from – to)</propdesc>
+            </property>
+            <property>
+                <proptype>loadTargetImage()</proptype>
+                <propdesc>function to load the target image (first image or preceding pagebreak)</propdesc>
+            </property>
+            <property>
+                <proptype>positionMarginalia()</proptype>
+                <propdesc>function to position margin notes</propdesc>
+            </property>
+            <property>
+                <proptype>marginaliaPositionCallback(index, element)</proptype>
+                <propdesc>Callback for the actualb positioning</propdesc>
+            </property>
+        </properties>
+    </refbody>
+</reference>

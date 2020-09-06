@@ -5,4 +5,5 @@
         <navtitle/>
     </topicmeta>
     <topicref href="wdb_object.dita"/>
+    <topicref href="wdbdocument_object.dita"/>
 </map>
