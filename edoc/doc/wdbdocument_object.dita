@@ -25,6 +25,10 @@
                 <proptype>marginaliaPositionCallback(index, element)</proptype>
                 <propdesc>Callback for the actualb positioning</propdesc>
             </property>
+            <property>
+                <proptype>marginaliaTimer</proptype>
+                <propdesc>timer used for marginalia repositioning after resizing</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

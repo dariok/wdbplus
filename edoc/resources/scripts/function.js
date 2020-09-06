@@ -105,8 +105,6 @@ const wdb = (function() {
 })();
 Object.freeze(wdb);
 
-var timer;                              // timer for marginalia positioning
-
 /* functions for manipulating the HTML document */
 const wdbDocument = {
   highlightRange: function ( range ) {
@@ -184,11 +182,16 @@ const wdbDocument = {
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
     marginNote.css('top', targetTop + "px");
-  }
+  },
+
+  marginaliaTimer: {}
 };
 Object.freeze(wdbDocument);
 
-// call highlighting and image loading functions when document is ready
+/***
+ * Functions to be executed after the DOM is ready (formerly $(document).ready())
+ * includes highlighting and image loading functions
+ ***/
 $(function () {
   // highlight a range of elements given by the »l« query parameter and scroll there
   if (wdb.parameters.hasOwnProperty('l')) {
@@ -214,23 +217,32 @@ $(function () {
     }
   }
 });
+/* END DOM ready functions */
 
+/***
+ *  event handlers on window properties
+ ***/
 // load image when jumping to target
 $(window).bind('hashchange', function () {
   wdbDocument.loadTargetImage();
 });
 
+/* set/reset timer for marginalia positioning and invoke actual function */
+$(window).on('load resize', function () {
+  clearTimeout(wdbDocument.marginaliaTimer);
+  wdbDocument.marginaliaTimer = setTimeout(wdbDocument.positionMarginalia(), 500);
+});
+/* END window event handlers */
+
+/***
+ * other event handlers
+ */
 // load image when clicking on a page number
 $('.pagebreak a').click(function (event) {
   event.preventDefault();
   displayImage($(this));
 });
-
-/* set/reset timer for marginalia positioning and invoke actual function */
-$(window).on('load resize', function () {
-  clearTimeout(timer);
-  timer = setTimeout(wdbDocument.positionMarginalia(), 500);
-});
+/* END other event handlers */
 
 /*****
  *  Display annotations – footnotes, critical apparatus and similar on mouseover
