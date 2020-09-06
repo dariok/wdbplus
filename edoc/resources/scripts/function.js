@@ -23,7 +23,7 @@ const wdb = (function() {
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
   let getUniqueId = function () {
-    return 'd' + internalUniqueId++;
+    return 'wdb' + ('000' + internalUniqueId++).substr(-4);
   };
 
   /* Login and logout */
@@ -184,7 +184,50 @@ const wdbDocument = {
     marginNote.css('top', targetTop + "px");
   },
 
-  marginaliaTimer: {}
+  marginaliaTimer: {},
+
+  /* load notes into right div on hover */
+  showInfoRight: function ( elementID ) {
+    let content = $('#' + elementID).html(),
+        insertID = wdb.getUniqueId(),
+        insertContent = $('<span id="' + insertID + '" class="infoContainer" style="display: block;">' +
+          '<span class="infoContent" style="display: block; white-space: nowrap;">' +
+          content +
+          '</span><a onclick="clear();" href="javascript:clear()">[x]</a></span>');
+  
+    $('#ann').html(insertContent);
+  }
+  // legacy code for an advanced mouseover 
+  /*
+  let maxWidth = 400;
+  var fn = cont.append(content);
+  me.after(fn);
+  
+  var tPos, lPos, fWidth;
+  if (fn.innerWidth() > maxWidth) fWidth = maxWidth;
+  else fWidth = fn.innerWidth();
+  
+  if ((fWidth + me.offset().left + 20) > window.innerWidth) {								// position the info window
+  lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
+  tPos = me.position().top + 20;
+  fn.offset({ left: lPos, top: tPos});
+  fn.css('top', tPos);
+  }
+  else {
+  lPos = me.position().left + 20;
+  tPos = me.position().top + 20;
+  fn.css('left', lPos).css('top', tPos);
+  }
+  
+  fn.css('max-width' , maxWidth);
+  content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
+  fn.outerWidth(fWidth);
+}*/
+/*function mouseOut (event) {
+  var id = '#i' + $(this).attr('href').substring(1);
+  console.log(id);
+  setTimeout($(id).detach(), 2000, id);
+}*/
 };
 Object.freeze(wdbDocument);
 
@@ -251,50 +294,7 @@ $('.pagebreak a').click(function (event) {
 });
 /* END other event handlers */
 
-/*****
- *  Display annotations – footnotes, critical apparatus and similar on mouseover
- *****/
-/* load notes into right div on hover */
-function mouseIn (event) {
-    var maxWidth = 400;
-    var me = $(this),
-    fm = $(me.attr('href')).html(),
-    id = 'i' + me.attr('href').substring(1),
-    cont = $('<span id="' + id + '" class="infoContainer" style="display: block;"></span>"'),
-    content = $('<span class="infoContent" style="display: block; white-space: nowrap;">' + fm + '</span>');
-    // nowrap to get the length of the string in pixels
-    $('#ann').html(content.html());
-    $('#ann').append('<a onclick="clear();" href="javascript:clear()">[x]</a>')
-    
-    // legacy code for an advanced mouseover 
-    /*var fn = cont.append(content);
-    me.after(fn);
-    
-    var tPos, lPos, fWidth;
-    if (fn.innerWidth() > maxWidth) fWidth = maxWidth;
-    else fWidth = fn.innerWidth();
-    
-    if ((fWidth + me.offset().left + 20) > window.innerWidth) {								// position the info window
-    lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
-    tPos = me.position().top + 20;
-    fn.offset({ left: lPos, top: tPos});
-    fn.css('top', tPos);
-    }
-    else {
-    lPos = me.position().left + 20;
-    tPos = me.position().top + 20;
-    fn.css('left', lPos).css('top', tPos);
-    }
-    
-    fn.css('max-width' , maxWidth);
-    content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
-    fn.outerWidth(fWidth);*/
-}
-function mouseOut (event) {
-    var id = '#i' + $(this).attr('href').substring(1);
-    console.log(id);
-    setTimeout($(id).detach(), 2000, id);
-}
+
 /*****
  * Display “external” (i.e. not found within the current view) information such as (but not limited to) entities
  *****/

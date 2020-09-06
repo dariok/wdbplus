@@ -29,6 +29,11 @@
                 <proptype>marginaliaTimer</proptype>
                 <propdesc>timer used for marginalia repositioning after resizing</propdesc>
             </property>
+            <property>
+                <proptype>showInforRight(elementID)</proptype>
+                <propdesc>Get information from the element with <codeph>@id = elementID</codeph> and display it
+                in aside</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
