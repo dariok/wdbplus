@@ -147,7 +147,7 @@ var wdbDocument = {
         window.location.hash = '#';
       }
       
-      mRefs.each(wdbDocument.mPosition);
+      mRefs.each(wdbDocument.marginaliaPositioningCallback);
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
@@ -157,33 +157,32 @@ var wdbDocument = {
   },
 
   /* actual positioning */
-  mPosition: function (index, element) {
+  marginaliaPositioningCallback: function (index, element) {
     let referenceElementID = $(element).attr('id'),
-        referenceElementPosition = getPosition(document.getElementById(referenceElementID)).y,
-        marginNoteID = "#text_" + referenceElementID,
-        marginNote = $(marginNoteID),
+        referenceElementTop = $('#' + referenceElementID).position().top,
+        marginNote = $("#text_" + referenceElementID),
         previousMarginNote = marginNote.prev(),
         targetTop;
     
     if (previousMarginNote.length == 0) {
-      targetTop = referenceElementPosition - $('header').height();
+      targetTop = referenceElementTop - $('header').height();
     } else {
-      let previousNoteHeight = parseFloat(previousMarginNote.height()),
-          previousNoteTop = parseFloat(previousMarginNote.css('top').match(/^\d+/)),
+      let previousNoteHeight = $(previousMarginNote).height(),
+          previousNoteTop = $(previousMarginNote).position().top,
           headerHeight = $('header').height(),
           minimumTargetTop = previousNoteHeight + previousNoteTop;
   
-      if (Math.floor(referenceElementPosition - headerHeight) < minimumTargetTop) {
-        targetTop = (previousNoteTop + previousNoteHeight) + "px";
+      if (Math.floor(referenceElementTop - headerHeight) < minimumTargetTop) {
+        targetTop = previousNoteTop + previousNoteHeight;
       } else {
-        targetTop = referenceElementPosition - headerHeight;
+        targetTop = referenceElementTop - headerHeight;
       }
     }
     
     console.info("position for " + referenceElementID + ': ' + targetTop);
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
-    marginNote.css('top', targetTop);
+    marginNote.css('top', targetTop + "px");
   }
 };
 
@@ -230,37 +229,6 @@ $(window).on('load resize', function () {
   clearTimeout(timer);
   timer = setTimeout(wdbDocument.positionMarginalia(), 500);
 });
-
-
-
-
-
-function getPosition(el) {
-    var xPos = 0;
-    var yPos = 0;
-    
-    while (el) {
-        if (el.tagName == "BODY") {
-            // deal with browser quirks with body/window/document and page scroll
-            var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
-            var yScroll = el.scrollTop || document.documentElement.scrollTop;
-            
-            xPos += (el.offsetLeft - xScroll + el.clientLeft);
-            yPos += (el.offsetTop - yScroll + el.clientTop);
-        } else {
-            // for all other non-BODY elements
-            xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-            yPos += (el.offsetTop - el.scrollTop + el.clientTop);
-        }
-        
-        el = el.offsetParent;
-    }
-    return {
-        x: xPos,
-        y: yPos
-    };
-}
-/* end marginalia */
 
 /*****
  *  Display annotations – footnotes, critical apparatus and similar on mouseover
