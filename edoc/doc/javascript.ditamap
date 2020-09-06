@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD LIGHTWEIGHT DITA Map//EN" "map.dtd">
+<map id="javascript">
+    <topicmeta>
+        <navtitle/>
+    </topicmeta>
+    <topicref href="wdb_object.dita"/>
+</map>
