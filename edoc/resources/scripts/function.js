@@ -188,6 +188,13 @@ const wdbDocument = {
 };
 Object.freeze(wdbDocument);
 
+const wdbUser = {
+  footnoteMouseIn: function () {},
+
+  footnoteMouseOut: function () {}
+};
+Object.freeze(wdbUser);
+
 /***
  * Functions to be executed after the DOM is ready (formerly $(document).ready())
  * includes highlighting and image loading functions
@@ -213,6 +220,9 @@ $(function () {
       displayImage($('.pagebreak a').first());
     }
   }
+
+  /* when hovering over a footnote, display it in the right div */
+  $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 });
 /* END DOM ready functions */
 
@@ -244,10 +254,6 @@ $('.pagebreak a').click(function (event) {
 /*****
  *  Display annotations – footnotes, critical apparatus and similar on mouseover
  *****/
-/* when hovering over a footnote, display it in the right div */
-$(document).ready(function () {
-    $('.fn_number').hover(mouseIn, mouseOut);
-});
 /* load notes into right div on hover */
 function mouseIn (event) {
     var maxWidth = 400;
