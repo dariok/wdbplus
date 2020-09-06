@@ -4,7 +4,7 @@
  */
 /* jshint browser: true */
 
-var wdb = (function() {
+const wdb = (function() {
   // all meta elements
   let meta = {};
   for (let m of document.getElementsByTagName("meta")) {
@@ -103,11 +103,12 @@ var wdb = (function() {
     logout:         logout
   };
 })();
+Object.freeze(wdb);
 
 var timer;                              // timer for marginalia positioning
 
-/* function for manipulating the HTML document */
-var wdbDocument = {
+/* functions for manipulating the HTML document */
+const wdbDocument = {
   highlightRange: function ( range ) {
     let from = range.split('-')[0],
         to = range.split('-')[1];
@@ -185,6 +186,7 @@ var wdbDocument = {
     marginNote.css('top', targetTop + "px");
   }
 };
+Object.freeze(wdbDocument);
 
 // call highlighting and image loading functions when document is ready
 $(function () {
