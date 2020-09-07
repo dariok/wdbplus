@@ -226,12 +226,12 @@ const wdbDocument = {
     $inserted.offset({ left: targetLeft, top: targetTop})
       .css('max-width' , maxWidth)
       .outerWidth(targetWidth);
+  },
+  
+  mouseOut: function (pointerElement) {
+    let id = '#wdb' + $(pointerElement).attr('href').substring(1);
+    setTimeout(function(id){ $(id).remove(); }, 2000, id);
   }
-/*function mouseOut (event) {
-  var id = '#i' + $(this).attr('href').substring(1);
-  console.log(id);
-  setTimeout($(id).detach(), 2000, id);
-}*/
 };
 Object.freeze(wdbDocument);
 
@@ -240,6 +240,7 @@ Object.freeze(wdbDocument);
  * are given for different variants.
  */
 const wdbUser = {
+  // what to do when the mouse enters a footnote pointer
   footnoteMouseIn: function ( event ) {
     event.preventDefault();
 
@@ -248,6 +249,14 @@ const wdbUser = {
 
     // example: show info on the right
     wdbDocument.showInfoRight(event.target.hash.substring(1));
+  },
+
+  // what to do when the mouse leaves the footnote pointer
+  footnoteMouseOut: function ( event ) {
+      event.preventDefault();
+
+      // example: remove the float
+      //wdbDocument.mouseOut(event.target);
   }
 };
 

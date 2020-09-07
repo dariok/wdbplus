@@ -38,6 +38,10 @@
                 <proptype>showInfoFloating(pointerElement, elementID)</proptype>
                 <propdesc>the same, as a floating info box next to the <codeph>pointerElement</codeph></propdesc>
             </property>
+            <property>
+                <proptype>mouseOut(element)</proptype>
+                <propdesc>remove an element (e.g. the float inserted by showInfoFloat())</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
