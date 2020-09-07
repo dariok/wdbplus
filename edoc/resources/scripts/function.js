@@ -196,33 +196,38 @@ const wdbDocument = {
           '</span><a onclick="clear();" href="javascript:clear()">[x]</a></span>');
   
     $('#ann').html(insertContent);
+  },
+
+  // show content in an advanced mouseover 
+  showInfoFloating: function ( pointerElement, elementID ) {
+    const maxWidth = 400,
+          distance = 20;
+    let content = $('#' + elementID).html(),
+        insertID = wdb.getUniqueId(),
+        insert = '<span id="' + insertID + '" class="infoContainer" style="display: block;">' +
+          content +
+          '</span>';
+    $(insert).insertAfter(pointerElement);
+    let $inserted = $('#' + insertID);
+
+    // position the info box close to the pointing element
+    let targetTop,
+        targetLeft,
+        $pointer = $(pointerElement),
+        targetWidth = Math.min(maxWidth, $inserted.innerWidth);
+    
+    // set the left coordinate for the info box. The right end must not leave the visible ares
+    if ((targetWidth + $pointer.offset().left + distance) > $(window).width()) {								// position the info window
+      targetLeft = $(window).width() - targetWidth - distance;
+      targetTop = $pointer.position().top + distance;
+    } else {
+      targetLeft = $pointer.position().left + distance;
+      targetTop = $pointer.position().top + distance;
+    }
+    $inserted.offset({ left: targetLeft, top: targetTop})
+      .css('max-width' , maxWidth)
+      .outerWidth(targetWidth);
   }
-  // legacy code for an advanced mouseover 
-  /*
-  let maxWidth = 400;
-  var fn = cont.append(content);
-  me.after(fn);
-  
-  var tPos, lPos, fWidth;
-  if (fn.innerWidth() > maxWidth) fWidth = maxWidth;
-  else fWidth = fn.innerWidth();
-  
-  if ((fWidth + me.offset().left + 20) > window.innerWidth) {								// position the info window
-  lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
-  tPos = me.position().top + 20;
-  fn.offset({ left: lPos, top: tPos});
-  fn.css('top', tPos);
-  }
-  else {
-  lPos = me.position().left + 20;
-  tPos = me.position().top + 20;
-  fn.css('left', lPos).css('top', tPos);
-  }
-  
-  fn.css('max-width' , maxWidth);
-  content.css('white-space', 'normal');								   // allow word wrapping to fit into max width
-  fn.outerWidth(fWidth);
-}*/
 /*function mouseOut (event) {
   var id = '#i' + $(this).attr('href').substring(1);
   console.log(id);
@@ -231,12 +236,21 @@ const wdbDocument = {
 };
 Object.freeze(wdbDocument);
 
+/***
+ * wdbUser: functions here can be overridden by projects; in most cases, examples
+ * are given for different variants.
+ */
 const wdbUser = {
-  footnoteMouseIn: function () {},
+  footnoteMouseIn: function ( event ) {
+    event.preventDefault();
 
-  footnoteMouseOut: function () {}
+    // example: show info text in a float
+    //wdbDocument.showInfoFloating(event.target, event.target.hash.substring(1));
+
+    // example: show info on the right
+    wdbDocument.showInfoRight(event.target.hash.substring(1));
+  }
 };
-Object.freeze(wdbUser);
 
 /***
  * Functions to be executed after the DOM is ready (formerly $(document).ready())

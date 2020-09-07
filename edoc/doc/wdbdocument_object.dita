@@ -34,6 +34,10 @@
                 <propdesc>Get information from the element with <codeph>@id = elementID</codeph> and display it
                 in aside</propdesc>
             </property>
+            <property>
+                <proptype>showInfoFloating(pointerElement, elementID)</proptype>
+                <propdesc>the same, as a floating info box next to the <codeph>pointerElement</codeph></propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
