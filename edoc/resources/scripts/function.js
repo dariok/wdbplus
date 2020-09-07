@@ -191,9 +191,8 @@ const wdbDocument = {
     let content = $('#' + elementID).html(),
         insertID = wdb.getUniqueId(),
         insertContent = $('<span id="' + insertID + '" class="infoContainer" style="display: block;">' +
-          '<span class="infoContent" style="display: block; white-space: nowrap;">' +
           content +
-          '</span><a onclick="clear();" href="javascript:clear()">[x]</a></span>');
+          '<a onclick="clear();" href="javascript:clear(\'' + insertID + '\')">[x]</a></span>');
   
     $('#ann').html(insertContent);
   },
