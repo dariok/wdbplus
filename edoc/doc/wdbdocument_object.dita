@@ -46,6 +46,14 @@
                 <proptype>showAnnotation (url)</proptype>
                 <propdesc>Load info from url and display in the right</propdesc>
             </property>
+            <property>
+                <proptype>clear (id)</proptype>
+                <propdesc>clear one or all annotations in #ann</propdesc>
+            </property>
+            <property>
+                <proptype>commonAncestor(element1, element2)</proptype>
+                <propdesc>return the common ancestor of both elements</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

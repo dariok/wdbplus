@@ -107,6 +107,17 @@ Object.freeze(wdb);
 
 /* functions for manipulating the HTML document */
 const wdbDocument = {
+  // get the common ancestor of 2 elements
+  commonAncestor: function ( element1, element2 ) {
+    let parent1 = element1.parents().add(element1).get(),
+        parent2 = element2.parents().add(element2).get();
+    
+    for (let i = 0; i < parent1.length; i++) {
+      if (parent1[i] != parent2[i]) return parent1[i - 1];
+    }
+  },
+
+  // highlight a range of elements – given as "e1-e2"
   highlightRange: function ( range ) {
     let from = range.split('-')[0],
         to = range.split('-')[1];
@@ -115,7 +126,6 @@ const wdbDocument = {
 
     let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
     // minus fixed header height
-    // console.log($('#' + from).offset().top);
     $('html, body').animate({scrollTop: scrollto}, 0);
       
     let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
@@ -373,15 +383,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-/* functions for highlighting arbitrary element ranges */
-function commonAncestor (e1, e2) {
-    var p1 = e1.parents().add(e1). get ();
-    var p2 = e2.parents().add(e2). get ();
-    
-    for (var i = 0; i < p1.length; i++) {
-        if (p1[i] != p2[i]) return p1[i - 1];
-    }
-}
+
 function sprung (event) {
     var targ = window.location.hash.substring(1);
     var startMarker = $(".anchorRef#" + targ);
