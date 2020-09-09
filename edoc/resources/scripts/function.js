@@ -307,9 +307,6 @@ $(function () {
       displayImage($('.pagebreak a').first());
     }
   }
-
-  /* when hovering over a footnote, display it in the right div */
-  $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 });
 /* END DOM ready functions */
 
@@ -336,6 +333,9 @@ $('.pagebreak a').click(function (event) {
   event.preventDefault();
   displayImage($(this));
 });
+
+/* when hovering over a footnote, display it in the right div */
+$('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 /* END other event handlers */
 
 
