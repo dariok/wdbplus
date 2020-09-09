@@ -207,7 +207,24 @@ const wdbDocument = {
           content +
           '</span>';
     $(insert).insertAfter(pointerElement);
+
     let $inserted = $('#' + insertID);
+    $inserted.hover(
+      function () {
+        // mousein
+        $(this).stop()
+          .css("opacity", "1");
+      },
+      function () {
+        // mouseout
+        $(this).fadeOut(
+          2000,
+          function () {
+            $(this).remove();
+          }
+        );
+      }
+    );
 
     // position the info box close to the pointing element
     let targetTop,
@@ -230,7 +247,12 @@ const wdbDocument = {
   
   mouseOut: function (pointerElement) {
     let id = '#wdb' + $(pointerElement).attr('href').substring(1);
-    setTimeout(function(id){ $(id).remove(); }, 2000, id);
+    $(id).fadeOut(
+      2000,
+      function () {
+        $(id).remove();
+      }
+    );
   }
 };
 Object.freeze(wdbDocument);
