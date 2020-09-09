@@ -42,6 +42,10 @@
                 <proptype>mouseOut(element)</proptype>
                 <propdesc>remove an element (e.g. the float inserted by showInfoFloat())</propdesc>
             </property>
+            <property>
+                <proptype>showAnnotation (url)</proptype>
+                <propdesc>Load info from url and display in the right</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

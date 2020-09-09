@@ -253,6 +253,28 @@ const wdbDocument = {
         $(id).remove();
       }
     );
+  },
+
+  // retrieve info by url
+  showAnnotation: function ( url ) {
+    let uid = wdb.getUniqueId();
+    
+    $.ajax({
+      url: url,
+      method: 'get',
+      success: function ( data ) {
+        let ins = $('<div/>'),
+            wrap = $('<div/>');
+      
+        ins.html(data);
+        wrap.attr('id', uid)
+            .append(ins.find('div'))
+            .append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>')
+            .append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
+        $('#ann').append(wrap);
+      },
+      dataType: 'html'
+    });
   }
 };
 Object.freeze(wdbDocument);
@@ -338,59 +360,6 @@ $('.pagebreak a').click(function (event) {
 $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 /* END other event handlers */
 
-
-/*****
- * Display “external” (i.e. not found within the current view) information such as (but not limited to) entities
- *****/
-
-// show annotation in right div
-function show_annotation (ref, xml, dir) {
-    var info = $('<div class="info"></div>');
-    var q = 'entity.html?id=' + ref + '&reg=' + xml + '&ed=' + dir;
-    console.log(q);
-    var uid = getUniqueId();
-    
-    $.ajax({
-        url: q,
-        method: 'get',
-        success: function (data) {
-            var ins = $('<div/>');
-            var wrap = $('<div/>');
-            wrap.attr('id', uid);
-            var res = $.parseHTML(data);
-            ins.html(data);
-            wrap.append(ins.find('div'));
-            wrap.append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>');
-            wrap.append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
-            $('#ann').append(wrap);
-        },
-        dataType: 'html'
-    });
-}
-
-/* display external URL */
-function showAnnotation (url) {
-  var info = $('<div class="info"></div>');
-  var uid = getUniqueId();
-  
-  $.ajax({
-    url: url,
-    method: 'get',
-    success: function (data) {
-      var ins = $('<div/>');
-      var wrap = $('<div/>');
-      wrap.attr('id', uid);
-      var res = $.parseHTML(data);
-      ins.html(data);
-      wrap.append(ins.find('div'));
-      wrap.append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>');
-      wrap.append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
-      $('#ann').append(wrap);
-    },
-    dataType: 'html'
-  });
-}
-/* END hover */
 
 /* close elements */
 function clear (id) {
