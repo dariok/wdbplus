@@ -54,6 +54,11 @@
                 <proptype>commonAncestor(element1, element2)</proptype>
                 <propdesc>return the common ancestor of both elements</propdesc>
             </property>
+            <property>
+                <proptype>highlightFragment()</proptype>
+                <propdesc>highlight a range of elements between a start marker (taken from the fragment
+                identifier) up until an end marker (startMarker + "e")</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

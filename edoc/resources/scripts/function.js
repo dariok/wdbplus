@@ -296,6 +296,18 @@ const wdbDocument = {
       $('#' + id).remove();
       console.log('close ' + id);
     }
+  },
+
+  // when a fragment is given, highlight the fragment itself and all following up until and end marker
+  highlightFragment: function () {
+    let targ = window.location.hash.substring(1),
+        startMarker = $(".anchorRef#" + targ),
+        endMarker = $(".anchorRef#" + targ + "e");
+    
+    // only highlightAll if there is anything to highlight, i.e. start and end marker must be present
+    if (startMarker.length == 0 || endMarker.length == 0) return;
+    
+    wdbDocument.highlightAll (startMarker, endMarker);
   }
 };
 Object.freeze(wdbDocument);
@@ -384,18 +396,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-function sprung (event) {
-    var targ = window.location.hash.substring(1);
-    var startMarker = $(".anchorRef#" + targ);
-    if (startMarker.length == 0) return;
-    
-    // select with filter through specific class to avoid highlighting between crit. notes a and ae
-    var endMarker = $(".anchorRef#" + targ + "e");
-    // only go through this, if there actually is an end marker
-    if (endMarker.length == 0) return;
-    
-    highlightAll (startMarker, endMarker);
-}
+
 function highlightAll (startMarker, endMarker, color, alt) {
 	color = (color === 'undefined') ? '#FFEF19' : color;
 	alt = (alt === 'undefined') ? '' : alt;
