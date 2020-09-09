@@ -59,6 +59,10 @@
                 <propdesc>highlight a range of elements between a start marker (taken from the fragment
                 identifier) up until an end marker (startMarker + "e")</propdesc>
             </property>
+            <property>
+                <proptype>highlightElements(start, end, color, alt)</proptype>
+                <propdesc>called by the upper highlighting functions to do the aactual work.</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
