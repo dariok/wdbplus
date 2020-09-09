@@ -275,6 +275,17 @@ const wdbDocument = {
       },
       dataType: 'html'
     });
+  },
+
+  // close one info box or all
+  clear: function ( id ) {
+    if (id == '' || id == null) {
+      $('#ann').html('');
+      console.log('close all');
+    } else {
+      $('#' + id).remove();
+      console.log('close ' + id);
+    }
   }
 };
 Object.freeze(wdbDocument);
@@ -361,16 +372,6 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 /* END other event handlers */
 
 
-/* close elements */
-function clear (id) {
-    if (id == '' || id == null) {
-        $('#ann').html('');
-        console.log('close all');
-    } else {
-        $('#' + id).detach();
-        console.log('close ' + id);
-    }
-}
 
 /* functions for highlighting arbitrary element ranges */
 function commonAncestor (e1, e2) {
