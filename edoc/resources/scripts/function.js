@@ -459,27 +459,41 @@ const wdbDocument = {
     }
   },
 
-  // toggle navigation visibility
-  toggleNavigation: function() {
-    if ($("nav").css("display") == "none") {
-      $("#showNavLink").text("Navigation ausblenden");
-    } else {
-      $("#showNavLink").text("Navigation einblenden");
-    }
-    
-    if ($("nav").text() === "") {
-      $("nav").text("lädt...");
-      let edition = wdb.meta.ed;
+  // group navigation related methods
+  nav: {
+    // load navigation if necessary and toggle visibility
+    toggleNavigation: function() {
+      if ($("nav").css("display") == "none") {
+        $("#showNavLink").text("Navigation ausblenden");
+      } else {
+        $("#showNavLink").text("Navigation einblenden");
+      }
       
-      $.ajax({
-        url: wdb.restHeaders + "collection/" + edition + "/nav.html",
-        success: function (data) {
-          $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
-        },
-        data: "html"
-      });
+      if ($("nav").text() === "") {
+        $("nav").text("lädt...");
+        let edition = wdb.meta.ed;
+        
+        $.ajax({
+          url: wdb.restHeaders + "collection/" + edition + "/nav.html",
+          success: function (data) {
+            $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
+          },
+          data: "html"
+        });
+      }
+      $("nav").slideToggle();
+    },
+
+    /* toggle TOC level visibility */
+    switchnav: function ( id, anchorElement ) {	
+      $(id).children('ul').children().toggle();
+      
+      if (anchorElement.length() > 0 && $(anchorElement).html() == '→') {
+        $(anchorElement).html('↑');
+      } else {
+        $(anchorElement).html('→');
+      }
     }
-    $("nav").slideToggle();
   },
 
   // generic laoding function
@@ -631,14 +645,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-/* toggle TOC level visibility */
-function switchnav(id) {	
-  $(id).children('ul').children().toggle();
-}
-function switchnav(id, a) {	
-  $(id).children('ul').children().toggle();
-  $(a).html() == '→' ? $(a).html('↑') : $(a).html('→');
-}
+
 
 /* preparations to show some loading animation while doing AJAX requests */
 $(document).bind({

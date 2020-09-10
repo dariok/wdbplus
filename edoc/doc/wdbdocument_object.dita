@@ -64,8 +64,12 @@
                 <propdesc>called by the upper highlighting functions to do the aactual work.</propdesc>
             </property>
             <property>
-                <proptype>toggleNavigation()</proptype>
+                <proptype>nav.toggleNavigation()</proptype>
                 <propdesc>load the navigation (if necessary) and toggle visibility</propdesc>
+            </property>
+            <property>
+                <proptype>nav.switchnav(id, element)</proptype>
+                <propdesc>to visibility of TOC level</propdesc>
             </property>
             <property>
                 <proptype>loadContent(url, target, me)</proptype>
