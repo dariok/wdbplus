@@ -619,6 +619,16 @@ $(window).on('load resize', function () {
   clearTimeout(wdbDocument.marginaliaTimer);
   wdbDocument.marginaliaTimer = setTimeout(wdbDocument.positionMarginalia(), 500);
 });
+
+/* preparations to show some loading animation while doing AJAX requests */
+$(document).bind({
+	ajaxStart: function() {
+    $("body").addClass("loading");
+  },
+	ajaxStop: function() {
+    $("body").removeClass("loading");
+  }
+});
 /* END window event handlers */
 
 /***
@@ -633,22 +643,3 @@ $('.pagebreak a').click(function (event) {
 /* when hovering over a footnote, display it in the right div */
 $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 /* END other event handlers */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* preparations to show some loading animation while doing AJAX requests */
-$(document).bind({
-	ajaxStart: function() { $("body").addClass("loading"); },
-	ajaxStop: function() { $("body").removeClass("loading"); }
-});
