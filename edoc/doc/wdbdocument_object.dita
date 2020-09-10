@@ -71,6 +71,10 @@
                 <proptype>loadContent(url, target, me)</proptype>
                 <propdesc>generic content loading</propdesc>
             </property>
+            <property>
+                <proptype>changeMainWidth()</proptype>
+                <propdesc>make main wider/smaller when resizing of div is not available (Safari @iOS)</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

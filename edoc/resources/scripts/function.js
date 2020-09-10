@@ -493,6 +493,17 @@ const wdbDocument = {
         $(me).html($(me).html().replace('↑', '→'));
       }
     }
+  },
+
+  // make the left wider/smaller when resizing of div is not available
+  changeMainWidth: function () {
+    if ($('#wdbShowHide > a').html() == '»') {
+      $('body').css('grid-template-columns', '2fr 1fr');
+      $('#wdbShowHide > a').html('«').attr('title', "linke Seite schmaler");
+    } else {
+      $('body').css('grid-template-columns', '1fr 1fr');
+      $('#wdbShowHide > a').html('»').attr("title", "linke Seite breiter");
+    }
   }
 };
 Object.freeze(wdbDocument);
@@ -604,16 +615,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-/* width of main: 50% or 66% */
-function toggleRightside() {
-    if ($('#wdbShowHide > a').html() == '»') {
-        $('body').css('grid-template-columns', '2fr 1fr');
-        $('#wdbShowHide > a').html('«').attr('title', "linke Seite schmaler");
-    } else {
-        $('body').css('grid-template-columns', '1fr 1fr');
-        $('#wdbShowHide > a').html('»').attr("title", "linke Seite breiter");
-    }
-}
+
 
 /* close one or all info displayed to the right */
 function close() {
