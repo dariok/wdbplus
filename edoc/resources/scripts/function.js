@@ -445,6 +445,29 @@ const wdbDocument = {
         });
       }
     }
+  },
+
+  // toggle navigation visibility
+  toggleNavigation: function() {
+    if ($("nav").css("display") == "none") {
+      $("#showNavLink").text("Navigation ausblenden");
+    } else {
+      $("#showNavLink").text("Navigation einblenden");
+    }
+    
+    if ($("nav").text() === "") {
+      $("nav").text("lädt...");
+      let edition = wdb.meta.ed;
+      
+      $.ajax({
+        url: wdb.restHeaders + "collection/" + edition + "/nav.html",
+        success: function (data) {
+          $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
+        },
+        data: "html"
+      });
+    }
+    $("nav").slideToggle();
   }
 };
 Object.freeze(wdbDocument);
@@ -532,23 +555,6 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-
-/** Navigation **/
-function toggleNavigation() {
-    if ($('nav').css('display') == 'none')
-    $('#showNavLink').text('Navigation ausblenden'); else $('#showNavLink').text('Navigation einblenden');
-    
-    if ($('nav').text() === '') {
-        $('nav').text('lädt...');
-        id = $('meta[name="ed"]').attr('content');
-        res = $. get (rest + 'collection/' + id + '/nav.html', '',
-        function (data) {
-            $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
-        },
-        'html');
-    }
-    $('nav').slideToggle();
-}
 
 function load (url, target, me) {
     if ($('#' + target).css('display') == 'none') {

@@ -63,6 +63,10 @@
                 <proptype>highlightElements(start, end, color, alt)</proptype>
                 <propdesc>called by the upper highlighting functions to do the aactual work.</propdesc>
             </property>
+            <property>
+                <proptype>toggleNavigation()</proptype>
+                <propdesc>load the navigation (if necessary) and toggle visibility</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
