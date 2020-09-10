@@ -468,6 +468,31 @@ const wdbDocument = {
       });
     }
     $("nav").slideToggle();
+  },
+
+  // generic laoding function
+  loadContent: function ( url, target, me ) {
+    if ($('#' + target).css('display') == 'none') {
+      $.ajax(url,
+        {
+          dataType: 'html',
+          success: function (data) {
+              $('#' + target).html($(data).children('ul'));
+              $('#' + target).slideToggle();
+              $(me).html($(me).html().replace('→', '↑'));
+          },
+          error: function (xhr, status, error) {
+            console.error('Error loading ' + url + ':',
+              status, error);
+          }
+        }
+      );
+    } else {
+      $('#' + target).slideToggle();
+      if (me.length > 0) {
+        $(me).html($(me).html().replace('↑', '→'));
+      }
+    }
   }
 };
 Object.freeze(wdbDocument);
@@ -556,28 +581,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-function load (url, target, me) {
-    if ($('#' + target).css('display') == 'none') {
-      res = $.ajax(url,
-        {
-          dataType: "html",
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
-          },
-          error: function (xhr, status, error) {
-            console.log("error");
-            console.log(status);
-            console.log(error);
-          }
-        }
-      );
-    } else {
-      $('#' + target).slideToggle();
-      $(me).html($(me).html().replace('↑', '→'));
-    }
-}
+
 
 /* display an image in the right div */
 function displayImage(element) {

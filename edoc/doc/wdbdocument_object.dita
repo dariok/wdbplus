@@ -67,6 +67,10 @@
                 <proptype>toggleNavigation()</proptype>
                 <propdesc>load the navigation (if necessary) and toggle visibility</propdesc>
             </property>
+            <property>
+                <proptype>loadContent(url, target, me)</proptype>
+                <propdesc>generic content loading</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
