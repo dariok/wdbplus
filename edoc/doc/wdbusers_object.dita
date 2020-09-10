@@ -13,6 +13,10 @@
                 <proptype>footnoteMouseOut(element)</proptype>
                 <propdesc>what to do when moving the mouse out of a footnote reference</propdesc>
             </property>
+            <property>
+                <proptype>displayImage(element)</proptype>
+                <proptype>how (and where) to load an image (including an example how to use openseadragon)</proptype>
+            </property>
         </properties>
     </refbody>
 </reference>

@@ -129,7 +129,7 @@ const wdbDocument = {
     $('html, body').animate({scrollTop: scrollto}, 0);
       
     let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
-    displayImage(pb);
+    wdbUser.displayImage(pb);
   },
 
   loadTargetImage: function () {
@@ -137,11 +137,11 @@ const wdbDocument = {
     if (target.length > 0) {
       if (target.attr('class') == 'pagebreak') {
         console.log("trying to load image: " + $(':target > a').attr('href'));
-        displayImage($(':target > a'));
+        wdbUser.displayImage($(':target > a'));
       } else {
         let pagebreak = target.parents().has('.pagebreak').first(),
             pb = (pagebreak.find('a').length > 1) ? pagebreak.find('.pb a') : pagebreak.find('a');
-        displayImage(pb);
+        wdbUser.displayImage(pb);
       }
     }
   },
@@ -519,7 +519,26 @@ const wdbUser = {
 
       // example: remove the float
       //wdbDocument.mouseOut(event.target);
+  },
+
+  /* display an image in the right div */
+  displayImage: function ( element ) {
+    // default: load an html that contains an image into an iframe
+    if (window.innerWidth > 768) {
+      let href = element.attr('href');
+      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+      $('#facsimile').attr('src', href).css('display', 'block');
+    }
   }
+  /*
+   * example: load image into openseadragon
+  displayImage: function ( element, viewer ) {
+    if (window.innerWidth > 768 && viewer != null) {
+      let pbs = $('body').find('.pagebreak a'),
+          pos = pbs.index(element);
+      viewer.goToPage(pos);
+    }
+  }*/
 };
 
 /***
@@ -544,7 +563,7 @@ $(function () {
     if (window.location.hash != "") {
       wdbDocument.loadTargetImage();
     } else {
-      displayImage($('.pagebreak a').first());
+      wdbUser.displayImage($('.pagebreak a').first());
     }
   }
 });
@@ -571,7 +590,7 @@ $(window).on('load resize', function () {
 // load image when clicking on a page number
 $('.pagebreak a').click(function (event) {
   event.preventDefault();
-  displayImage($(this));
+  wdbUser.displayImage($(this));
 });
 
 /* when hovering over a footnote, display it in the right div */
@@ -583,14 +602,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-/* display an image in the right div */
-function displayImage(element) {
-    let href = element.attr('href');
-    $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
-    $('#facsimile').attr('src', href);
-    $('#facsimile').css('display', 'block');
-    //$('#facsimile').css('width', '100%').css('height', '100%');
-}
+
 
 /* width of main: 50% or 66% */
 function toggleRightside() {
