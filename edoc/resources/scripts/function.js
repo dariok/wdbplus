@@ -299,6 +299,31 @@ const wdbDocument = {
     });
   },
 
+  // generic laoding function
+  loadContent: function ( url, target, me ) {
+    if ($('#' + target).css('display') == 'none') {
+      $.ajax(url,
+        {
+          dataType: 'html',
+          success: function (data) {
+              $('#' + target).html($(data).children('ul'));
+              $('#' + target).slideToggle();
+              $(me).html($(me).html().replace('→', '↑'));
+          },
+          error: function (xhr, status, error) {
+            console.error('Error loading ' + url + ':',
+              status, error);
+          }
+        }
+      );
+    } else {
+      $('#' + target).slideToggle();
+      if (me.length > 0) {
+        $(me).html($(me).html().replace('↑', '→'));
+      }
+    }
+  },
+
   // close one info box or all
   clear: function ( id ) {
     if (id == '' || id == null) {
@@ -492,31 +517,6 @@ const wdbDocument = {
         $(anchorElement).html('↑');
       } else {
         $(anchorElement).html('→');
-      }
-    }
-  },
-
-  // generic laoding function
-  loadContent: function ( url, target, me ) {
-    if ($('#' + target).css('display') == 'none') {
-      $.ajax(url,
-        {
-          dataType: 'html',
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
-          },
-          error: function (xhr, status, error) {
-            console.error('Error loading ' + url + ':',
-              status, error);
-          }
-        }
-      );
-    } else {
-      $('#' + target).slideToggle();
-      if (me.length > 0) {
-        $(me).html($(me).html().replace('↑', '→'));
       }
     }
   },
