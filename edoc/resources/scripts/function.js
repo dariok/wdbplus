@@ -207,6 +207,18 @@ const wdbDocument = {
     $('#ann').html(insertContent);
   },
 
+  /* toggle facsimile div visibility */
+  toggleFacsimile: function () {
+    let link = $('#fac span a');
+    if (link.text() == '[x]') {
+      $('#facsimile').css('display', 'none');
+      link.text('[« Digitalisat zeigen]');
+    } else {
+      $('#facsimile').css('display', 'block');
+      link.text('[x]');
+    }
+  },
+
   // show content in an advanced mouseover 
   showInfoFloating: function ( pointerElement, elementID ) {
     const maxWidth = 400,
@@ -617,17 +629,7 @@ $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
 
 
 
-/* close one or all info displayed to the right */
-function close() {
-    link = $('#fac span a');
-    if (link.text() == '[x]') {
-        $('#facsimile').css('display', 'none');
-        link.text('[« Digitalisat zeigen]');
-    } else {
-        $('#facsimile').css('display', 'block');
-        link.text('[x]');
-    }
-}
+
 
 /* toggle TOC level visibility */
 function switchnav(id) {	

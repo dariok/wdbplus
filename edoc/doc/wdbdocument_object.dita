@@ -75,6 +75,10 @@
                 <proptype>changeMainWidth()</proptype>
                 <propdesc>make main wider/smaller when resizing of div is not available (Safari @iOS)</propdesc>
             </property>
+            <property>
+                <proptype>toggleFacsimile()</proptype>
+                <propdesc>toggle #facsimile visibility</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
