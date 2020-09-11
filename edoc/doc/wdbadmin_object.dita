@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdbadmin_object">
+    <title>wdbAdmin object</title>
+    <shortdesc>Members of the wdbAdmin object. It is an immutable const.</shortdesc>
+    <refbody>
+        <properties>
+            <property>
+                <proptype>displayRight(url)</proptype>
+                <propdesc>get info from URL and display it on the right</propdesc>
+            </property>
+        </properties>
+    </refbody>
+</reference>

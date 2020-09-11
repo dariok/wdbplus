@@ -1,33 +1,19 @@
-var rest = $("meta[name='rest']").attr("content");
-var files;
+/* globals wdb */
 
-$("document").ready(function() {
-  if (params['id'] !== undefined)
-  {
-    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
-    let url = rest + delim + "collection/" + params["id"] + "/collections.json";
+const wdbAdmin = {
+  displayRight: function ( url ) {
     $.ajax({
       method: "get",
       url: url,
-      dataType: "json",
-      success: function (data) {
-        getPaths(data);
-      },
-      error: function (data) {
-          console.log(data);
+      cache: false,
+      success: function ( data ) {
+        let result = $('<div/>').append( data ).find( '#data' ).html(); 
+        $( '#rightSide' ).html( result ); 
       }
     });
-    $('#selectTarget').show();
   }
-});
-function getPaths (data) {
-  if (data.hasOwnProperty("@path"))
-    $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
-  if (data.hasOwnProperty("collection"))
-    if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-    else $('#selectTarget select').append("<option>" + data.collection["@path"] + "</option>");
 }
-
+Object.freeze(wdbAdmin);
 function show ( ed, file ) {
   url = 'projects.html?ed=' + ed + '&file=' + file;
   rightSide ( url );
@@ -36,17 +22,6 @@ function show ( ed, file ) {
 function job ( job, file ) {
   url = 'projects.html?job=' + job + '&file=' + file;
   rightSide ( url );
-}
-
-function rightSide ( url ) {  
-  html = $.ajax({ 
-      url: url, 
-      cache: false, 
-      success: function ( data ) {  
-          var result = $('<div/>').append( data ).find( '#data' ).html(); 
-          $( '#rightSide' ).html( result ); 
-        } 
-    }); 
 }
 
 $('#picker').on("submit", dirupload);
