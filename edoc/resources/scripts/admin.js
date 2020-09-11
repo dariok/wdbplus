@@ -13,18 +13,22 @@ const wdbAdmin = {
     });
   },
 
+  // show info for a file
   showFile: function ( ed, file ) {
     let url = 'projects.html?ed=' + ed + '&file=' + file;
     this.displayRight(url);
+  },
+
+  // execute a job and show results
+  showJob: function ( job, file ) {
+    let url = 'projects.html?job=' + job + '&file=' + file;
+    this.displayRight ( url );
   }
 };
 Object.freeze(wdbAdmin);
 
 
-function job ( job, file ) {
-  url = 'projects.html?job=' + job + '&file=' + file;
-  rightSide ( url );
-}
+
 
 $('#picker').on("submit", dirupload);
 $(document).on("change", "#picker", function() {

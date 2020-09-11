@@ -13,6 +13,10 @@
                 <proptype>showFile(ed, file)</proptype>
                 <propdesc>Show file information on the right</propdesc>
             </property>
+            <property>
+                <proptype>showJob(job, file)</proptype>
+                <propdesc>Show job results</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
