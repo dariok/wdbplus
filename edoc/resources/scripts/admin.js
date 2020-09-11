@@ -1,4 +1,5 @@
 /* globals wdb */
+/* jshint browser: true */
 
 const wdbAdmin = {
   displayRight: function ( url ) {
@@ -27,17 +28,18 @@ const wdbAdmin = {
 };
 Object.freeze(wdbAdmin);
 
-
-
-
+/* event listeners */
 $('#picker').on("submit", dirupload);
+
 $(document).on("change", "#picker", function() {
   $('#results').children().remove();
-  let dir = $(this).attr('webkitdirectory');
-  files = this.files;
   
-  for (let i = 0; i < files.length; i++) {
-    let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
+  let files = this.files;
+  
+  for (let file of files) {
+    let path = $('#selectTask input:checked').attr("id") == "fi" ?
+          file.name :
+          file.webkitRelativePath;
     $('#results').append("<li>" + path + "<span></span></li>");
   }
 });
