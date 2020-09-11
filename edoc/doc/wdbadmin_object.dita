@@ -9,6 +9,10 @@
                 <proptype>displayRight(url)</proptype>
                 <propdesc>get info from URL and display it on the right</propdesc>
             </property>
+            <property>
+                <proptype>showFile(ed, file)</proptype>
+                <propdesc>Show file information on the right</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>

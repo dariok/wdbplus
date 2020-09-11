@@ -11,13 +11,15 @@ const wdbAdmin = {
         $( '#rightSide' ).html( result ); 
       }
     });
+  },
+
+  showFile: function ( ed, file ) {
+    let url = 'projects.html?ed=' + ed + '&file=' + file;
+    this.displayRight(url);
   }
-}
+};
 Object.freeze(wdbAdmin);
-function show ( ed, file ) {
-  url = 'projects.html?ed=' + ed + '&file=' + file;
-  rightSide ( url );
-}
+
 
 function job ( job, file ) {
   url = 'projects.html?job=' + job + '&file=' + file;
