@@ -17,6 +17,10 @@
                 <proptype>showJob(job, file)</proptype>
                 <propdesc>Show job results</propdesc>
             </property>
+            <property>
+                <proptype>prepareForUpload(file, i, id, headers)</proptype>
+                <propdesc>go through files in list, check and upload if ok</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
