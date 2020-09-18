@@ -119,7 +119,7 @@ $(document).on("change", "#picker", function() {
   }
 });
 
-$("document").ready(function() {
+$(function() {
   if (wdb.parameters.ed !== undefined) {
     let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
     let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
