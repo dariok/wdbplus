@@ -78,6 +78,27 @@ const wdbAdmin = {
         $(item).children("span").innerText = "✕";
       }
     }
+  },
+
+  /* actual upload */
+  doUpload: async function (method, url, headers, formdata, item, text) {
+    $.ajax({
+      method: method,
+      url: url,
+      headers: headers,
+      data: formdata,
+      contentType: false,
+      processData: false,
+      success: function (response, textStatus) {
+        $(item).children("span")[0].innerText = "✓";
+        $(item).append('<span class="success">' + textStatus + '</span>');
+      },
+      error: function (response) {
+        $(item).children("span")[0].innerText = "✕";
+        $(item).append('<span class="error">Error: ' + response.status + "</span>");
+        console.error(text, response);
+      }
+    });
   }
 };
 Object.freeze(wdbAdmin);
@@ -124,24 +145,7 @@ $("document").ready(function() {
 
 
 
-async function doUpload(method, url, headers, formdata, item, text) {
-  $.ajax({
-    method: method,
-    url: url,
-    headers: headers,
-    data: formdata,
-    contentType: false,
-    processData: false,
-    success: function (response, textStatus, xhr) {
-      $(item).children("span")[0].innerText = "✓";
-      $(item).append('<span class="success">' + textStatus + '</span>');
-    },
-    error: function (response) {
-      $(item).children("span")[0].innerText = "✕";
-      $(item).append('<span class="error">Error: ' + response.status + "</span>");
-    }
-  });
-}
+
 
 function dirupload (event) {
   event.preventDefault();
