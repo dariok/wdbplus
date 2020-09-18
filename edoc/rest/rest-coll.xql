@@ -434,7 +434,7 @@ function local:getGeneral ($id, $mt, $content) {
   let $content := if ($mt != $wdbRc:acceptable)
   then
     try {
-      let $path := wdb:getEdPath($id, true())
+      let $path := wdb:getProjectPathFromId($id)
       let $meta := doc(wdb:getMetaFile($path))
       
       return if ($meta/*[self::meta:projectMD])
