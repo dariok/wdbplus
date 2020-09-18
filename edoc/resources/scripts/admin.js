@@ -98,36 +98,25 @@ $(document).on("change", "#picker", function() {
   }
 });
 
-
-
 $("document").ready(function() {
-  if (params['id'] !== undefined)
-  {
-    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
-    let url = rest + delim + "collection/" + params["id"] + "/collections.json";
+  if (wdb.parameters.ed !== undefined) {
+    let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
     $.ajax({
       method: "get",
       url: url,
-      success: function (data) {
-        getPaths(data);
+      success: function () {
         $("input[type='submit']").prop("disabled", false);
         $("aside").html("");
       },
       error: function (response) {
-        console.log(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + params["id"] + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+        console.error(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
     $('#selectTarget').show();
   }
 });
-function getPaths (data) {
-  if (data.hasOwnProperty("path"))
-    $('#selectTarget select').append("<option>" + data["path"] + "</option>");
-  if (data.hasOwnProperty("collection"))
-    if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-    else $('#selectTarget select').append("<option>" + data.collection["path"] + "</option>");
-}
 
 
 
