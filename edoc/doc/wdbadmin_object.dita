@@ -21,6 +21,10 @@
                 <proptype>prepareForUpload(file, i, id, headers)</proptype>
                 <propdesc>go through files in list, check and upload if ok</propdesc>
             </property>
+            <property>
+                <proptype>doUpload()</proptype>
+                <propdesc>uploads one file</propdesc>
+            </property>
         </properties>
     </refbody>
 </reference>
