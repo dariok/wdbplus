@@ -52,7 +52,20 @@ const wdbAdmin = {
         formdata.append("file", file)
           .append("filename", relativeFilePath)
           .append("targetCollection", collection);
-
+        
+        let collectionContent;
+        $.ajax({
+          method: "get",
+          url: wdb.meta.rest + delimiter + "collection/" + collection,
+          success: function ( data ) {
+            collectionContent = data;
+          },
+          error: function ( response ) {
+            console.error("error getting contents of collection " + collection + ":\n" + response);
+            return false;
+          }
+        });
+        
         $.ajax({
           method: "get",
           url: wdb.meta.rest + delimiter + "collection/" + collection,
