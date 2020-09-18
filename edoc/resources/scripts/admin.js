@@ -68,10 +68,10 @@ const wdbAdmin = {
       try {
         if (collectionContent.hasOwnProperty(fileid)) {
           $(item).children("span")[0].innerText = "…";
-          doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileid + mdMode, headers, formdata, item, text);
+          this.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileid + mdMode, headers, formdata, item, text);
         } else {
           $(item).children("span")[0].innerText = "…";
-          doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, headers, formdata, item, text);
+          this.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, headers, formdata, item, text);
         }
       } catch (e) {
         console.error(e);
