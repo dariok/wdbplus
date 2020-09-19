@@ -18,12 +18,20 @@
                 <propdesc>Show job results</propdesc>
             </property>
             <property>
-                <proptype>prepareForUpload(file, i, id, headers)</proptype>
-                <propdesc>go through files in list, check and upload if ok</propdesc>
-            </property>
-            <property>
                 <proptype>doUpload()</proptype>
                 <propdesc>uploads one file</propdesc>
+            </property>
+            <property>
+                <proptype>uploadFiles()</proptype>
+                <propdesc>go throught the list of files, check for problems and call doUpload() if there are none</propdesc>
+            </property>
+            <property>
+                <proptype>reportProblem()</proptype>
+                <propdesc>uniform error reporting</propdesc>
+            </property>
+            <property>
+                <proptype>setFiles()</proptype>
+                <propdesc>set the list of files to be uploaded from form selection</propdesc>
             </property>
         </properties>
     </refbody>

@@ -3,7 +3,7 @@
 	"undef":			true,
 	"unused": 		true,
   "globals":		{
-		"$":				false,
+		"$":			false,
 		"console":	false
 	}
 }
