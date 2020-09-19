@@ -47,7 +47,7 @@ const wdbAdmin = {
     });
   },
 
-  uploadFiles: function ( ) {
+  uploadFiles: async function ( ) {
     $('p img').show();
     
     for (let i = 0; i < this.files.length; i++) {
@@ -56,8 +56,8 @@ const wdbAdmin = {
           listItem = $('#results').children()[i];
       
       /* jshint loopfunc: true*/
-      reader.onload = function ( readFile ) {
-        $(listItem).children("span").innerText = "…";
+      reader.onload = async function ( readFile ) {
+        $(listItem).children("span")[0].innerText = "…";
         let fileContent = readFile.target.result,
             parser = new DOMParser(),
             parsed;
@@ -87,35 +87,40 @@ const wdbAdmin = {
         // try to determine whether a file with that ID already exists in the target collection
         /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
          * a 409 will be returned upon POST or PUT */
-        $.ajax({
+        await $.ajax({
           method: "get",
+          dataType: "json",
           url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
           success: function ( data ) {
             collectionContent = data;
           },
           error: function ( response ) {
-            this.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, listItem);
-            return false;
+            wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, listItem);
+            collectionContent = false;
           }
         });
+
+        if (collectionContent === false || collectionContent === undefined) {
+          return false;
+        }
 
         let formdata = new FormData(),
             relativeFilePath = file.name,
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
-        formdata.append("file", file)
-            .append("filename", relativeFilePath);
+        formdata.append("file", file);
+        formdata.append("filename", relativeFilePath);
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
             $(listItem).children("span")[0].innerText = "……";
-            this.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
+            wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
           } else {
             $(listItem).children("span")[0].innerText = "……";
-            this.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
+            wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
           }
         } catch (e) {
-          this.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
+          wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
           return false;
         }
 
@@ -198,4 +203,3 @@ function ingestAction(event) {
     $('#selectInputDir label').text("Verzeichnis auswählen");
   }
 }
-
