@@ -27,7 +27,7 @@ const wdbAdmin = {
   },
 
   /* actual upload */
-  doUpload: async function (method, url, headers, formdata, item, text) {
+  doUpload: async function (method, url, headers, formdata, item) {
     $.ajax({
       method: method,
       url: url,
@@ -42,7 +42,7 @@ const wdbAdmin = {
       error: function (response) {
         $(item).children("span")[0].innerText = "✕";
         $(item).append('<span class="error">Error: ' + response.status + "</span>");
-        console.error(text, response);
+        console.error("error " + method.toUpperCase() + "ing to " + url, response);
       }
     });
   },
