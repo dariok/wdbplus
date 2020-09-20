@@ -84,12 +84,10 @@ const wdbAdmin = {
         let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
 
         let formdata = new FormData(),
-            relativeFilePath = file.name,
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
         formdata.append("file", file);
-        formdata.append("filename", relativeFilePath);
-        formdata.append("targetCollection", file.webkitRelativePath.substr(0, file.webkitRelativePath.lastIndexOf('/')));
+        formdata.append("filename", file.webkitRelativePath);
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
