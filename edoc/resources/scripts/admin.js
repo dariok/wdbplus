@@ -47,7 +47,7 @@ const wdbAdmin = {
     });
   },
 
-  uploadFiles: async function ( ) {
+  uploadFiles: async function ( collectionContent ) {
     $('p img').show();
     
     for (let i = 0; i < this.files.length; i++) {
@@ -81,28 +81,7 @@ const wdbAdmin = {
 
         console.log("parsed file’s ID: " + fileID);
 
-        let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/",
-            collectionContent;
-
-        // try to determine whether a file with that ID already exists in the target collection
-        /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
-         * a 409 will be returned upon POST or PUT */
-        await $.ajax({
-          method: "get",
-          dataType: "json",
-          url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
-          success: function ( data ) {
-            collectionContent = data;
-          },
-          error: function ( response ) {
-            wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, listItem);
-            collectionContent = false;
-          }
-        });
-
-        if (collectionContent === false || collectionContent === undefined) {
-          return false;
-        }
+        let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
 
         let formdata = new FormData(),
             relativeFilePath = file.name,
@@ -110,6 +89,7 @@ const wdbAdmin = {
 
         formdata.append("file", file);
         formdata.append("filename", relativeFilePath);
+        formdata.append("targetCollection", file.webkitRelativePath.substr(0, file.webkitRelativePath.lastIndexOf('/')));
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
@@ -123,8 +103,6 @@ const wdbAdmin = {
           wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
           return false;
         }
-
-        $(listItem).children("span")[0].innerText = "✓";
       };
       /* jshint loopfunc: false */
 
@@ -158,8 +136,6 @@ const wdbAdmin = {
 //Object.freeze(wdbAdmin);
 
 /* event listeners */
-$('#picker').on("submit", wdbAdmin.uploadFiles);
-
 $(document).on("change", "#picker", function() {
   wdbAdmin.setFiles(this.files);
 });
@@ -186,9 +162,38 @@ $(function() {
 
 // dirupload() is called by the form’s formaction handler
 $('form').on("submit", dirupload);
-function dirupload ( event ) {
+async function dirupload ( event ) {
   event.preventDefault();
-  wdbAdmin.uploadFiles();
+
+  // try to determine whether a file with that ID already exists in the target collection
+  /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
+   * a 409 will be returned upon POST or PUT */
+  let collectionContent,
+      delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+  
+  await $.ajax({
+    method: "get",
+    dataType: "json",
+    url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
+    success: function ( data ) {
+      collectionContent = data;
+    },
+    error: function ( response ) {
+      wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
+      collectionContent = false;
+    }
+  });
+
+  if (collectionContent === false || collectionContent === undefined) {
+    return false;
+  }
+
+  let contents = {};
+  for (let content of collectionContent.resources) {
+    contents[content["@id"]] = content["@label"];
+  }
+
+  wdbAdmin.uploadFiles(contents);
 }
 
 // ingestAction() is called by the fieldset’s change handler
