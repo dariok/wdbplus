@@ -28,7 +28,7 @@ const wdbAdmin = {
 
   /* actual upload */
   doUpload: async function (method, url, headers, formdata, item) {
-    $.ajax({
+    return $.ajax({
       method: method,
       url: url,
       headers: headers,
@@ -47,7 +47,7 @@ const wdbAdmin = {
     });
   },
 
-  uploadFiles: async function ( collectionContent ) {
+  uploadFiles: function ( collectionContent ) {
     $('p img').show();
     
     for (let i = 0; i < this.files.length; i++) {
@@ -92,10 +92,12 @@ const wdbAdmin = {
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
             $(listItem).children("span")[0].innerText = "……";
-            wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
+            //wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
+            uploadManager.queueRequest(["put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem]);
           } else {
             $(listItem).children("span")[0].innerText = "……";
-            wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
+            //wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
+            uploadManager.queueRequest(["post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem]);
           }
         } catch (e) {
           wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
@@ -137,6 +139,47 @@ const wdbAdmin = {
 $(document).on("change", "#picker", function() {
   wdbAdmin.setFiles(this.files);
 });
+
+// limit the number of concurrent PUT/POST requests to avoid lockups in eXist
+let uploadManager = (function() {
+  const MAX_REQUESTS = 2;           // local test: produces Jetty errors (“blocking message ...”) für 3 or more...
+  let queue = [],
+      activeRequests = 0;
+  
+  function queueRequest( request ) {
+    queue.push(request);
+    checkQueue();
+  }
+  
+  function requestComplete () {
+    activeRequests--;
+    checkQueue();
+  }
+
+  function checkQueue() {
+    if (queue.length && activeRequests < MAX_REQUESTS) {
+      let request = queue.shift();
+      if (!request) {
+        return;
+      }
+      
+      activeRequests++;
+      
+      console.log("queuing " + request[0]);
+      wdbAdmin.doUpload(request[0], request[1], request[2], request[3], request[4])
+        .then(function () {
+          requestComplete();
+        })
+        .catch(function( ) {
+          requestComplete();
+        });
+    }
+  }
+
+  return {
+    queueRequest: queueRequest,
+  };
+})();
 
 $(function() {
   if (wdb.parameters.ed !== undefined) {
