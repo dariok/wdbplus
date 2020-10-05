@@ -142,7 +142,7 @@ $(document).on("change", "#picker", function() {
 
 // limit the number of concurrent PUT/POST requests to avoid lockups in eXist
 let uploadManager = (function() {
-  const MAX_REQUESTS = 2;           // local test: produces Jetty errors (“blocking message ...”) für 3 or more...
+  const MAX_REQUESTS = 1;           // local test: produces Jetty errors (“blocking message ...”) for 2 or more...
   let queue = [],
       activeRequests = 0;
   
