@@ -183,7 +183,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         else ()
       
       let $resourceName := xstring:substring-after-last($path, '/')
-      let $targetPath := normalize-space($parsed?targetCollection?body) || '/' || xstring:substring-before-last($path, '/')
+      let $targetPath := $collectionPath || '/' || xstring:substring-before-last($path, '/')
       
       (: all this to make sure we really have an ID in the file :)
       let $prepped := wdbRi:replaceWs($parsed?file?body)
