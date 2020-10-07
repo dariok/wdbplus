@@ -26,7 +26,8 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
         return map {
           "pathToEd": $path,
           "id":       $id,
-          "job":      $q
+          "job":      $q,
+          "auth":     sm:id()/sm:id
         }
       else
         let $pid := if ($id = "")
@@ -43,7 +44,8 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
           "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
           "p":     $pp,
           "q":     $q,
-          "id":    $pid
+          "id":    $pid,
+          "auth":  sm:id()/sm:id
         }
         
         return if ($map instance of map(*))
