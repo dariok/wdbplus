@@ -25,7 +25,8 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
         
         return map {
           "pathToEd": $path,
-          "id":       $id
+          "id":       $id,
+          "job":      $q
         }
       else
         let $pid := if ($id = "")
