@@ -24,7 +24,8 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
         let $path := $wdb:edocBaseDB || "/addins/" || $addinName
         
         return map {
-          "pathToEd": $path
+          "pathToEd": $path,
+          "id":       $id
         }
       else
         let $pid := if ($id = "")
