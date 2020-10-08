@@ -69,7 +69,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>
     <link rel="stylesheet" type="text/css" href="./$shared/css/function.css"/>
     {local:get('css', $model("pathToEd"), $model)}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
     <script src=",/$shared/scripts/function.js"/>
