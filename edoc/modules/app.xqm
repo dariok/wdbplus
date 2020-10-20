@@ -743,6 +743,7 @@ declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace a
     case "gif" return "image/gif"
     case "png" return "image/png"
     case "json" return "application/json"
+    case "zip" return "application/zip"
     case "xml" return
       if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
     case "xsl" return "application/xslt+xml"
