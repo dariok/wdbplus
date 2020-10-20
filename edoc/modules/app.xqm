@@ -722,7 +722,22 @@ declare function wdb:parseMultipart ( $data, $header ) {
         else if (starts-with(normalize-space($tbody), "<?xml"))
         then substring-after($tbody, "?>")
         else $tbody
-      return if ($body = "") then ()
+      
+      return if ($body = "")
+        then ()
+        else if (contains($body, ','))
+        then (: body contains type, encoding, etc :)
+          let $prologue := substring-before(substring-after($body, ':'), ',')
+          let $additional := tokenize($prologue, ';')
+          return map:entry (
+            $header?Content-Disposition?name,
+            map {
+              "header": $header,
+              "mime": $additional[1],
+              "encoding": $additional[2],
+              "body": substring-after($body, ',')
+            }
+          )
         else map:entry ( 
           $header?Content-Disposition?name,
           map {
