@@ -66,7 +66,7 @@ const wdbAdmin = {
         try {
           parsed = parser.parseFromString(fileContent, "application/xml");
         } catch (e) {
-          this.reportProblem("error parsing XML from " + file.name, e, listItem);
+          wdbAdmin.reportProblem("error parsing XML from " + file.name, e, listItem);
           return false;
         }
 
@@ -75,7 +75,7 @@ const wdbAdmin = {
             fileID = xml.find("TEI").attr("xml:id");
         
         if (fileID === undefined || fileID == "") {
-          this.reportProblem("no @xml:id found in " + file.name, {}, listItem);
+          wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, listItem);
           return false;
         }
 
