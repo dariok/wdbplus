@@ -279,7 +279,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
     {wdb:getProjectFiles($node, $model, 'css')}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
     <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
     <script src="resources/scripts/legal.js"/>
