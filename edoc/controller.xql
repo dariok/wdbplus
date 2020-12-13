@@ -61,7 +61,6 @@ else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/'
 (: generelle HTML :)
 else if (ends-with($exist:resource, ".html")) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    {login:set-user("wd", $cookiePath, $duration, false())}
     <view>
       <forward url="{$exist:controller}/modules/view.xql">
 				{login:set-user("wd", $cookiePath, $duration, false())}
