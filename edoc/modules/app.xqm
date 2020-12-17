@@ -42,16 +42,19 @@ declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
  : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
  : in the Collection that contains all projects
  :)
-declare variable $wdb:data := 
-  let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
-  
-  let $paths := for $f in $editionsW
-    let $path := base-uri($f)
-    where contains($path, '.xml')
-    order by string-length($path)
-    return $path
-  
-  return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
+declare variable $wdb:data :=
+  if ($wdb:configFile//config:data)
+  then normalize-space($wdb:configFeil//config:data)
+  else 
+    let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
+    
+    let $paths := for $f in $editionsW
+      let $path := base-uri($f)
+      where contains($path, '.xml')
+      order by string-length($path)
+      return $path
+    
+    return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
 ;
 
 (:~
