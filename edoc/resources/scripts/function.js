@@ -278,7 +278,7 @@ const wdbDocument = {
   },
 
   // retrieve info by url
-  showAnnotation: function ( url ) {
+  showAnnotation: function ( url, callback ) {
     let uid = wdb.getUniqueId();
     
     $.ajax({
@@ -294,6 +294,7 @@ const wdbDocument = {
             .append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>')
             .append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
         $('#ann').append(wrap);
+        callback(uid);
       },
       dataType: 'html'
     });
