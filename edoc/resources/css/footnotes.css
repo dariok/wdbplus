@@ -43,15 +43,10 @@ span.footnoteText{
   margin: 1em 0 1em 0;
 }
 
-main infoContainer {
-  position: absolute;
-  border: 1px solid black;
+/* footnotes or other info displayed to the right or floating */
+.infoContainer {
   background-color: white;
-  padding: 5px;
-  display: block;
 }
-
-aside .infoContainer {
-  display: block;
-  width: 100%;
+.floating {
+  border: 1px solid lightgrey;
 }
