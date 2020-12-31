@@ -21,7 +21,7 @@ hr.fnRule:only-child {
 
 /* footnote number within text */
 a.fn_number {
-  font-size: 0.7em;
+  font-size: 0.9em;
   vertical-align: super;
   line-height: 0;
 }
