@@ -196,15 +196,18 @@ const wdbDocument = {
 
   marginaliaTimer: {},
 
-  /* load notes into right div on hover */
+  /* load an element by ID and display it to the right */
   showInfoRight: function ( elementID ) {
-    let content = $('#' + elementID).html(),
-        insertID = wdb.getUniqueId(),
-        insertContent = $('<span id="' + insertID + '" class="infoContainer" style="display: block;">' +
-          content +
-          '<a onclick="clear();" href="javascript:clear(\'' + insertID + '\')">[x]</a></span>');
+    this.showDataRight($('#' + elementID).html());
+  },
   
-    $('#ann').html(insertContent);
+  showDataRight: function ( data ) {
+    let insertID = wdb.getUniqueId(),
+        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
+          data +
+          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
+          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+      $('#ann').html(insertContent);
   },
 
   /* toggle facsimile div visibility */
@@ -221,14 +224,16 @@ const wdbDocument = {
 
   // show content in an advanced mouseover 
   showInfoFloating: function ( pointerElement, elementID ) {
+    let content = $('#' + elementID).html();
+    this.showDataFloating ( pointerElement, content );
+  },
+  
+  showDataFloating: function ( pointerElement, data ) {
     const maxWidth = 400,
           distance = 20;
-    let content = $('#' + elementID).html(),
-        insertID = wdb.getUniqueId(),
-        insert = '<span id="' + insertID + '" class="infoContainer" style="display: block;">' +
-          content +
-          '</span>';
-    $(insert).insertAfter(pointerElement);
+    let insertID = wdb.getUniqueId(),
+        insert = $('<div id="' + insertID + '" class="infoContainer floating"/>').append(data);
+    $('#ann').html(insert);
 
     let $inserted = $('#' + insertID);
     $inserted.hover(
@@ -278,23 +283,12 @@ const wdbDocument = {
   },
 
   // retrieve info by url
-  showAnnotation: function ( url, callback ) {
-    let uid = wdb.getUniqueId();
-    
+  showAnnotation: async function ( url, callback ) {
     $.ajax({
       url: url,
       method: 'get',
       success: function ( data ) {
-        let ins = $('<div/>'),
-            wrap = $('<div/>');
-      
-        ins.html(data);
-        wrap.attr('id', uid)
-            .append(ins.find('div'))
-            .append('<a href="javascript:clear(\'' + uid + '\');" title="Diesen Eintrag schließen">[x]</a>')
-            .append('<a href="javascript:clear();" title="Alle Informationen rechts schließen">[X]</a>');
-        $('#ann').append(wrap);
-        callback(uid);
+        callback ( data );
       },
       dataType: 'html'
     });

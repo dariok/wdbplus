@@ -85,3 +85,11 @@ aside {
 #fac {
   height: 100%;
 }
+
+/* footnotes or other info displayed to the right or floating */
+.infoContainer {
+    background-color: white;
+}
+.floating {
+    border: 1px solid lightgrey;
+}
