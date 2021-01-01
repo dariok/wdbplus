@@ -85,3 +85,7 @@ aside {
 #fac {
   height: 100%;
 }
+
+q {
+  quotes: "»" "«" "›" "‹";
+}
