@@ -46,6 +46,7 @@ span.footnoteText{
 /* footnotes or other info displayed to the right or floating */
 .infoContainer {
   background-color: white;
+  padding: 0 5px 0 5px;
 }
 .floating {
   border: 1px solid lightgrey;
