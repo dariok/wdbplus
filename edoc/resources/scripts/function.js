@@ -601,6 +601,12 @@ $(function () {
 
   /* when hovering over a footnote, display it in the right div */
   $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  
+  // load image when clicking on a page number
+  $('.pagebreak a').click(function (event) {
+    event.preventDefault();
+    wdbUser.displayImage($(this));
+  });
 });
 /* END DOM ready functions */
 
@@ -628,13 +634,3 @@ $(document).bind({
   }
 });
 /* END window event handlers */
-
-/***
- * other event handlers
- */
-// load image when clicking on a page number
-$('.pagebreak a').click(function (event) {
-  event.preventDefault();
-  wdbUser.displayImage($(this));
-});
-/* END other event handlers */
