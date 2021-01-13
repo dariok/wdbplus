@@ -17,30 +17,45 @@ declare
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $coll := wdb:getEdPath($id, true())
-  
-  let $query := xmldb:decode($q)
-  
-  (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
-     subsequence here and then looping through grouped results leads to problems with IDs of ancestors and KWIC.
-     Hence, only look for matching files and then do the search in subsequences of files. This way, KWIC works and IDs
-     can be retrieved. The cost of the extra searches should not be as high as before :)
-  let $res := collection($coll)//tei:text[ft:query(., $query)]
-  let $max := count($res)
-  
-  return (
+  if (0 = (count($q), string-length($q))) then (
     <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
+      <output:serialization-parameters>
+        <output:method value="text" />
+      </output:serialization-parameters>
+      <http:response status="400">
+        <http:header name="rest-status" value="REST:Client-Error" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Control" value="no-cache" />
+        <http:header name="Content-Type" value="text/plain" />
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $f in subsequence($res, $start, 25)
-      return
-        <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
-    }</results>
+    "Error: no query content!"
   )
+  else 
+    let $coll := wdb:getEdPath($id, true())
+    
+    let $query := xmldb:decode($q)
+    
+    (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
+       subsequence here and then looping through grouped results leads to problems with IDs of ancestors and KWIC.
+       Hence, only look for matching files and then do the search in subsequences of files. This way, KWIC works and IDs
+       can be retrieved. The cost of the extra searches should not be as high as before :)
+    let $res := collection($coll)//tei:text[ft:query(., $query)]
+    let $max := count($res)
+    
+    return (
+      <rest:response>
+        <http:response status="200">
+          <http:header name="rest-status" value="REST:SUCCESS" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+        for $f in subsequence($res, $start, 25)
+        return
+          <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
+      }</results>
+    )
 };
 
 declare
