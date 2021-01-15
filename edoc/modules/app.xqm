@@ -328,7 +328,6 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   
   let $params :=
     <parameters>
-      <param name="server" value="eXist"/>
       <param name="exist:stop-on-warn" value="no" />
       <param name="exist:stop-on-error" value="no" />
       <param name="projectDir" value="{$model?pathToEd}" />
