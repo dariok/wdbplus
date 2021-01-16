@@ -16,15 +16,6 @@
   <xsl:param name="xml" />        <!-- path to the XML file -->
   <xsl:param name="xsl" />        <!-- path to the main XSLT that imports the current one -->
   
-  <xsl:template match="/">
-    <xsl:apply-templates select="." mode="content"/>
-  </xsl:template>
-  
-  <xsl:template match="tei:abbr">
-    <xsl:apply-templates/>
-  </xsl:template>
-  
-  <!-- ausgelagert nach common; 2016-01-18 DK -->
   <xsl:template match="tei:bibl[@ref]">
     <xsl:if test="parent::tei:cit">
             <br/>
