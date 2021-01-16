@@ -1,5 +1,6 @@
-<!-- generic XSLTs for use in wdb+
-     common templates and functions 
+<!-- W.DB+ generic XSLTs – common templates and functions
+     author:DK = Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at> | <dario.kampkaspar@ulb.tu-darmstadt.de>
+     https://github.com/dariok/wdbplus
      
      This template, when stored in edoc/resources/xslt, MUST NOT be changed by a project. Updates to wdb+ are likely
      to replace these changes with the framework defaults. Instead, this file should either be copied to the project’s
@@ -22,10 +23,21 @@
   <xsl:param name="xsl" />        <!-- path to the main XSLT that imports the current one -->
   
   <!-- The following templates and functions may be overwritten by importing stylesheets in case the a project has
-       different data sources, tag/attribute usage etc. -->
+       different data sources, tag/attribute usage etc.:
+       
+      ┌───────────────────────────┬────────────────────────────────────────────────────────────────────────────────┐
+      │ template / function       │ change when                                                                    │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:rs/@ref               │ @ref is not of one of these type: 1) '#'{identifier}; 2) {type}':'{identifier} │
+      │                           │   3) resolvable URL                                                            │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
+  -->
   
-  <!-- this template should be overwritten by projects if the value of tei:rs/@ref does not fall into one of the
-       categories 1) #identifier; 2) type:identifier; 3) URL -->
+  <!-- NO USER SERVICABLE PARTS INSIDE
+       In case you wish to change any behaviour, you can either
+       – copy this file to your project an edit it there;
+       – import this stylesheet via xsl:import and overwrite any template you like, especially those mentioned above -->
   <xsl:template match="tei:rs/@ref">
     <xsl:choose>
       <xsl:when test="starts-with(., '#')">
