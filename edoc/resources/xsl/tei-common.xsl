@@ -1,5 +1,10 @@
 <!-- generic XSLTs for use in wdb+
-     common templates and functions -->
+     common templates and functions 
+     
+     This template, when stored in edoc/resources/xslt, MUST NOT be changed by a project. Updates to wdb+ are likely
+     to replace these changes with the framework defaults. Instead, this file should either be copied to the project’s
+     collection where it can be adapted to the project’s needs or it can be imported by other stylesheets and
+     functions/templates can be overwritten -->
 <xsl:stylesheet
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
@@ -15,6 +20,25 @@
   <xsl:param name="p" />          <!-- p parameter (json like object or whatever you want) -->
   <xsl:param name="xml" />        <!-- path to the XML file -->
   <xsl:param name="xsl" />        <!-- path to the main XSLT that imports the current one -->
+  
+  <!-- The following templates and functions may be overwritten by importing stylesheets in case the a project has
+       different data sources, tag/attribute usage etc. -->
+  
+  <!-- this template should be overwritten by projects if the value of tei:rs/@ref does not fall into one of the
+       categories 1) #identifier; 2) type:identifier; 3) URL -->
+  <xsl:template match="tei:rs/@ref">
+    <xsl:choose>
+      <xsl:when test="starts-with(., '#')">
+        <xsl:value-of select="substring(., 2)" />
+      </xsl:when>
+      <xsl:when test="contains(., ':')">
+        <xsl:value-of select="substring-after(., ':')"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="."/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
   
   <xsl:template match="tei:bibl[@ref]">
     <xsl:if test="parent::tei:cit">
@@ -554,21 +578,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  <xsl:template match="tei:rs/@ref">
-    <!-- this template should be overwritten by projects if the value of tei:rs/@ref does not fall into one of the
-      categories 1) #identifier or 2) type:identifier -->
-    <xsl:choose>
-      <xsl:when test="starts-with(., '#')">
-        <xsl:value-of select="substring(., 2)" />
-      </xsl:when>
-      <xsl:when test="contains(., ':')">
-        <xsl:value-of select="substring-after(., ':')"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="."/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+  
   
   <!-- ersetzt bisherige Ausagben; 2016-05-27 DK -->
   <!-- Anmerkung: rowspan kann vorerst nicht übernommen werden, da es zu falscher Zellenzahl kommt -->
