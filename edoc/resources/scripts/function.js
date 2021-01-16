@@ -572,3 +572,21 @@ $(document).bind({
 	ajaxStart: function() { $("body").addClass("loading"); },
 	ajaxStop: function() { $("body").removeClass("loading"); }
 });
+
+
+/* These additions must be integrated into the proper places when merging refactor-javascript into developlment */
+const wdbUser = {
+  // load entity data
+  showEntityData: function ( entityID, projectID ) {
+    let url = "entity.html?id=" + entityID;
+    
+    $.ajax({
+      method:  "get",
+      url:     url,
+      success: function ( data ) {
+        wdbDocument.showDataRight(data);
+      },
+      error: wdb.logError(xhr, status, error, "Error loading entity data from " + url)
+    });
+  }
+};
