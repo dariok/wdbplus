@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:description xmlns:x="http://www.jenitennison.com/xslt/xspec"
+  stylesheet="tei-common.xsl">
+  
+  <x:variable name="ed">testproject</x:variable>
+  
+  <x:scenario label="T1: rs">
+    <x:scenario label="T1.1">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <rs type="person" ref="#pagebreak"><w xml:id="w1">page-<pb n="1" />break</w></rs>
+      </x:context>
+      <x:expect label=".">
+        <button class="entity person"
+          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          aria-label="opens information about an entity"><span
+            id="w1"
+            class="w">page-</span></button><button
+          class="entity person"
+          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          aria-label="opens information about an entity"><span
+            id="w1"
+            class="w">break</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.2">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        <rs type="person" ref="person:pagebreak"><w
+          xml:id="w2">another</w> <w
+          xml:id="w3">page-<pb n="2" />break</w></rs>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          aria-label="opens information about an entity">another <span
+            id="w3"
+            class="w">page-</span></button><button
+          class="entity person"
+          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          aria-label="opens information about an entity"><span
+            id="w3"
+            class="w">break</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.3">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        <rs type="person" ref="http://example.org/pb">no w in page-<pb
+          n="2" />break</rs>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          aria-label="opens information about an entity"
+          >no w in page-</button><button
+          class="entity person"
+          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          aria-label="opens information about an entity">break</button>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+</x:description>

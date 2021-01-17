@@ -46,12 +46,12 @@
       <xsl:when test="starts-with(., '#')">
         <xsl:value-of select="substring(., 2)" />
       </xsl:when>
-      <xsl:when test="contains(., ':')">
-        <xsl:value-of select="substring-after(., ':')"/>
+      <xsl:when test="starts-with(., 'http')">
+        <xsl:value-of select="." />
       </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="."/>
-      </xsl:otherwise>
+      <xsl:when test="contains(., ':')">
+        <xsl:value-of select="substring-after(., ':')" />
+      </xsl:when>
     </xsl:choose>
   </xsl:template>
   
@@ -62,24 +62,44 @@
     </xsl:variable>
     
     <xsl:variable name="att" as="attribute()*">
-      <xsl:attribute name="class">entity</xsl:attribute>
-      <xsl:attribute name="onclick">wdbUser.showEntityData('<xsl:value-of select="$ref"/>', '<xsl:value-of select="$ed" />')</xsl:attribute>
+      <xsl:attribute name="class" select="string-join(('entity', @type), ' ')" />
+      <xsl:attribute name="onclick"
+        >wdbUser.showEntityData('<xsl:value-of select="$ref"/>', '<xsl:value-of select="$ed" />')</xsl:attribute>
       <xsl:attribute name="aria-label">opens information about an entity</xsl:attribute>
     </xsl:variable>
     
+    <!-- handling of different contexts -->
     <xsl:choose>
-      <xsl:when test="descendant::tei:pb">
-        <span>
+      <!-- contains a pagebreak -->
+      <xsl:when test="tei:w/tei:pb">
+        <button>
           <xsl:sequence select="$att" />
-          <xsl:value-of select="text()[following-sibling::tei:w]"/>
-          <xsl:value-of select="tei:w/text()[following-sibling::tei:pb]"/>
-        </span>
+          <xsl:apply-templates select="node()[following-sibling::tei:w[tei:pb]]"/>
+          <span class="w">
+            <xsl:apply-templates select="tei:w[tei:pb]/@xml:id" />
+            <xsl:value-of select="tei:w[tei:pb]/text()[following-sibling::tei:pb]"/>
+          </span>
+        </button>
+        <xsl:apply-templates select="tei:w[tei:pb]/tei:pb"/>
+        <button>
+          <xsl:sequence select="$att" />
+          <span class="w">
+            <xsl:apply-templates select="tei:w[tei:pb]/@xml:id" />
+            <xsl:value-of select="tei:w[tei:pb]/text()[preceding-sibling::tei:pb]"/>
+          </span>
+          <xsl:value-of select="node()[preceding-sibling::tei:w[tei:pb]]"/>
+        </button>
+      </xsl:when>
+      <xsl:when test="tei:pb">
+        <button>
+          <xsl:sequence select="$att" />
+          <xsl:value-of select="text()[following-sibling::tei:pb]"/>
+        </button>
         <xsl:apply-templates select="descendant::tei:pb[1]"/>
-        <span>
+        <button>
           <xsl:sequence select="$att" />
-          <xsl:value-of select="tei:w/text()[preceding-sibling::tei:pb]"/>
-          <xsl:value-of select="text()[preceding-sibling::tei:w]"/>
-        </span>
+          <xsl:value-of select="text()[preceding-sibling::tei:pb]"/>
+        </button>
       </xsl:when>
       <xsl:when test="tei:note[@place]">
         <span>
@@ -195,7 +215,7 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template match="tei:bibl[@ref]">
+  <!--<xsl:template match="tei:bibl[@ref]">
     <xsl:if test="parent::tei:cit">
             <br/>
         </xsl:if>
@@ -206,7 +226,7 @@
       '{$baseDir}/scripts/xslt/tei-bibliography.xsl', '{$refs}')">
       <xsl:choose>
         <xsl:when test="@type='ebd'">ebd.</xsl:when>
-        <xsl:when test="@type='Ebd'">Ebd.</xsl:when><!-- Für Großschreibung am Anfang von Fußnoten -->
+        <xsl:when test="@type='Ebd'">Ebd.</xsl:when><!-\- Für Großschreibung am Anfang von Fußnoten -\->
         <xsl:when test="@target = preceding::tei:bibl[1]/@target">
           <xsl:choose>
             <xsl:when test="ends-with(preceding-sibling::node()[self::text()][1], '.')">
@@ -227,8 +247,8 @@
     <xsl:apply-templates/>
   </xsl:template>
   
-  <!-- Ausgabe detaillierter gewünscht; 2016-05-17 DK -->
-  <!-- noch detaillierter; 2016-07-11 DK -->
+  <!-\- Ausgabe detaillierter gewünscht; 2016-05-17 DK -\->
+  <!-\- noch detaillierter; 2016-07-11 DK -\->
   <xsl:template match="tei:bibl/tei:abbr">
     <xsl:apply-templates/>
   </xsl:template>
@@ -236,7 +256,7 @@
     <xsl:value-of select="normalize-space()"/>
   </xsl:template>
   
-  <!-- nur der eigentliche Titel von Quellen(-editionen) soll kursiv stehen; 2016-07-11 DK -->
+  <!-\- nur der eigentliche Titel von Quellen(-editionen) soll kursiv stehen; 2016-07-11 DK -\->
   <xsl:template match="tei:listBibl[@type='primary']//tei:abbr/tei:title">
     <xsl:text> </xsl:text>
     <i>
@@ -247,7 +267,7 @@
     </xsl:if>
   </xsl:template>
   
-  <!-- Autoren von Sekundärliteratur in kleinen Kapitälchen, analog PDF; 2016-07-11 DK -->
+  <!-\- Autoren von Sekundärliteratur in kleinen Kapitälchen, analog PDF; 2016-07-11 DK -\->
   <xsl:template match="tei:name[parent::tei:abbr]">
     <xsl:choose>
       <xsl:when test="ancestor::tei:listBibl[not(@type='primary')]">
@@ -261,17 +281,17 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- Inhalt ausgelagert wegen Anchor innerhalb einer Liste; 2016-05-19 DK -->
+  <!-\- Inhalt ausgelagert wegen Anchor innerhalb einer Liste; 2016-05-19 DK -\->
   <xsl:template match="tei:anchor[not(parent::tei:list)]">
     <xsl:apply-templates select="." mode="long"/>
   </xsl:template>
-  <!-- neu 2016-05-19 DK -->
+  <!-\- neu 2016-05-19 DK -\->
   <xsl:template match="tei:anchor[not(@type)]" mode="long">
     <a id="{@xml:id}" class="anchorRef"/>
   </xsl:template>
   
-  <!-- apply-templates aufgetrennt (verhindern von Leerzeichen); 2015-11-23 DK -->
-  <!-- verschoben aus intro nach common (Augustinkommentar); 2015-11-27 DK -->
+  <!-\- apply-templates aufgetrennt (verhindern von Leerzeichen); 2015-11-23 DK -\->
+  <!-\- verschoben aus intro nach common (Augustinkommentar); 2015-11-27 DK -\->
   <xsl:template match="tei:cit">
     <span class="blockquote">
       <xsl:apply-templates select="tei:quote"/>
@@ -285,10 +305,10 @@
     <xsl:text>'</xsl:text>
   </xsl:template>
   
-  <!-- TODO nach common-common? -->
-  <!-- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -->
-  <!-- @resp für z.B. Texterklärungen hinzugefügt; 2016-06-09 DK -->
-  <!-- Test vereinfacht; 2016-07-12 DK -->
+  <!-\- TODO nach common-common? -\->
+  <!-\- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -\->
+  <!-\- @resp für z.B. Texterklärungen hinzugefügt; 2016-06-09 DK -\->
+  <!-\- Test vereinfacht; 2016-07-12 DK -\->
   <xsl:template match="tei:gap">
     <xsl:text>[…]</xsl:text>
     <xsl:if test="@extent">
@@ -300,10 +320,10 @@
   </xsl:template>
   
   <xsl:template match="tei:hi [not(parent::tei:head)]">
-    <!-- umgestellt für @style und Kombinationen; 2017-10-24 DK -->
+    <!-\- umgestellt für @style und Kombinationen; 2017-10-24 DK -\->
     <span>
       <xsl:choose>
-  <!--      <xsl:when test="@rend='large'">
+  <!-\-      <xsl:when test="@rend='large'">
           <span style="font-size:larger;"><xsl:apply-templates/></span>
         </xsl:when>
         <xsl:when test="@rend='italics'">
@@ -314,7 +334,7 @@
         </xsl:when>
         <xsl:when test="@rend='smallCaps'">
           <span style="font-style:smallCaps;"><xsl:apply-templates/></span>
-        </xsl:when>-->
+        </xsl:when>-\->
         <xsl:when test="@rend='super'">
           <xsl:attribute name="class">superscript</xsl:attribute>
         </xsl:when>
@@ -326,11 +346,11 @@
     </span>
   </xsl:template>
   
-  <!-- Sachkommentar-Fußnoten -->
-  <!-- a/@name → a/id; 2016-03-15 DK -->
-  <!-- grundsätzlich alle Fußnoten ausgeben; 2016-03-18 DK -->
-  <!-- umgestellt auf template footnoteLink; 2016-05-19 DK -->
-  <!-- ausgelagert nach common; 2016-05-23 DK -->
+  <!-\- Sachkommentar-Fußnoten -\->
+  <!-\- a/@name → a/id; 2016-03-15 DK -\->
+  <!-\- grundsätzlich alle Fußnoten ausgeben; 2016-03-18 DK -\->
+  <!-\- umgestellt auf template footnoteLink; 2016-05-19 DK -\->
+  <!-\- ausgelagert nach common; 2016-05-23 DK -\->
   <xsl:template match="tei:note[@type='footnote']">
     <xsl:call-template name="footnoteLink">
       <xsl:with-param name="type">fn</xsl:with-param>
@@ -338,17 +358,17 @@
     </xsl:call-template>
   </xsl:template>
   
-  <!-- neu zur Angleichung an PDF; 2016-07-11 DK -->
+  <!-\- neu zur Angleichung an PDF; 2016-07-11 DK -\->
   <xsl:template match="tei:orig">
     <span class="orig">
       <xsl:apply-templates/>
     </span>
   </xsl:template>
   
-  <!-- FIXME !important! allgemeiner machen!! -->
-  <!-- TODO insgesamt besser machen. Allgemeine Funktion zum Verlinken finden -->
-  <!-- Überlegung: Wenn der Link mit http:// beginnt, dann ist es Link auf andere Edition. In dem Fall als Linktext das
-    Kürzel oder den Titel aus der METS der Zieledition entnehmen -->
+  <!-\- FIXME !important! allgemeiner machen!! -\->
+  <!-\- TODO insgesamt besser machen. Allgemeine Funktion zum Verlinken finden -\->
+  <!-\- Überlegung: Wenn der Link mit http:// beginnt, dann ist es Link auf andere Edition. In dem Fall als Linktext das
+    Kürzel oder den Titel aus der METS der Zieledition entnehmen -\->
   <xsl:template match="tei:ptr[@type = 'wdb' and @target and not(parent::tei:cit)]">
     <xsl:variable name="target">
       <xsl:call-template name="makeLink">
@@ -358,7 +378,7 @@
       </xsl:call-template>
     </xsl:variable>
     <xsl:variable name="file">
-      <!-- Test auf Texte der 2. Phase; 2016-07-14 DK -->
+      <!-\- Test auf Texte der 2. Phase; 2016-07-14 DK -\->
       <xsl:choose>
         <xsl:when test="not(contains(@target, 'ed000216'))">
           <xsl:variable name="uri">
@@ -370,7 +390,7 @@
                 <xsl:value-of select="substring-after(@target, '../')"/>
               </xsl:when>
               <xsl:when test="contains(@target, '#') and contains(@target, '_')">
-                <!-- saxon vor 9.7 hat Probleme, wenn doc() eien fragment identifier bekommt; 2017-08-22 DK -->
+                <!-\- saxon vor 9.7 hat Probleme, wenn doc() eien fragment identifier bekommt; 2017-08-22 DK -\->
                 <xsl:value-of select="substring-before(concat(substring-before(@target, '_'), '/', @target), '#')"/>
               </xsl:when>
               <xsl:when test="contains(@target, '#')">
@@ -378,8 +398,8 @@
               </xsl:when>
             </xsl:choose>
           </xsl:variable>
-          <!-- TODO Link  generell anpassen! -->
-          <!-- TODO alles viel schöner machen! -->
+          <!-\- TODO Link  generell anpassen! -\->
+          <!-\- TODO alles viel schöner machen! -\->
           <xsl:value-of select="concat($baseDir, '/texts/', $uri)"/>
         </xsl:when>
         <xsl:otherwise>
@@ -389,7 +409,7 @@
     </xsl:variable>
     <a href="{$target}">
       <xsl:variable name="nr">
-        <!-- vereinfacht; 2017-08-20 DK -->
+        <!-\- vereinfacht; 2017-08-20 DK -\->
         <xsl:choose>
           <xsl:when test="starts-with(@target, '#')">
             <xsl:value-of select="/tei:TEI/@n"/>
@@ -408,12 +428,12 @@
           <xsl:value-of select="$nr"/>
         </xsl:when>
         <xsl:when test="contains(@target, '#n')">
-          <!-- in choose um in der eigenen Datei die Nummer ausgeben zu können; 2016-07-11 DK -->
+          <!-\- in choose um in der eigenen Datei die Nummer ausgeben zu können; 2016-07-11 DK -\->
           <xsl:choose>
-            <!-- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -->
+            <!-\- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -\->
             <xsl:when test="contains(@target, '/')">
               <xsl:text>Nr. </xsl:text>
-              <!-- neu für Links auf spätere EE; 2016-07-12 DK -->
+              <!-\- neu für Links auf spätere EE; 2016-07-12 DK -\->
               <xsl:choose>
                 <xsl:when test="$nr &gt; 0">
                   <xsl:value-of select="format-number($nr, '#')"/>
@@ -430,20 +450,20 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:when>
-        <!--Link auf den Text einer Transkription an eine beliebige Stelle -->
-        <!-- darf nicht mit # anfangen, da sonst gleiche Datei; 2016-07-12 DK -->
-        <!-- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -->
+        <!-\-Link auf den Text einer Transkription an eine beliebige Stelle -\->
+        <!-\- darf nicht mit # anfangen, da sonst gleiche Datei; 2016-07-12 DK -\->
+        <!-\- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -\->
         <xsl:when test="(contains(@target, '#q') or contains(@target, '#s')) and contains(@target, '/')">
           <xsl:text>Nr. </xsl:text>
           <xsl:if test="doc-available($file)">
             <xsl:value-of select="doc($file)/tei:TEI/@n"/>
           </xsl:if>
         </xsl:when>
-        <!-- neu 2016-07-12 DK -->
+        <!-\- neu 2016-07-12 DK -\->
         <xsl:when test="contains(@target, '#q') or contains(@target, '#s')">
           <xsl:text>Textstelle</xsl:text>
         </xsl:when>
-        <!-- neu 2017-08-22 DK -->
+        <!-\- neu 2017-08-22 DK -\->
         <xsl:when test="contains(@target, '#c')">
           <xsl:call-template name="fnumberKrit">
             <xsl:with-param name="context" select="id(@target)"/>
@@ -453,7 +473,7 @@
     </a>
   </xsl:template>
   
-  <!-- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -->
+  <!-\- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -\->
   <xsl:template match="tei:quote">
     <q>
       <xsl:if test="@xml:id">
@@ -468,7 +488,7 @@
             <xsl:attribute name="lang">grc</xsl:attribute>
           </xsl:when>
           <xsl:when test="@xml:lang='heb-Hebr'"> 
-            <!-- angepaßt auf he nach 639-1; 2016-05-23 DK -->
+            <!-\- angepaßt auf he nach 639-1; 2016-05-23 DK -\->
             <xsl:attribute name="lang">he</xsl:attribute>
           </xsl:when>
         </xsl:choose>
@@ -477,17 +497,17 @@
     </q>
   </xsl:template>
   
-  <!-- in common zusammengefaßt; nur noch wenn @xml:lang; 2016-03-18 DK -->
+  <!-\- in common zusammengefaßt; nur noch wenn @xml:lang; 2016-03-18 DK -\->
   <xsl:template match="tei:seg[@xml:lang]">
     <xsl:choose>
-      <!-- aufgeteilt je Sprache; Ausgabe der Sprache in HTML-Attribut @lang; 2016-05-20 DK -->
+      <!-\- aufgeteilt je Sprache; Ausgabe der Sprache in HTML-Attribut @lang; 2016-05-20 DK -\->
       <xsl:when test="@xml:lang='grc-Grek'"> 
         <span lang="grc">
                     <xsl:apply-templates/>
                 </span>
       </xsl:when>
       <xsl:when test="@xml:lang='heb-Hebr'">
-        <!-- angepaßt auf he nach 639-1; 2016-05-23 DK -->
+        <!-\- angepaßt auf he nach 639-1; 2016-05-23 DK -\->
         <span lang="he">
                     <xsl:apply-templates/>
                 </span>
@@ -495,8 +515,8 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- in common zusammengefaßt; 2016-01-18 DK -->
-  <!-- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -->
+  <!-\- in common zusammengefaßt; 2016-01-18 DK -\->
+  <!-\- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -\->
   <xsl:template match="tei:supplied">
     <xsl:text>[</xsl:text>
     <xsl:apply-templates/>
@@ -509,7 +529,7 @@
     </xsl:if>
   </xsl:template>
   
-  <!-- Ausgabe von erwähnten allg. Werktiteln und Begrifflichkeiten in Anführungszeichen / kursiv -->
+  <!-\- Ausgabe von erwähnten allg. Werktiteln und Begrifflichkeiten in Anführungszeichen / kursiv -\->
   <xsl:template match="tei:term">
     <xsl:choose>
       <xsl:when test="@type='term'">
@@ -517,7 +537,7 @@
           <xsl:apply-templates/>
         </xsl:element>
       </xsl:when>
-      <!-- Ausgabe Quellentitel kursiv, nach Festlegung TK; 2016-05-09 DK -->
+      <!-\- Ausgabe Quellentitel kursiv, nach Festlegung TK; 2016-05-09 DK -\->
       <xsl:when test="@type='title' and not(tei:quote) and not(parent::tei:quote)">
         <i>
                     <xsl:apply-templates/>
@@ -534,7 +554,7 @@
             <xsl:apply-templates/>
         </i>
   </xsl:template>
-  <!-- neu 2016-05-24 DK -->
+  <!-\- neu 2016-05-24 DK -\->
   <xsl:template match="tei:titleStmt/tei:title">
     <xsl:apply-templates select="node()[not(self::tei:date or self::tei:placeName)]"/>
     <br/>
@@ -543,7 +563,7 @@
       <xsl:text>, </xsl:text>
     </xsl:if>
     <xsl:apply-templates select="tei:date"/>
-    <!-- auch (korrekte) Angabe im Header prüfen; 2017-08-07 DK -->
+    <!-\- auch (korrekte) Angabe im Header prüfen; 2017-08-07 DK -\->
     <xsl:if test="contains((/tei:TEI/tei:text/tei:body/tei:div[1]//tei:objectDesc)[1]/@form, 'lost')    or contains(/tei:TEI/tei:teiHeader//tei:sourceDesc//tei:objectDesc[1]/@form, 'lost')">
       <br/>
             <span>(verschollen)</span>
@@ -553,8 +573,8 @@
             <span>(Fragment)</span>
     </xsl:if>
   </xsl:template>
-    <!-- neu 2015-11-09; vorher über seg[@type]; 2015-11-09 DK -->
-    <!-- aus introduction-common; 2017-07-20 DK -->
+    <!-\- neu 2015-11-09; vorher über seg[@type]; 2015-11-09 DK -\->
+    <!-\- aus introduction-common; 2017-07-20 DK -\->
     <xsl:template match="tei:date | tei:placeName">
         <xsl:if test="@cert">
             <xsl:text>[</xsl:text>
@@ -565,7 +585,7 @@
         </xsl:if>
     </xsl:template>
   
-  <!-- Tabellen -->
+  <!-\- Tabellen -\->
   <xsl:template match="tei:table">
     <table>
       <xsl:if test="@rend='noborder'">
@@ -593,8 +613,8 @@
   
   
   
-  <!-- ersetzt bisherige Ausagben; 2016-05-27 DK -->
-  <!-- Anmerkung: rowspan kann vorerst nicht übernommen werden, da es zu falscher Zellenzahl kommt -->
+  <!-\- ersetzt bisherige Ausagben; 2016-05-27 DK -\->
+  <!-\- Anmerkung: rowspan kann vorerst nicht übernommen werden, da es zu falscher Zellenzahl kommt -\->
   <xsl:template match="tei:cell[parent::tei:row[@role='label']]">
     <th id="{@xml:id}">
       <xsl:apply-templates/>
@@ -614,19 +634,19 @@
     </xsl:if>
   </xsl:template>
   
-  <!-- aus intro und transcript ausgelagert; 2016-03-16 DK -->
-  <!-- TODO: in rechter div anzeigen! -->
+  <!-\- aus intro und transcript ausgelagert; 2016-03-16 DK -\->
+  <!-\- TODO: in rechter div anzeigen! -\->
   <xsl:template match="tei:ref[@type='biblical']">
     <a>
       <xsl:attribute name="href">
         <xsl:text>javascript:window.open('</xsl:text>
-<!--        <xsl:value-of select="$cRef-biblical-start"/>-->
+<!-\-        <xsl:value-of select="$cRef-biblical-start"/>-\->
         <xsl:value-of select="translate(@cRef,' ,_','+: ')"/>
-<!--        <xsl:value-of select="$cRef-biblical-end"/>-->
+<!-\-        <xsl:value-of select="$cRef-biblical-end"/>-\->
         <xsl:value-of select="@xml:id"/>
         <xsl:text>', "Zweitfenster", "width=1200, height=450, top=300, left=50").focus();</xsl:text>
       </xsl:attribute>
-      <!--<xsl:choose>
+      <!-\-<xsl:choose>
         <xsl:when test="substring-before(@cRef, ' ') = substring-before(preceding::tei:ref[@type='biblical'][1]/@cRef, ' ')">
           <xsl:choose>
             <xsl:when test="ends-with(preceding-sibling::node()[self::text()][1], '.')">
@@ -653,13 +673,13 @@
         <xsl:otherwise>
           <xsl:apply-templates />
         </xsl:otherwise>
-      </xsl:choose>-->
+      </xsl:choose>-\->
       <xsl:apply-templates />
     </a>
   </xsl:template>
   
-  <!-- neu 2016-05-30 DK -->
-  <!-- cRef-Kodierung angepaßt (wird im Sch geprüft); 2016-06-09 DK -->
+  <!-\- neu 2016-05-30 DK -\->
+  <!-\- cRef-Kodierung angepaßt (wird im Sch geprüft); 2016-06-09 DK -\->
   <xsl:template match="tei:ref[@type='vd16']">
     <xsl:variable name="link">
       <xsl:value-of select="concat('http://gateway-bayern.de/VD16+', @cRef)"/>
@@ -675,7 +695,7 @@
     <xsl:variable name="xsl">
       <xsl:value-of select="concat('scripts/xslt/tei-', substring-after(substring-before($refXML, '.xml'), '_'), '.xsl')"/>
     </xsl:variable>
-    <!-- neu 2016-07-11 DK -->
+    <!-\- neu 2016-07-11 DK -\->
     <xsl:variable name="tXML">
       <xsl:choose>
         <xsl:when test="contains($refXML, '#')">
@@ -686,7 +706,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <!-- neu 2016-07-11 DK -->
+    <!-\- neu 2016-07-11 DK -\->
     <xsl:variable name="fragment">
       <xsl:if test="contains($refXML, '#')">
         <xsl:value-of select="concat('#', substring-after($refXML, '#'))"/>
@@ -705,9 +725,9 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <!-- neu wegen Links auf spätere EE; 2016-07-12 DK -->
-    <!-- TODO verallgemeinern entsprechend Überlegungen oben zu ref -->
-    <!-- angepaßt für 2. Phase; 2017-10-01 DK -->
+    <!-\- neu wegen Links auf spätere EE; 2016-07-12 DK -\->
+    <!-\- TODO verallgemeinern entsprechend Überlegungen oben zu ref -\->
+    <!-\- angepaßt für 2. Phase; 2017-10-01 DK -\->
     <xsl:variable name="tdir">
       <xsl:choose>
         <xsl:when test="contains($refXML, '216')">
@@ -718,23 +738,23 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <!-- in eXist wird mit ID gearbeitet! 2017-06-20 DK -->
-    <!-- vereinfacht und verallgemeinert; 2017-07-09 DK -->
+    <!-\- in eXist wird mit ID gearbeitet! 2017-06-20 DK -\->
+    <!-\- vereinfacht und verallgemeinert; 2017-07-09 DK -\->
     <xsl:variable name="targetID">
-      <!--<xsl:choose>
-        <!-\- gleiche Datei -\->
+      <!-\-<xsl:choose>
+        <!-\\- gleiche Datei -\\->
         <xsl:when test="starts-with($refXML, '#')">
           <xsl:value-of select="/tei:TEI/@xml:id"/>
         </xsl:when>
-        <!-\- alle anderen -\->
+        <!-\\- alle anderen -\\->
         <xsl:when test="doc-available($refXML)">
           <xsl:value-of select="doc($refXML)/tei:TEI/@xml:id" />
         </xsl:when>
         <xsl:otherwise>
-<!-\-          <xsl:value-of select="static-base-uri()"/>-\->
+<!-\\-          <xsl:value-of select="static-base-uri()"/>-\\->
           <xsl:value-of select="base-uri($refXML)" />
         </xsl:otherwise>
-      </xsl:choose>-->
+      </xsl:choose>-\->
       <xsl:choose>
         <xsl:when test="string-length($xml)=0">
           <xsl:value-of select="/tei:TEI/@xml:id"/>
@@ -750,12 +770,12 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="$refXML"/>
-<!--          <xsl:value-of select="document(concat($baseDir, '/', $xml))/tei:TEI/@xml:id"/>-->
+<!-\-          <xsl:value-of select="document(concat($baseDir, '/', $xml))/tei:TEI/@xml:id"/>-\->
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <!-- neu im choose; 2016-07-11 DK -->
-    <!-- TODO ist es (wegen Zitierbarkeit) besser, auch bei einem lokalen Verweis einen vollen Link zu generieren? -->
+    <!-\- neu im choose; 2016-07-11 DK -\->
+    <!-\- TODO ist es (wegen Zitierbarkeit) besser, auch bei einem lokalen Verweis einen vollen Link zu generieren? -\->
     <xsl:choose>
       <xsl:when test="starts-with($refXML, '#')">
         <xsl:value-of select="$refXML"/>
@@ -771,9 +791,9 @@
     <xsl:number count="tei:note[@type = 'footnote' and ancestor::tei:body]" level="any" select="$context" />
   </xsl:template>
   
-  <!-- aus transcript ausgelagert; 2016-05-18 DK -->
-  <!-- Templates zum Generieren der Fußnotennummern -->
-  <!-- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -->
+  <!-\- aus transcript ausgelagert; 2016-05-18 DK -\->
+  <!-\- Templates zum Generieren der Fußnotennummern -\->
+  <!-\- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -\->
   <xsl:template name="fnumberKrit">
     <xsl:param name="context" select="current()"/>
     <xsl:variable name="num" select="count($context/preceding::tei:choice
@@ -791,7 +811,7 @@
     <xsl:number level="any" format="α" count="tei:seg[@xml:id[starts-with(.,'start')]]"/>
   </xsl:template>
   
-  <!-- neu 2016-05-18 DK -->
+  <!-\- neu 2016-05-18 DK -\->
   <xsl:template name="makeID">
     <xsl:param name="targetElement"/>
     <xsl:param name="id"/>
@@ -816,7 +836,7 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- neu für die Ausgabe aller Links auf die Fußnoten; 2016-05-18 DK -->
+  <!-\- neu für die Ausgabe aller Links auf die Fußnoten; 2016-05-18 DK -\->
   <xsl:template match="tei:*" mode="fnLink">
     <xsl:param name="type"/>
     <xsl:param name="position">s</xsl:param>
@@ -826,7 +846,7 @@
     </xsl:call-template>
   </xsl:template>
   
-  <!-- neu für allgemeine Verarbeitung geschachtelter Link-Ausgaben; 2016-05-18 DK -->
+  <!-\- neu für allgemeine Verarbeitung geschachtelter Link-Ausgaben; 2016-05-18 DK -\->
   <xsl:template name="footnoteLink">
     <xsl:param name="position">s</xsl:param>
     <xsl:param name="type"/>
@@ -875,8 +895,12 @@
     </xsl:if>
   </xsl:template>
   
-  <!-- neu 2016-07-012 DK -->
+  <!-\- neu 2016-07-012 DK -\->
   <xsl:template match="tei:ptr" mode="fnText">
     <xsl:apply-templates select="@target"/>
+  </xsl:template>-->
+  
+  <xsl:template match="@xml:id">
+    <xsl:attribute name="id" select="." />
   </xsl:template>
 </xsl:stylesheet>
