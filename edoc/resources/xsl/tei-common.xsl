@@ -129,87 +129,42 @@
           </button>
         </xsl:if>
       </xsl:when>
-      <xsl:when test="tei:subst">
-        <xsl:if test="node()[following-sibling::tei:subst]">
-          <span>
+      
+      <!--apparatus commands -->
+      <xsl:when test="tei:subst or tei:choice or tei:app">
+        <!-- for now, we assume that there’s only one of these -->
+        <xsl:variable name="appElement" as="element()"
+          select="tei:subst | tei:choice | tei:app" />
+        <xsl:variable name="appValue" as="element()"
+          select="$appElement/tei:add | $appElement/tei:corr[1] | $appElement/tei:lem" />
+        
+        <xsl:if test="node()[following-sibling::* = $appElement and (self::* or not(normalize-space() eq ''))]">
+          <button>
             <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[following-sibling::tei:subst]"/>
-          </span>
+            <xsl:apply-templates select="node()[following-sibling::* = $appElement]" />
+          </button>
         </xsl:if>
-        <xsl:if test="contains(tei:subst/tei:add, ' ')">
-          <xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
+        <xsl:if test="contains($appValue, ' ')">
+          <xsl:apply-templates select="$appElement" mode="fnLink">
             <xsl:with-param name="position">a</xsl:with-param>
             <xsl:with-param name="type">crit</xsl:with-param>
           </xsl:apply-templates>
         </xsl:if>
-        <span>
+        <button>
           <xsl:sequence select="$att" />
-          <xsl:apply-templates select="tei:subst/tei:add"/>
-        </span>
-        <xsl:apply-templates select="tei:subst/tei:add" mode="fnLink">
+          <xsl:apply-templates select="$appValue" />
+        </button>
+        <xsl:apply-templates select="$appElement" mode="fnLink">
           <xsl:with-param name="type">crit</xsl:with-param>
         </xsl:apply-templates>
-        <xsl:if test="node()[preceding-sibling::tei:subst]">
-          <span>
+        <xsl:if test="node()[preceding-sibling::* = $appElement and (self::* or not(normalize-space() eq ''))]">
+          <button>
             <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[preceding-sibling::tei:subst]"/>
-          </span>
+            <xsl:apply-templates select="node()[preceding-sibling::* = $appElement]" />
+          </button>
         </xsl:if>
       </xsl:when>
-      <xsl:when test="tei:choice">
-        <xsl:if test="node()[following-sibling::tei:choice]">
-          <span>
-            <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[following-sibling::tei:choice]"/>
-          </span>
-        </xsl:if>
-        <xsl:if test="contains(tei:choice/tei:corr[1], ' ')">
-          <xsl:apply-templates select="tei:choice" mode="fnLink">
-            <xsl:with-param name="position">a</xsl:with-param>
-            <xsl:with-param name="type">crit</xsl:with-param>
-          </xsl:apply-templates>
-        </xsl:if>
-        <span>
-          <xsl:sequence select="$att" />
-          <xsl:apply-templates select="tei:choice/tei:corr"/>
-        </span>
-        <xsl:apply-templates select="tei:choice" mode="fnLink">
-          <xsl:with-param name="type">crit</xsl:with-param>
-        </xsl:apply-templates>
-        <xsl:if test="node()[preceding-sibling::tei:choice]">
-          <span>
-            <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-          </span>
-        </xsl:if>
-      </xsl:when>
-      <xsl:when test="tei:app">
-        <xsl:if test="node()[following-sibling::tei:app]">
-          <span>
-            <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[following-sibling::tei:app]"/>
-          </span>
-        </xsl:if>
-        <xsl:if test="contains(tei:app/tei:lem, ' ')">
-          <xsl:apply-templates select="tei:app" mode="fnLink">
-            <xsl:with-param name="position">a</xsl:with-param>
-            <xsl:with-param name="type">crit</xsl:with-param>
-          </xsl:apply-templates>
-        </xsl:if>
-        <span>
-          <xsl:sequence select="$att" />
-          <xsl:apply-templates select="tei:app"/>
-        </span>
-        <xsl:apply-templates select="tei:app" mode="fnLink">
-          <xsl:with-param name="type">crit</xsl:with-param>
-        </xsl:apply-templates>
-        <xsl:if test="node()[preceding-sibling::tei:app]">
-          <span>
-            <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[preceding-sibling::tei:app]"/>
-          </span>
-        </xsl:if>
-      </xsl:when>
+      
       <xsl:otherwise>
         <span>
           <xsl:sequence select="$att" />
@@ -840,16 +795,6 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-\- neu für die Ausgabe aller Links auf die Fußnoten; 2016-05-18 DK -\->
-  <xsl:template match="tei:*" mode="fnLink">
-    <xsl:param name="type"/>
-    <xsl:param name="position">s</xsl:param>
-    <xsl:call-template name="footnoteLink">
-      <xsl:with-param name="type" select="$type"/>
-      <xsl:with-param name="position" select="$position"/>
-    </xsl:call-template>
-  </xsl:template>
-  
   <!-\- neu für allgemeine Verarbeitung geschachtelter Link-Ausgaben; 2016-05-18 DK -\->
   <xsl:template name="footnoteLink">
     <xsl:param name="position">s</xsl:param>
@@ -903,6 +848,18 @@
   <xsl:template match="tei:ptr" mode="fnText">
     <xsl:apply-templates select="@target"/>
   </xsl:template>-->
+  
+  <!-- pointers to footnotes -->
+  <xsl:template match="tei:*" mode="fnLink">
+    <xsl:param name="type"/>
+    <xsl:param name="position">s</xsl:param>
+    
+    <xsl:text>(ln)</xsl:text>
+    <!--<xsl:call-template name="footnoteLink">
+      <xsl:with-param name="type" select="$type"/>
+      <xsl:with-param name="position" select="$position"/>
+    </xsl:call-template>-->
+  </xsl:template>
   
   <xsl:template match="@xml:id">
     <xsl:attribute name="id" select="." />
