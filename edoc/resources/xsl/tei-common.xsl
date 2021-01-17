@@ -166,10 +166,10 @@
       </xsl:when>
       
       <xsl:otherwise>
-        <span>
+        <button>
           <xsl:sequence select="$att" />
           <xsl:apply-templates/>
-        </span>
+        </button>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
