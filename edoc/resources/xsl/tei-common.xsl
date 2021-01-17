@@ -110,21 +110,23 @@
         </button>
         <xsl:apply-templates select="tei:note[@place]" />
       </xsl:when>
+      
+      <!-- other note -->
       <xsl:when test="tei:note">
         <xsl:if test="node()[following-sibling::tei:note]">
-          <span>
+          <button>
             <xsl:sequence select="$att" />
             <xsl:apply-templates select="node()[following-sibling::tei:note]"/>
-          </span>
+          </button>
         </xsl:if>
         <xsl:apply-templates select="tei:note" mode="fnLink">
-          <xsl:with-param name="type">crit</xsl:with-param>
+          <xsl:with-param name="type" select="tei:note/@type" />
         </xsl:apply-templates>
         <xsl:if test="node()[preceding-sibling::tei:note]">
-          <span>
+          <button>
             <xsl:sequence select="$att" />
-            <xsl:apply-templates select="node()[preceding-sibling::tei:choice]"/>
-          </span>
+            <xsl:apply-templates select="node()[preceding-sibling::tei:note]"/>
+          </button>
         </xsl:if>
       </xsl:when>
       <xsl:when test="tei:subst">

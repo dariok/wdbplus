@@ -61,10 +61,23 @@
         before <rs type="person" ref="http://example.org/pb"
           >within<lb /><note place="margin">margin</note> rs</rs> after
       </x:context>
-      <x:expect label=".">
+      <x:expect label="." xml:space="preserve">
         before <button class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
           aria-label="opens information about an entity">within rs</button>margin after
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.5 other note">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        before <rs type="person" ref="http://example.org/pb"
+          >within<lb /><note type="footnote">footnote</note> rs</rs> after
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        before <button class="entity person"
+          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          aria-label="opens information about an entity">within</button>footnote<button class="entity person"
+            onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+            aria-label="opens information about an entity"> rs</button> after
       </x:expect>
     </x:scenario>
   </x:scenario>
