@@ -101,11 +101,13 @@
           <xsl:value-of select="text()[preceding-sibling::tei:pb]"/>
         </button>
       </xsl:when>
+      
+      <!-- margin note -->
       <xsl:when test="tei:note[@place]">
-        <span>
+        <button>
           <xsl:sequence select="$att" />
           <xsl:apply-templates select="node()[not(self::tei:note[@place])]"/>
-        </span>
+        </button>
         <xsl:apply-templates select="tei:note[@place]" />
       </xsl:when>
       <xsl:when test="tei:note">
