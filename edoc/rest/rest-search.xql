@@ -33,7 +33,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
   )
   else 
     let $coll := wdb:getEdPath($id, true())
-  
+    
     let $query := xmldb:decode($q)
     
     (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
@@ -124,33 +124,48 @@ declare
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
 function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-  let $query := lower-case(xmldb:decode($q))
-  (: querying for tei:w only will return no context :)
-  let $res := $file//tei:p[ft:query(., $query)]
-        | $file//tei:table[ft:query(., $query)]
-        | $file//tei:item[ft:query(., $query)]
-        | $file//tei:head[ft:query(., $query)]
-        | $file//tei:l[ft:query(., $query)]
-  let $max := count($res)
-  
-  return
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $h in subsequence($res, $start, 25) return
-        <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-            let $result := for $match in util:expand($h)//exist:match
-            let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
-                then $match
-                else $match/parent::*
-            let $p := $m/preceding-sibling::*[position() < 5]
-            let $f := $m/following-sibling::*[position() < 5]
-            return <match>{($p, $m, $f)}</match>
-            
-            return for $r at $pos in $result
-                where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
-                return $r
-        }</result>
-    }</results>
+  if (0 = (count($q), string-length($q))) then (
+    <rest:response>
+      <output:serialization-parameters>
+        <output:method value="text" />
+      </output:serialization-parameters>
+      <http:response status="400">
+        <http:header name="rest-status" value="REST:Client-Error" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Control" value="no-cache" />
+        <http:header name="Content-Type" value="text/plain" />
+      </http:response>
+    </rest:response>,
+    "Error: no query content!"
+  )
+  else
+    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+    let $query := lower-case(xmldb:decode($q))
+    (: querying for tei:w only will return no context :)
+    let $res := $file//tei:p[ft:query(., $query)]
+          | $file//tei:table[ft:query(., $query)]
+          | $file//tei:item[ft:query(., $query)]
+          | $file//tei:head[ft:query(., $query)]
+          | $file//tei:l[ft:query(., $query)]
+    let $max := count($res)
+    
+    return
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+        for $h in subsequence($res, $start, 25) return
+          <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
+              let $result := for $match in util:expand($h)//exist:match
+              let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
+                  then $match
+                  else $match/parent::*
+              let $p := $m/preceding-sibling::*[position() < 5]
+              let $f := $m/following-sibling::*[position() < 5]
+              return <match>{($p, $m, $f)}</match>
+              
+              return for $r at $pos in $result
+                  where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
+                  return $r
+          }</result>
+      }</results>
 };
 
 declare
@@ -160,26 +175,48 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
 function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
-  
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll}, "getSearchXSLT", 0))
-      then wdb:eval("wdbPF:getSearchXSLT()")
-      else if (doc-available($coll || '/resources/search.xsl'))
-      then xs:anyURI($coll || '/resources/search.xsl')
-      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
-    
-  let $params := <parameters>
-    <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
-    <param name="rest" value="{$wdb:restURL}" />
-  </parameters>
-  
-    return (
+  if (0 = (count($q), string-length($q))) then (
     <rest:response>
-      <http:response status="200">
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
+      <output:serialization-parameters>
+        <output:method value="text" />
+      </output:serialization-parameters>
+      <http:response status="400">
+        <http:header name="rest-status" value="REST:Client-Error" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Control" value="no-cache" />
+        <http:header name="Content-Type" value="text/plain" />
       </http:response>
     </rest:response>,
-    transform:transform(wdbRs:fileText($id, $q, $start), doc($xsl), $params)
+    "Error: no query content!"
   )
+  else
+    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+    let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+    
+    let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0))
+        then wdb:eval("wdbPF:getSearchXSLT()")
+        else if (doc-available($coll || '/resources/search.xsl'))
+        then xs:anyURI($coll || '/resources/search.xsl')
+        else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+      
+    let $params := <parameters>
+      <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
+      <param name="rest" value="{$wdb:restURL}" />
+    </parameters>
+    
+    let $searchResult := wdbRs:fileText($id, $q, $start)
+    return if (count($searchResult) gt 0) then (
+      <rest:response>
+        <http:response status="200">
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      transform:transform($searchResult, doc($xsl), $params)
+    )
+    else
+      <rest:response>
+        <http:response status="204" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Cache-Controle" value="no-cache" />
+      </rest:response>
 };
