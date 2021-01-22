@@ -44,7 +44,7 @@ declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
  :)
 declare variable $wdb:data :=
   if ($wdb:configFile//config:data)
-  then normalize-space($wdb:configFeil//config:data)
+  then normalize-space($wdb:configFile//config:data)
   else 
     let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
     
