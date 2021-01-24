@@ -720,9 +720,7 @@
   <!-\- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -\->
   
   
-  <xsl:template name="fnumberGreek">
-    <xsl:number level="any" format="α" count="tei:seg[@xml:id[starts-with(.,'start')]]"/>
-  </xsl:template>
+  
   
   <!-\- neu 2016-05-18 DK -\->
   <xsl:template name="makeID">
@@ -794,7 +792,7 @@
           <xsl:call-template name="fnumberNumeric" />
         </xsl:when>
         <xsl:otherwise>
-<!--          <xsl:call-template name="fnumberGreek"/>-->
+          <xsl:call-template name="fnumberGreek"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -825,6 +823,13 @@
       | tei:note[@type='crit_app']
       | tei:seg[@hand or @resp]
       | tei:unclear[@extent]"/>
+  </xsl:template>
+  
+  <xsl:template name="fnumberGreek">
+    <xsl:param name="context" select="current()" />
+    <xsl:variable name="type" select="($context/@type, local-name())[1]" />
+    
+    <xsl:number level="any" format="α" count="*[(@type, local-name())[1] = $type]" select="$context" />
   </xsl:template>
   
   <xsl:template match="@xml:id">

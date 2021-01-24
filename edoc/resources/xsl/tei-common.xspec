@@ -130,4 +130,16 @@
       </x:expect>
     </x:scenario>
   </x:scenario>
+  
+  <x:scenario label="T2: footnote numbering">
+    <x:scenario label="T2.1">
+      <x:context mode="fnLink" xmlns="http://www.tei-c.org/ns/1.0">
+        <app /><app />
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="opens a footnote" class="footnoteNumber" href="#α" id="sα">α</button>
+        <button aria-label="opens a footnote" class="footnoteNumber" href="#β" id="sβ">β</button>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
 </x:description>
