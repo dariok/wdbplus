@@ -172,41 +172,8 @@
 		</p>
 	</xsl:template>
 	
-	<!-- Seitenumbrüche-->
-	<xsl:template match="tei:pb">
-		<xsl:variable name="ID">
-			<xsl:value-of select="substring(@facs, 2)"/>
-		</xsl:variable>
-		<xsl:variable name="content">
-			<xsl:analyze-string select="@n" regex="[rv]\]?">
-				<xsl:matching-substring>
-					<span class="superscript">
-						<xsl:value-of select="substring(., 1, 1)"/>
-					</span>
-					<xsl:if test="string-length() = 2">
-						<xsl:text>]</xsl:text>
-					</xsl:if>
-				</xsl:matching-substring>
-				<xsl:non-matching-substring>
-					<xsl:value-of select="."/>
-				</xsl:non-matching-substring>
-			</xsl:analyze-string>
-		</xsl:variable>
-		<span class="pagebreak" id="{$ID}">
-			<xsl:text>| </xsl:text>
-			<xsl:choose>
-				<xsl:when test="@facs">
-					<a href="{@facs}">
-						<xsl:sequence select="$content" />
-					</a>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:sequence select="$content" />
-				</xsl:otherwise>
-			</xsl:choose>
-			<xsl:text> |</xsl:text>
-		</span>
-	</xsl:template>
+	
+	
 	
 	<!-- choice -->
 	<xsl:template match="tei:choice">

@@ -588,5 +588,33 @@ const wdbUser = {
       },
       error: wdb.logError(xhr, status, error, "Error loading entity data from " + url)
     });
+  },
+  
+  displayImage: function ( url ) {
+    // default: show image in an iframe
+    wdbDocument.displayImageRight(url);
+    
+    // example: show image in viewer
+    // wdbDocument.displayImageViewer(url, viewer);
+  }
+};
+
+const wdbDocument = {
+  // display an image in the right div
+  displayImageRight: function ( url ) {
+    // default: load an html that contains an image into an iframe
+    if (window.innerWidth > 768) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+      $('#facsimile').attr('src', url).css('display', 'block');
+    }
+  },
+  
+  // load image into openseadragon – assumes there is only one level of images
+  displayImageViewer: function ( url, viewer ) {
+    if (window.innerWidth > 768 && viewer != null) {
+      let pbs = $('body').find('.pagebreak'),
+          pos = pbs.index(url);
+      viewer.goToPage(pos);
+    }
   }
 };

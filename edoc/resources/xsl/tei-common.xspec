@@ -14,7 +14,7 @@
           onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
           aria-label="opens information about an entity"><span
             id="w1"
-            class="w">page-</span></button><button
+            class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-1">1</span><button
           class="entity person"
           onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
           aria-label="opens information about an entity"><span
@@ -33,7 +33,7 @@
           onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
           aria-label="opens information about an entity">another <span
             id="w3"
-            class="w">page-</span></button><button
+            class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
           class="entity person"
           onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
           aria-label="opens information about an entity"><span
@@ -50,7 +50,7 @@
         <button class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
           aria-label="opens information about an entity"
-          >no w in page-</button><button
+          >no w in page-</button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
           class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
           aria-label="opens information about an entity">break</button>
@@ -139,6 +139,47 @@
       <x:expect label=".">
         <button aria-label="opens a footnote" class="footnoteNumber" href="#α" id="sα">α</button>
         <button aria-label="opens a footnote" class="footnoteNumber" href="#β" id="sβ">β</button>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T3: page breaks">
+    <x:scenario label="T3.1">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <body>
+          <pb n="1" facs="http://example.org" />
+        </body>
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-1"
+          onclick="wdbUser.displayImage('http://example.org');">1</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T3.2">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <TEI>
+          <facsimile>
+            <surface xml:id="test">
+              <graphic url="https://example.org/test" />
+            </surface>
+          </facsimile>
+          <body>
+            <pb n="42r" facs="#test" />
+          </body>
+        </TEI>
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-42r"
+          onclick="wdbUser.displayImage('https://example.org/test');">42<span class="rectoVerso">r</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T3.3">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <pb n="12v" ed="ed1" />
+      </x:context>
+      <x:expect label=".">
+        <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="ped1-12v">12<span
+          class="rectoVerso">v</span></span>
       </x:expect>
     </x:scenario>
   </x:scenario>

@@ -34,6 +34,10 @@
       │ tei:rs                    │ This XSLT assumes that you use tei:rs for all entity references. If you use a  │
       │                           │ different tag/attribute, you need to create your own template                  │
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:pb                    │ There is some generic handling of page breaks in here. It’s assumed that @facs │
+      │ tei:pb/@facs              │ either is a full URL or points to an entry in //tei:facsimile                  │
+      │                           │ To add characters around the pagebreak, use CSS ::before and ::after           │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -175,6 +179,49 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+  
+  <!-- page breaks -->
+  <xsl:template match="tei:pb">
+    <xsl:variable name="content">
+      <xsl:analyze-string select="@n" regex="[rv]">
+        <xsl:matching-substring>
+          <span class="rectoVerso">
+            <xsl:value-of select="."/>
+          </span>
+        </xsl:matching-substring>
+        <xsl:non-matching-substring>
+          <xsl:value-of select="."/>
+        </xsl:non-matching-substring>
+      </xsl:analyze-string>
+    </xsl:variable>
+    
+    <xsl:choose>
+      <xsl:when test="@facs">
+        <xsl:variable name="image">
+          <xsl:choose>
+            <xsl:when test="starts-with(@facs, '#')">
+              <xsl:variable name="id" select="substring(@facs, 2)"/>
+              <xsl:value-of select="/id($id)/tei:graphic/@url"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="@facs" />
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        
+        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}"
+          onclick="wdbUser.displayImage('{$image}');">
+          <xsl:sequence select="$content" />
+        </button>
+      </xsl:when>
+      <xsl:otherwise>
+        <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="p{@ed}-{@n}">
+          <xsl:sequence select="$content" />
+        </span>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
   <!--
   <!-\- Ausgabe detaillierter gewünscht; 2016-05-17 DK -\->
   <!-\- noch detaillierter; 2016-07-11 DK -\->
