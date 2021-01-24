@@ -183,4 +183,13 @@
       </x:expect>
     </x:scenario>
   </x:scenario>
+  
+  <x:scenario label="T4: miscellaneous">
+    <x:scenario label="T4.1: anchor">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <p>Text before<anchor type="start" xml:id="a1s" /> and after</p>
+      </x:context>
+      <x:expect label=".">Text before<a class="anchor start" id="a1s" /> and after</x:expect>
+    </x:scenario>
+  </x:scenario>
 </x:description>

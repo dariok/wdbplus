@@ -38,6 +38,8 @@
       │ tei:pb/@facs              │ either is a full URL or points to an entry in //tei:facsimile                  │
       │                           │ To add characters around the pagebreak, use CSS ::before and ::after           │
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:anchor                │ Generic handling create an html:a with @class="anchor {@type}" and             │
+      │                           │ @id={@xml:id} – change if you need different classes or additional attributes  │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -229,41 +231,20 @@
     </div>
   </xsl:template>
   
+  <!-- generic anchors -->
+  <xsl:template match="tei:anchor">
+    <a>
+      <xsl:attribute name="class">
+        <xsl:text>anchor</xsl:text>
+        <xsl:if test="@type">
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="@type" />
+        </xsl:if>
+      </xsl:attribute>
+      <xsl:apply-templates select="@xml:id" />
+    </a>
+  </xsl:template>
   <!--
-  <!-\- Ausgabe detaillierter gewünscht; 2016-05-17 DK -\->
-  <!-\- noch detaillierter; 2016-07-11 DK -\->
-  <xsl:template match="tei:bibl/tei:abbr">
-    <xsl:apply-templates/>
-  </xsl:template>
-  <xsl:template match="tei:abbr/text()">
-    <xsl:value-of select="normalize-space()"/>
-  </xsl:template>
-  
-  <!-\- nur der eigentliche Titel von Quellen(-editionen) soll kursiv stehen; 2016-07-11 DK -\->
-  <xsl:template match="tei:listBibl[@type='primary']//tei:abbr/tei:title">
-    <xsl:text> </xsl:text>
-    <i>
-      <xsl:apply-templates/>
-    </i>
-    <xsl:if test="following-sibling::text()">
-      <xsl:text> </xsl:text>
-    </xsl:if>
-  </xsl:template>
-  
-  <!-\- Autoren von Sekundärliteratur in kleinen Kapitälchen, analog PDF; 2016-07-11 DK -\->
-  <xsl:template match="tei:name[parent::tei:abbr]">
-    <xsl:choose>
-      <xsl:when test="ancestor::tei:listBibl[not(@type='primary')]">
-        <span class="nameSC">
-          <xsl:apply-templates/>
-        </span>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
   <!-\- Inhalt ausgelagert wegen Anchor innerhalb einer Liste; 2016-05-19 DK -\->
   <xsl:template match="tei:anchor[not(parent::tei:list)]">
     <xsl:apply-templates select="." mode="long"/>
