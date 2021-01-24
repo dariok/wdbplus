@@ -231,6 +231,10 @@
     </div>
   </xsl:template>
   
+  <xsl:template match="tei:note[@place = 'margin']">
+    <a class="marginAnchor" id="{generate-id()}" />
+  </xsl:template>
+  
   <!-- generic anchors -->
   <xsl:template match="tei:anchor">
     <a>
@@ -245,14 +249,6 @@
     </a>
   </xsl:template>
   <!--
-  <!-\- Inhalt ausgelagert wegen Anchor innerhalb einer Liste; 2016-05-19 DK -\->
-  <xsl:template match="tei:anchor[not(parent::tei:list)]">
-    <xsl:apply-templates select="." mode="long"/>
-  </xsl:template>
-  <!-\- neu 2016-05-19 DK -\->
-  <xsl:template match="tei:anchor[not(@type)]" mode="long">
-    <a id="{@xml:id}" class="anchorRef"/>
-  </xsl:template>
   
   <!-\- apply-templates aufgetrennt (verhindern von Leerzeichen); 2015-11-23 DK -\->
   <!-\- verschoben aus intro nach common (Augustinkommentar); 2015-11-27 DK -\->
