@@ -40,6 +40,9 @@
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:anchor                │ Generic handling create an html:a with @class="anchor {@type}" and             │
       │                           │ @id={@xml:id} – change if you need different classes or additional attributes  │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:ref                   │ tei:ref[@target] → html:a[@href]; if changes to @target are necessary, change  │
+      │                           │ this template locally. @class is "ref" and @type, if present                   │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -246,6 +249,20 @@
         </xsl:if>
       </xsl:attribute>
       <xsl:apply-templates select="@xml:id" />
+    </a>
+  </xsl:template>
+  
+  <xsl:template match="tei:ref">
+    <a href="{@target}">
+      <xsl:attribute name="class">
+        <xsl:text>ref</xsl:text>
+        <xsl:if test="@type">
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="@type" />
+        </xsl:if>
+      </xsl:attribute>
+      <xsl:apply-templates select="@xml:id" />
+      <xsl:apply-templates />
     </a>
   </xsl:template>
   <!--
