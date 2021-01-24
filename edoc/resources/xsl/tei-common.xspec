@@ -95,12 +95,12 @@
         <button class="entity person"
           onclick="wdbUser.showEntityData('armandus_bellovisu', 'testproject')"
           aria-label="opens information about an entity">Armandi</button><button class="footnoteNumber"
-          href="..." id="..." aria-label="opens a footnote" />
+          href="#crita" id="ecrita" aria-label="opens a footnote">a</button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.7 app">
       <x:context xml:space="preserve">
-        <body><rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#heinrich_gent"><w>Hen<lb
+        <body xmlns="http://www.tei-c.org/ns/1.0"><rs type="person" ref="#heinrich_gent"><w>Hen<lb
           xml:id="z27" n="26"/>ricus</w> <app>
             <lem wit="#g #S">de Gandavo</lem>
             <rdg wit="#N #B #V #P"/>
@@ -110,10 +110,23 @@
         <button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
           aria-label="opens information about an entity">Henricus </button><button class="footnoteNumber"
-          href="..." id="..." aria-label="opens a footnote" /><button class="entity person"
+          href="#crita" id="scrita" aria-label="opens a footnote">a</button><button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
           aria-label="opens information about an entity">de Gandavo</button><button class="footnoteNumber"
-          href="..." id="..." aria-label="opens a footnote" />
+          href="#crita" id="ecrita" aria-label="opens a footnote">a</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.8 multiple">
+      <x:context xml:space="preserve">
+        <body xmlns="http://www.tei-c.org/ns/1.0"><subst><add/></subst> <rs type="person" ref="#heinrich_gent"><w>Hen<lb
+            xml:id="z27" n="26"/>ricus</w> <app><lem wit="#g #S">after</lem><rdg wit="#N #B #V #P"/></app></rs></body>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+         <button class="entity person" onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
+          aria-label="opens information about an entity">Henricus </button><button
+          class="entity person" onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
+          aria-label="opens information about an entity">after</button><button class="footnoteNumber"
+          href="#critb" id="ecritb" aria-label="opens a footnote">b</button>
       </x:expect>
     </x:scenario>
   </x:scenario>

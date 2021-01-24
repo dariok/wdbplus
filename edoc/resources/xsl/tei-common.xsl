@@ -148,7 +148,6 @@
         </xsl:if>
         <xsl:if test="contains($appValue, ' ')">
           <xsl:apply-templates select="$appElement" mode="fnLink">
-            <xsl:with-param name="position">a</xsl:with-param>
             <xsl:with-param name="type">crit</xsl:with-param>
           </xsl:apply-templates>
         </xsl:if>
@@ -158,6 +157,7 @@
         </button>
         <xsl:apply-templates select="$appElement" mode="fnLink">
           <xsl:with-param name="type">crit</xsl:with-param>
+          <xsl:with-param name="position">e</xsl:with-param>
         </xsl:apply-templates>
         <xsl:if test="node()[preceding-sibling::* = $appElement and (self::* or not(normalize-space() eq ''))]">
           <button>
@@ -718,18 +718,7 @@
   <!-\- aus transcript ausgelagert; 2016-05-18 DK -\->
   <!-\- Templates zum Generieren der Fußnotennummern -\->
   <!-\- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -\->
-  <xsl:template name="fnumberKrit">
-    <xsl:param name="context" select="current()"/>
-    <xsl:variable name="num" select="count($context/preceding::tei:choice
-      | $context/preceding::tei:app[not(ancestor::tei:choice)]
-      | $context/preceding::tei:subst
-      | $context/preceding::tei:add[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
-      | $context/preceding::tei:del[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
-      | $context/preceding::tei:note[@type='crit_app']
-      | $context/preceding::tei:seg[@hand or @resp]
-      | $context/preceding::tei:unclear[@extent])"/>
-    <xsl:number format="a" value="$num + 1"/>
-  </xsl:template>
+  
   
   <xsl:template name="fnumberGreek">
     <xsl:number level="any" format="α" count="tei:seg[@xml:id[starts-with(.,'start')]]"/>
@@ -799,7 +788,7 @@
     <xsl:variable name="number">
       <xsl:choose>
         <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
-<!--          <xsl:call-template name="fnumberAlph"/>-->
+          <xsl:call-template name="fnumberAlph"/>
         </xsl:when>
         <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
           <xsl:call-template name="fnumberNumeric" />
@@ -822,6 +811,20 @@
     
     <xsl:variable name="type" select="$context/@type" />
     <xsl:number count="tei:note[@type = $type and ancestor::tei:body]" level="any" select="$context" />
+  </xsl:template>
+  
+  <xsl:template name="fnumberAlph">
+    <xsl:param name="context" select="current()"/>
+    
+    <xsl:number format="a" level="any" select="$context"
+      count="tei:choice
+      | tei:app[not(ancestor::tei:choice)]
+      | tei:subst
+      | tei:add[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
+      | tei:del[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
+      | tei:note[@type='crit_app']
+      | tei:seg[@hand or @resp]
+      | tei:unclear[@extent]"/>
   </xsl:template>
   
   <xsl:template match="@xml:id">
