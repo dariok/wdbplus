@@ -29,7 +29,7 @@
       │ template / function       │ change when                                                                    │
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:rs/@ref               │ @ref is not of one of these type: 1) '#'{identifier}; 2) {type}':'{identifier} │
-      │                           │   3) resolvable URL                                                            │
+      │                           │ 3) resolvable URL                                                              │
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:rs                    │ This XSLT assumes that you use tei:rs for all entity references. If you use a  │
       │                           │ different tag/attribute, you need to create your own template                  │
@@ -41,6 +41,9 @@
        In case you wish to change any behaviour, you can either
        – copy this file to your project an edit it there;
        – import this stylesheet via xsl:import and overwrite any template you like, especially those mentioned above -->
+  
+  <!-- get ID info from tei:rs/@ref; we assume three main types: 1) '#'{identifier}; 2) {type}':'{identifier};
+       3) resolvable URL -->
   <xsl:template match="tei:rs/@ref">
     <xsl:choose>
       <xsl:when test="starts-with(., '#')">
@@ -118,8 +121,7 @@
             <xsl:sequence select="$att" />
             <xsl:apply-templates select="node()[following-sibling::tei:note]"/>
           </button>
-        </xsl:if>
-        <xsl:apply-templates select="tei:note" mode="fnLink">
+        </xsl:if><xsl:apply-templates select="tei:note" mode="fnLink">
           <xsl:with-param name="type" select="tei:note/@type" />
         </xsl:apply-templates>
         <xsl:if test="node()[preceding-sibling::tei:note]">
@@ -173,39 +175,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
-  <!--<xsl:template match="tei:bibl[@ref]">
-    <xsl:if test="parent::tei:cit">
-            <br/>
-        </xsl:if>
-    <xsl:variable name="refs">
-      <xsl:value-of select="substring-after(@ref, '#')"/>
-    </xsl:variable>
-    <a href="javascript:show_annotation('ed000240', '{$baseDir}/register/bibliography.xml',
-      '{$baseDir}/scripts/xslt/tei-bibliography.xsl', '{$refs}')">
-      <xsl:choose>
-        <xsl:when test="@type='ebd'">ebd.</xsl:when>
-        <xsl:when test="@type='Ebd'">Ebd.</xsl:when><!-\- Für Großschreibung am Anfang von Fußnoten -\->
-        <xsl:when test="@target = preceding::tei:bibl[1]/@target">
-          <xsl:choose>
-            <xsl:when test="ends-with(preceding-sibling::node()[self::text()][1], '.')">
-              <xsl:text> Ebd., </xsl:text>
-              <xsl:value-of select="substring-after(., ' ')"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text> ebd., </xsl:text>
-              <xsl:value-of select="substring-after(., ' ')"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates select="$biblFile/tei:TEI/tei:text/tei:body/tei:listBibl/tei:bibl[@xml:id=$refs]/tei:abbr"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </a>
-    <xsl:apply-templates/>
-  </xsl:template>
-  
+  <!--
   <!-\- Ausgabe detaillierter gewünscht; 2016-05-17 DK -\->
   <!-\- noch detaillierter; 2016-07-11 DK -\->
   <xsl:template match="tei:bibl/tei:abbr">
@@ -745,11 +715,6 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template name="fnumberFootnotes">
-    <xsl:param name="context" as="node()" select="current()" />
-    <xsl:number count="tei:note[@type = 'footnote' and ancestor::tei:body]" level="any" select="$context" />
-  </xsl:template>
-  
   <!-\- aus transcript ausgelagert; 2016-05-18 DK -\->
   <!-\- Templates zum Generieren der Fußnotennummern -\->
   <!-\- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -\->
@@ -795,29 +760,6 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-\- neu für allgemeine Verarbeitung geschachtelter Link-Ausgaben; 2016-05-18 DK -\->
-  <xsl:template name="footnoteLink">
-    <xsl:param name="position">s</xsl:param>
-    <xsl:param name="type"/>
-    <xsl:variable name="number">
-      <xsl:choose>
-        <xsl:when test="$type='crit'">
-          <xsl:call-template name="fnumberKrit"/>
-        </xsl:when>
-        <xsl:when test="$type='fn'">
-          <xsl:call-template name="fnumberFootnotes"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="fnumberGreek"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    
-    <a id="{$position}{$type}{$number}" href="#{$type}{$number}" class="fn_number">
-      <xsl:value-of select="$number"/>
-    </a>
-  </xsl:template>
-  
   <xsl:template name="footnotes">
     <xsl:if test="//tei:note[@type = 'footnote']">
       <div id="FußnotenApparat">
@@ -851,14 +793,34 @@
   
   <!-- pointers to footnotes -->
   <xsl:template match="tei:*" mode="fnLink">
-    <xsl:param name="type"/>
+    <xsl:param name="type" select="@type" />
     <xsl:param name="position">s</xsl:param>
     
-    <xsl:text>(ln)</xsl:text>
-    <!--<xsl:call-template name="footnoteLink">
-      <xsl:with-param name="type" select="$type"/>
-      <xsl:with-param name="position" select="$position"/>
-    </xsl:call-template>-->
+    <xsl:variable name="number">
+      <xsl:choose>
+        <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
+<!--          <xsl:call-template name="fnumberAlph"/>-->
+        </xsl:when>
+        <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
+          <xsl:call-template name="fnumberNumeric" />
+        </xsl:when>
+        <xsl:otherwise>
+<!--          <xsl:call-template name="fnumberGreek"/>-->
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    
+    <button id="{$position}{$type}{$number}" href="#{$type}{$number}" class="footnoteNumber">
+      <xsl:value-of select="$number"/>
+    </button>
+  </xsl:template>
+  
+  <!-- creation of footnote numbering -->
+  <xsl:template name="fnumberNumeric">
+    <xsl:param name="context" as="node()" select="current()" />
+    
+    <xsl:variable name="type" select="$context/@type" />
+    <xsl:number count="tei:note[@type = $type and ancestor::tei:body]" level="any" select="$context" />
   </xsl:template>
   
   <xsl:template match="@xml:id">

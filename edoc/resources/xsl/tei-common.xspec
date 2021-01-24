@@ -69,47 +69,51 @@
     </x:scenario>
     <x:scenario label="T1.5 other note">
       <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
-        before <rs type="person" ref="http://example.org/pb"
-          >within<lb /><note type="footnote">footnote</note> rs</rs> after
+        <body>before <rs type="person" ref="http://example.org/pb"
+            >within<lb /><note type="footnote">footnote</note> rs</rs> after</body>
       </x:context>
       <x:expect label="." xml:space="preserve">
         before <button class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
-          aria-label="opens information about an entity">within</button>(ln)<button class="entity person"
-            onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
-            aria-label="opens information about an entity"> rs</button> after
+          aria-label="opens information about an entity">within</button><button class="footnoteNumber"
+          href="#footnote1" id="sfootnote1">1</button><button class="entity person"
+          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          aria-label="opens information about an entity"> rs</button> after
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.6 choice">
       <x:context xml:space="preserve">
-        <rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#armandus_bellovisu">
+        <body><rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#armandus_bellovisu">
           <choice>
             <corr>Armandi</corr>
             <corr type="corrigenda" corresp="#corr016">Armandus</corr>
             <sic>Armanni</sic>
           </choice>
-        </rs>
+        </rs></body>
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
           onclick="wdbUser.showEntityData('armandus_bellovisu', 'testproject')"
-          aria-label="opens information about an entity">Armandi</button>(ln)
+          aria-label="opens information about an entity">Armandi</button><button class="footnoteNumber"
+          href="..." id="..." />
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.7 app">
       <x:context xml:space="preserve">
-        <rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#heinrich_gent"><w>Hen<lb
+        <body><rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#heinrich_gent"><w>Hen<lb
           xml:id="z27" n="26"/>ricus</w> <app>
             <lem wit="#g #S">de Gandavo</lem>
             <rdg wit="#N #B #V #P"/>
-          </app></rs>
+          </app></rs></body>
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
-          aria-label="opens information about an entity">Henricus </button>(ln)<button class="entity person"
+          aria-label="opens information about an entity">Henricus </button><button class="footnoteNumber"
+          href="..." id="..." /><button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
-          aria-label="opens information about an entity">de Gandavo</button>(ln)
+          aria-label="opens information about an entity">de Gandavo</button><button class="footnoteNumber"
+          href="..." id="..." />
       </x:expect>
     </x:scenario>
   </x:scenario>
