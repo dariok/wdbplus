@@ -810,7 +810,8 @@
       </xsl:choose>
     </xsl:variable>
     
-    <button id="{$position}{$type}{$number}" href="#{$type}{$number}" class="footnoteNumber">
+    <button id="{$position}{$type}{$number}" href="#{$type}{$number}" class="footnoteNumber"
+      aria-label="opens a footnote">
       <xsl:value-of select="$number"/>
     </button>
   </xsl:template>
