@@ -424,15 +424,8 @@
 	<!-- placeName nach common-common ausgelagert 2017-07-20 DK -->
 	<!-- template match="tei:div[@type='colophon']/tei:p" gelöscht; Ausrichtung getrennt verarbeitet; 2016-05-31 DK -->
 	<!-- template match="tei:back" gelöscht; tei:back wird ausgegeben; 2016-05-31 DK -->
-	<!-- *** Marginalienfunktion *** -->
-	<!-- Anzeige der Marginalien in separatem div -->
-	<xsl:template name="marginaliaContainer">
-		<xsl:for-each select="//tei:note[@place = 'margin']">
-			<span class="marginalia_text" id="text_{generate-id()}" title="{generate-id()}">
-				<xsl:apply-templates/>
-			</span>
-		</xsl:for-each>
-	</xsl:template>
+	
+	
 	<!-- template match="tei:span[@type='subheading']" gelöscht; 2016-05-31 DK -->
 	<!-- für Anmerkungen über Elementgrenzen hinweg; 2016-05-31 DK -->
 	<xsl:template match="tei:anchor[@type]">

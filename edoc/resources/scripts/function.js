@@ -616,5 +616,28 @@ const wdbDocument = {
           pos = pbs.index(url);
       viewer.goToPage(pos);
     }
-  }
+  },
+
+  /* actual positioning */
+  marginaliaPositioningCallback: function (index, element) {
+    let referenceElementID = $(element).attr('id'),
+        referenceElementTop = $('#' + referenceElementID).position().top,
+        marginNote = $("#margin-" + referenceElementID),
+        previousMarginNote = marginNote.prev(),
+        targetTop;
+    
+    if (previousMarginNote.length == 0) {
+      targetTop = referenceElementTop - $('header').height();
+    } else {
+      let previousNoteHeight = $(previousMarginNote).height(),
+          previousNoteTop = $(previousMarginNote).position().top,
+          headerHeight = $('header').height(),
+          minimumTargetTop = previousNoteHeight + previousNoteTop;
+      
+      if (Math.floor(referenceElementTop - headerHeight) < minimumTargetTop) {
+        targetTop = previousNoteTop + previousNoteHeight;
+      } else {
+        targetTop = referenceElementTop - headerHeight;
+      }
+    }
 };

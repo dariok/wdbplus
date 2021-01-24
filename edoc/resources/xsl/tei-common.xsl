@@ -222,6 +222,13 @@
     </xsl:choose>
   </xsl:template>
   
+  <!-- marginalia or other types of notes in the page margin -->
+  <xsl:template match="tei:note[@place = 'margin']" mode="margin">
+    <div class="marginText" id="margin-{generate-id()}">
+      <xsl:apply-templates/>
+    </div>
+  </xsl:template>
+  
   <!--
   <!-\- Ausgabe detaillierter gewünscht; 2016-05-17 DK -\->
   <!-\- noch detaillierter; 2016-07-11 DK -\->
