@@ -200,5 +200,20 @@
         <a class="ref bibl" href="#tei15" id="quoteref6">TEI Consortium 2014, 1.3.2</a>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.3: cit">
+      <x:context>
+        <cit xmlns="http://www.tei-c.org/ns/1.0">
+          <quote source="#quoteref6">In fact, the nature of a given class of elements can be considered along two 
+            dimensions: ...</quote>
+          <ref target="#tei15" xml:id="quoteref6" type="bibl">TEI Consortium 2014, 1.3.2</ref>
+        </cit>
+      </x:context>
+      <x:expect label=".">
+        <blockquote>
+          <p>...</p>
+        </blockquote>
+        <a href="#tei15" class="ref bibl" id="quoteref6">TEI Consortium 2014, 1.3.2</a>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
 </x:description>

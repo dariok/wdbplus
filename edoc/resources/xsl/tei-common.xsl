@@ -43,6 +43,9 @@
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:ref                   │ tei:ref[@target] → html:a[@href]; if changes to @target are necessary, change  │
       │                           │ this template locally. @class is "ref" and @type, if present                   │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:cit                   │ As is required by HTML, the source is put after the html:blockquote. There is  │
+      │                           │ no special handling of tei:ref, tei:rs or other elements; add them if needed.  │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -265,16 +268,20 @@
       <xsl:apply-templates />
     </a>
   </xsl:template>
-  <!--
   
-  <!-\- apply-templates aufgetrennt (verhindern von Leerzeichen); 2015-11-23 DK -\->
-  <!-\- verschoben aus intro nach common (Augustinkommentar); 2015-11-27 DK -\->
+  <!-- blockquotes from cit -->
   <xsl:template match="tei:cit">
-    <span class="blockquote">
-      <xsl:apply-templates select="tei:quote"/>
-      <xsl:apply-templates select="tei:ptr | tei:note | tei:bibl"/>
-    </span>
+    <blockquote>
+      <xsl:apply-templates select="tei:quote" />
+    </blockquote>
+    <xsl:apply-templates select="tei:*[not(self::tei:quote)]" />
   </xsl:template>
+  <xsl:template match="tei:cit/tei:quote">
+    <p>
+      <xsl:apply-templates />
+    </p>
+  </xsl:template>
+  <!--
   
   <xsl:template match="tei:ex">
     <xsl:text>'</xsl:text>
