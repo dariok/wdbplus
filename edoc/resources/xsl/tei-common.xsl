@@ -46,6 +46,10 @@
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:cit                   │ As is required by HTML, the source is put after the html:blockquote. There is  │
       │                           │ no special handling of tei:ref, tei:rs or other elements; add them if needed.  │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:hi/@rend              │ As @rend has no constraints on its contents, we cannot do anything about it.   │
+      │                           │ Projects using @rend must implement their own logic. It is, however, strongly  │
+      │                           │ recommended that projects use @style and @rendition wherever possible.         │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -281,54 +285,22 @@
       <xsl:apply-templates />
     </p>
   </xsl:template>
-  <!--
   
-  <xsl:template match="tei:ex">
-    <xsl:text>'</xsl:text>
-    <xsl:apply-templates/>
-    <xsl:text>'</xsl:text>
-  </xsl:template>
-  
-  <!-\- TODO nach common-common? -\->
-  <!-\- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -\->
-  <!-\- @resp für z.B. Texterklärungen hinzugefügt; 2016-06-09 DK -\->
-  <!-\- Test vereinfacht; 2016-07-12 DK -\->
-  <xsl:template match="tei:gap">
-    <xsl:text>[…]</xsl:text>
-    <xsl:if test="@extent">
-      <xsl:call-template name="footnoteLink">
-        <xsl:with-param name="type">crit</xsl:with-param>
-        <xsl:with-param name="position">e</xsl:with-param>
-      </xsl:call-template>
-    </xsl:if>
-  </xsl:template>
-  
-  <xsl:template match="tei:hi [not(parent::tei:head)]">
-    <!-\- umgestellt für @style und Kombinationen; 2017-10-24 DK -\->
+  <!-- hi -->
+  <xsl:template match="tei:hi">
     <span>
-      <xsl:choose>
-  <!-\-      <xsl:when test="@rend='large'">
-          <span style="font-size:larger;"><xsl:apply-templates/></span>
-        </xsl:when>
-        <xsl:when test="@rend='italics'">
-          <span style="font-style:italic;"><xsl:apply-templates/></span>
-        </xsl:when>
-        <xsl:when test="@rend='normal'">
-          <span style="font-style:normal;"><xsl:apply-templates/></span>
-        </xsl:when>
-        <xsl:when test="@rend='smallCaps'">
-          <span style="font-style:smallCaps;"><xsl:apply-templates/></span>
-        </xsl:when>-\->
-        <xsl:when test="@rend='super'">
-          <xsl:attribute name="class">superscript</xsl:attribute>
-        </xsl:when>
-        <xsl:when test="@rend='sub'">
-          <xsl:attribute name="class">subscript</xsl:attribute>
-        </xsl:when>
-      </xsl:choose>
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="@* | node()" />
     </span>
   </xsl:template>
+  <xsl:template match="@rendition">
+    <xsl:attribute name="class" select="substring-after(., '#')" />
+  </xsl:template>
+  <xsl:template match="@style">
+    <xsl:sequence select="." />
+  </xsl:template>
+  <xsl:template match="@rend" />
+  
+  <!--
   
   <!-\- Sachkommentar-Fußnoten -\->
   <!-\- a/@name → a/id; 2016-03-15 DK -\->

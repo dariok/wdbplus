@@ -215,5 +215,19 @@
         <a href="#tei15" class="ref bibl" id="quoteref6">TEI Consortium 2014, 1.3.2</a>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.4: hi">
+      <x:context>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" rend="font-style: italic;">Obedientia erga legem Dei, est necessaria in reconciliatis. ibidem, </hi>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" style="font-style: italic;">II. Chronikbuch</hi>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" rendition="#i">Karolus Quartus Divina Favente Clemencia Romanorum Imperator Semper Augustus Et
+          Boemie Rex.</hi>
+      </x:context>
+      <x:expect label=".">
+        <span>Obedientia erga legem Dei, est necessaria in reconciliatis. ibidem, </span>
+        <span style="font-style: italic;">II. Chronikbuch</span>
+        <span class="i">Karolus Quartus Divina Favente Clemencia Romanorum Imperator Semper Augustus Et
+          Boemie Rex.</span>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
 </x:description>
