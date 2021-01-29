@@ -137,7 +137,8 @@
             <xsl:sequence select="$att" />
             <xsl:apply-templates select="node()[following-sibling::tei:note]"/>
           </button>
-        </xsl:if><xsl:apply-templates select="tei:note" mode="fnLink">
+        </xsl:if>
+        <xsl:apply-templates select="tei:note" mode="fnLink">
           <xsl:with-param name="type" select="tei:note/@type" />
         </xsl:apply-templates>
         <xsl:if test="node()[preceding-sibling::tei:note]">
@@ -299,6 +300,11 @@
     <xsl:sequence select="." />
   </xsl:template>
   <xsl:template match="@rend" />
+  
+  <!-- Handling of footnotes -->
+  <xsl:template match="tei:note[@type = ('fn', 'footnote', 'annotation')]">
+    <xsl:apply-templates select="." mode="fnLink" />
+  </xsl:template>
   
   <!--
   
@@ -811,17 +817,9 @@
     <xsl:param name="position">s</xsl:param>
     
     <xsl:variable name="number">
-      <xsl:choose>
-        <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
-          <xsl:call-template name="fnumberAlph"/>
-        </xsl:when>
-        <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
-          <xsl:call-template name="fnumberNumeric" />
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:call-template name="fnumberGreek"/>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:apply-templates select="." mode="number">
+        <xsl:with-param name="type" select="$type" />
+      </xsl:apply-templates>
     </xsl:variable>
     
     <button id="{$position}{$type}{$number}" href="#{$type}{$number}" class="footnoteNumber"
@@ -830,19 +828,53 @@
     </button>
   </xsl:template>
   
-  <!-- creation of footnote numbering -->
-  <xsl:template name="fnumberNumeric">
-    <xsl:param name="context" as="node()" select="current()" />
-    
-    <xsl:variable name="type" select="$context/@type" />
-    <xsl:number count="tei:note[@type = $type and ancestor::tei:body]" level="any" select="$context" />
+  <!-- general representation of notes -->
+  <xsl:template match="*" mode="fnText">
+    <div class="annotation">
+      <xsl:attribute name="id">
+        <xsl:choose>
+          <xsl:when test="@xml:id">
+            <xsl:apply-templates select="@xml:id" />
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="@type"/>
+            <xsl:apply-templates select="." mode="number">
+              <xsl:with-param name="type" select="@type" />
+            </xsl:apply-templates>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <p>
+        <xsl:apply-templates />
+      </p>
+    </div>
   </xsl:template>
   
-  <xsl:template name="fnumberAlph">
-    <xsl:param name="context" select="current()"/>
+  <!-- creation of footnote numbering -->
+  <xsl:template match="*" mode="number">
+    <xsl:param name="type" />
     
-    <xsl:number format="a" level="any" select="$context"
-      count="tei:choice
+    <xsl:choose>
+      <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
+        <xsl:apply-templates select="." mode="fnumberAlph" />
+      </xsl:when>
+      <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
+        <xsl:apply-templates select="." mode="fnumberNumeric" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="." mode="fnumberGreek" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template match="*" mode="fnumberNumeric">
+    <xsl:variable name="type" select="@type" />
+    
+    <xsl:number count="tei:note[@type = $type and ancestor::tei:body]" level="any" />
+  </xsl:template>
+  
+  <xsl:template match="*" mode="fnumberAlph">
+    <xsl:number format="a" level="any" count="tei:choice
       | tei:app[not(ancestor::tei:choice)]
       | tei:subst
       | tei:add[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
@@ -852,11 +884,10 @@
       | tei:unclear[@extent]"/>
   </xsl:template>
   
-  <xsl:template name="fnumberGreek">
-    <xsl:param name="context" select="current()" />
-    <xsl:variable name="type" select="($context/@type, local-name())[1]" />
+  <xsl:template match="*" mode="fnumberGreek">
+    <xsl:variable name="type" select="(@type, local-name())[1]" />
     
-    <xsl:number level="any" format="α" count="*[(@type, local-name())[1] = $type]" select="$context" />
+    <xsl:number level="any" format="α" count="*[(@type, local-name())[1] = $type]" />
   </xsl:template>
   
   <xsl:template match="@xml:id">

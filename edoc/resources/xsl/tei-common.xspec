@@ -229,5 +229,30 @@
           Boemie Rex.</span>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.5: notes">
+      <x:context>
+        <body xmlns="http://www.tei-c.org/ns/1.0">
+          <note type="annotation"
+            >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+            von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+        </body>
+      </x:context>
+      <x:expect label=".">
+        <button id="sannotation1" href="#annotation1" class="footnoteNumber" aria-label="...">1</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.6: notes">
+      <x:context mode="fnText">
+        <note xmlns="http://www.tei-c.org/ns/1.0" type="annotation" xml:id="n145"
+          >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+      </x:context>
+      <x:expect label=".">
+        <div class="annotation" id="n145">
+          <p>Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</p>
+        </div>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
 </x:description>
