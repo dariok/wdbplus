@@ -77,7 +77,7 @@
         before <button class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
           aria-label="opens information about an entity">within</button><button class="footnoteNumber"
-          href="#footnote1" id="sfootnote1" aria-label="opens a footnote">1</button><button class="entity person"
+          data-note="footnote1" id="sfootnote1" aria-label="opens a footnote">1</button><button class="entity person"
           onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
           aria-label="opens information about an entity"> rs</button> after
       </x:expect>
@@ -96,7 +96,7 @@
         <button class="entity person"
           onclick="wdbUser.showEntityData('armandus_bellovisu', 'testproject')"
           aria-label="opens information about an entity">Armandi</button><button class="footnoteNumber"
-          href="#crita" id="ecrita" aria-label="opens a footnote">a</button>
+          data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.7 app">
@@ -111,10 +111,10 @@
         <button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
           aria-label="opens information about an entity">Henricus </button><button class="footnoteNumber"
-          href="#crita" id="scrita" aria-label="opens a footnote">a</button><button class="entity person"
+          data-note="crita" id="scrita" aria-label="opens a footnote">a</button><button class="entity person"
           onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
           aria-label="opens information about an entity">de Gandavo</button><button class="footnoteNumber"
-          href="#crita" id="ecrita" aria-label="opens a footnote">a</button>
+          data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.8 multiple">
@@ -127,7 +127,7 @@
           aria-label="opens information about an entity">Henricus </button><button
           class="entity person" onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
           aria-label="opens information about an entity">after</button><button class="footnoteNumber"
-          href="#critb" id="ecritb" aria-label="opens a footnote">b</button>
+          data-note="critb" id="ecritb" aria-label="opens a footnote">b</button>
       </x:expect>
     </x:scenario>
   </x:scenario>
@@ -138,8 +138,8 @@
         <app /><app />
       </x:context>
       <x:expect label=".">
-        <button aria-label="opens a footnote" class="footnoteNumber" href="#α" id="sα">α</button>
-        <button aria-label="opens a footnote" class="footnoteNumber" href="#β" id="sβ">β</button>
+        <button aria-label="opens a footnote" class="footnoteNumber" data-note="α" id="sα">α</button>
+        <button aria-label="opens a footnote" class="footnoteNumber" data-note="β" id="sβ">β</button>
       </x:expect>
     </x:scenario>
   </x:scenario>
@@ -238,7 +238,7 @@
         </body>
       </x:context>
       <x:expect label=".">
-        <button id="sannotation1" href="#annotation1" class="footnoteNumber" aria-label="...">1</button>
+        <button id="sannotation1" data-note="annotation1" class="footnoteNumber" aria-label="...">1</button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T4.6: notes">

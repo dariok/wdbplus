@@ -596,6 +596,19 @@ const wdbUser = {
     
     // example: show image in viewer
     // wdbDocument.displayImageViewer(url, viewer);
+  },
+  
+  // what to do when the mouse enters a footnote pointer
+  footnoteMouseIn: function ( event ) {
+    event.preventDefault();
+    
+    let peer = event.target.dataset.note;
+    
+    // example: show info text in a float
+    //wdbDocument.showInfoFloating(event.target, peer);
+    
+    // example: show info on the right
+    wdbDocument.showInfoRight(peer);
   }
 };
 
@@ -640,4 +653,10 @@ const wdbDocument = {
         targetTop = referenceElementTop - headerHeight;
       }
     }
+  }
 };
+
+$(() => {
+  // register hover handler for footnote link buttons
+  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+});
