@@ -50,6 +50,12 @@
       │ tei:hi/@rend              │ As @rend has no constraints on its contents, we cannot do anything about it.   │
       │                           │ Projects using @rend must implement their own logic. It is, however, strongly  │
       │                           │ recommended that projects use @style and @rendition wherever possible.         │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ tei:ptr                   │ This script can only offer very generic handling of pointers, as every project │
+      │                           │ will have its own requirements. If these differ from the generic handling      │
+      │                           │ implemented here, you can either redefine it completely or use values for      │
+      │                           │ @type other than 'wdb' or 'link' and create specific templates (which is       │
+      │                           │ recommended over rewriting the existing templates).                            │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -259,20 +265,6 @@
     </a>
   </xsl:template>
   
-  <xsl:template match="tei:ref">
-    <a href="{@target}">
-      <xsl:attribute name="class">
-        <xsl:text>ref</xsl:text>
-        <xsl:if test="@type">
-          <xsl:text> </xsl:text>
-          <xsl:value-of select="@type" />
-        </xsl:if>
-      </xsl:attribute>
-      <xsl:apply-templates select="@xml:id" />
-      <xsl:apply-templates />
-    </a>
-  </xsl:template>
-  
   <!-- blockquotes from cit -->
   <xsl:template match="tei:cit">
     <blockquote>
@@ -305,32 +297,36 @@
     <xsl:apply-templates select="." mode="fnLink" />
   </xsl:template>
   
-  <!--
-  
-  <!-\- Sachkommentar-Fußnoten -\->
-  <!-\- a/@name → a/id; 2016-03-15 DK -\->
-  <!-\- grundsätzlich alle Fußnoten ausgeben; 2016-03-18 DK -\->
-  <!-\- umgestellt auf template footnoteLink; 2016-05-19 DK -\->
-  <!-\- ausgelagert nach common; 2016-05-23 DK -\->
-  <xsl:template match="tei:note[@type='footnote']">
-    <xsl:call-template name="footnoteLink">
-      <xsl:with-param name="type">fn</xsl:with-param>
-      <xsl:with-param name="position">t</xsl:with-param>
-    </xsl:call-template>
+  <!-- all kinds of generic pointers and references -->
+  <xsl:template match="tei:ptr[not(@type) or @type = 'link']">
+    <a href="{@target}">
+      <xsl:apply-templates select="@xml:id" />
+      <xsl:attribute name="class">
+        <xsl:text>ptr</xsl:text>
+        <xsl:if test="@type and @type != 'link'">
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="@type" />
+        </xsl:if>
+      </xsl:attribute>
+      
+      <xsl:value-of select="@target"/>
+    </a>
   </xsl:template>
-  
-  <!-\- neu zur Angleichung an PDF; 2016-07-11 DK -\->
-  <xsl:template match="tei:orig">
-    <span class="orig">
-      <xsl:apply-templates/>
-    </span>
+  <xsl:template match="tei:ref">
+    <a href="{@target}">
+      <xsl:attribute name="class">
+        <xsl:text>ref</xsl:text>
+        <xsl:if test="@type">
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="@type" />
+        </xsl:if>
+      </xsl:attribute>
+      <xsl:apply-templates select="@xml:id" />
+      
+      <xsl:apply-templates />
+    </a>
   </xsl:template>
-  
-  <!-\- FIXME !important! allgemeiner machen!! -\->
-  <!-\- TODO insgesamt besser machen. Allgemeine Funktion zum Verlinken finden -\->
-  <!-\- Überlegung: Wenn der Link mit http:// beginnt, dann ist es Link auf andere Edition. In dem Fall als Linktext das
-    Kürzel oder den Titel aus der METS der Zieledition entnehmen -\->
-  <xsl:template match="tei:ptr[@type = 'wdb' and @target and not(parent::tei:cit)]">
+  <!--<xsl:template match="tei:ptr[@type = 'wdb' and @target and not(parent::tei:cit)]">
     <xsl:variable name="target">
       <xsl:call-template name="makeLink">
         <xsl:with-param name="refXML">
@@ -432,9 +428,9 @@
         </xsl:when>
       </xsl:choose>
     </a>
-  </xsl:template>
+  </xsl:template>-->
   
-  <!-\- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -\->
+  <!--<!-\- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -\->
   <xsl:template match="tei:quote">
     <q>
       <xsl:if test="@xml:id">
