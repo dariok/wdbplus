@@ -82,8 +82,7 @@
     
     <xsl:variable name="att" as="attribute()*">
       <xsl:attribute name="class" select="string-join(('entity', @type), ' ')" />
-      <xsl:attribute name="onclick"
-        >wdbUser.showEntityData('<xsl:value-of select="$ref"/>', '<xsl:value-of select="$ed" />')</xsl:attribute>
+      <xsl:attribute name="data-ref" select="$ref" />
       <xsl:attribute name="aria-label">opens information about an entity</xsl:attribute>
     </xsl:variable>
     

@@ -577,8 +577,9 @@ $(document).bind({
 /* These additions must be integrated into the proper places when merging refactor-javascript into developlment */
 const wdbUser = {
   // load entity data
-  showEntityData: function ( entityID, projectID ) {
-    let url = "entity.html?id=" + entityID;
+  showEntityData: function ( event ) {
+    let entityID = event.target.dataset.ref,
+        url = "entity.html?id=" + entityID;
     
     $.ajax({
       method:  "get",
@@ -586,7 +587,9 @@ const wdbUser = {
       success: function ( data ) {
         wdbDocument.showDataRight(data);
       },
-      error: wdb.logError(xhr, status, error, "Error loading entity data from " + url)
+      error: function (xhr, status, error) {
+        wdb.logError(xhr, status, error, "Error loading entity data from " + url);
+      }
     });
   },
   
@@ -613,6 +616,15 @@ const wdbUser = {
 };
 
 const wdbDocument = {
+  showDataRight: function ( data ) {
+    let insertID = wdb.getUniqueId(),
+        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
+          $(data).find('.content') +
+          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
+          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+      $('#ann').html(insertContent);
+  },
+  
   // display an image in the right div
   displayImageRight: function ( url ) {
     // default: load an html that contains an image into an iframe
@@ -659,4 +671,7 @@ const wdbDocument = {
 $(() => {
   // register hover handler for footnote link buttons
   $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  
+  // register click handler for entity information
+  $('.entity').click(wdbUser.showEntityData);
 });

@@ -11,12 +11,12 @@
       </x:context>
       <x:expect label=".">
         <button class="entity person"
-          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          data-ref="pagebreak"
           aria-label="opens information about an entity"><span
             id="w1"
             class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-1">1</span><button
           class="entity person"
-          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          data-ref="pagebreak"
           aria-label="opens information about an entity"><span
             id="w1"
             class="w">break</span></button>
@@ -30,12 +30,12 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
-          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          data-ref="pagebreak"
           aria-label="opens information about an entity">another <span
             id="w3"
             class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
           class="entity person"
-          onclick="wdbUser.showEntityData('pagebreak', 'testproject')"
+          data-ref="pagebreak"
           aria-label="opens information about an entity"><span
             id="w3"
             class="w">break</span></button>
@@ -48,11 +48,11 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
-          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          data-ref="http://example.org/pb"
           aria-label="opens information about an entity"
           >no w in page-</button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
           class="entity person"
-          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          data-ref="http://example.org/pb"
           aria-label="opens information about an entity">break</button>
       </x:expect>
     </x:scenario>
@@ -63,9 +63,9 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         before <button class="entity person"
-          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          data-ref="http://example.org/pb"
           aria-label="opens information about an entity">within rs</button><a class="marginAnchor"
-   id="d32e5" /> after
+          id="..." /> after
       </x:expect>
     </x:scenario>
     <x:scenario label="T1.5 other note">
@@ -75,10 +75,10 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         before <button class="entity person"
-          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          data-ref="http://example.org/pb"
           aria-label="opens information about an entity">within</button><button class="footnoteNumber"
           data-note="footnote1" id="sfootnote1" aria-label="opens a footnote">1</button><button class="entity person"
-          onclick="wdbUser.showEntityData('http://example.org/pb', 'testproject')"
+          data-ref="http://example.org/pb"
           aria-label="opens information about an entity"> rs</button> after
       </x:expect>
     </x:scenario>
@@ -94,7 +94,7 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
-          onclick="wdbUser.showEntityData('armandus_bellovisu', 'testproject')"
+          data-ref="armandus_bellovisu"
           aria-label="opens information about an entity">Armandi</button><button class="footnoteNumber"
           data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
       </x:expect>
@@ -109,10 +109,10 @@
       </x:context>
       <x:expect label="." xml:space="preserve">
         <button class="entity person"
-          onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
+          data-ref="heinrich_gent"
           aria-label="opens information about an entity">Henricus </button><button class="footnoteNumber"
           data-note="crita" id="scrita" aria-label="opens a footnote">a</button><button class="entity person"
-          onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
+          data-ref="heinrich_gent"
           aria-label="opens information about an entity">de Gandavo</button><button class="footnoteNumber"
           data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
       </x:expect>
@@ -123,11 +123,12 @@
             xml:id="z27" n="26"/>ricus</w> <app><lem wit="#g #S">after</lem><rdg wit="#N #B #V #P"/></app></rs></body>
       </x:context>
       <x:expect label="." xml:space="preserve">
-         <button class="entity person" onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
-          aria-label="opens information about an entity">Henricus </button><button
-          class="entity person" onclick="wdbUser.showEntityData('heinrich_gent', 'testproject')"
-          aria-label="opens information about an entity">after</button><button class="footnoteNumber"
-          data-note="critb" id="ecritb" aria-label="opens a footnote">b</button>
+         <button class="entity person"
+           data-ref="heinrich_gent"
+           aria-label="opens information about an entity">Henricus </button><button
+           data-ref="heinrich_gent" class="entity person"
+           aria-label="opens information about an entity">after</button><button class="footnoteNumber"
+           data-note="critb" id="ecritb" aria-label="opens a footnote">b</button>
       </x:expect>
     </x:scenario>
   </x:scenario>
