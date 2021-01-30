@@ -222,7 +222,7 @@
         </xsl:variable>
         
         <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}"
-          onclick="wdbUser.displayImage('{$image}');">
+          data-image="{$image}">
           <xsl:sequence select="$content" />
         </button>
       </xsl:when>

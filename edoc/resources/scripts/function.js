@@ -616,6 +616,35 @@ const wdbUser = {
 };
 
 const wdbDocument = {
+  // highlight a range of elements – given as "e1-e2"
+  highlightRange: function ( range ) {
+    let from = range.split('-')[0],
+        to = range.split('-')[1];
+    
+    this.highlightElements (from, to, 'red', '');
+
+    let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
+    // minus fixed header height
+    $('html, body').animate({scrollTop: scrollto}, 0);
+      
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
+    wdbUser.displayImage(pb);
+  },
+
+  loadTargetImage: function () {
+    let target = $(':target');
+    if (target.length > 0) {
+      if (target.attr('class') == 'pagebreak') {
+        let url = target.dataset.ref;
+        console.log("trying to load image: " + url);
+        wdbUser.displayImage(url);
+      } else {
+        let pagebreak = target.parents().has('.pagebreak').first();
+        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
+      }
+    }
+  },
+  
   showDataRight: function ( data ) {
     let insertID = wdb.getUniqueId(),
         insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
@@ -674,4 +703,18 @@ $(() => {
   
   // register click handler for entity information
   $('.entity').click(wdbUser.showEntityData);
+  
+  // register click handler for page breaks
+  $('.pagebreak').click((event) => {
+    wdbUser.displayImage(event.target.dataset.image);
+  });
+  
+  // load image for target page (or first page if no fragment requested)
+  if($('.pagebreak').length > 0) {
+    if (window.location.hash != "") {
+      wdbDocument.loadTargetImage();
+    } else {
+      wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
+    }
+  }
 });

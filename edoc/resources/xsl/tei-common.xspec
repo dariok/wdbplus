@@ -154,7 +154,7 @@
       </x:context>
       <x:expect label=".">
         <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-1"
-          onclick="wdbUser.displayImage('http://example.org');">1</button>
+          data-image="http://example.org">1</button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T3.2">
@@ -172,7 +172,7 @@
       </x:context>
       <x:expect label=".">
         <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-42r"
-          onclick="wdbUser.displayImage('https://example.org/test');">42<span class="rectoVerso">r</span></button>
+          data-image="https://example.org/test">42<span class="rectoVerso">r</span></button>
       </x:expect>
     </x:scenario>
     <x:scenario label="T3.3">
