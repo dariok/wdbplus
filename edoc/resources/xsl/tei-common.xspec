@@ -133,7 +133,7 @@
     </x:scenario>
   </x:scenario>
   
-  <x:scenario label="T2: footnote numbering">
+  <x:scenario label="T2: footnotes">
     <x:scenario label="T2.1">
       <x:context mode="fnLink" xmlns="http://www.tei-c.org/ns/1.0">
         <app /><app />
@@ -141,6 +141,31 @@
       <x:expect label=".">
         <button aria-label="opens a footnote" class="footnoteNumber" data-note="α" id="sα">α</button>
         <button aria-label="opens a footnote" class="footnoteNumber" data-note="β" id="sβ">β</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T2.2: button for full text notes">
+      <x:context>
+        <body xmlns="http://www.tei-c.org/ns/1.0">
+          <note type="annotation"
+            >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+            von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+        </body>
+      </x:context>
+      <x:expect label=".">
+        <button id="sannotation1" data-note="annotation1" class="footnoteNumber" aria-label="...">1</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T2.3: text of full text notes">
+      <x:context mode="fnText">
+        <note xmlns="http://www.tei-c.org/ns/1.0" type="annotation" xml:id="n145"
+          >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+      </x:context>
+      <x:expect label=".">
+        <div class="annotation" id="n145">
+          <p>Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</p>
+        </div>
       </x:expect>
     </x:scenario>
   </x:scenario>
@@ -228,31 +253,6 @@
         <span style="font-style: italic;">II. Chronikbuch</span>
         <span class="i">Karolus Quartus Divina Favente Clemencia Romanorum Imperator Semper Augustus Et
           Boemie Rex.</span>
-      </x:expect>
-    </x:scenario>
-    <x:scenario label="T4.5: notes">
-      <x:context>
-        <body xmlns="http://www.tei-c.org/ns/1.0">
-          <note type="annotation"
-            >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
-            von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
-        </body>
-      </x:context>
-      <x:expect label=".">
-        <button id="sannotation1" data-note="annotation1" class="footnoteNumber" aria-label="...">1</button>
-      </x:expect>
-    </x:scenario>
-    <x:scenario label="T4.6: notes">
-      <x:context mode="fnText">
-        <note xmlns="http://www.tei-c.org/ns/1.0" type="annotation" xml:id="n145"
-          >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
-          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
-      </x:context>
-      <x:expect label=".">
-        <div class="annotation" id="n145">
-          <p>Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
-          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</p>
-        </div>
       </x:expect>
     </x:scenario>
   </x:scenario>
