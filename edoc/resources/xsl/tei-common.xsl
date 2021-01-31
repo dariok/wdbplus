@@ -56,6 +56,10 @@
       │                           │ implemented here, you can either redefine it completely or use values for      │
       │                           │ @type other than 'wdb' or 'link' and create specific templates (which is       │
       │                           │ recommended over rewriting the existing templates).                            │
+      ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
+      │ "linkText"                │ tei:ptr[@type = 'wdb'] calls "linkText" to create the text content of html:a;  │
+      │ parameter file: document  │ the default value create by this template is the target file’s main or first   │
+      │ node of target file       │ title element. Adjust especially for links to footnotes or special segments.   │
       └───────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
   -->
   
@@ -326,109 +330,23 @@
       <xsl:apply-templates />
     </a>
   </xsl:template>
-  <!--<xsl:template match="tei:ptr[@type = 'wdb' and @target and not(parent::tei:cit)]">
-    <xsl:variable name="target">
-      <xsl:call-template name="makeLink">
-        <xsl:with-param name="refXML">
-          <xsl:value-of select="@target"/>
-        </xsl:with-param>
+  
+  <!-- cross references within wdb+ (_very_ generic) -->
+  <xsl:template match="tei:ptr[@type = 'wdb']">
+    <xsl:variable name="values" select="tokenize(@target, '#')" />
+    <xsl:variable name="file" select="document($values[1], .)" />
+    
+    <a class="crossRef" href="view.html?id={$file/tei:TEI/@xml:id}{if($values[2]) then '#' || $values[2] else ''}">
+      <xsl:call-template name="linkText">
+        <xsl:with-param name="file" select="$file" />
       </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="file">
-      <!-\- Test auf Texte der 2. Phase; 2016-07-14 DK -\->
-      <xsl:choose>
-        <xsl:when test="not(contains(@target, 'ed000216'))">
-          <xsl:variable name="uri">
-            <xsl:choose>
-              <xsl:when test="contains(@target, '../') and contains(@target, '#')">
-                <xsl:value-of select="substring-after(substring-before(@target, '#'), '../')"/>
-              </xsl:when>
-              <xsl:when test="contains(@target, '../')">
-                <xsl:value-of select="substring-after(@target, '../')"/>
-              </xsl:when>
-              <xsl:when test="contains(@target, '#') and contains(@target, '_')">
-                <!-\- saxon vor 9.7 hat Probleme, wenn doc() eien fragment identifier bekommt; 2017-08-22 DK -\->
-                <xsl:value-of select="substring-before(concat(substring-before(@target, '_'), '/', @target), '#')"/>
-              </xsl:when>
-              <xsl:when test="contains(@target, '#')">
-                <xsl:value-of select="substring-before(@target, '#')"/>
-              </xsl:when>
-            </xsl:choose>
-          </xsl:variable>
-          <!-\- TODO Link  generell anpassen! -\->
-          <!-\- TODO alles viel schöner machen! -\->
-          <xsl:value-of select="concat($baseDir, '/texts/', $uri)"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="@target"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <a href="{$target}">
-      <xsl:variable name="nr">
-        <!-\- vereinfacht; 2017-08-20 DK -\->
-        <xsl:choose>
-          <xsl:when test="starts-with(@target, '#')">
-            <xsl:value-of select="/tei:TEI/@n"/>
-          </xsl:when>
-          <xsl:when test="doc-available($file)">
-            <xsl:value-of select="doc($file)/tei:TEI/@n"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="0"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:choose>
-        <xsl:when test="contains(@target, '/') and not(contains(@target, '#'))">
-          <xsl:text>Nr. </xsl:text>
-          <xsl:value-of select="$nr"/>
-        </xsl:when>
-        <xsl:when test="contains(@target, '#n')">
-          <!-\- in choose um in der eigenen Datei die Nummer ausgeben zu können; 2016-07-11 DK -\->
-          <xsl:choose>
-            <!-\- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -\->
-            <xsl:when test="contains(@target, '/')">
-              <xsl:text>Nr. </xsl:text>
-              <!-\- neu für Links auf spätere EE; 2016-07-12 DK -\->
-              <xsl:choose>
-                <xsl:when test="$nr &gt; 0">
-                  <xsl:value-of select="format-number($nr, '#')"/>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:text>Ⅰ</xsl:text>
-                </xsl:otherwise>
-              </xsl:choose>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:call-template name="fnumberFootnotes">
-                <xsl:with-param name="context" select="id(substring-after(@target, '#'))"/>
-              </xsl:call-template>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:when>
-        <!-\-Link auf den Text einer Transkription an eine beliebige Stelle -\->
-        <!-\- darf nicht mit # anfangen, da sonst gleiche Datei; 2016-07-12 DK -\->
-        <!-\- test geändert: wenn / enthalten, dann Link in andere Datei; 2016-07-12 DK -\->
-        <xsl:when test="(contains(@target, '#q') or contains(@target, '#s')) and contains(@target, '/')">
-          <xsl:text>Nr. </xsl:text>
-          <xsl:if test="doc-available($file)">
-            <xsl:value-of select="doc($file)/tei:TEI/@n"/>
-          </xsl:if>
-        </xsl:when>
-        <!-\- neu 2016-07-12 DK -\->
-        <xsl:when test="contains(@target, '#q') or contains(@target, '#s')">
-          <xsl:text>Textstelle</xsl:text>
-        </xsl:when>
-        <!-\- neu 2017-08-22 DK -\->
-        <xsl:when test="contains(@target, '#c')">
-          <xsl:call-template name="fnumberKrit">
-            <xsl:with-param name="context" select="id(@target)"/>
-          </xsl:call-template>
-        </xsl:when>
-      </xsl:choose>
     </a>
-  </xsl:template>-->
+  </xsl:template>
+  <xsl:template name="linkText">
+    <xsl:param name="file" required="1" />
+    
+    <xsl:value-of select="($file//tei:titleStmt/tei:title[@type = 'main'], $file//tei:titleStmt/tei:title[1])[1]"/>
+  </xsl:template>
   
   <!--<!-\- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -\->
   <xsl:template match="tei:quote">
