@@ -250,7 +250,6 @@
       <xsl:apply-templates/>
     </div>
   </xsl:template>
-  
   <xsl:template match="tei:note[@place = 'margin']">
     <a class="marginAnchor" id="{generate-id()}" />
   </xsl:template>
@@ -278,6 +277,7 @@
   </xsl:template>
   <xsl:template match="tei:cit/tei:quote">
     <p>
+      <xsl:apply-templates select="@xml:lang" />
       <xsl:apply-templates />
     </p>
   </xsl:template>
@@ -351,7 +351,7 @@
   <!-- inline quotes -->
   <xsl:template match="tei:quote">
     <q>
-      <xsl:apply-templates select="@xml:id" />
+      <xsl:apply-templates select="@xml:id | @xml:lang" />
       
       <xsl:apply-templates/>
     </q>
@@ -745,6 +745,8 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
+      <xsl:apply-templates select="@xml:lang" />
+      
       <p>
         <xsl:apply-templates />
       </p>
@@ -793,5 +795,9 @@
   
   <xsl:template match="@xml:id">
     <xsl:attribute name="id" select="." />
+  </xsl:template>
+  
+  <xsl:template match="@xml:lang">
+    <xsl:attribute name="lang" select="." />
   </xsl:template>
 </xsl:stylesheet>
