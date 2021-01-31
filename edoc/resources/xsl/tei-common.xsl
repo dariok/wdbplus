@@ -358,26 +358,15 @@
     </q>
   </xsl:template>
   
-  <!--
-  
-  
-  <!-\- in common zusammengefaßt; nur noch wenn @xml:lang; 2016-03-18 DK -\->
-  <xsl:template match="tei:seg[@xml:lang]">
-    <xsl:choose>
-      <!-\- aufgeteilt je Sprache; Ausgabe der Sprache in HTML-Attribut @lang; 2016-05-20 DK -\->
-      <xsl:when test="@xml:lang='grc-Grek'"> 
-        <span lang="grc">
-                    <xsl:apply-templates/>
-                </span>
-      </xsl:when>
-      <xsl:when test="@xml:lang='heb-Hebr'">
-        <!-\- angepaßt auf he nach 639-1; 2016-05-23 DK -\->
-        <span lang="he">
-                    <xsl:apply-templates/>
-                </span>
-      </xsl:when>
-    </xsl:choose>
+  <!-- general segments -->
+  <xsl:template match="tei:seg">
+    <span class="seg{if(@type) then ' ' || @type else ''}">
+      <xsl:apply-templates select="@xml:id | @xml:lang" />
+      <xsl:apply-templates />
+    </span>
   </xsl:template>
+  
+  <!--
   
   <!-\- in common zusammengefaßt; 2016-01-18 DK -\->
   <!-\- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -\->

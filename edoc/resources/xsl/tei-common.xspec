@@ -259,6 +259,18 @@
         </q>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.6">
+      <x:context>
+        <seg xmlns="http://www.tei-c.org/ns/1.0" xml:id="bedeutung_frieden" xml:lang="de" type="addendum"
+          >Die Zuweisung, das Edikt sei ewig und unwiderruflich, strich die besondere Bedeutung dieses Friedens für <rs
+            type="person" ref="#karl_viiii">Karl IX.</rs> hervor.</seg>
+      </x:context>
+      <x:expect label=".">
+        <span id="bedeutung_frieden" lang="de" class="seg addendum"
+          >Die Zuweisung, das Edikt sei ewig und unwiderruflich, strich die besondere Bedeutung dieses Friedens für <button
+            class="entity person" data-ref="karl_viiii" aria-label="...">Karl IX.</button> hervor.</span>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
   
   <x:scenario label="T5: linking">
