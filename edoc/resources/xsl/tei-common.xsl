@@ -366,41 +366,15 @@
     </span>
   </xsl:template>
   
-  <!--
-  
-  <!-\- in common zusammengefaßt; 2016-01-18 DK -\->
-  <!-\- neue Regelung nach Treffen 2016-02-10: tr immer spitz, intro und FN eckig, außer wenn @reason; 2016-02-12 DK -\->
-  <xsl:template match="tei:supplied">
-    <xsl:text>[</xsl:text>
-    <xsl:apply-templates/>
-    <xsl:text>]</xsl:text>
-    <xsl:if test="@extent and not(following-sibling::node()[1][self::tei:note[@type = 'crit_app']])">
-      <xsl:call-template name="footnoteLink">
-        <xsl:with-param name="position">a</xsl:with-param>
-        <xsl:with-param name="type">crit</xsl:with-param>
-      </xsl:call-template>
-    </xsl:if>
-  </xsl:template>
-  
-  <!-\- Ausgabe von erwähnten allg. Werktiteln und Begrifflichkeiten in Anführungszeichen / kursiv -\->
+  <!-- terms -->
   <xsl:template match="tei:term">
-    <xsl:choose>
-      <xsl:when test="@type='term'">
-        <xsl:element name="i">
-          <xsl:apply-templates/>
-        </xsl:element>
-      </xsl:when>
-      <!-\- Ausgabe Quellentitel kursiv, nach Festlegung TK; 2016-05-09 DK -\->
-      <xsl:when test="@type='title' and not(tei:quote) and not(parent::tei:quote)">
-        <i>
-                    <xsl:apply-templates/>
-                </i>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <span class="term{if(@type) then ' ' || @type else ''}">
+      <xsl:apply-templates select="@xml:id | @xml:lang" />
+      <xsl:apply-templates />
+    </span>
   </xsl:template>
+  
+  <!--
   
   <xsl:template match="tei:title[parent::tei:p or parent::tei:note]">
     <i>

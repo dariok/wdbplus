@@ -271,6 +271,14 @@
             class="entity person" data-ref="karl_viiii" aria-label="...">Karl IX.</button> hervor.</span>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.7: term">
+      <x:context>
+        <term xmlns="http://www.tei-c.org/ns/1.0">term</term>
+      </x:context>
+      <x:expect label=".">
+        <span class="term">term</span>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
   
   <x:scenario label="T5: linking">
