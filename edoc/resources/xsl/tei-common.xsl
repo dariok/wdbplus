@@ -374,92 +374,60 @@
     </span>
   </xsl:template>
   
-  <!--
-  
-  <xsl:template match="tei:title[parent::tei:p or parent::tei:note]">
-    <i>
-            <xsl:apply-templates/>
-        </i>
-  </xsl:template>
-  <!-\- neu 2016-05-24 DK -\->
-  <xsl:template match="tei:titleStmt/tei:title">
-    <xsl:apply-templates select="node()[not(self::tei:date or self::tei:placeName)]"/>
-    <br/>
-    <xsl:apply-templates select="tei:placeName"/>
-    <xsl:if test="tei:date and tei:placeName">
-      <xsl:text>, </xsl:text>
-    </xsl:if>
-    <xsl:apply-templates select="tei:date"/>
-    <!-\- auch (korrekte) Angabe im Header prüfen; 2017-08-07 DK -\->
-    <xsl:if test="contains((/tei:TEI/tei:text/tei:body/tei:div[1]//tei:objectDesc)[1]/@form, 'lost')    or contains(/tei:TEI/tei:teiHeader//tei:sourceDesc//tei:objectDesc[1]/@form, 'lost')">
-      <br/>
-            <span>(verschollen)</span>
-    </xsl:if>
-    <xsl:if test="contains((/tei:TEI//tei:text/tei:body/tei:div[1]//tei:objectDesc)[1]/@form, 'fragment')">
-      <br/>
-            <span>(Fragment)</span>
-    </xsl:if>
-  </xsl:template>
-    <!-\- neu 2015-11-09; vorher über seg[@type]; 2015-11-09 DK -\->
-    <!-\- aus introduction-common; 2017-07-20 DK -\->
-    <xsl:template match="tei:date | tei:placeName">
-        <xsl:if test="@cert">
-            <xsl:text>[</xsl:text>
-        </xsl:if>
-        <xsl:apply-templates/>
-        <xsl:if test="@cert">
-            <xsl:text>]</xsl:text>
-        </xsl:if>
-    </xsl:template>
-  
-  <!-\- Tabellen -\->
+  <!-- tables -->
   <xsl:template match="tei:table">
     <table>
-      <xsl:if test="@rend='noborder'">
-        <xsl:attribute name="class">noborder</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="tei:row[1]/tei:cell[1][@role='label']">
-        <xsl:attribute name="class">firstColumnLabel</xsl:attribute>
-      </xsl:if>
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="@xml:id | @xml:lang | @rendition | @style" />
+      <xsl:apply-templates select="tei:head" />
+      
+      <xsl:choose>
+        <xsl:when test="tei:row[1][@role = 'label']">
+          <thead>
+            <xsl:apply-templates select="tei:row[1]" />
+          </thead>
+          <tbody>
+            <xsl:apply-templates select="tei:row[preceding-sibling::tei:row]" />
+          </tbody>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates />
+        </xsl:otherwise>
+      </xsl:choose>
     </table>
   </xsl:template>
-  
-  <xsl:template match="tei:head[parent::tei:table]">
+  <xsl:template match="tei:table/tei:head">
     <caption>
-            <xsl:apply-templates/>
-        </caption>
+      <xsl:apply-templates />
+    </caption>
   </xsl:template>
-  
   <xsl:template match="tei:row">
     <tr>
-      <xsl:apply-templates select="tei:cell"/>
+      <xsl:apply-templates select="@xml:id | @xml:lang | @rendition | @style" />
+      <xsl:apply-templates />
     </tr>
   </xsl:template>
-  
-  
-  
-  
-  <!-\- ersetzt bisherige Ausagben; 2016-05-27 DK -\->
-  <!-\- Anmerkung: rowspan kann vorerst nicht übernommen werden, da es zu falscher Zellenzahl kommt -\->
-  <xsl:template match="tei:cell[parent::tei:row[@role='label']]">
-    <th id="{@xml:id}">
+  <xsl:template match="tei:row[@role = 'label']/tei:cell">
+    <th>
+      <xsl:apply-templates select="@xml:id | @xml:lang | @rendition | @style | @rows | @cols" />
+      
       <xsl:apply-templates/>
     </th>
   </xsl:template>
-  <xsl:template match="tei:cell[parent::tei:row[not(@role)]]">
-    <xsl:variable name="pos" select="position()"/>
-    <xsl:if test="text() or tei:* or not(parent::tei:row/preceding-sibling::tei:row/tei:cell[$pos][@rows])">
-      <td id="{@xml:id}">
-        <xsl:if test="@rows">
-          <xsl:attribute name="rowspan">
-                        <xsl:value-of select="@rows"/>
-                    </xsl:attribute>
-        </xsl:if>
-        <xsl:apply-templates/>
-      </td>
-    </xsl:if>
+  <xsl:template match="tei:row[not(@role) or @role != 'label']/tei:cell">
+    <td>
+      <xsl:apply-templates select="@xml:id | @xml:lang | @rendition | @style | @rows | @cols" />
+      
+      <xsl:apply-templates/>
+    </td>
   </xsl:template>
+  <xsl:template match="@rows">
+    <xsl:attribute name="rowspan" select="." />
+  </xsl:template>
+  <xsl:template match="@cols">
+    <xsl:attribute name="colspan" select="." />
+  </xsl:template>
+  
+  <!--
   
   <!-\- aus intro und transcript ausgelagert; 2016-03-16 DK -\->
   <!-\- TODO: in rechter div anzeigen! -\->

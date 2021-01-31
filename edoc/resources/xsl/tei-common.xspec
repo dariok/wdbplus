@@ -331,4 +331,95 @@
       </x:expect>
     </x:scenario>
   </x:scenario>
+  
+  <x:scenario label="T6: tables">
+    <x:scenario label="T6.1">
+      <x:context>
+        <table xmlns="http://www.tei-c.org/ns/1.0" xml:id="table1" rend="border">
+          <head>Responses to demographic questions pertaining to the respondent’s institutional affiliation (n=112).</head>
+          <row role="label">
+            <cell cols="2">Where is your institution located?</cell>
+            <cell cols="2">Indicate the type of library for which you work.</cell>
+            <cell cols="2">What is the size of your academic institution based on student enrollment or number of patrons served?</cell>
+          </row>
+          <row>
+            <cell>Asia</cell>
+            <cell>2</cell>
+            <cell>Academic Library</cell>
+            <cell>92</cell>
+            <cell>Up to 5,000</cell>
+            <cell>8</cell>
+          </row>
+          <row>
+            <cell cols="2"/>
+            <cell>No Response</cell>
+            <cell>0</cell>
+            <cell>No Response</cell>
+            <cell>25</cell>
+          </row>
+        </table>
+      </x:context>
+      <x:expect label=".">
+        <table id="table1">
+          <caption>Responses to demographic questions pertaining to the respondent’s institutional affiliation (n=112).</caption>
+          <thead>
+            <tr>
+              <th colspan="2">Where is your institution located?</th>
+              <th colspan="2">Indicate the type of library for which you work.</th>
+              <th colspan="2">What is the size of your academic institution based on student enrollment or number of patrons served?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Asia</td>
+              <td>2</td>
+              <td>Academic Library</td>
+              <td>92</td>
+              <td>Up to 5,000</td>
+              <td>8</td>
+            </tr>
+            <tr>
+              <td colspan="2"/>
+              <td>No Response</td>
+              <td>0</td>
+              <td>No Response</td>
+              <td>25</td>
+            </tr>
+          </tbody>
+        </table>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T6.2">
+      <x:context xml:space="preserve">
+        <table xmlns="http://www.tei-c.org/ns/1.0" facs="#facs_13_tbl_14_14">
+          <row n="0">
+            <cell facs="#facs_13_r_14_1_1" n="0" rend="0000"> <lb facs="#facs_13_r_14_1_1l1" n="N001"/><w
+              xml:id="w26028">Ringband</w> <pc xml:id="pc6814">.</pc> <pc xml:id="pc6815">.</pc> <pc xml:id="pc6816"
+                >.</pc> <pc xml:id="pc6817">.</pc> <w xml:id="w26029">Meter</w></cell>
+            <cell facs="#facs_13_r_14_1_2" n="1" rend="0000"> <lb facs="#facs_13_r_14_1_2l1" n="N001"/><num
+              xml:id="num1335">10</num> <w xml:id="w26030">₰</w></cell>
+          </row>
+          <row n="1">
+            <cell facs="#facs_13_r_14_2_1" n="0" rend="0000"> <lb facs="#facs_13_r_14_2_1l1" n="N001"/><w
+              xml:id="w26031">Brise</w><pc xml:id="pc6818">-</pc><w xml:id="w26032">Bisesstangen</w> <pc
+              xml:id="pc6819">„</pc></cell>
+            <cell facs="#facs_13_r_14_2_2" n="1" rend="0000"> <lb facs="#facs_13_r_14_2_2l1" n="N001"/><num
+              xml:id="num1336">5</num> <w xml:id="w26033">₰</w></cell>
+          </row>
+        </table>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <table>
+          <tr>
+            <td> Ringband . . . . Meter</td>
+            <td> 10 ₰</td>
+          </tr>
+          <tr>
+            <td> Brise-Bisesstangen „</td>
+            <td> 5 ₰</td>
+          </tr>
+        </table>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
 </x:description>
