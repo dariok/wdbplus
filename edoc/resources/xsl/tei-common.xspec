@@ -230,7 +230,7 @@
         <blockquote>
           <p>...</p>
         </blockquote>
-        <a href="#tei15" class="ref bibl" id="quoteref6">TEI Consortium 2014, 1.3.2</a>
+        <a href="#tei15" class="ref bibl" id="quoteref6" aria-label="link to an external file">TEI Consortium 2014, 1.3.2</a>
       </x:expect>
     </x:scenario>
     <x:scenario label="T4.4: hi">
@@ -273,9 +273,9 @@
       </x:context>
       <x:expect label=".">
         <a href="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf" class="ptr"
-          >http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
+          aria-label="link to an external file">http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
         <a href="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf" class="ptr"
-          >http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
+          aria-label="link to an external file">http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
       </x:expect>
     </x:scenario>
     <x:scenario label="T5.2">
@@ -284,7 +284,8 @@
           <lb/> et Confessio</ref>
       </x:context>
       <x:expect label=".">
-        <a href="http://www.controversia-et-confessio.de/" class="ref">Controversia
+        <a href="http://www.controversia-et-confessio.de/" class="ref"
+          aria-label="link to an external file">Controversia
            et Confessio</a>
       </x:expect>
     </x:scenario>
@@ -293,7 +294,8 @@
         <ref target="#tei15" xml:id="quoteref6" type="bibl">TEI Consortium 2014, 1.3.2</ref>
       </x:context>
       <x:expect label=".">
-        <a class="ref bibl" href="#tei15" id="quoteref6">TEI Consortium 2014, 1.3.2</a>
+        <a class="ref bibl" href="#tei15" id="quoteref6"
+          aria-label="link to an external file">TEI Consortium 2014, 1.3.2</a>
       </x:expect>
     </x:scenario>
     <x:scenario label="T5.4">
@@ -302,8 +304,10 @@
         <ptr xmlns="http://www.tei-c.org/ns/1.0" type="wdb" target="../xspec-testitem.xml#fragment"/>
       </x:context>
       <x:expect label=".">
-        <a href="view.html?id=xspec-testitem" class="crossRef">Test-TEI for XSpec Unit Testing</a>
-        <a href="view.html?id=xspec-testitem#fragment" class="crossRef">Test-TEI for XSpec Unit Testing</a>
+        <a href="view.html?id=xspec-testitem" class="crossRef"
+          aria-label="link to a place within this file or another file in the framework">Test-TEI for XSpec Unit Testing</a>
+        <a href="view.html?id=xspec-testitem#fragment" class="crossRef"
+          aria-label="link to a place within this file or another file in the framework">Test-TEI for XSpec Unit Testing</a>
       </x:expect>
     </x:scenario>
   </x:scenario>

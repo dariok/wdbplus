@@ -303,7 +303,7 @@
   
   <!-- all kinds of generic pointers and references -->
   <xsl:template match="tei:ptr[not(@type) or @type = 'link']">
-    <a href="{@target}">
+    <a href="{@target}" aria-label="link to an external file">
       <xsl:apply-templates select="@xml:id" />
       <xsl:attribute name="class">
         <xsl:text>ptr</xsl:text>
@@ -317,7 +317,7 @@
     </a>
   </xsl:template>
   <xsl:template match="tei:ref">
-    <a href="{@target}">
+    <a href="{@target}" aria-label="link to an external file">
       <xsl:attribute name="class">
         <xsl:text>ref</xsl:text>
         <xsl:if test="@type">
@@ -336,7 +336,8 @@
     <xsl:variable name="values" select="tokenize(@target, '#')" />
     <xsl:variable name="file" select="document($values[1], .)" />
     
-    <a class="crossRef" href="view.html?id={$file/tei:TEI/@xml:id}{if($values[2]) then '#' || $values[2] else ''}">
+    <a class="crossRef" href="view.html?id={$file/tei:TEI/@xml:id}{if($values[2]) then '#' || $values[2] else ''}"
+      aria-label="link to a place within this file or another file in the framework">
       <xsl:call-template name="linkText">
         <xsl:with-param name="file" select="$file" />
       </xsl:call-template>
