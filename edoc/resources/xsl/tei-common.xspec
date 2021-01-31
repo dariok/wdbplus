@@ -247,6 +247,17 @@
           Boemie Rex.</span>
       </x:expect>
     </x:scenario>
+    <x:scenario label="T4.5: quote">
+      <x:context>
+        <quote xmlns="http://www.tei-c.org/ns/1.0" xml:id="q101">Solchs wil ich, das du fest lerest, auff das die, <hi
+          style="font-style: italic;">so an Gott gleubig seind worden, in eim stand guter wercke funden werden. Solches ist gut vnd nuͤtze den menschen.</hi>
+        </quote>
+      </x:context>
+      <x:expect label=".">
+        <q id="q101">Solchs wil ich, das du fest lerest, auff das die, <span style="font-style: italic;">so an Gott gleubig seind worden, in eim stand guter wercke funden werden. Solches ist gut vnd nuͤtze den menschen.</span>
+        </q>
+      </x:expect>
+    </x:scenario>
   </x:scenario>
   
   <x:scenario label="T5: linking">

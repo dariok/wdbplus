@@ -348,29 +348,17 @@
     <xsl:value-of select="($file//tei:titleStmt/tei:title[@type = 'main'], $file//tei:titleStmt/tei:title[1])[1]"/>
   </xsl:template>
   
-  <!--<!-\- abgekürzt und Vergabe der Anführungszeichen an CSS abgegeben; 2016-05-27 DK -\->
+  <!-- inline quotes -->
   <xsl:template match="tei:quote">
     <q>
-      <xsl:if test="@xml:id">
-        <xsl:attribute name="id">
-                    <xsl:value-of select="@xml:id"/>
-                </xsl:attribute>
-        <xsl:attribute name="class">anchorRef</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@xml:lang">
-        <xsl:choose>
-          <xsl:when test="@xml:lang='grc-Grek'"> 
-            <xsl:attribute name="lang">grc</xsl:attribute>
-          </xsl:when>
-          <xsl:when test="@xml:lang='heb-Hebr'"> 
-            <!-\- angepaßt auf he nach 639-1; 2016-05-23 DK -\->
-            <xsl:attribute name="lang">he</xsl:attribute>
-          </xsl:when>
-        </xsl:choose>
-      </xsl:if>
+      <xsl:apply-templates select="@xml:id" />
+      
       <xsl:apply-templates/>
     </q>
   </xsl:template>
+  
+  <!--
+  
   
   <!-\- in common zusammengefaßt; nur noch wenn @xml:lang; 2016-03-18 DK -\->
   <xsl:template match="tei:seg[@xml:lang]">
