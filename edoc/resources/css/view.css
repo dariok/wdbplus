@@ -3,6 +3,10 @@
  * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
  * sources: https://www.github.com/dariok/wdbplus */
 
+/* changes
+ * 2021-02-01 semantic HTML inside main for release 1.5
+ */
+
 body {
   grid-template-columns: 1fr 1fr;
 }
@@ -15,29 +19,51 @@ body {
                          'left';
     grid-template-rows: max-content;
   }
+  aside {
+    display: none;
+  }
 }
 
 /* Main content below header */
+body > header{
+  padding: 0 0.5%;
+  border-bottom: 0.5px solid lightgrey;
+}
 main {
-  display: flex;
   grid-area: left;
   
   resize: horizontal;
+  overflow-y: auto;
   
-  overflow-y: hidden;
+  padding: 0 0.5%;
 }
 
 /* Content on the left */
-#wdbContent {
-  width: calc(100% - 1.5em);
-  padding-right: .5em;
-  overflow-y: scroll;
-  flex: 0 1 auto;
+main > header, main > footer {
+  background-color: var(--wdb-function-bg);
   
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
+  padding: 0.5%;
+  margin-bottom: 15pt;
 }
+
+/* the actual text content */
+#wdbContent {
+  display: grid;
+  grid-template-areas:
+    'margin main'
+    'annotations annotations';
+  grid-template-columns: 1fr 5fr;
+  
+  padding: 0 0.5%;
+}
+#marginalia_container {
+  grid-area: margin;
+  margin-right: 5%;
+}
+#footnote_container {
+  grid-area: annotations;
+}
+
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
   #wdbContent {
@@ -52,7 +78,7 @@ footer {
   padding: 1em;
   margin-top: 2.5em;
   
-  background-color: #EEE;
+  background-color: var(--wdb-function-bg);
 }
 footer span {
   display: block;
@@ -84,4 +110,11 @@ aside {
 
 #fac {
   height: 100%;
+}
+
+/* footnote links */
+button[aria-label].footnoteNumber {
+  vertical-align: super;
+  font-size: 0.75rem;
+  line-height: 0;
 }

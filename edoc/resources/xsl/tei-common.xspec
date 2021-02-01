@@ -216,7 +216,9 @@
       <x:context xmlns="http://www.tei-c.org/ns/1.0">
         <p>Text before<anchor type="start" xml:id="a1s" /> and after</p>
       </x:context>
-      <x:expect label=".">Text before<a class="anchor start" id="a1s" /> and after</x:expect>
+      <x:expect label=".">
+        <p>Text before<a class="anchor start" id="a1s" /> and after</p>
+      </x:expect>
     </x:scenario>
     <x:scenario label="T4.3: cit">
       <x:context>
@@ -419,6 +421,79 @@
             <td> 5 ₰</td>
           </tr>
         </table>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T7: outline">
+    <x:scenario label="T7.1">
+      <x:context>
+        <TEI xmlns="http://www.tei-c.org/ns/1.0">
+          <facsimile>
+            <surface xml:id="cetc-2-46">
+              <graphic url="test" />
+            </surface>
+          </facsimile>
+          <text>
+            <body>
+              <div>
+                <head>erste Überschrift</head>
+              </div>
+              <div>
+                <pb ed="ed2" facs="#cetc-2-46" n="46"/>
+                <head>Die Autoren/Herausgeber</head>
+                <div>
+                  <head>Die Hamburger Prediger</head>
+                  <p>In allen Drucken sind lediglich pauschal die Hamburger Prediger als Absender</p>
+                  <div>
+                    <head>Johannes Aepin(us)</head>
+                    <p>Er wurde <date when="1499">1499</date> als Sohn des Ratsherrn</p>
+                  </div>
+                  <div>
+                    <head><rs type="person">Joachim Francke</rs><note type="footnote"><rs type="bibl"
+                      >Jensen 72</rs>; <rs type="bibl" ref="#mbw">MBW 12, 80</rs></note>
+                    </head>
+                    <p>Er stammte aus <rs type="place" ref="#stralsund">Stralsund</rs>.</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+          </text>
+        </TEI>
+      </x:context>
+      <x:expect label=".">
+        <article id="wdbContent">
+          <section aria-label="contains the main text, e.g. transcript or introduction">
+            <section>
+              <h2>erste Überschrift</h2>
+            </section>
+            <section>
+              <button aria-label="..." class="pagebreak" id="ped2-46" data-image="test">46</button>
+              <h2>Die Autoren/Herausgeber</h2>
+              <section>
+                <h3>Die Hamburger Prediger</h3>
+                <p>In allen Drucken sind lediglich pauschal die Hamburger Prediger als Absender</p>
+                <section>
+                  <h4>Johannes Aepin(us)</h4>
+                  <p>Er wurde 1499 als Sohn des Ratsherrn</p>
+                </section>
+                <section>
+                  <h4><button class="entity person" data-ref="..." aria-label="...">Joachim Francke</button><button
+                    id="sfootnote1" data-note="footnote1" aria-label="..." class="footnoteNumber">1</button>
+                  </h4>
+                  <p>Er stammte aus <button class="entity place" data-ref="stralsund" aria-label="..."
+                    >Stralsund</button>.</p>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section aria-label="contains full text footnotes for this text" id="footnote_container">
+            <div class="annotation" id="footnote1">
+              <p><button class="entity bibl" data-ref="" aria-label="...">Jensen 72</button>; <button
+                class="entity bibl" data-ref="mbw" aria-label="...">MBW 12, 80</button></p>
+            </div>
+          </section>
+        </article>
       </x:expect>
     </x:scenario>
   </x:scenario>

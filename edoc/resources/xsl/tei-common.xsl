@@ -23,10 +23,18 @@
   <xsl:param name="xsl" />        <!-- path to the main XSLT that imports the current one -->
   
   <!-- The following templates and functions may be overwritten by importing stylesheets in case the a project has
-       different data sources, tag/attribute usage etc.:
+       different data sources, tag/attribute usage, requirements for outline etc.:
        
       ┌───────────────────────────┬────────────────────────────────────────────────────────────────────────────────┐
-      │ template / function       │ change when                                                                    │
+      │ template / function       │ description of usage / change when                                             │
+      ┝━━━━━━━━━━━━━━━━━━━━━━━━━━━┿━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥
+      │ /                         │ a reasonable semantic outline is generated based on the TEI outline:           │
+      │ tei:teiHeader (some info) │ 1) main/header                                                                 │
+      │ tei:text                  │ 2) main/article (general content)                                              │
+      │ tei:body/tei:div          │ 3) main/article/section                                                        │
+      │ footnotes                 │ 4) main/article/aside[1]                                                       │
+      │ marginalia                │ 5) main/article/aside[2]                                                       │
+      │ copyright and tech info   │ 6) main/footer                                                                 │
       ├───────────────────────────┼────────────────────────────────────────────────────────────────────────────────┤
       │ tei:rs/@ref               │ @ref is not of one of these type: 1) '#'{identifier}; 2) {type}':'{identifier} │
       │                           │ 3) resolvable URL                                                              │
@@ -67,6 +75,61 @@
        In case you wish to change any behaviour, you can either
        – copy this file to your project an edit it there;
        – import this stylesheet via xsl:import and overwrite any template you like, especially those mentioned above -->
+  
+  <!-- basic outline is created via templating in templates/layout.html. The following templates create a semantic
+    outline (see above);  requirements may change for different projects or types of texts (e.g. for transcriptions,
+    introductions or journal articles -->
+  <xsl:template match="/">
+    <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="header" />
+    <xsl:apply-templates select="tei:TEI/tei:text" />
+    <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="footer" />
+  </xsl:template>
+  <xsl:template match="tei:teiHeader" mode="header">
+    <header>
+      <xsl:apply-templates select="tei:fileDesc//tei:respStmt" />
+    </header>
+  </xsl:template>
+  <xsl:template match="tei:teiHeader" mode="footer">
+    <footer>
+      <xsl:apply-templates select="tei:fileDesc//tei:publicationStmt" />
+    </footer>
+  </xsl:template>
+  <xsl:template match="tei:text">
+    <article id="wdbContent">
+      <xsl:if test="//tei:note[@place = 'margin']">
+        <section aria-label="contains marginalia of an original text or side notes of a digital text"
+          id="marginalia_container">
+          <xsl:apply-templates select="descendant::tei:note[@place = 'margin']" mode="margin" />
+        </section>
+      </xsl:if>
+      
+      <section aria-label="contains the main text, e.g. transcript or introduction">
+        <xsl:apply-templates />
+      </section>
+      
+      <xsl:if test="//tei:note[@type = ('fn', 'footnote', 'annotation')]">
+        <section aria-label="contains full text footnotes for this text" id="footnote_container">
+          <xsl:apply-templates select="//tei:note[@type = ('fn', 'footnote', 'annotation')]" mode="fnText" />
+        </section>
+      </xsl:if>
+    </article>
+  </xsl:template>
+  <xsl:template match="tei:div">
+    <section>
+      <xsl:apply-templates />
+    </section>
+  </xsl:template>
+  <xsl:template match="tei:div/tei:head">
+    <xsl:variable name="level" select="count(ancestor::*) - 2" />
+    <xsl:element name="h{$level}">
+      <xsl:apply-templates />
+    </xsl:element>
+  </xsl:template>
+  <xsl:template match="tei:p">
+    <p>
+      <xsl:apply-templates />
+    </p>
+  </xsl:template>
   
   <!-- get ID info from tei:rs/@ref; we assume three main types: 1) '#'{identifier}; 2) {type}':'{identifier};
        3) resolvable URL -->
@@ -426,223 +489,6 @@
   <xsl:template match="@cols">
     <xsl:attribute name="colspan" select="." />
   </xsl:template>
-  
-  <!--
-  
-  <!-\- aus intro und transcript ausgelagert; 2016-03-16 DK -\->
-  <!-\- TODO: in rechter div anzeigen! -\->
-  <xsl:template match="tei:ref[@type='biblical']">
-    <a>
-      <xsl:attribute name="href">
-        <xsl:text>javascript:window.open('</xsl:text>
-<!-\-        <xsl:value-of select="$cRef-biblical-start"/>-\->
-        <xsl:value-of select="translate(@cRef,' ,_','+: ')"/>
-<!-\-        <xsl:value-of select="$cRef-biblical-end"/>-\->
-        <xsl:value-of select="@xml:id"/>
-        <xsl:text>', "Zweitfenster", "width=1200, height=450, top=300, left=50").focus();</xsl:text>
-      </xsl:attribute>
-      <!-\-<xsl:choose>
-        <xsl:when test="substring-before(@cRef, ' ') = substring-before(preceding::tei:ref[@type='biblical'][1]/@cRef, ' ')">
-          <xsl:choose>
-            <xsl:when test="ends-with(preceding-sibling::node()[self::text()][1], '.')">
-              <xsl:text>Ebd., </xsl:text>
-              <xsl:analyze-string select="." regex="(\d+[,-]?\d+)">
-                <xsl:matching-substring>
-                  <xsl:value-of select="."/>
-                </xsl:matching-substring>
-              </xsl:analyze-string>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:if test="not(ends-with(preceding-sibling::text()[1], '('))">
-                <xsl:text> </xsl:text>
-              </xsl:if>
-              <xsl:text>ebd., </xsl:text>
-              <xsl:analyze-string select="." regex="(\d+[,-]?\d+)">
-                <xsl:matching-substring>
-                  <xsl:value-of select="."/>
-                </xsl:matching-substring>
-              </xsl:analyze-string>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates />
-        </xsl:otherwise>
-      </xsl:choose>-\->
-      <xsl:apply-templates />
-    </a>
-  </xsl:template>
-  
-  <!-\- neu 2016-05-30 DK -\->
-  <!-\- cRef-Kodierung angepaßt (wird im Sch geprüft); 2016-06-09 DK -\->
-  <xsl:template match="tei:ref[@type='vd16']">
-    <xsl:variable name="link">
-      <xsl:value-of select="concat('http://gateway-bayern.de/VD16+', @cRef)"/>
-    </xsl:variable>
-    <a href="{$link}" target="_blank">
-            <xsl:text>VD16 </xsl:text>
-      <xsl:value-of select="translate(@cRef, '+', ' ')"/>
-        </a>
-  </xsl:template>
-  
-  <xsl:template name="makeLink">
-    <xsl:param name="refXML"/>
-    <xsl:variable name="xsl">
-      <xsl:value-of select="concat('scripts/xslt/tei-', substring-after(substring-before($refXML, '.xml'), '_'), '.xsl')"/>
-    </xsl:variable>
-    <!-\- neu 2016-07-11 DK -\->
-    <xsl:variable name="tXML">
-      <xsl:choose>
-        <xsl:when test="contains($refXML, '#')">
-          <xsl:value-of select="substring-before($refXML, '#')"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$refXML"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <!-\- neu 2016-07-11 DK -\->
-    <xsl:variable name="fragment">
-      <xsl:if test="contains($refXML, '#')">
-        <xsl:value-of select="concat('#', substring-after($refXML, '#'))"/>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="xml">
-      <xsl:choose>
-        <xsl:when test="starts-with($tXML, '../')">
-          <xsl:value-of select="concat('texts/', substring-after($tXML, '../'))"/>
-        </xsl:when>
-        <xsl:when test="not(contains($tXML, '/'))">
-          <xsl:value-of select="concat('texts/', substring-before($tXML, '_'), '/', $tXML)"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$tXML"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <!-\- neu wegen Links auf spätere EE; 2016-07-12 DK -\->
-    <!-\- TODO verallgemeinern entsprechend Überlegungen oben zu ref -\->
-    <!-\- angepaßt für 2. Phase; 2017-10-01 DK -\->
-    <xsl:variable name="tdir">
-      <xsl:choose>
-        <xsl:when test="contains($refXML, '216')">
-          <xsl:text>edoc/ed000216</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>edoc/ed000240</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <!-\- in eXist wird mit ID gearbeitet! 2017-06-20 DK -\->
-    <!-\- vereinfacht und verallgemeinert; 2017-07-09 DK -\->
-    <xsl:variable name="targetID">
-      <!-\-<xsl:choose>
-        <!-\\- gleiche Datei -\\->
-        <xsl:when test="starts-with($refXML, '#')">
-          <xsl:value-of select="/tei:TEI/@xml:id"/>
-        </xsl:when>
-        <!-\\- alle anderen -\\->
-        <xsl:when test="doc-available($refXML)">
-          <xsl:value-of select="doc($refXML)/tei:TEI/@xml:id" />
-        </xsl:when>
-        <xsl:otherwise>
-<!-\\-          <xsl:value-of select="static-base-uri()"/>-\\->
-          <xsl:value-of select="base-uri($refXML)" />
-        </xsl:otherwise>
-      </xsl:choose>-\->
-      <xsl:choose>
-        <xsl:when test="string-length($xml)=0">
-          <xsl:value-of select="/tei:TEI/@xml:id"/>
-        </xsl:when>
-        <xsl:when test="starts-with($xml, 'http:')">
-          <xsl:value-of select="substring-after($xml, 'de')"/>
-        </xsl:when>
-        <xsl:when test="starts-with($refXML, '#')">
-          <xsl:value-of select="/tei:TEI/@n"/>
-        </xsl:when>
-        <xsl:when test="doc-available(concat($baseDir, '/', $xml))">
-          <xsl:value-of select="doc(concat($baseDir, '/', $xml))/tei:TEI/@xml:id"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$refXML"/>
-<!-\-          <xsl:value-of select="document(concat($baseDir, '/', $xml))/tei:TEI/@xml:id"/>-\->
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <!-\- neu im choose; 2016-07-11 DK -\->
-    <!-\- TODO ist es (wegen Zitierbarkeit) besser, auch bei einem lokalen Verweis einen vollen Link zu generieren? -\->
-    <xsl:choose>
-      <xsl:when test="starts-with($refXML, '#')">
-        <xsl:value-of select="$refXML"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="concat($viewURL, '?id=', $targetID, $fragment)"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <!-\- aus transcript ausgelagert; 2016-05-18 DK -\->
-  <!-\- Templates zum Generieren der Fußnotennummern -\->
-  <!-\- [not(tei:corr[@cert='low'])] von tei:choice entfernt, da jetzt nur noch da, wo auch wirklich nötig; 2016-05-18 DK -\->
-  
-  
-  
-  
-  <!-\- neu 2016-05-18 DK -\->
-  <xsl:template name="makeID">
-    <xsl:param name="targetElement"/>
-    <xsl:param name="id"/>
-    
-    <xsl:choose>
-      <xsl:when test="$targetElement">
-        <xsl:choose>
-          <xsl:when test="$targetElement/@xml:id">
-            <xsl:value-of select="$targetElement/@xml:id"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="generate-id($targetElement)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:when test="$id">
-        <xsl:value-of select="$id"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="generate-id()"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template name="footnotes">
-    <xsl:if test="//tei:note[@type = 'footnote']">
-      <div id="FußnotenApparat">
-        <hr class="fnRule"/>
-        <xsl:for-each select="//tei:body//tei:note[@type='footnote']">
-          <xsl:variable name="number">
-            <xsl:call-template name="fnumberFootnotes"/>
-          </xsl:variable>
-          <div class="footnotes" id="fn{$number}">
-            <a href="#tfn{$number}" class="fn_number_app">
-              <xsl:value-of select="$number"/>
-              <xsl:text> </xsl:text>
-            </a>
-            <span class="footnoteText">
-              <xsl:apply-templates select="@xml:id" />
-              <xsl:apply-templates />
-              <xsl:if test="not(matches(., '[.!?]\s*$'))">
-                <xsl:text>.</xsl:text>
-              </xsl:if>
-            </span>
-          </div>
-        </xsl:for-each>
-      </div>
-    </xsl:if>
-  </xsl:template>
-  
-  <!-\- neu 2016-07-012 DK -\->
-  <xsl:template match="tei:ptr" mode="fnText">
-    <xsl:apply-templates select="@target"/>
-  </xsl:template>-->
   
   <!-- pointers to footnotes -->
   <xsl:template match="tei:*" mode="fnLink">
