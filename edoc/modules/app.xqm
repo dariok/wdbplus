@@ -182,8 +182,9 @@ declare function wdb:getServerApp() as xs:string {
 declare
     %templates:wrap
     %templates:default("view", "")
-function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string) as item() {
-  wdb:populateModel($id, $view, $model)
+    %templates:default("p", "")
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item() {
+  wdb:populateModel($id, $view, $model, $p)
 };
 
 (:~
@@ -192,9 +193,13 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : 
  : @param $id the id for the file to be displayed
  : @param $view a string to be passed to the processing XSLT
+ : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
+    wdb:populateModel($id, $view, $model, "")
+};
+declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*), $p as xs:string) as item() {
 try {
   let $pTF := wdb:getFilePath($id)
   let $pathToFile := if (sm:has-access($pTF, "r"))
@@ -232,6 +237,7 @@ try {
     "fileLoc":          $pathToFile,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
+    "p":                $p,
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,
     "projectResources": $resource,
@@ -273,7 +279,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
     {wdb:getProjectFiles($node, $model, 'css')}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
     <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
     <script src="resources/scripts/legal.js"/>

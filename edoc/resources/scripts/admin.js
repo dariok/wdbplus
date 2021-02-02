@@ -9,7 +9,12 @@ $("document").ready(function() {
     $.ajax({
       method: "get",
       url: url,
+      dataType: "json",
       success: function (data) {
+        getPaths(data);
+      },
+      error: function (data) {
+          console.log(data);
       }
     });
     $('#selectTarget').show();
@@ -151,8 +156,9 @@ function dirupload (event) {
       let content = readFile.target.result,
           fileid = 0;
       try {
-        let parsed = $.parseXML(content.substring(content.indexOf("<TEI")));
-        let xml = $(parsed);
+        let parser = new DOMParser(),
+            parsed = parser.parseFromString(content, "application/xml"),
+            xml = $(parsed);
         fileid = xml.find("TEI").attr("xml:id");
       } catch (e) {
         console.log("error parsing XML from " + file.name);
