@@ -68,6 +68,9 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
     </projectMD>
     
     let $collection-uri := xmldb:create-collection($wdb:data, $pColl)
+    let $textCollection := xmldb:create-collection($collection-uri, "texts")
+    let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
+    
     let $saveMetaFile := xmldb:store($collection-uri, "wdbmeta.xml", $contents)
     let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
       then util:eval("xmldb:copy-collection($source, $destination)", false(), (
@@ -80,17 +83,23 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         ))
     
     let $chmod := (
-      sm:chmod(xs:anyURI($collection-uri), 'r-xr-xr-x'),
+      sm:chmod(xs:anyURI($collection-uri), 'rwxrwxr-x'),
+      sm:chmod(xs:anyURI($textCollection), 'rwxrwxr-x'),
+      sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
       sm:chmod(xs:anyURI($saveMetaFile), 'rw-rw-r--'),
       sm:chown(xs:anyURI($collection-uri), "wdb"),
+      sm:chown(xs:anyURI($textCollection), "wdb"),
+      sm:chown(xs:anyURI($resourcesCollection), "wdb"),
       sm:chgrp(xs:anyURI($collection-uri), "wdbusers"),
+      sm:chgrp(xs:anyURI($textCollection), "wdbusers"),
+      sm:chgrp(xs:anyURI($resourcesCollection), "wdbusers"),
       sm:chown(xs:anyURI($saveMetaFile), "wdb"),
       sm:chgrp(xs:anyURI($saveMetaFile), "wdbusers"),
-      sm:chmod(xs:anyURI($collection-uri || "/xsl"), "r-xr-xr-x"),
+      sm:chmod(xs:anyURI($collection-uri || "/xsl"), "rwxrwxr-x"),
       sm:chown(xs:anyURI($collection-uri || "/xsl"), "wdb:wdbusers"),
       for $f in xmldb:get-child-resources($collection-uri || "/xsl")
         return (
-          sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "r-xr-xr-x"),
+          sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "rwxrwxr-x"),
           sm:chown(xs:anyURI($collection-uri || "/xsl/" || $f), "wdb:wdbusers")
         )
     )
