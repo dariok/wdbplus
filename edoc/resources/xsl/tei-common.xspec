@@ -497,4 +497,49 @@
       </x:expect>
     </x:scenario>
   </x:scenario>
+  
+  <x:scenario label="T8: lists">
+    <x:scenario label="T8.1: list with labels">
+      <x:context>
+        <list type="testList" xmlns="http://www.tei-c.org/ns/1.0">
+          <label>label</label>
+          <item>item</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <dl class="testList">
+          <dt>label</dt>
+          <dd>item</dd>
+        </dl>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T8.2: ordered list">
+      <x:context>
+        <list type="testList" rend="numbered" xmlns="http://www.tei-c.org/ns/1.0">
+          <item>item1</item>
+          <item>item2</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <ol class="testList">
+          <li>item1</li>
+          <li>item2</li>
+        </ol>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T8.3: unordered list">
+      <x:context>
+        <list type="testList" xmlns="http://www.tei-c.org/ns/1.0">
+          <item>item1</item>
+          <item>item2</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <ul class="testList">
+          <li>item1</li>
+          <li>item2</li>
+        </ul>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
 </x:description>

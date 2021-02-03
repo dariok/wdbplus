@@ -4,10 +4,9 @@
   exclude-result-prefixes="#all"
   version="3.0">
   
-  <!-- Imports werden über tei-common abgewickelt; 2015/10/23 DK -->
   <xsl:import href="tei-common.xsl"/>
   
-  <!-- Body-Elemente -->
+  <!--<!-\- Body-Elemente -\->
   <xsl:template match="tei:closer[@rendition and not(@rendition = '#inline')] | tei:opener[@rendition and not(@rendition = 'inline')]">
     <div class="closer">
       <p>
@@ -60,7 +59,7 @@
     </span>
   </xsl:template>
   
-  <!-- choice -->
+  <!-\- choice -\->
   <xsl:template match="tei:choice">
     <xsl:apply-templates select="tei:corr" />
   </xsl:template>
@@ -84,50 +83,30 @@
     <xsl:apply-templates/>
   </xsl:template>
   
-  <!-- neu für items mit mehreren Zählungen; 2016-07-18 DK -->
+  <!-\- neu für items mit mehreren Zählungen; 2016-07-18 DK -\->
   <xsl:template match="tei:rdg" mode="fnLink">
     <xsl:call-template name="footnoteLink">
       <xsl:with-param name="type">crit</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
   
-  <!-- Listen -->
-  <!-- überarbeitet 2016-05-31 DK -->
-  <xsl:template match="tei:list[@rend = 'continuous_text']">
-    <xsl:apply-templates select="tei:item" mode="ctext"/>
-  </xsl:template>
-  <xsl:template match="tei:list[not(@rend)]">
-    <dl>
-      <xsl:choose>
-        <xsl:when test="contains(@type, 'flex')">
-          <xsl:attribute name="class">flex</xsl:attribute>
-        </xsl:when>
-        <xsl:when test="contains(@type, 'long')">
-          <xsl:attribute name="class">long</xsl:attribute>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:attribute name="class">flex</xsl:attribute>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:apply-templates select="tei:item | tei:pb | tei:anchor"/>
-    </dl>
-  </xsl:template>
-  <!-- item bei @rend="continuous_text" als Fließtext ausgeben; Korrigendaliste: vor jedes corrigenda-<item> und nach
-    jedem korrelierenden <add @corresp> einen Pfeil als Link zum Springen einfügen (JB 11.12.14) -->
-  <!-- TODO prüfen; es gibt ggf. mehrere Ziele! 2016-05-31 DK -->
+  
+  <!-\- item bei @rend="continuous_text" als Fließtext ausgeben; Korrigendaliste: vor jedes corrigenda-<item> und nach
+    jedem korrelierenden <add @corresp> einen Pfeil als Link zum Springen einfügen (JB 11.12.14) -\->
+  <!-\- TODO prüfen; es gibt ggf. mehrere Ziele! 2016-05-31 DK -\->
   <xsl:template match="tei:item" mode="ctext">
     <xsl:if test="@xml:id[starts-with(., 'corr')]">
-      <!-- Überprüfen, ob im Dokument ein @corresp zur @xml:id vorhanden ist -->
-      <!-- Prüfung ausgenommen; sollte idR immer vorhanden sein; 2016-06-01 DK -->
-      <!--      <xsl:if test="//tei:*[@corresp = substring(current()/@xml:id, 1)]">-->
+      <!-\- Überprüfen, ob im Dokument ein @corresp zur @xml:id vorhanden ist -\->
+      <!-\- Prüfung ausgenommen; sollte idR immer vorhanden sein; 2016-06-01 DK -\->
+      <!-\-      <xsl:if test="//tei:*[@corresp = substring(current()/@xml:id, 1)]">-\->
       <a id="co{@xml:id}" href="#coa{@xml:id}">↑</a>
-      <!--</xsl:if>-->
+      <!-\-</xsl:if>-\->
     </xsl:if>
     <xsl:apply-templates/>
     <xsl:text> </xsl:text>
   </xsl:template>
   
-  <!-- vollständige überarbeitet; Aussehen an PDF angepaßt; 2016-05-31 DK -->
+  <!-\- vollständige überarbeitet; Aussehen an PDF angepaßt; 2016-05-31 DK -\->
   <xsl:template match="tei:item">
     <xsl:apply-templates select="preceding-sibling::tei:label[1]"/>
     <dd id="{@xml:id}">
@@ -157,7 +136,7 @@
         <xsl:when test="string-length(tei:app/tei:lem) &gt; 0      and parent::list/@type = 'inconsistent'">
           <xsl:value-of select="preceding-sibling::tei:label[1]/tei:app/tei:lem"/>
           <xsl:if test="not(substring(preceding-sibling::tei:label[1]/tei:app/tei:lem, string-length(preceding-sibling::tei:label[1]/tei:app/tei:lem) - 1) = '.')">
-            <!--<xsl:text>.</xsl:text>-->
+            <!-\-<xsl:text>.</xsl:text>-\->
           </xsl:if>
         </xsl:when>
         <xsl:otherwise>
@@ -167,7 +146,7 @@
     </dt>
   </xsl:template>
   
-  <!-- Einrücken wie in PDF; erledigt 2017-08-02 DK -->
+  <!-\- Einrücken wie in PDF; erledigt 2017-08-02 DK -\->
   <xsl:template match="tei:lg">
     <p class="lg">
       <xsl:apply-templates select="tei:label"/>
@@ -176,7 +155,7 @@
       </span>
     </p>
   </xsl:template>
-  <!-- neu für Einrückung 2017-08-02 DK -->
+  <!-\- neu für Einrückung 2017-08-02 DK -\->
   <xsl:template match="tei:l">
     <span id="{@xml:id}">
       <xsl:if test="parent::tei:lg/@rend">
@@ -204,8 +183,8 @@
     </label>
     <br/>
   </xsl:template>
-  <!-- neu 2017-06-19 DK -->
-  <!-- nicht in Listen! 2017-09-28 DK -->
+  <!-\- neu 2017-06-19 DK -\->
+  <!-\- nicht in Listen! 2017-09-28 DK -\->
   <xsl:template match="tei:label[not(parent::tei:list)]">
     <h3>
       <xsl:apply-templates/>
@@ -232,14 +211,14 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- titlePage in eigene div; 2017-10-09 DK -->
+  <!-\- titlePage in eigene div; 2017-10-09 DK -\->
   <xsl:template match="tei:titlePage">
     <div class="titlePage">
       <xsl:apply-templates/>
     </div>
   </xsl:template>
-  <!-- neu 2017-07-05 DK -->
-  <!-- Ausrichtung berücksichtigen; karlstadt-issues#60; 2017-10-09 DK -->
+  <!-\- neu 2017-07-05 DK -\->
+  <!-\- Ausrichtung berücksichtigen; karlstadt-issues#60; 2017-10-09 DK -\->
   <xsl:template match="tei:titlePart | tei:docAuthor">
     <p class="title" id="{@xml:id}">
       <xsl:choose>
@@ -280,17 +259,17 @@
       <xsl:otherwise>
         <i>
           <xsl:text>von </xsl:text>
-          <!-- TODO auf IDs anpassen Vgl. #46" -->
+          <!-\- TODO auf IDs anpassen Vgl. #46" -\->
           <xsl:value-of select="normalize-space(@hand || @resp)"/>
           <xsl:text>s Hand</xsl:text>
         </i>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  <!-- Fussnoten und Zubehör -->
-  <!-- Bestandteile im Fließtext -->
-  <!-- a/@name → a/@id; Variable mit Link entfernt für Eindeutigkeit; 2016-03-18 DK -->
-  <!-- angepaßt auf neue Variante rs; 2016-05-19 DK -->
+  <!-\- Fussnoten und Zubehör -\->
+  <!-\- Bestandteile im Fließtext -\->
+  <!-\- a/@name → a/@id; Variable mit Link entfernt für Eindeutigkeit; 2016-03-18 DK -\->
+  <!-\- angepaßt auf neue Variante rs; 2016-05-19 DK -\->
   <xsl:template match="tei:add[not(parent::tei:rdg)]">
     <xsl:variable name="number">
       <xsl:call-template name="fnumberKrit"/>
@@ -306,7 +285,7 @@
         <span id="tcrit{$number}"/>
       </xsl:when>
       <xsl:when test="child::tei:note[@type = 'comment']">
-        <!--<xsl:value-of select="text()"/>-->
+        <!-\-<xsl:value-of select="text()"/>-\->
         <span id="tcrit{$number}">
           <xsl:apply-templates select="node()[not(self::tei:note)]"/>
         </span>
@@ -333,7 +312,7 @@
         <xsl:call-template name="fnumberKrit"/>
       </xsl:variable>
       <xsl:if test="contains(tei:lem, ' ') and not(ancestor::tei:rs)">
-        <!-- lokale Erstellung ersetzt; 2016-05-18 DK -->
+        <!-\- lokale Erstellung ersetzt; 2016-05-18 DK -\->
         <xsl:call-template name="footnoteLink">
           <xsl:with-param name="position">a</xsl:with-param>
           <xsl:with-param name="type">crit</xsl:with-param>
@@ -343,7 +322,7 @@
         <xsl:apply-templates select="tei:lem"/>
       </span>
     </xsl:if>
-    <!-- lokale Erstellung ersetzt; 2016-05-18 DK -->
+    <!-\- lokale Erstellung ersetzt; 2016-05-18 DK -\->
     <xsl:if test="not(ancestor::tei:rs)">
       <xsl:call-template name="footnoteLink">
         <xsl:with-param name="type">crit</xsl:with-param>
@@ -361,10 +340,10 @@
     <xsl:apply-templates select="tei:rdg"/>
   </xsl:template>
   
-  <!-- doppeltes FN-Zeichen nur, wenn der Text von corr selbst Spatien enthält; 2014-09-19 DK -->
-  <!-- a/@name → a/@id; 2016-03-15 DK -->
-  <!-- Link aus Variable ausgelagert wegen Eindeutigkeit der ID; 2016-03-17 DK -->
-  <!-- überarbeitet für die Ausgabe von Links innerhalb rs; 2016-05-18 DK -->
+  <!-\- doppeltes FN-Zeichen nur, wenn der Text von corr selbst Spatien enthält; 2014-09-19 DK -\->
+  <!-\- a/@name → a/@id; 2016-03-15 DK -\->
+  <!-\- Link aus Variable ausgelagert wegen Eindeutigkeit der ID; 2016-03-17 DK -\->
+  <!-\- überarbeitet für die Ausgabe von Links innerhalb rs; 2016-05-18 DK -\->
   <xsl:template match="tei:corr[not(@type = 'corrigenda')]">
     <xsl:variable name="number">
       <xsl:call-template name="fnumberKrit"/>
@@ -475,8 +454,8 @@
     </i>
   </xsl:template>
   
-  <!-- Kritische Fußnoten -->
-  <!-- angepaßt für neue Ausgabe rs; 2016-05-19 DK -->
+  <!-\- Kritische Fußnoten -\->
+  <!-\- angepaßt für neue Ausgabe rs; 2016-05-19 DK -\->
   <xsl:template match="tei:note[@type = 'crit_app']">
     <xsl:if test="not(ancestor::tei:rs)">
       <xsl:choose>
@@ -495,7 +474,7 @@
       </xsl:choose>
     </xsl:if>
   </xsl:template>
-  <!-- neu 2016-07-11 DK -->
+  <!-\- neu 2016-07-11 DK -\->
   <xsl:template match="tei:note[@type = 'crit_app']" mode="fn">
     <i>
       <xsl:apply-templates/>
@@ -633,7 +612,7 @@
         <xsl:text>von anderer Hand</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <!-- TODO anpassen für #46 -->
+        <!-\- TODO anpassen für #46 -\->
         <xsl:text>von </xsl:text>
         <xsl:value-of select="normalize-space()"/>
       </xsl:otherwise>
@@ -642,7 +621,7 @@
   </xsl:template>
   
   <xsl:template match="@source">
-    <!-- TODO anpassen für #46 -->
+    <!-\- TODO anpassen für #46 -\->
     <xsl:text>in </xsl:text>
     <xsl:value-of select="normalize-space()"/>
     <xsl:text> </xsl:text>
@@ -657,4 +636,5 @@
     </xsl:choose>
     <xsl:text> </xsl:text>
   </xsl:template>
+-->
 </xsl:stylesheet>

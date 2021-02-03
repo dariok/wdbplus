@@ -490,6 +490,50 @@
     <xsl:attribute name="colspan" select="." />
   </xsl:template>
   
+  <!-- lists -->
+  <!-- definition list: list with labels -->
+  <xsl:template match="tei:list[tei:label]">
+    <dl>
+      <xsl:if test="@type">
+        <xsl:attribute name="class" select="@type" />
+      </xsl:if>
+      
+      <xsl:apply-templates />
+    </dl>
+  </xsl:template>
+  <!-- ordered/numbered list -->
+  <xsl:template match="tei:list[@rend = ('ordered', 'numbered')]">
+    <ol>
+      <xsl:if test="@type">
+        <xsl:attribute name="class" select="@type" />
+      </xsl:if>
+      
+      <xsl:apply-templates />
+    </ol>
+  </xsl:template>
+  <!-- general list -->
+  <xsl:template match="tei:list[not(tei:label or @rend = ('ordered', 'numbered'))]">
+    <ul>
+      <xsl:if test="@type">
+        <xsl:attribute name="class" select="@type" />
+      </xsl:if>
+      
+      <xsl:apply-templates />
+    </ul>
+  </xsl:template>
+  <!-- items -->
+  <xsl:template match="tei:item">
+    <xsl:element name="{if(preceding-sibling::tei:label or following-sibling::tei:label) then 'dd' else 'li'}">
+      <xsl:apply-templates />
+    </xsl:element>
+  </xsl:template>
+  <!-- label in a list -->
+  <xsl:template match="tei:list/tei:label">
+    <dt>
+      <xsl:apply-templates />
+    </dt>
+  </xsl:template>
+  
   <!-- pointers to footnotes -->
   <xsl:template match="tei:*" mode="fnLink">
     <xsl:param name="type" select="@type" />
