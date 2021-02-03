@@ -90,13 +90,13 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     <meta name="ed" content="{$model("id")}" />
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")}</title>
-    <link rel="stylesheet" type="text/css" href="resources/css/wdb.css"/>
-    <link rel="stylesheet" type="text/css" href="resources/css/function.css"/>
+    <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>
+    <link rel="stylesheet" type="text/css" href="./$shared/css/function.css"/>
     {local:get('css', $model("pathToEd"), $model)}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
-    <script src="resources/scripts/js.cookie.js"/>
-    <script src="resources/scripts/legal.js"/>
-    <script src="resources/scripts/function.js"/>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
+    <script src="./$shared/scripts/js.cookie.js"/>
+    <script src="./$shared/scripts/legal.js"/>
+    <script src=",/$shared/scripts/function.js"/>
     {local:get('js', $model("pathToEd"), $model)}
   </head>
 };

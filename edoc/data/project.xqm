@@ -25,8 +25,3 @@ declare function wdbPF:getHeader ( $model as map(*) ) as node()* {
 declare function wdbPF:getImages ($id as xs:string, $page as xs:string) as xs:string {
   "none"
 };
-
-declare function wdbPF:getStart ($model as map(*)) {
-	transform:transform(doc($wdb:data||'/resources/start.xml'), doc($wdb:data||'/resources/start.xsl'), ()),
-	wdb:getFooter($wdb:data||'/resources/start.xml', $wdb:data||'/resources/start.xsl')
-};
