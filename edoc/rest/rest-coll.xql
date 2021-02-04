@@ -186,7 +186,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
       let $targetPath := $collectionPath || '/' || xstring:substring-before-last($path, '/')
       
       (: all this to make sure we really have an ID in the file :)
-      let $prepped := wdbRi:replaceWs($parsed?file?body)
+      let $prepped := wdbRMi:replaceWs($parsed?file?body)
       let $contents := if ((contains($contentType, "text/xml") or contains($contentType, "application/xml"))
           and not($prepped instance of element() or $prepped instance of document-node()))
         then parse-xml($prepped)
@@ -222,10 +222,10 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         )
       else
         (: store $prepped, not $contents as parse-xml() adds prefixes :)
-        let $store := wdbRi:store($targetPath, $resourceName, $prepped, $contentType)
+        let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType)
         let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-          then wdbRi:enterMetaXML($store[2])
-          else wdbRi:enterMeta($store[2])
+          then wdbRMi:enterMetaXML($store[2])
+          else wdbRMi:enterMeta($store[2])
         return if ($store[1]//http:response/@status = "200"
             and $meta[1]//http:response/@status = "200")
         then
