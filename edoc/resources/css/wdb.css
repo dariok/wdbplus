@@ -129,25 +129,26 @@ nav h2 {
 }
 nav ul {
   margin: 0;
-  padding-left: 10px;
+  padding-left: 0px;
   list-style-type: none;
 }
 
 nav li ul {
   margin-left: 1.25em;
 }
-nav h2 {
-  width: 100%;
-  text-align: center;
-}
-nav ul {
-  margin: 0;
-  padding-left: 10px;
-  list-style-type: none;
+
+nav a {
+  font-family: sans-serif;
 }
 
-nav li ul {
-  margin-left: 1.25em;
+nav button {
+  appearance: auto;
+  border: none;
+  background-color: white;
+  padding: 0;
+  font-size: 1rem;
+  color: #098AB2;
+  cursor: pointer;
 }
 
 @media screen and (max-width: 768px) {

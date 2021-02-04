@@ -11,7 +11,7 @@
     </main>
     <aside id="wdbRight">
       <div id="annotationDialog" style="display: none;" title="Annotationen">
-	<h1>Annotationstools</h1>
+        <h1>Annotationstools</h1>
         <p style="text-align: center;">
           <i id="annText"></i> (<span id="annFrom"></span>
           <span id="annTo"></span>)</p>
@@ -48,7 +48,7 @@
           <div id="annotationTab2">
             <form id="la">
               <h2>Layout anpassen</h2>
-	      <label for="layout">Spezifische Anmerkungen zum Layout dieser Stelle</label>
+              <label for="layout">Spezifische Anmerkungen zum Layout dieser Stelle</label>
               <select id="layout">
                 <option value="noindent">linksbündig ohne Einrückung („noindent“)</option>
                 <option value="indent">linksbündig, alle Zeilen eingezogen („indent“)</option>
@@ -61,10 +61,13 @@
           <div id="annotationTab3">
             <form id="ea">
               <h2>Entitäten markieren und identifizieren</h2>
-	      <label for="type">Auszeichnen und identifizieren von Personen, Orten, Sachen</label>
+              <label for="type">Auszeichnen und identifizieren von Personen, Orten, Sachen</label>
               <select id="type">
-                <option value="person">Person</option>
-                <option value="place">Ort</option>
+                <option value="per">Person</option>
+                <option value="pla">Ort</option>
+                <option value="bib">Bibliographie</option>
+                <option value="org">Körperschaft</option>
+                <option value="evt">Ereignis</option>
               </select>
               <select id="search-entity" style="width: 80%"></select>
               <input type="submit" formaction="javascript:identifyEntity();" />
@@ -95,12 +98,12 @@
                   Korrekturen als Volltextanmerkung hinterlegen.</label>
               </fieldset>
               <fieldset id="tComb" name="tComb" style="display: none;">
-		<p>Zusammenziehen: </p>
+                <p>Zusammenziehen: </p>
                 <input name="combine" type="submit" formaction="javascript:combineWord();" />
               </fieldset>
               <fieldset id="tSplit" name="tSplit" style="display: none;">
                 <label for="split">trennen: </label>
-		<input type="text" id="split" />
+                <input type="text" id="split" />
                 <input type="submit" formaction="javascript:splitWord();" />
               </fieldset>
             </form>

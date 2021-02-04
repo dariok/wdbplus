@@ -7,11 +7,26 @@ const wdbAdmin = {
       method: "get",
       url: url,
       cache: false,
-      success: function ( data ) {
-        let result = $('<div/>').append( data ).find( '#data' ).html(); 
-        $( '#rightSide' ).html( result ); 
+      dataType: "json",
+      success: function (data) {
+        getPaths(data);
+        $("input[type='submit']").prop("disabled", false);
+        $("aside").html("");
+      },
+      error: function (response) {
+        console.log(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + params["id"] + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
+    $('#selectTarget').show();
+  },
+  
+  getPaths: function ( data ) {
+    if (data.hasOwnProperty("path"))
+      $('#selectTarget select').append("<option>" + data["path"] + "</option>");
+    if (data.hasOwnProperty("collection"))
+      if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
+      else $('#selectTarget select').append("<option>" + data.collection["path"] + "</option>");
   },
 
   // show info for a file
