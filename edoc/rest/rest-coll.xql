@@ -2,11 +2,12 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace json    = "http://www.json.org";
-import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace compression = "http://exist-db.org/xquery/compression" at "java:org.exist.xquery.modules.compression.CompressionModule";
+import module namespace console     = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace json        = "http://www.json.org";
+import module namespace wdbRi       = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace wdb         = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace xstring     = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -181,6 +182,28 @@ declare
     %rest:produces("application/xml")
 function wdbRc:getCollectionsXML () {
   wdbRc:getCollections("application/xml")
+};
+
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/full/{$id}.zip")
+  %output:method("binary")
+function wdb:getResourcesZip ($id as xs:string) {
+  let $meta := collection($wdb:data)/id($id)[self::meta:projectMD]
+  let $base := substring-before(base-uri($meta), 'wdbmeta')
+  
+  return if ($meta = "")
+  then <rest:response>
+    <http:response status="404"/>
+      </rest:response>
+  else (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="Content-Type" value="application/zip" />
+      </http:response>
+    </rest:response>,
+    compression:zip(xs:anyURI($base), true())
+  )
 };
 
 (: resources within a collection :)
