@@ -1,187 +1,267 @@
-var rest = $("meta[name='rest']").attr("content");
-var files;
+/* globals wdb */
+/* jshint browser: true */
+/* globals wdb */
 
-$("document").ready(function() {
-  if (params['id'] !== undefined)
-  {
-    let delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
-    let url = rest + delim + "collection/" + params["id"] + "/collections.json";
+const wdbAdmin = {
+  displayRight: function ( url ) {
     $.ajax({
       method: "get",
       url: url,
+      cache: false,
       dataType: "json",
       success: function (data) {
-        getPaths(data);
+        this.getPaths(data);
+        $("input[type='submit']").prop("disabled", false);
+        $("aside").html("");
       },
-      error: function (data) {
-          console.log(data);
+      error: function (response) {
+        console.log(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+      }
+    });
+    $('#selectTarget').show();
+  },
+  
+  getPaths: function ( data ) {
+    if (data.hasOwnProperty("path"))
+      $('#selectTarget select').append("<option>" + data.path + "</option>");
+    if (data.hasOwnProperty("collection"))
+      if (data.collection instanceof Array) data.collection.forEach(function(coll) { this.getPaths(coll); });
+      else $('#selectTarget select').append("<option>" + data.collection.path + "</option>");
+  },
+
+  // show info for a file
+  showFile: function ( ed, file ) {
+    let url = 'projects.html?ed=' + ed + '&file=' + file;
+    this.displayRight(url);
+  },
+
+  // execute a job and show results
+  showJob: function ( job, file ) {
+    let url = 'projects.html?job=' + job + '&file=' + file;
+    this.displayRight ( url );
+  },
+
+  /* actual upload */
+  doUpload: async function (method, url, headers, formdata, item) {
+    return $.ajax({
+      method: method,
+      url: url,
+      headers: headers,
+      data: formdata,
+      contentType: false,
+      processData: false,
+      success: function (response, textStatus) {
+        $(item).children("span")[0].innerText = "✓";
+        $(item).append('<span class="success">' + textStatus + '</span>');
+      },
+      error: function (response) {
+        $(item).children("span")[0].innerText = "✕";
+        $(item).append('<span class="error">Error: ' + response.status + "</span>");
+        console.error("error " + method.toUpperCase() + "ing to " + url, response);
+      }
+    });
+  },
+
+  uploadFiles: function ( collectionContent ) {
+    $('p img').show();
+    
+    for (let i = 0; i < this.files.length; i++) {
+      let reader = new FileReader(),
+          file = this.files[i],
+          listItem = $('#results').children()[i];
+      
+      /* jshint loopfunc: true*/
+      reader.onload = async function ( readFile ) {
+        $(listItem).children("span")[0].innerText = "…";
+        let fileContent = readFile.target.result,
+            parser = new DOMParser(),
+            parsed;
+        
+        // try to parse as XML (for now, we only handle XML files here)
+        try {
+          parsed = parser.parseFromString(fileContent, "application/xml");
+        } catch (e) {
+          wdbAdmin.reportProblem("error parsing XML from " + file.name, e, listItem);
+          return false;
+        }
+
+        // try to find an ID for the XML file
+        let xml = $(parsed),
+            fileID = xml.find("TEI").attr("xml:id");
+        
+        if (fileID === undefined || fileID == "") {
+          wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, listItem);
+          return false;
+        }
+
+        console.log("parsed file’s ID: " + fileID);
+
+        let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+
+        let formdata = new FormData(),
+            mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
+
+        formdata.append("file", file);
+        formdata.append("filename", file.webkitRelativePath);
+          
+        try {
+          if (collectionContent.hasOwnProperty(fileID)) {
+            $(listItem).children("span")[0].innerText = "……";
+            //wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
+            uploadManager.queueRequest(["put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem]);
+          } else {
+            $(listItem).children("span")[0].innerText = "……";
+            //wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
+            uploadManager.queueRequest(["post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem]);
+          }
+        } catch (e) {
+          wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
+          return false;
+        }
+      };
+      /* jshint loopfunc: false */
+
+      reader.readAsText(file, "UTF-8");
+    }
+    $('p img').hide();
+  },
+
+  /* usually used internally to signal errors */
+  reportProblem: function ( message, problem, listItem ) {
+    console.error(message, problem);
+    $(listItem).children("span")[0].innerText = "✕";
+    $(listItem).append('<span class="error">' + message + '</span>');
+  },
+
+  files: {},
+  setFiles: function ( fileList ) {
+    this.files = fileList;
+    
+    $('#results').children().remove();
+    for (let file of fileList) {
+      let task = $('#selectTask input:checked').attr("id"),
+          filePath = task == "fi" ? file.name : file.webkitRelativePath;
+      
+      $('#results').append("<li>" + filePath + "<span></span></li>");
+    }
+
+    $("input[type='submit']").prop("disabled", false);
+  }
+};
+//Object.freeze(wdbAdmin);
+
+/* event listeners */
+$(document).on("change", "#picker", function() {
+  wdbAdmin.setFiles(this.files);
+});
+
+// limit the number of concurrent PUT/POST requests to avoid lockups in eXist
+let uploadManager = (function() {
+  const MAX_REQUESTS = 1;           // local test: produces Jetty errors (“blocking message ...”) for 2 or more...
+  let queue = [],
+      activeRequests = 0;
+  
+  function queueRequest( request ) {
+    queue.push(request);
+    checkQueue();
+  }
+  
+  function requestComplete () {
+    activeRequests--;
+    checkQueue();
+  }
+
+  function checkQueue() {
+    if (queue.length && activeRequests < MAX_REQUESTS) {
+      let request = queue.shift();
+      if (!request) {
+        return;
+      }
+      
+      activeRequests++;
+      
+      console.log("queuing " + request[0]);
+      wdbAdmin.doUpload(request[0], request[1], request[2], request[3], request[4])
+        .then(function () {
+          requestComplete();
+        })
+        .catch(function( ) {
+          requestComplete();
+        });
+    }
+  }
+
+  return {
+    queueRequest: queueRequest,
+  };
+})();
+
+$(function() {
+  if (wdb.parameters.ed !== undefined) {
+    let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
+    $.ajax({
+      method: "get",
+      url: url,
+      success: function () {
+        $("input[type='submit']").prop("disabled", false);
+        $("aside").html("");
+      },
+      error: function (response) {
+        console.error(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
     $('#selectTarget').show();
   }
 });
-function getPaths (data) {
-  if (data.hasOwnProperty("@path"))
-    $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
-  if (data.hasOwnProperty("collection"))
-    if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-    else $('#selectTarget select').append("<option>" + data.collection["@path"] + "</option>");
-}
 
-function show ( ed, file ) {
-  url = 'projects.html?ed=' + ed + '&file=' + file;
-  rightSide ( url );
-}
+// dirupload() is called by the form’s formaction handler
+$('form').on("submit", dirupload);
+async function dirupload ( event ) {
+  event.preventDefault();
 
-function job ( job, file ) {
-  url = 'projects.html?job=' + job + '&file=' + file;
-  rightSide ( url );
-}
-
-function rightSide ( url ) {  
-  html = $.ajax({ 
-      url: url, 
-      cache: false, 
-      success: function ( data ) {  
-          var result = $('<div/>').append( data ).find( '#data' ).html(); 
-          $( '#rightSide' ).html( result ); 
-        } 
-    }); 
-}
-
-$('#picker').on("submit", dirupload);
-$(document).on("change", "#picker", function() {
-  $('#results').children().remove();
-  let dir = $(this).attr('webkitdirectory');
-  files = this.files;
+  // try to determine whether a file with that ID already exists in the target collection
+  /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
+   * a 409 will be returned upon POST or PUT */
+  let collectionContent,
+      delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
   
-  for (let i = 0; i < files.length; i++) {
-    let path = $('#selectTask input:checked').attr("id") == "fi" ? files[i].name : files[i].webkitRelativePath;
-    $('#results').append("<li>" + path + "<span></span></li>");
-  }
-});
-
-async function sendData (file, i, fileid, headers) {
-  try {
-    let task = $('#selectTask input:checked').attr("id"),
-        type = (task == "fi") ? file.name.substr(file.name.length - 3) : file.webkitRelativePath.substring(file.webkitRelativePath.length - 3),
-        content = (type == 'xml' || type == 'xsl') ? "application/xml" : "application/octet-stream",
-        item = $('#results').children()[i],
-        text = (task == "fi") ? file.name : item.innerText,
-        collection = $('#selectTarget select').val() !== undefined ? $('#selectTarget select').val() : params['collection'],
-        delim = (rest.substr(rest.length - 1)) == '/' ? "" : "/",
-        pathToEd = $('#selectTarget').find('option')[0].innerHTML,
-        edRoot = pathToEd.substr(pathToEd.lastIndexOf('/') + 1),
-        relpath = task == "fi"
-          ? collection.substr(pathToEd.length + 1) + '/' + text
-          : text.substr(0, edRoot.length) == edRoot
-            ? text.substr(edRoot.length + 1)
-            : collection.substr(collection.indexOf('/' + edRoot) + edRoot.length + 1) + '/' + text,
-        mode = task == "do" ? "" : "?meta=1";
-    
-    console.log("fileid: " + fileid);
-    if (fileid !== "undefined" && fileid !== 0) {
-      let formdata = new FormData();
-      formdata.append("file", file);
-      formdata.append("filename", relpath);
-      formdata.append("targetCollection", collection)
-      
-      $.ajax({
-        method: "get",
-        url: rest + delim + "resource/" + fileid,
-        success: function (response, textStatus, xhr) {
-          if (xhr.status == 200) {
-            $(item).children("span")[0].innerText = "…";
-            doUpload("put", rest + delim + "resource/" + fileid, headers, formdata, item, text);
-          } else {
-            console.log(response);
-            $(item).children("span").innerText = "✕";
-            $(item).children("span").attr("title", "Unexpected return code: " + xhr.status);
-          }
-        },
-        error: function (response) {
-          if (response.status == 404) {
-            $(item).children("span")[0].innerText = "…";
-            doUpload("post", rest + delim + "collection/" + params["id"], headers, formdata, item, text);
-          } else {
-            console.log(response);
-            $(item).children("span")[0].innerText = "✕";
-            $(item).children("span").attr("title", "Unexpected return code: " + response.status);
-          }
-        }
-      });
-    }
-  } catch (e) {
-    console.log(e);
-    console.log(e.stack);
-  }
-}
-async function doUpload(method, url, headers, formdata, item, text) {
-  $.ajax({
-    method: method,
-    url: url,
-    headers: headers,
-    data: formdata,
-    contentType: false,
-    processData: false,
-    success: function (response, textStatus, xhr) {
-      $(item).children("span")[0].innerText = "✓";
-      $(item).append('<span class="success">' + textStatus + '</span>');
+  await $.ajax({
+    method: "get",
+    dataType: "json",
+    url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
+    success: function ( data ) {
+      collectionContent = data;
     },
-    error: function (response) {
-      $(item).children("span")[0].innerText = "✕";
-      $(item).append('<span class="error">Error: ' + response.status + "</span>");
+    error: function ( response ) {
+      wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
+      collectionContent = false;
     }
   });
-}
 
-function dirupload (event) {
-  event.preventDefault();
-  $('p img').show();
-  
-  let cred = Cookies.get("wdbplus");
-  let headers = (typeof cred !== "undefined" && cred.length != 0)
-    ? {"Authorization": "Basic " + cred}
-    : "";
-  
-  for (let i = 0; i < files.length; i++) {
-    let file = files[i],
-        item = $('#results').children()[i],
-        text = item.innerText;
-    console.log("processing " + file.name);
-    
-    let reader = new FileReader();
-    reader.onload = function(readFile) {
-      $(item).children("span").innerText = "…";
-      let content = readFile.target.result,
-          fileid = 0;
-      try {
-        let parser = new DOMParser(),
-            parsed = parser.parseFromString(content, "application/xml"),
-            xml = $(parsed);
-        fileid = xml.find("TEI").attr("xml:id");
-      } catch (e) {
-        console.log("error parsing XML from " + file.name);
-        console.log(e);
-        item.innerText = text.substring(0, text.length) + "✕ Parser Error ";
-      }
-      
-      if (fileid !== undefined && fileid !== 0) {
-        console.log("parsed file’s ID: " + fileid);
-        sendData(file, i, fileid, headers);
-      } else {
-        console.log("no @xml:id found in " + file.name);
-        item.innerText = text.substring(0, text.length) + "✕ No xml:id found ";
-      }
-    };
-    reader.readAsText(file, "UTF-8");
+  if (collectionContent === false || collectionContent === undefined) {
+    return false;
   }
-  
-  $('p img').hide();
+
+  let contents = {};
+  for (let content of collectionContent.resources) {
+    contents[content["@id"]] = content["@label"];
+  }
+
+  wdbAdmin.uploadFiles(contents);
 }
 
+// ingestAction() is called by the fieldset’s change handler
+$('#selectTask').on("change", ingestAction);
 function ingestAction(event) {
-  if(event.target.id == "fi") { $('#picker').attr('webkitdirectory', null); }
-  else { $('#picker').attr('webkitdirectory', 'true'); }
+  if(event.target.id == "fi") {
+    $('#picker').attr('webkitdirectory', null);
+    $('#selectInputDir label').text("Datei auswählen");
+  }
+  else {
+    $('#picker').attr('webkitdirectory', 'true');
+    $('#selectInputDir label').text("Verzeichnis auswählen");
+  }
 }
-

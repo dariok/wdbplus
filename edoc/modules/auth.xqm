@@ -12,7 +12,7 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
   if ($current = 'guest' or $model?res = 'logout') then
     <span id="auth">
      <a href="javascript: void(0);" onclick="javascript:$('#login').toggle();">Login: </a>
-     <form enctype="multipart/form-data" method="post" id="login" style="display: none;" action="#">
+     <form enctype="multipart/form-data" method="post" id="login" style="display: none;" onsubmit="wdb.login(this, event)">
        <input type="text" id="user"/>
        <input type="password" id="password"/>
        <input type="submit"/>

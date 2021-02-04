@@ -12,6 +12,15 @@ import module namespace xstring   = "https://github.com/dariok/XStringUtils"   a
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
+(:~
+ : populate the model for functions pages (similar but not identical to wdb:populateModel)
+ : 
+ : @param $ed The ID of a _project_
+ : @param $id The ID of a _resource_
+ : @param $p  A string or a JSON-like string containing additional query parameters
+ : @param $q  The main query parameter
+ : @return    The model
+ :)
 declare
     %templates:default("q", "")
     %templates:default("p", "")
@@ -85,7 +94,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>
     <link rel="stylesheet" type="text/css" href="./$shared/css/function.css"/>
     {local:get('css', $model("pathToEd"), $model)}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
     <script src="./$shared/scripts/function.js"/>
