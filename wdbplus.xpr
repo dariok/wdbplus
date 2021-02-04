@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="21.1">
+<project>
     <meta>
         <filters directoryPatterns="" filePatterns="\Qwdbplus.xpr\E" positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized version="21.1" xml:space="preserve">
+            <serialized xml:space="preserve">
                 <serializableOrderedMap>
                     <entry>
                         <String>validation.scenario.associations</String>
                         <scenarioAssociation-array>
                             <scenarioAssociation>
                                 <field name="url">
-                                    <String>edoc/rest/rest-files.xql</String>
+                                    <String>edoc/rest/rest-coll.xql</String>
                                 </field>
                                 <field name="scenarioIds">
                                     <list>
-                                        <String>localhost</String>
+                                        <String>XQuery (ULB)</String>
                                     </list>
                                 </field>
                                 <field name="scenarioTypes">
@@ -22,19 +22,9 @@
                                         <String>Validation_scenario</String>
                                     </list>
                                 </field>
-                            </scenarioAssociation>
-                            <scenarioAssociation>
-                                <field name="url">
-                                    <String>edoc/rest/ingest.xqm</String>
-                                </field>
-                                <field name="scenarioIds">
+                                <field name="scenarioStorageLocations">
                                     <list>
-                                        <String>localhost</String>
-                                    </list>
-                                </field>
-                                <field name="scenarioTypes">
-                                    <list>
-                                        <String>Validation_scenario</String>
+                                        <Byte>2</Byte>
                                     </list>
                                 </field>
                             </scenarioAssociation>
@@ -60,7 +50,7 @@
                                             <field name="validationEngine">
                                                 <validationEngine>
                                                     <field name="engineType">
-                                                        <String>Saxon-PE XQuery</String>
+                                                        <String>eXist-db exist3.ulb.tu-darmstadt.de</String>
                                                     </field>
                                                     <field name="allowsAutomaticValidation">
                                                         <Boolean>true</Boolean>
@@ -83,7 +73,7 @@
                                     <String>Validation_scenario</String>
                                 </field>
                                 <field name="name">
-                                    <String>localhost</String>
+                                    <String>XQuery (ULB)</String>
                                 </field>
                             </validationScenario>
                         </validationScenario-array>
