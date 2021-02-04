@@ -47,6 +47,7 @@ body {
 }
 
 a{
+  overflow-wrap: anywhere;
   color: var(--wdb-link-colour);
   text-decoration: none;
 }
