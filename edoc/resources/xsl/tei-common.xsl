@@ -103,7 +103,7 @@
         </section>
       </xsl:if>
       
-      <section aria-label="contains the main text, e.g. transcript or introduction">
+      <section aria-label="contains the main text, e.g. transcript or introduction" id="content_container">
         <xsl:apply-templates />
       </section>
       
