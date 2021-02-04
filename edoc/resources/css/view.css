@@ -52,9 +52,12 @@ main > header, main > footer {
   grid-template-areas:
     'margin main'
     'annotations annotations';
-  grid-template-columns: 1fr 5fr;
+  grid-template-columns: fit-content(200px) 1fr;
   
   padding: 0 0.5%;
+}
+#content_container {
+  grid-area: main;
 }
 #marginalia_container {
   grid-area: margin;
