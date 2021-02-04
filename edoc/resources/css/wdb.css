@@ -6,6 +6,7 @@
 /* changes
  * 2019-06-06 Move to a grid-based layout
  * 2019-09-13 use CSS custom properties to make responsive styling easier
+ * 2021-02-01 some additions for release 1.5
  */
 
 /* declare a global custom property to determine the width of the browser window
@@ -13,6 +14,10 @@
 /*@env {
   --mobile-width: 768px;
 }*/
+:root {
+  --wdb-link-colour: #098AB2;
+  --wdb-function-bg: lightgrey;
+}
 
 @font-face {
   font-family: 'mufi';
@@ -42,7 +47,7 @@ body {
 }
 
 a{
-  color: #098AB2;
+  color: var(--wdb-link-colour);
   text-decoration: none;
 }
 
@@ -157,6 +162,7 @@ button[aria-label] {
   font-size: 1rem;
   font-family: 'mufi';
   cursor: pointer;
+  color: var(--wdb-link-colour);
 }
 
 @media screen and (max-width: 768px) {
