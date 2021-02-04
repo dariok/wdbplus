@@ -137,7 +137,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
         if ($id != "")
         then
           let $computedModel := wdb:populateModel($id, "", map {})
-          return local:get($computedModel, "")
+          return wdbErr:get($computedModel, "")
         else "Keine ID zur Auswertung vorhanden"
       }
     </dl>
@@ -156,7 +156,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
   </div>
   <div>
     <h2>$model (from function.xqm)</h2>
-    { local:get($model, "") }
+    { wdbErr:get($model, "") }
   </div>
 </div>
 };
@@ -700,18 +700,6 @@ declare function local:val($test, $seqStruct, $type) {
     else 0
   
   return $vS + $vID
-};
-
-(: format a map’s content (identical to error.xqm) :)
-declare function local:get($map as map(*), $prefix as xs:string) {
-  for $key in map:keys($map)
-    let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
-    return try {
-      local:get($map($key), $pr)
-    } catch * {
-      let $value := try { xs:string($map($key)) } catch * { "err" }
-      return <p><b>{$pr}: </b> {$value}</p>
-    }
 };
 
 (: we need a lookup function for the templating system to work :)

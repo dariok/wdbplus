@@ -2,9 +2,10 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace console   = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace templates ="http://exist-db.org/xquery/templates"   at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
@@ -77,7 +78,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
     <hr />
     <div class="info" role="contentinfo">
       <h2>Projekt-Info</h2>
-      {wdb:get($model, "")}
+      { wdbErr:get($model, "") }
     </div>
   </aside>
 };
