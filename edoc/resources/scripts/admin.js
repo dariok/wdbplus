@@ -1,5 +1,6 @@
 /* globals wdb */
 /* jshint browser: true */
+/* globals wdb */
 
 const wdbAdmin = {
   displayRight: function ( url ) {
@@ -9,13 +10,13 @@ const wdbAdmin = {
       cache: false,
       dataType: "json",
       success: function (data) {
-        getPaths(data);
+        this.getPaths(data);
         $("input[type='submit']").prop("disabled", false);
         $("aside").html("");
       },
       error: function (response) {
         console.log(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + params["id"] + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+        $("aside").html("<p>Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
     $('#selectTarget').show();
@@ -23,10 +24,10 @@ const wdbAdmin = {
   
   getPaths: function ( data ) {
     if (data.hasOwnProperty("path"))
-      $('#selectTarget select').append("<option>" + data["path"] + "</option>");
+      $('#selectTarget select').append("<option>" + data.path + "</option>");
     if (data.hasOwnProperty("collection"))
-      if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-      else $('#selectTarget select').append("<option>" + data.collection["path"] + "</option>");
+      if (data.collection instanceof Array) data.collection.forEach(function(coll) { this.getPaths(coll); });
+      else $('#selectTarget select').append("<option>" + data.collection.path + "</option>");
   },
 
   // show info for a file
