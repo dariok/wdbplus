@@ -42,7 +42,7 @@ try {
       normalize-space($p)
     }
   
-  if ( contains(request:get-uri(), 'addins') )
+  return if ( contains(request:get-uri(), 'addins') )
     then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
       let $path := $wdb:edocBaseDB || "/addins/" || $addinName
@@ -56,7 +56,7 @@ try {
     else
       let $projectPath := wdb:getProjectPathFromId($projectId)
       let $projectFile := wdb:findProjectXQM($projectPath)
-      let $infoFileLoc := wdb:getMetaFile($projectPath
+      let $infoFileLoc := wdb:getMetaFile($projectPath)
       
       return map {
         "title": (doc($infoFileLoc)//*:title)[1]/text(),
