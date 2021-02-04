@@ -1,120 +1,180 @@
-/* wdbPlus: CSS for view.html
- * created: 2019-04-04
- * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
- * sources: https://www.github.com/dariok/wdbplus */
+/* wdbPlus: basic element layout – used by all pages
+ * created: 2019-03-07
+ * creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ * sources: https://github.com/dariok/wdbplus */
 
 /* changes
- * 2021-02-01 semantic HTML inside main for release 1.5
+ * 2019-06-06 Move to a grid-based layout
+ * 2019-09-13 use CSS custom properties to make responsive styling easier
  */
 
+/* declare a global custom property to determine the width of the browser window
+ * below which we start using a mobile friendly design */
+/*@env {
+  --mobile-width: 768px;
+}*/
+
+@font-face {
+  font-family: 'mufi';
+  src: url('Junicode.woff') format('woff');
+}
+
+/* Main layout: wide header, rest below, each scrolling on its own */
+html {
+  height: 100vh;
+}
+
 body {
-  grid-template-columns: 1fr 1fr;
-}
-
-/* hide right side on small broser windows, e.g. mobile */
-@media screen and (max-width: 768px) {
-  body {
-    grid-template-columns: none;
-    grid-template-areas: 'header'
-                         'left';
-    grid-template-rows: max-content;
-  }
-  aside {
-    display: none;
-  }
-}
-
-/* Main content below header */
-body > header{
-  padding: 0 0.5%;
-  border-bottom: 0.5px solid lightgrey;
-}
-main {
-  grid-area: left;
+  margin: 0;
+  height: 100vh;
   
-  resize: horizontal;
-  overflow-y: auto;
+  overflow: hidden;
   
-  padding: 0 0.5%;
-}
-
-/* Content on the left */
-main > header, main > footer {
-  background-color: var(--wdb-function-bg);
+  font-family: mufi;
+  font-size: 1rem;
+  line-height: 1.4rem;
   
-  padding: 0.5%;
-  margin-bottom: 15pt;
-}
-
-/* the actual text content */
-#wdbContent {
   display: grid;
-  grid-template-areas:
-    'margin main'
-    'annotations annotations';
-  grid-template-columns: 1fr 5fr;
+  grid-template-areas: 'header header'
+                       'left right'
+                       'bottom bottom';
+  grid-template-rows: max-content;
+}
+
+a{
+  color: #098AB2;
+  text-decoration: none;
+}
+
+/* Content of the header */
+header {
+  background-color: white;
   
-  padding: 0 0.5%;
-}
-#marginalia_container {
-  grid-area: margin;
-  margin-right: 5%;
-}
-#footnote_container {
-  grid-area: annotations;
+  grid-area: header;
 }
 
-/* no showHide, so full width on small screens */
-@media screen and (max-width: 768px) {
-  #wdbContent {
-    width: 100%;
-  }
-}
-
-footer {
-  display: block;
-  flex: 1 1 auto;
+header h1 {
+  font-size: 1.1em;
+  text-align: center;
+  letter-spacing: 0.09em;
   
-  padding: 1em;
-  margin-top: 2.5em;
+  color: #900129;
   
-  background-color: var(--wdb-function-bg);
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
 }
-footer span {
-  display: block;
-}
-
-/* Show/hide bar */
-/* This one is necessary for at least basic resizing as long as CSS resize property is not supported
- * by Edge and many versions of gnawed-at fruit crap */
-#wdbShowHide {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  margin-top: 0;
-  padding-top: 45vh;
-  width: 0.5em;
-}
-/* do not display on small screens */
-@media screen and (max-width: 768px) {
-  #wdbShowHide {
-    display: none;
-  }
-}
-
-/* right side */
-aside {
-  grid-area: right;
+header h2 {
+  letter-spacing: 0.3em;
+  font-size: 1em;
+  font-weight: normal;
   
-  overflow: initial;
+  padding: 0;
+  margin: 0;
+  
+  display: inline-block;
 }
 
-#fac {
+/* spans within header */
+span.dispOpts {
+  float: right;
+  
+  line-height: 1.4rem;
+  font-family: sans-serif;
+}
+.dispOpts:before {
+  content: ' [';
+}
+.dispOpts:after {
+  content: ']';
+}
+
+/* animation during AJAX requests 
+ * Taken from @Sampson, https://stackoverflow.com/questions/1964839/how-can-i-create-a-please-wait-loading-animation-using-jquery
+ * Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.loadingModal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
   height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, .8) url('../FhHRx.gif') 50% 50% no-repeat;
 }
 
-/* footnote links */
-button[aria-label].footnoteNumber {
-  vertical-align: super;
-  font-size: 0.75rem;
-  line-height: 0;
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .loadingModal {
+  display: block;
+}
+
+/* Navigation */
+nav {
+  background-color: white;
+  border: 0.1px solid;
+  padding: .5em;
+  overflow-y: auto;
+  position: fixed;
+  z-index: 99;
+  max-height: 75%;
+}
+
+nav h2 {
+  width: 100%;
+  text-align: center;
+}
+nav ul {
+  margin: 0;
+  padding-left: 10px;
+  list-style-type: none;
+}
+
+nav li ul {
+  margin-left: 1.25em;
+}
+nav h2 {
+  width: 100%;
+  text-align: center;
+}
+nav ul {
+  margin: 0;
+  padding-left: 10px;
+  list-style-type: none;
+}
+
+nav li ul {
+  margin-left: 1.25em;
+}
+
+button[aria-label] {
+  border: none;
+  background-color: white;
+  padding: 0;
+  font-size: 1rem;
+  font-family: 'mufi';
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  header {
+    padding: 0 1%;
+  }
+  h1 {
+    font-size: 1.1em;
+  }
+  h2 {
+    font-size: 1.0em;
+  }
+  aside p, main p {
+    font-size: 0.9em;
+  }
+  header span {
+    padding-bottom: 0;
+    line-height: 1.2em;
+    font-size: 0.9em;
+  }
 }
