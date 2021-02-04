@@ -10,7 +10,7 @@ import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   a
 import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"  at "start.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
-declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)
@@ -25,54 +25,55 @@ declare
     %templates:default("q", "")
     %templates:default("p", "")
     %templates:default("id", "")
-    %templates:default("ed", "")
-function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
-try {
-  (: assume a function for the whole instance if no $ed is explicitly stated :)
-  let $projectID := if ($ed = "")
-    then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-    else $ed
-  
-  (: if $p is not JSON-like, assume it is a normal string :)
-  let $pp := try {
-      parse-json($p)
-    } catch * {
-      normalize-space($p)
-    }
-  
-  let $projectId := if ($ed != "")
-    then $ed
-    else wdb:getEdFromFileId ($id)
-  
-  let $projectPath := wdb:getProjectPathFromId($projectId)
-  let $projectFile := wdb:findProjectXQM($projectPath)
-  let $infoFileLoc := wdb:getMetaFile($projectPath)
-  
-  return map {
-    "title": (doc($infoFileLoc)//*:title)[1]/text(),
-    "p": $pp,
-    "q": $q,
-    "id": $id,
-    "ed": $projectId,
-    "pathToEd": $projectPath,
-    "infoFileLoc": $infoFileLoc,
-    "projectFile": $projectFile,
-    "projectResources": substring-before($projectFile, "project.xqm") || "resources/"
+function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) {
+  try {
+    if ( contains(request:get-uri(), 'addins') )
+      then
+        let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
+        let $path := $wdb:edocBaseDB || "/addins/" || $addinName
+        
+        return map {
+          "pathToEd": $path,
+          "id":       $id,
+          "job":      $q,
+          "auth":     sm:id()/sm:id
+        }
+      else
+        let $pid := if ($id = "")
+          then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
+          else $id
+        
+        let $map := wdb:populateModel($pid, "", $model)
+        let $pp := try {
+          parse-json($p)
+        } catch * {
+          normalize-space($p)
+        }
+        let $mmap := map {
+          "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
+          "p":     $pp,
+          "q":     $q,
+          "id":    $pid,
+          "auth":  sm:id()/sm:id
+        }
+        
+        return if ($map instance of map(*))
+          then map:merge(($map, $mmap))
+          else $map (: if it is an element, this usually means that populateModel has returned an error :)
+  } catch * {
+    wdbErr:error(map {
+      "code":        "wdbErr:wdb3001",
+      "model":       $model,
+      "id":          $id,
+      "p":           $p,
+      "q":           $q,
+      "wdb:data":    $wdb:data,
+      "errC":        $err:code,
+      "errA":        $err:additional,
+      "errM":        $err:description,
+      "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
+    })
   }
-} catch * {
-  wdbErr:error(map {
-    "code":  "wdbErr:wdb3001",
-    "model":       $model,
-    "id":          $id,
-    "p":           $p,
-    "q":           $q,
-    "wdb:data":    $wdb:data,
-    "errC":        $err:code,
-    "errA":        $err:additional,
-    "errM":        $err:description,
-    "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
-  })
-}
 };
 
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
@@ -96,7 +97,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
-    <script src=",/$shared/scripts/function.js"/>
+    <script src="./$shared/scripts/function.js"/>
     {local:get('js', $model("pathToEd"), $model)}
   </head>
 };
@@ -130,6 +131,7 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
   let $file := xstring:substring-after-last(request:get-url(), '/')
   let $name := substring-before($file, '.html')
   let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  
   return switch($type)
     case "css" return
       let $fun := if (util:binary-doc-available($model?projectResources || 'projectFunction.css'))
@@ -141,7 +143,10 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
       let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.css'))
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model("projectResources"))}/{$unam}.css" />
         else()
-      return ($fun, $gen, $pro)
+      let $add := if ( util:binary-doc-available($edPath || "/addin.css") )
+        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($edPath)}/addin.css" />
+        else()
+      return ($fun, $gen, $pro, $add)
     case "js" return
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/scripts/' || $name || '.js'))
         then <script src="resources/scripts/{$name}.js" />
@@ -149,7 +154,10 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
       let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.js'))
         then <script src="{wdb:getUrl($model("projectResources"))}/{$unam}.js" />
         else()
-      return ($gen, $pro)
+      let $add := if ( util:binary-doc-available($edPath || "/addin.js") )
+        then <script src="{wdb:getUrl($edPath)}/addin.js" />
+        else()
+      return ($gen, $pro, $add)
     default return <meta name="specFile" value="{$name}" />
 };
 

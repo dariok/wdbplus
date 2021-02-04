@@ -23,6 +23,8 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdb1001" return "An error occurred while applying the transformation."
     case "wdbErr:wdb2001" return "Module not found."
     case "wdbErr:wdb2002" return "Error executing wdbq:query($map as map(*))"
+    case "wdbErr:wdb2101" return "Module not found for addin."
+    case "wdbErr:wdb2102" return "Error executing wdbadd:main($map as map(*))"
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 

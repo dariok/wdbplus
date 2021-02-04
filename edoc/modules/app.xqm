@@ -751,7 +751,22 @@ declare function wdb:parseMultipart ( $data, $header ) {
         else if (starts-with(normalize-space($tbody), "<?xml"))
         then substring-after($tbody, "?>")
         else $tbody
-      return if ($body = "") then ()
+      
+      return if ($body = "")
+        then ()
+        else if (contains($body, ','))
+        then (: body contains type, encoding, etc :)
+          let $prologue := substring-before(substring-after($body, ':'), ',')
+          let $additional := tokenize($prologue, ';')
+          return map:entry (
+            $header?Content-Disposition?name,
+            map {
+              "header": $header,
+              "mime": $additional[1],
+              "encoding": $additional[2],
+              "body": substring-after($body, ',')
+            }
+          )
         else map:entry ( 
           $header?Content-Disposition?name,
           map {
@@ -772,6 +787,7 @@ declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace a
     case "gif" return "image/gif"
     case "png" return "image/png"
     case "json" return "application/json"
+    case "zip" return "application/zip"
     case "xml" return
       if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
     case "xsl" return "application/xslt+xml"
