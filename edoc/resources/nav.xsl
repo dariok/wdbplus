@@ -5,48 +5,47 @@
 	<xsl:param name="id"/>
 	
 	<xsl:template match="/">
+		<nav>
+			<xsl:apply-templates />
+		</nav>
+	</xsl:template>
+	
+	<xsl:template match="meta:struct[not(parent::*)]">
+		<h2>
+			<xsl:value-of select="@label"/>
+		</h2>
 		<ul>
-			<xsl:apply-templates select="meta:struct/*"/>
+			<xsl:apply-templates/>
 		</ul>
 	</xsl:template>
 	
-	<xsl:template match="meta:struct[descendant::meta:view]">
-		<xsl:variable name="file" select="translate((@file, parent::*/@file, @label)[1], ' .', '_')"/>
-		<xsl:variable name="visible" select="descendant::meta:struct[@file = $id] or @file = $id"/>
-		<li id="{$file}">
-			<a href="javascript: void(0);" onclick="switchnav('{generate-id()}', this);" id="a{generate-id()}">
-				<xsl:choose>
-					<xsl:when test="$visible">↑</xsl:when>
-					<xsl:otherwise>→</xsl:otherwise>
-				</xsl:choose>
-			</a>
-			<xsl:text> </xsl:text>
-			<a>
-				<xsl:choose>
-					<xsl:when test="@file">
-						<xsl:attribute name="href" select="'start.html?ed=' || @file"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:attribute name="href">javascript: void(0);</xsl:attribute>
-						<xsl:attribute name="onclick">
-							<xsl:text>switchnav('</xsl:text>
-							<xsl:value-of select="generate-id()" />
-							<xsl:text>', $('#a</xsl:text>
-							<xsl:value-of select="generate-id()"/>
-							<xsl:text>'));</xsl:text>
-						</xsl:attribute>
-					</xsl:otherwise>
-				</xsl:choose>
+	<xsl:template match="meta:struct[@file]">
+		<li id="{generate-id()}">
+			<button title="Navigation einblenden" type="button" onclick="loadNavigation(rest + 'collection/{@file}/nav.html', '{generate-id()}', this)">
 				<xsl:value-of select="@label"/>
-			</a>
-			<xsl:if test="meta:struct or meta:view">
-				<ul id="{generate-id()}">
-					<xsl:if test="not($visible)">
-						<xsl:attribute name="style">display: none;</xsl:attribute>
-					</xsl:if>
-					<xsl:apply-templates/>
-				</ul>
-			</xsl:if>
+			</button>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="meta:struct[@ed and parent::*]">
+		<li id="{generate-id()}">
+			<button title="Navigation einblenden" type="button" onclick="$('#{generate-id()}').children('ul').toggle();">
+				<xsl:value-of select="@label"/>
+			</button>
+			<ul>
+				<xsl:apply-templates select="meta:struct"/>
+			</ul>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="meta:struct[not(@file or @ed)]">
+		<li>
+			<button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
+				<xsl:value-of select="@label"/>
+			</button>
+			<ul id="{generate-id()}" style="display: none;">
+				<xsl:apply-templates/>
+			</ul>
 		</li>
 	</xsl:template>
 	

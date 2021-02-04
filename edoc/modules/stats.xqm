@@ -41,24 +41,23 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
           else ()
         }
       </tr>
-      {(
-        for $mets in $editionsM
-          let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
-          let $metsFile := document-uri(root($mets))
-          let $id := $mets/@OBJID
-          order by $metsFile
-          return
-            <tr>
-              <td>(M) {$id}</td>
-              <td><a href="{$wdb:edocBaseURL || '/start.html?ed=' || $id}">{normalize-space($name)}</a></td>
-              {if ($admin = true()) then
-              (  
-                <td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
-                <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
-              )
-              else ()
-              }
-            </tr>,
+      {(for $mets in $editionsM
+        let $name := $mets/mets:dmdSec[1]/mets:mdWrap[1]/mets:xmlData[1]/mods:mods[1]/mods:titleInfo[1]/mods:title[1]
+        let $metsFile := document-uri(root($mets))
+        let $id := wdb:getEdPath($metsFile)
+        order by $id
+        return
+        <tr>
+          <td>(M) {$id}</td>
+          <td><a href="start.html?ed={$mets/@xml:id}">{normalize-space($name)}</a></td>
+          {if ($admin = true()) then
+          (  
+            <td style="padding-right: 5px;"><a href="{wdb:getUrl($metsFile)}">{$metsFile}</a></td>,
+            <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
+          )
+          else ()
+          }
+        </tr>,
         for $w in $editionsW
           let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
           let $metaFile := document-uri(root($w))
@@ -69,10 +68,10 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
           return
             <tr>
               <td>{$id}</td>
-              <td style="padding-left: {$padding}em;"><a href="{$wdb:edocBaseURL || '/start.html?ed=' || $id}">{normalize-space($name)}</a></td>
+              <td style="padding-left: {$padding}em;"><a href="start.html?ed={$w/@xml:id'}">{normalize-space($name)}</a></td>
               {if ($admin = true()) then ( 
                 <td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-                <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$id}">verwalten</a></td>
+                <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$w/@xml:id}">verwalten</a></td>
               )
               else ()
               }

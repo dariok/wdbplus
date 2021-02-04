@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdbusers_object">
+    <title>wdbUsers object</title>
+    <shortdesc>reference to the wdbUsers object containing scripts that can be overridden by projects</shortdesc>
+    <refbody>
+        <properties>
+            <property>
+                <proptype>footnoteMouseIn(element)</proptype>
+                <propdesc>what to do when hovering over a reference to a footnote</propdesc>
+            </property>
+            <property>
+                <proptype>footnoteMouseOut(element)</proptype>
+                <propdesc>what to do when moving the mouse out of a footnote reference</propdesc>
+            </property>
+            <property>
+                <proptype>displayImage(element)</proptype>
+                <proptype>how (and where) to load an image (including an example how to use openseadragon)</proptype>
+            </property>
+        </properties>
+    </refbody>
+</reference>
