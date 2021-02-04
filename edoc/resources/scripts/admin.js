@@ -12,20 +12,23 @@ $("document").ready(function() {
       dataType: "json",
       success: function (data) {
         getPaths(data);
+        $("input[type='submit']").prop("disabled", false);
+        $("aside").html("");
       },
-      error: function (data) {
-          console.log(data);
+      error: function (response) {
+        console.log(response);
+        $("aside").html("<p>Kein Projekt mit der ID " + params["id"] + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
       }
     });
     $('#selectTarget').show();
   }
 });
 function getPaths (data) {
-  if (data.hasOwnProperty("@path"))
-    $('#selectTarget select').append("<option>" + data["@path"] + "</option>");
+  if (data.hasOwnProperty("path"))
+    $('#selectTarget select').append("<option>" + data["path"] + "</option>");
   if (data.hasOwnProperty("collection"))
     if (data.collection instanceof Array) data["collection"].forEach(function(coll) { getPaths(coll); });
-    else $('#selectTarget select').append("<option>" + data.collection["@path"] + "</option>");
+    else $('#selectTarget select').append("<option>" + data.collection["path"] + "</option>");
 }
 
 function show ( ed, file ) {

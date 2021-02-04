@@ -8,8 +8,8 @@
   </target>
   
   <target name="compile" depends="clean">
-    <ant dir="edoc" antfile="build.xml" />
-    <move file="edoc/build" todir="." />
+	  <ant dir="edoc" antfile="build.xml" />
+	  <move file="edoc/build" tofile="build" />
   </target>
   
   <target name="docker" depends="compile">
