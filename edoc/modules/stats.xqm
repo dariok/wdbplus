@@ -19,12 +19,14 @@ function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
 };
 
 declare function wdbs:projectList($admin as xs:boolean, $ed) {
-  let $project := if ($ed = '')
-    then $wdb:data
-    else $wdb:data || '/' || $ed
+  let $pathToEd := if ($ed = "") then
+      $wdb:data
+    else try {
+      wdb:getEdPath($ed, true())
+    } catch * {()}
   
-  let $editionsM := collection($project)//mets:mets
-  let $editionsW := collection($project)//wdbmeta:projectMD
+  let $editionsM := collection($pathToEd)//mets:mets
+  let $editionsW := collection($pathToEd)//wdbmeta:projectMD
   
   return
     <table>
@@ -59,9 +61,10 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
         for $w in $editionsW
           let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
           let $metaFile := document-uri(root($w))
-          let $id := substring-before(substring-after($metaFile, $wdb:edocBaseDB), 'wdbmeta')
-          let $padding := count(tokenize($id, '/')) + 0.2
-          order by $id
+          let $id := $w/@xml:id
+          let $pa := substring-before(substring-after($metaFile, $wdb:data), "/wdbmeta.xml")
+          let $padding := count(tokenize($pa, '/')) + 0.2
+          order by $pa
           return
             <tr>
               <td>{$id}</td>

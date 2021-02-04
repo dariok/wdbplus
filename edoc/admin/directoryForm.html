@@ -4,18 +4,19 @@
     <fieldset id="selectTask" onchange="ingestAction(event);">
       <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta (restore)</input>
       <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta (ingest)</input>
-      <input type="radio" name="task" id="fi">Einzeldatei mit Eintragen in wdbmeta</input>
+      <input type="radio" name="task" id="fi" checked="checked">Einzeldatei mit Eintragen in wdbmeta</input>
     </fieldset>
     <fieldset id="selectTarget">
       <label>Zielcollection auswählen: </label>
-      <select name="target"/>
+      <select name="target"></select>
     </fieldset>
     <fieldset id="selectInputDir">
-      <label>Verzeichnis auswählen: </label>
-      <input type="file" id="picker" name="fileList" webkitdirectory="true"/>
+      <label>Datei auswählen: </label>
+      <input type="file" id="picker" name="fileList" />
     </fieldset>
     <input type="submit" disabled="disabled" />
   </form>
+  <p class="status" style="padding: 1em 0;">Ausgewähltes Quellverzeichnis: <i></i></p>
   <p>
     <img src="../resources/FhHRx.gif" style="display: none;" alt="loading"/>
   </p>

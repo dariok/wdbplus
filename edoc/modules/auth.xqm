@@ -10,18 +10,18 @@ declare function wdba:getAuth($node as node(), $model as map(*)) {
 	
   return
   if ($current = 'guest' or $model?res = 'logout') then
-    <span id="auth">
-     <a href="javascript: void(0);" onclick="javascript:$('#login').toggle();">Login: </a>
-     <form enctype="multipart/form-data" method="post" id="login" style="display: none;" onsubmit="wdb.login(this, event)">
-       <input type="text" id="user"/>
-       <input type="password" id="password"/>
-       <input type="submit"/>
-       <input type="hidden" name="query" value="{request:get-parameter('query', '')}"/>
-       <input type="hidden" name="ed" value="{request:get-parameter('ed', '')}"/>
-     </form>
-    </span>
+    <div id="auth" role="dialog" aria-roledescription="login dialog">
+      <button type="button" onclick="javascript:$('#login').toggle();">Login: </button>
+      <form enctype="multipart/form-data" id="login" style="display: none;">
+        <input type="text" id="user"/>
+        <input type="password" id="password"/>
+        <input type="submit"/>
+        <input type="hidden" name="query" value="{request:get-parameter('query', '')}"/>
+        <input type="hidden" name="ed" value="{request:get-parameter('ed', '')}"/>
+      </form>
+    </div>
   else
-    <span id="auth">
+    <div id="auth" role="dialog" aria-roledescription="logout dialog">
       User: <a id="logout" alt="Click to logout" href="javascript: void(0);" onclick="javascript:doLogout()">{$current}</a>
-    </span>
+    </div>
 };

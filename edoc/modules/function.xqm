@@ -25,41 +25,51 @@ declare
     %templates:default("q", "")
     %templates:default("p", "")
     %templates:default("id", "")
-function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) {
-  try {
-    if ( contains(request:get-uri(), 'addins') )
-      then
-        let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
-        let $path := $wdb:edocBaseDB || "/addins/" || $addinName
-        
-        return map {
-          "pathToEd": $path,
-          "id":       $id,
-          "job":      $q,
-          "auth":     sm:id()/sm:id
-        }
-      else
-        let $pid := if ($id = "")
-          then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-          else $id
-        
-        let $map := wdb:populateModel($pid, "", $model)
-        let $pp := try {
-          parse-json($p)
-        } catch * {
-          normalize-space($p)
-        }
-        let $mmap := map {
-          "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
-          "p":     $pp,
-          "q":     $q,
-          "id":    $pid,
-          "auth":  sm:id()/sm:id
-        }
-        
-        return if ($map instance of map(*))
-          then map:merge(($map, $mmap))
-          else $map (: if it is an element, this usually means that populateModel has returned an error :)
+    %templates:default("ed", "")
+function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
+try {
+  (: assume a function for the whole instance if no $ed is explicitly stated :)
+  let $projectID := if ($ed != "")
+    then $ed
+    else if ($id != "")
+    then wdb:getEdFromFileId ($id)
+    else normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
+  
+  (: if $p is not JSON-like, assume it is a normal string :)
+  let $pp := try {
+      parse-json($p)
+    } catch * {
+      normalize-space($p)
+    }
+  
+  if ( contains(request:get-uri(), 'addins') )
+    then
+      let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
+      let $path := $wdb:edocBaseDB || "/addins/" || $addinName
+      
+      return map {
+        "pathToEd": $path,
+        "id":       $id,
+        "job":      $q,
+        "auth":     sm:id()/sm:id
+      }
+    else
+      let $projectPath := wdb:getProjectPathFromId($projectId)
+      let $projectFile := wdb:findProjectXQM($projectPath)
+      let $infoFileLoc := wdb:getMetaFile($projectPath
+      
+      return map {
+        "title": (doc($infoFileLoc)//*:title)[1]/text(),
+        "p":                $pp,
+        "q":                $q,
+        "id":               $id,
+        "ed":               $projectId,
+        "pathToEd":         $projectPath,
+        "infoFileLoc":      $infoFileLoc,
+        "projectFile":      $projectFile,
+        "projectResources": substring-before($projectFile, "project.xqm") || "resources/",
+        "auth":             sm:id()/sm:id
+      }
   } catch * {
     wdbErr:error(map {
       "code":        "wdbErr:wdb3001",

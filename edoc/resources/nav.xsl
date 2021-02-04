@@ -1,6 +1,6 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" exclude-result-prefixes="#all" version="3.0">
 	
-	<xsl:output method="html"/>
+	<xsl:output indent="1" method="html"/>
 	
 	<xsl:param name="id"/>
 	
@@ -55,6 +55,10 @@
 				<xsl:value-of select="@label"/>
 			</a>
 		</li>
+	</xsl:template>
+	
+	<xsl:template match="text()">
+		<xsl:value-of select="normalize-space()"/>
 	</xsl:template>
 	
 	<xsl:template match="*:user"/>

@@ -252,7 +252,8 @@ declare
 function wdbRc:getCollections ($mt as xs:string*) {
   local:getGeneral ("data", $mt,
     'for $s in $meta//meta:struct[@file] return
-      <collection id="{$s/@file}" label="{$s/@label}" />')
+      <collection id="{$s/@file}" label="{$s/@label}" />'
+  )
 };
 declare
     %rest:GET
@@ -304,11 +305,12 @@ declare
     %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-local:getGeneral ($id, $mt,
-  'for $s in $meta//meta:view return
-    <resources id="{$s/@file}" label="{$s/@label}" />'
-)
+  local:getGeneral ($id, $mt,
+    'for $s in $meta//meta:view return
+      <resources id="{$s/@file}" label="{$s/@label}" />'
+  )
 };
+
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.xml")
@@ -395,6 +397,10 @@ declare
 function wdbRc:getCollectionNavHTML ($id as xs:string) {
   let $pathToEd := wdb:getProjectPathFromId($id)
   let $mf := wdb:getMetaFile($pathToEd)
+  let $params :=
+    <parameters>
+      <param name="id" value="{$id}"/>
+    </parameters>
   
   let $html := try {
     if(ends-with($mf, 'wdbmeta.xml'))
@@ -405,9 +411,9 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
           then xs:anyURI($pathToEd || '/nav.xsl')
           else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
         let $struct := wdbRc:getCollectionNavXML($id)
-        return transform:transform($struct, doc($xsl), ())
+        return transform:transform($struct, doc($xsl), $params)
       else
-        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), ())
+        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), $params)
   } catch * {
     <p>Error transforming meta data file {$mf} to navigation using
       {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
