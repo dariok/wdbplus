@@ -3,13 +3,19 @@
   <body>
     <header data-template="wdb:getHeader"></header>
     <main>
-      <div class="loadingModal"></div>
+      <!-- standard XSLT replaces this with an html:article to make it role clearer -->
       <div id="wdbContent" data-template="wdb:getContent"></div>
+      <!-- stuck with this workaround as gnawed fruit mobile doesn’t support CSS resize -->
       <div id="wdbShowHide">
         <a href="javascript:toggleRightside();" title="linke Seite breiter">»</a>
       </div>
     </main>
     <aside id="wdbRight">
+      <div class="loadingModal">
+        <img src="resources/FhHRx.gif" alt="loading" />
+      </div>
+      <!-- stuck with this un-semantic solution as neither gnawed fruit nor firesucks support the standard – who think
+        about removing it due to lack of support -->
       <div id="annotationDialog" style="display: none;" title="Annotationen">
         <h1>Annotationstools</h1>
         <p style="text-align: center;">

@@ -595,3 +595,149 @@ $(document).bind({
 	ajaxStart: function() { $("body").addClass("loading"); },
 	ajaxStop: function() { $("body").removeClass("loading"); }
 });
+
+
+/* These additions must be integrated into the proper places when merging refactor-javascript into developlment */
+const wdbUser = {
+  // load entity data
+  showEntityData: function ( event ) {
+    let entityID = event.target.dataset.ref,
+        url = "entity.html?id=" + entityID;
+    
+    $.ajax({
+      method:  "get",
+      url:     url,
+      success: function ( data ) {
+        wdbDocument.showDataRight(data);
+      },
+      error: function (xhr, status, error) {
+        wdb.logError(xhr, status, error, "Error loading entity data from " + url);
+      }
+    });
+  },
+  
+  displayImage: function ( url ) {
+    // default: show image in an iframe
+    wdbDocument.displayImageRight(url);
+    
+    // example: show image in viewer
+    // wdbDocument.displayImageViewer(url, viewer);
+  },
+  
+  // what to do when the mouse enters a footnote pointer
+  footnoteMouseIn: function ( event ) {
+    event.preventDefault();
+    
+    let peer = event.target.dataset.note;
+    
+    // example: show info text in a float
+    //wdbDocument.showInfoFloating(event.target, peer);
+    
+    // example: show info on the right
+    wdbDocument.showInfoRight(peer);
+  }
+};
+
+const wdbDocument = {
+  // highlight a range of elements – given as "e1-e2"
+  highlightRange: function ( range ) {
+    let from = range.split('-')[0],
+        to = range.split('-')[1];
+    
+    this.highlightElements (from, to, 'red', '');
+
+    let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
+    // minus fixed header height
+    $('html, body').animate({scrollTop: scrollto}, 0);
+      
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
+    wdbUser.displayImage(pb);
+  },
+
+  loadTargetImage: function () {
+    let target = $(':target');
+    if (target.length > 0) {
+      if (target.attr('class') == 'pagebreak') {
+        let url = target.dataset.ref;
+        console.log("trying to load image: " + url);
+        wdbUser.displayImage(url);
+      } else {
+        let pagebreak = target.parents().has('.pagebreak').first();
+        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
+      }
+    }
+  },
+  
+  showDataRight: function ( data ) {
+    let insertID = wdb.getUniqueId(),
+        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
+          $(data).find('.content') +
+          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
+          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+      $('#ann').html(insertContent);
+  },
+  
+  // display an image in the right div
+  displayImageRight: function ( url ) {
+    // default: load an html that contains an image into an iframe
+    if (window.innerWidth > 768) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+      $('#facsimile').attr('src', url).css('display', 'block');
+    }
+  },
+  
+  // load image into openseadragon – assumes there is only one level of images
+  displayImageViewer: function ( url, viewer ) {
+    if (window.innerWidth > 768 && viewer != null) {
+      let pbs = $('body').find('.pagebreak'),
+          pos = pbs.index(url);
+      viewer.goToPage(pos);
+    }
+  },
+
+  /* actual positioning */
+  marginaliaPositioningCallback: function (index, element) {
+    let referenceElementID = $(element).attr('id'),
+        referenceElementTop = $('#' + referenceElementID).position().top,
+        marginNote = $("#margin-" + referenceElementID),
+        previousMarginNote = marginNote.prev(),
+        targetTop;
+    
+    if (previousMarginNote.length == 0) {
+      targetTop = referenceElementTop - $('header').height();
+    } else {
+      let previousNoteHeight = $(previousMarginNote).height(),
+          previousNoteTop = $(previousMarginNote).position().top,
+          headerHeight = $('header').height(),
+          minimumTargetTop = previousNoteHeight + previousNoteTop;
+      
+      if (Math.floor(referenceElementTop - headerHeight) < minimumTargetTop) {
+        targetTop = previousNoteTop + previousNoteHeight;
+      } else {
+        targetTop = referenceElementTop - headerHeight;
+      }
+    }
+  }
+};
+
+$(() => {
+  // register hover handler for footnote link buttons
+  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  
+  // register click handler for entity information
+  $('.entity').click(wdbUser.showEntityData);
+  
+  // register click handler for page breaks
+  $('.pagebreak').click((event) => {
+    wdbUser.displayImage(event.target.dataset.image);
+  });
+  
+  // load image for target page (or first page if no fragment requested)
+  if($('.pagebreak').length > 0) {
+    if (window.location.hash != "") {
+      wdbDocument.loadTargetImage();
+    } else {
+      wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
+    }
+  }
+});
