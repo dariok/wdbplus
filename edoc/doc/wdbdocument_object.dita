@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdbdocument_object">
+    <title>wdbDocument object</title>
+    <shortdesc>Members of the central wdbDocument object, defined in function.js</shortdesc>
+    <refbody>
+        <section>
+            <p><codeph>wdbDocument</codeph> collects central functions for dealing with the HTML such
+            as highlighting. It is an immutable const.</p>
+        </section>
+        <properties>
+            <property>
+                <proptype>highlightRange(range)</proptype>
+                <propdesc>highlight a rande of elements (from – to)</propdesc>
+            </property>
+            <property>
+                <proptype>loadTargetImage()</proptype>
+                <propdesc>function to load the target image (first image or preceding pagebreak)</propdesc>
+            </property>
+            <property>
+                <proptype>positionMarginalia()</proptype>
+                <propdesc>function to position margin notes</propdesc>
+            </property>
+            <property>
+                <proptype>marginaliaPositionCallback(index, element)</proptype>
+                <propdesc>Callback for the actualb positioning</propdesc>
+            </property>
+            <property>
+                <proptype>marginaliaTimer</proptype>
+                <propdesc>timer used for marginalia repositioning after resizing</propdesc>
+            </property>
+            <property>
+                <proptype>showInforRight(elementID)</proptype>
+                <propdesc>Get information from the element with <codeph>@id = elementID</codeph> and display it
+                in aside</propdesc>
+            </property>
+            <property>
+                <proptype>showInfoFloating(pointerElement, elementID)</proptype>
+                <propdesc>the same, as a floating info box next to the <codeph>pointerElement</codeph></propdesc>
+            </property>
+            <property>
+                <proptype>mouseOut(element)</proptype>
+                <propdesc>remove an element (e.g. the float inserted by showInfoFloat())</propdesc>
+            </property>
+            <property>
+                <proptype>showAnnotation (url)</proptype>
+                <propdesc>Load info from url and display in the right</propdesc>
+            </property>
+            <property>
+                <proptype>clear (id)</proptype>
+                <propdesc>clear one or all annotations in #ann</propdesc>
+            </property>
+            <property>
+                <proptype>commonAncestor(element1, element2)</proptype>
+                <propdesc>return the common ancestor of both elements</propdesc>
+            </property>
+            <property>
+                <proptype>highlightFragment()</proptype>
+                <propdesc>highlight a range of elements between a start marker (taken from the fragment
+                identifier) up until an end marker (startMarker + "e")</propdesc>
+            </property>
+            <property>
+                <proptype>highlightElements(start, end, color, alt)</proptype>
+                <propdesc>called by the upper highlighting functions to do the aactual work.</propdesc>
+            </property>
+            <property>
+                <proptype>nav.toggleNavigation()</proptype>
+                <propdesc>load the navigation (if necessary) and toggle visibility</propdesc>
+            </property>
+            <property>
+                <proptype>nav.switchnav(id, element)</proptype>
+                <propdesc>to visibility of TOC level</propdesc>
+            </property>
+            <property>
+                <proptype>loadContent(url, target, me)</proptype>
+                <propdesc>generic content loading</propdesc>
+            </property>
+            <property>
+                <proptype>changeMainWidth()</proptype>
+                <propdesc>make main wider/smaller when resizing of div is not available (Safari @iOS)</propdesc>
+            </property>
+            <property>
+                <proptype>toggleFacsimile()</proptype>
+                <propdesc>toggle #facsimile visibility</propdesc>
+            </property>
+        </properties>
+    </refbody>
+</reference>
