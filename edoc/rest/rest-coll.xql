@@ -4,10 +4,10 @@ module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
 import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
-import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon" at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -24,8 +24,24 @@ declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collectionID}/subcollection")
   %rest:consumes("application/json")
-function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:string ) {
-  if (string-length($data) eq 0) then
+function wdbRc:createSubcollectionJson ( $data as xs:string*, $collectionID as xs:string ) {
+  let $map := parse-json(util:base64-decode($data))
+  return wdbRc:createSubcollection($map, $collectionID)
+};
+
+declare
+  %rest:POST("{$data}")
+  %rest:path("/edoc/collection/{$collectionID}/subcollection")
+  %rest:consumes("application/xml")
+function wdbRc:createSubcollectionXml ( $data as element()*, $collectionID as xs:string ) {
+  let $map := map:merge(for $e in $data/* return map { $e/local-name(): $e/string() })
+  return wdbRc:createSubcollection($map, $collectionID)
+};
+
+declare
+  %private
+function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as xs:string ) {
+  if (map:size($collectionData) eq 0) then
     (
       <rest:response>
         <http:response status="400">
@@ -35,7 +51,7 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
       </rest:response>,
       "no configuration data submitted"
     )
-  else if (not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys(parse-json(util:base64-decode($data)))))) then
+  else if (not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys($collectionData)))) then
     (
       <rest:response>
         <http:response status="400">
@@ -61,23 +77,22 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
     let $parentMeta := doc($collection || "/wdbmeta.xml")
     let $errUser := not(sm:has-access(base-uri($parentMeta), "w"))
     
-    let $collectionData := parse-json(util:base64-decode($data))
     let $errCollectionPresent := try {
         wdb:getEdPath($collectionData?id)
       } catch * {
         false()
       }
     
-    return if ($errUser) then
-      (
-        <rest:response>
-          <http:response status="403">
-            <http:header name="Content-Type" value="text/plain" />
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-          </http:response>
-        </rest:response>,
-        "user " || sm:id()//sm:real/sm:username/string() || " does not have access to collection " || $collection
-      )
+    return if ($errUser)
+    then (
+      <rest:response>
+        <http:response status="403">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "user " || sm:id()//sm:real/sm:username || " does not have access to collection " || $collection
+    )
     else if ($errCollectionPresent instance of xs:string) then
       <rest:response>
         <http:response status="409" />
@@ -104,10 +119,15 @@ function wdbRc:createSubcollection ( $data as xs:string*, $collectionID as xs:st
       
       let $insID := update value $meta/meta:projectMD/@xml:id with $collectionData?id
       let $insTitle := update value $meta//meta:title[1] with $collectionData?name
-      let $insParent := update insert <ptr path="../wdbmeta.xml" /> into $meta/meta:projectMD/meta:struct
+      let $insParent := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        path="../wdbmeta.xml" /> into $meta/meta:projectMD/meta:struct
       
-      let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}" /> into $parentMeta//meta:files
-      let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$collectionData?id}" label="{$collectionData?name}" /> into $parentMeta/meta:projectMD/meta:struct
+      let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}"
+        /> into $parentMeta//meta:files
+      let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        file="{$collectionData?id}" label="{$collectionData?name}"
+        /> into $parentMeta/meta:projectMD/meta:struct
       
       return
         <rest:response>
