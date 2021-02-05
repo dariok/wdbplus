@@ -4,11 +4,11 @@ module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
 import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
-import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   at "search.xqm";
-import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"  at "start.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   at "/db/apps/edoc/modules/search.xqm";
+import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"  at "/db/apps/edoc/modules/start.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -29,7 +29,7 @@ declare
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
 try {
   (: assume a function for the whole instance if no $ed is explicitly stated :)
-  let $projectID := if ($ed != "")
+  let $projectId := if ($ed != "")
     then $ed
     else if ($id != "")
     then wdb:getEdFromFileId ($id)
