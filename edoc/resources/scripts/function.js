@@ -27,7 +27,7 @@ const wdb = (function() {
   };
 
   /* Login and logout */
-  let login = function (that, event) {
+  let login = function (event) {
 	  event.preventDefault();
   
     let username = $('#user').val(),
@@ -606,6 +606,10 @@ $(function () {
   $('.pagebreak a').click(function (event) {
     event.preventDefault();
     wdbUser.displayImage($(this));
+  });
+
+  $('#login').submit( (event) => {
+    wdb.login(event);
   });
 });
 /* END DOM ready functions */
