@@ -57,6 +57,7 @@ else if ($exist:resource = 'login') then
 (: Konfigurationsseiten :)
 else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    {login:set-user("wd", $cookiePath, $duration, false())}
     <view>
       <set-header name="Cache-Control" value="no-cache"/>
       <forward url="{$exist:controller}/admin/view.xql"/>
