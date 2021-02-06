@@ -198,7 +198,9 @@ let uploadManager = (function() {
 })();
 
 $(function() {
-  if (wdb.parameters.ed !== undefined) {
+  let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+
+  if (wdb.parameters.ed !== undefined && filename == "directoryForm.html") {
     let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
     let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
     $.ajax({
