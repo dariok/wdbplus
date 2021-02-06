@@ -2,8 +2,6 @@ xquery version "3.1";
 
 module namespace wdba = "https://github.com/dariok/wdbplus/auth";
 
-import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-
 declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 declare function wdba:getAuth($node as node(), $model as map(*)) {

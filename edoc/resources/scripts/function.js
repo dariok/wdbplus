@@ -46,6 +46,9 @@ const wdb = (function() {
         try {
           $('#auth').replaceWith(data);
           setAuthorizationHeader();
+          $('#logout').on('click', () => {
+            wdb.logout();
+          });
           console.log('logged in');
         } catch (e) {
           console.error('error logging in:');
@@ -54,12 +57,10 @@ const wdb = (function() {
       },
       dataType: 'text'
     });
-    Cookies.set('wdbplus', btoa(username + ':' + password));
   };
 
   let logout = function () {
     console.log('logout request');
-    Cookies.remove('wdbplus');
     $.ajax({
       url: 'login',
       method: 'post',
@@ -69,6 +70,10 @@ const wdb = (function() {
       success: function (data) {
         try {
           $('#auth').replaceWith(data);
+          $('#login').on('submit', (event) => {
+            event.preventDefault();
+            wdb.login(event);
+          });
           setAuthorizationHeader();
           console.log('logging off');
         } catch (e) {
@@ -608,8 +613,12 @@ $(function () {
     wdbUser.displayImage($(this));
   });
 
-  $('#login').submit( (event) => {
+  $('#login').on('submit', (event) => {
+    event.preventDefault();
     wdb.login(event);
+  });
+  $('#logout').on('click', () => {
+    wdb.logout();
   });
 });
 /* END DOM ready functions */

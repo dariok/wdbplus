@@ -1,9 +1,9 @@
 (: Bearbeiter DK = Dario Kampkaspar :)
 xquery version "3.0";
 
-import module namespace config  = "http://exist-db.org/xquery/apps/config"  at "/db/apps/eXide/modules/config.xqm";
-import module namespace login   = "http://exist-db.org/xquery/login"        at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"  at "modules/auth.xqm";
+import module namespace config = "http://exist-db.org/xquery/apps/config" at "/db/apps/eXide/modules/config.xqm";
+import module namespace login  = "http://exist-db.org/xquery/login"       at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace wdba   = "https://github.com/dariok/wdbplus/auth" at "/db/apps/edoc/modules/auth.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -36,14 +36,24 @@ if ($exist:resource eq '' or $exist:resource eq 'index.html') then
     </dispatch>
 (: login :)
 else if ($exist:resource = 'login') then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        {login:set-user("wd", $cookiePath, $duration, false())}
-        <forward url="{$exist:controller}/auth.xql">
-            <set-attribute name="xquery.report-errors" value="yes"/>
-            <set-header name="Cache-Control" value="no-cache"/>
-            <set-header name="Access-Control-Allow-Origin" value="*"/>
-        </forward>
-    </dispatch>
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    {login:set-user("wd", $cookiePath, $duration, false())}
+    {
+      try {
+        if (request:get-parameter('logout', '') = 'logout') then
+          wdba:getAuth(<br/>, map {'res': 'logout'})
+        else if (local:user-allowed()) then
+          wdba:getAuth(<br/>, map {'auth': <sm:id><sm:real><sm:username>{request:get-attribute("wd.user")}</sm:username></sm:real></sm:id>})
+        else ( 
+          response:set-status-code(401),
+          <status>fail</status>
+        )
+      } catch * {
+        response:set-status-code(403),
+        <status>{$err:description}</status>
+      }
+    }
+  </dispatch>
 (: Konfigurationsseiten :)
 else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -86,3 +96,4 @@ else
     <cache-control cache="yes"/>
     <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
   </dispatch>
+
