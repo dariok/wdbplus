@@ -1,3 +1,4 @@
+# view.html
 By using standard [[project-specifics]], the functions and styling of any resource displayed via `view.html` can be changed to  a project’s needs.
 There are 2 more options to extend `view.html`:
 

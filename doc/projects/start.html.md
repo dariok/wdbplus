@@ -1,3 +1,4 @@
+# start.html
 By default, `start.html` is contructed as follows:
 
 - the header uses the applicatio title as specified in `wdbmeta.xml` (or `mets.xml` as fallback)

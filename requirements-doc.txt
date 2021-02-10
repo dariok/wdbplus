@@ -1,0 +1,3 @@
+commonmark
+sphinx
+sphinx-rtd-theme
