@@ -199,7 +199,7 @@ let uploadManager = (function() {
 
 $(function() {
   let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
-
+  
   if (wdb.parameters.ed !== undefined && filename == "directoryForm.html") {
     let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
     let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
@@ -234,8 +234,12 @@ async function dirupload ( event ) {
     method: "get",
     dataType: "json",
     url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
-    success: function ( data ) {
-      collectionContent = data;
+    success: function ( data, textStatus, jqXHR ) {
+      if (jqXHR.status == 204) {
+        collectionContent = { resources: [] };
+      } else {
+        collectionContent = data;
+      }
     },
     error: function ( response ) {
       wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
