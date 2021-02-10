@@ -3,7 +3,7 @@ xquery version "3.1";
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
 import module namespace console = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -153,17 +153,21 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
       <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
         for $h in subsequence($res, $start, 25) return
           <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-              let $result := for $match in util:expand($h)//exist:match
+            let $result := for $match in util:expand($h)//exist:match
               let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
                   then $match
                   else $match/parent::*
-              let $p := $m/preceding-sibling::*[position() < 5]
-              let $f := $m/following-sibling::*[position() < 5]
+              let $p := if ($m/preceding-sibling::tei:w) 
+                then $m/preceding-sibling::*[position() lt 5]
+                else $m/preceding-sibling::node()[position() lt 5]
+              let $f := if ($m/following-sibling::tei:w) 
+                then $m/following-sibling::*[position() lt 5]
+                else $m/following-sibling::node()[position() lt 5]
               return <match>{($p, $m, $f)}</match>
               
-              return for $r at $pos in $result
-                  where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
-                  return $r
+            return for $r at $pos in $result
+                where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
+                return $r
           }</result>
       }</results>
 };
