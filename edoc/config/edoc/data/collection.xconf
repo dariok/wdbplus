@@ -14,10 +14,6 @@
       <text qname="tei:placeName" />
       <text qname="tei:orgName" />
       <text qname="tei:title" />
-      <ignore qname="tei:listPerson" />
-      <ignore qname="tei:listPlace" />
-      <ignore qname="tei:listOrg" />
-      <ignore qname="tei:listBibl" />
       
       <!-- main text -->
       <!-- tei:text for fast first step, cf. rest-search.xql: /edoc/search/collection/{$id}.xml -->
@@ -25,7 +21,6 @@
       
       <!-- notes usually contain text that is outside the main text’s flow; hence, they must be
         handled separately -->
-      <ignore qname="tei:note" />
       <text qname="tei:note" />
       
       <!-- main structure types that contain relevant text -->
@@ -43,6 +38,15 @@
       
       <!-- index w for fast queries for single words if text is tokenized -->
       <text qname="tei:w" />
+      
+      <!-- lists are not indexed, only the main entry head -->
+      <ignore qname="tei:listPerson" />
+      <ignore qname="tei:listPlace" />
+      <ignore qname="tei:listOrg" />
+      <ignore qname="tei:listBibl" />
+      
+      <!-- note is not to be considered as part of a text structure element -->
+      <ignore qname="tei:note" />
       
       <!-- elements that may appear within a word -->
       <inline qname="tei:unclear"/>
