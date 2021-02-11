@@ -33,6 +33,7 @@ const wdb = (function() {
     let username = $('#user').val(),
         password = $('#password').val();
     console.log('login request');
+    Cookies.remove('wdbplus');
     
     $.ajax({
       url: 'login',
@@ -44,6 +45,7 @@ const wdb = (function() {
       },
       success: function (data) {
         try {
+          Cookies.set('wdbplus', btoa(username + ':' + password));
           $('#auth').replaceWith(data);
           setAuthorizationHeader();
           $('#logout').on('click', () => {
@@ -61,6 +63,8 @@ const wdb = (function() {
 
   let logout = function () {
     console.log('logout request');
+    
+    Cookies.remove('wdbplus');
     $.ajax({
       url: 'login',
       method: 'post',
