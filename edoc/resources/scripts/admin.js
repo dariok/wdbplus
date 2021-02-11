@@ -103,7 +103,7 @@ const wdbAdmin = {
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
         formdata.append("file", file);
-        formdata.append("filename", file.webkitRelativePath);
+        formdata.append("filename", file.webkitRelativePath == "" ? file.name : file.webkitRelativePath);
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
