@@ -622,4 +622,6 @@
   <xsl:template match="@xml:lang">
     <xsl:attribute name="lang" select="." />
   </xsl:template>
+  
+  <xsl:template match="@xml:space" />
 </xsl:stylesheet>
