@@ -60,14 +60,14 @@ declare function wdbErr:error ($data as map (*)) {
   )
 };
 
-declare function wdbErr:get($map as map(*), $prefix as xs:string) {
-  for $key in map:keys($map)
-      let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
-    return try {
-      let $s := map:size($map($key))
-      return wdbErr:get($map($key), $pr)
-    } catch * {
-      let $value := try { xs:string($map($key)) } catch * { "err" }
-      return <p><b>{$pr}: </b> {$value}</p>
-    }
+declare function wdbErr:get ( $test as item(), $prefix as xs:string ) {
+  typeswitch ($test)
+    case array(*) return
+      for $n in (1 to array:size($test)) return
+        wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
+    case map(*) return
+      for $key in map:keys($test)
+        let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
+        return wdbErr:get($test($key), $pr)
+    default return $prefix || " : " || $test
 };
