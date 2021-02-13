@@ -3,8 +3,8 @@ xquery version "3.1";
 module namespace wdbRMi = "https://github.com/dariok/wdbplus/RestMIngest";
 
 import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "../modules/app.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -157,7 +157,7 @@ declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { $doc//tei:titleStmt/tei:title[1] }
+              attribute label { normalize-space($doc//tei:titleStmt/tei:title[1]) }
             )}</view>
         let $updv := update insert $view into $meta/meta:projectMD/meta:struct
         
