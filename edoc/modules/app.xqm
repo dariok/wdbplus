@@ -713,57 +713,32 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $header ) {
-  let $boundary := "--" || substring-after($header, "boundary=")
-  return map:merge( 
+declare function wdb:parseMultipart ( $data, $boundary ) {
+  array {
     for $m in tokenize($data, $boundary) return
-      let $h := analyze-string($m, "^[\n\r]", "m")
-      let $header := map:merge( 
-        for $line in tokenize($h//*:non-match[1], "&#xA;")
-          let $name := substring-before($line, ": ")
-          let $value := substring-after($line, ": ")
-          let $cont := if (contains($value, "; "))
-            then map:merge( 
-              for $co at $pos in tokenize($value, "; ")
-                return map:entry ( 
-                  normalize-space(translate(if (contains($co, '=')) then substring-before($co, '=') else $name, '"', '')),
-                  normalize-space(translate(if (contains($co, '=')) then substring-after($co, '=') else $co, '"', ''))
+      if (string-length($m) lt 6)
+      then ()
+      else
+        let $parts := tokenize($m, "\n\n")
+        let $header := map:merge(
+          for $line in tokenize($parts[1], "\n") return
+            if (normalize-space($line) eq "")
+            then ()
+            else
+              let $val := substring-after($line, ': ')
+              let $value := if (contains($val, '; '))
+                then map:merge(
+                  for $entry in tokenize($val, '; ') return
+                    if (contains($entry, '='))
+                    then map:entry ( substring-before($entry, '='), util:eval(substring-after($entry, '=')) )
+                    else map:entry ( "text", $entry )
                 )
-              )
-            else normalize-space($value)
-          return map:entry ( translate($name, '"', ''), $cont )
+                else $val
+              return map:entry(substring-before($line, ': '), $value)
         )
-      let $tbody := string-join($h//fn:non-match[position() > 1], "
-")
-      let $body := if (starts-with(normalize-space($tbody), "&lt;?xml"))
-        then substring-after($tbody, "&gt;")
-        else if (starts-with(normalize-space($tbody), "<?xml"))
-        then substring-after($tbody, "?>")
-        else $tbody
-      
-      return if ($body = "")
-        then ()
-        else if (contains($body, ','))
-        then (: body contains type, encoding, etc :)
-          let $prologue := substring-before(substring-after($body, ':'), ',')
-          let $additional := tokenize($prologue, ';')
-          return map:entry (
-            $header?Content-Disposition?name,
-            map {
-              "header": $header,
-              "mime": $additional[1],
-              "encoding": $additional[2],
-              "body": substring-after($body, ',')
-            }
-          )
-        else map:entry ( 
-          $header?Content-Disposition?name,
-          map {
-            "header": $header,
-            "body": $body
-          }
-        )
-  )
+        
+        return map { "header" : $header, "body" : $parts[2] }
+  }
 };
 
 declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace as xs:anyURI?) {
