@@ -80,7 +80,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
     <hr />
     <div class="info" role="contentinfo">
       <h2>Projekt-Info</h2>
-      { wdbErr:get($model, "") }
+      <dl>{ wdbErr:get($model, "") }</dl>
     </div>
   </aside>
 };
