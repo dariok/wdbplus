@@ -12,7 +12,6 @@ const wdbAdmin = {
       success: function (data) {
         this.getPaths(data);
         $("input[type='submit']").prop("disabled", false);
-        $("aside").html("");
       },
       error: function (response) {
         console.log(response);
@@ -85,7 +84,7 @@ const wdbAdmin = {
           wdbAdmin.reportProblem("error parsing XML from " + file.name, e, listItem);
           return false;
         }
-
+        
         // try to find an ID for the XML file
         let xml = $(parsed),
             fileID = xml.find("TEI").attr("xml:id");
@@ -94,14 +93,14 @@ const wdbAdmin = {
           wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, listItem);
           return false;
         }
-
+        
         console.log("parsed file’s ID: " + fileID);
-
+        
         let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-
+        
         let formdata = new FormData(),
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
-
+        
         formdata.append("file", file);
         formdata.append("filename", file.webkitRelativePath == "" ? file.name : file.webkitRelativePath);
           
@@ -208,7 +207,6 @@ $(function() {
       url: url,
       success: function () {
         $("input[type='submit']").prop("disabled", false);
-        $("aside").html("");
       },
       error: function (response) {
         console.error(response);
