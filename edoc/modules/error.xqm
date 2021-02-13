@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors";
+module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace console   = "http://exist-db.org/xquery/console";
@@ -60,14 +60,19 @@ declare function wdbErr:error ($data as map (*)) {
   )
 };
 
-declare function wdbErr:get ( $test as item(), $prefix as xs:string ) {
+declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) {
   typeswitch ($test)
     case array(*) return
       for $n in (1 to array:size($test)) return
         wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
     case map(*) return
-      for $key in map:keys($test)
-        let $pr := if ($prefix = "") then $key else $prefix || ' → ' || $key
-        return wdbErr:get($test($key), $pr)
-    default return $prefix || " : " || $test
+      for $key in map:keys($test) return
+        if ($test($key) instance of map(*))
+        then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
+        else if ($test($key) instance of function(*))
+        then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
+        else wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
+    case element(*) return
+      (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
+    default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
 };
