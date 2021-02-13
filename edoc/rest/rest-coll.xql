@@ -5,6 +5,7 @@ module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr  ="https://github.com/dariok/wdbplus/errors"       at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
 import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
@@ -15,7 +16,6 @@ declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 declare variable $wdbRc:acceptable := ("application/json", "application/xml");
 
@@ -146,110 +146,64 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
 declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collection}")
+  %rest:consumes("multipart/form-data")
   %rest:header-param("Content-Type", "{$header}")
 function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $header as xs:string*) {
-  let $user := sm:id()//sm:real/sm:username/string()
-  
-  return if ($user = "guest")
-  then
-    <rest:response>
-      <http:response status="401">
-        <http:header name="WWW-Authenticate" value="Basic"/>
-      </http:response>
-    </rest:response>
-  else if (not($data) or string-length($data) = 0)
-  then (
-    <rest:response>
-      <http:response status="400">
-        <http:header name="Content-Type" value="text/plain" />
-      </http:response>
-    </rest:response>,
-    "no data provided"
-  )
-  else
-    let $parsed := wdb:parseMultipart($data, $header)
-    let $path := normalize-space($parsed?filename?body)
-    let $errNoPath := if (string-length($path) = 0)
-      then "no filename provided in form data"
+  try {
+    let $user := sm:id()//sm:real/sm:username/string()
+    let $err :=
+      if ($user = "guest")
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h401"))
+      else if (not($data) or string-length($data) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no data provided")
       else ()
     
-    let $contentType := $parsed?file?header?Content-Type
-    let $errNoContentType := if (string-length($contentType) = 0)
-      then "no Content Type declared for file"
+    let $parsed      := wdb:parseMultipart($data, substring-after($header, 'boundary=')),
+        $path        := $parsed?1?header?Content-Disposition?filename,
+        $contentType := $parsed?1?header?Content-Type
+    let $err :=
+      if (string-length($path) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no filename provided in form data")
+      else if (string-length($contentType) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no Content Type declared for file")
       else ()
       
-    return if ($errNoPath or $errNoContentType)
-    then (
-      <rest:response>
-        <http:response status="400">
-          <http:header name="Content-Type" value="text/plain" />
-        </http:response>
-      </rest:response>,
-      string-join(($errNoPath, $errNoContentType), "; ")
-    )
-    else
-      let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
-      let $errNoCollection := if (not($collectionFile))
-        then "collection " || $collection || " not found"
+    let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+    let $err := if (not($collectionFile))
+      then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
+      else ()
+      
+    let $collectionPath := replace($wdb:edocBaseDB  || '/' ||  wdb:getEdPath($collection), "//", "/")
+    let $err := if (not(sm:has-access(xs:anyURI($collectionPath), "w")))
+      then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
+      else ()
+    
+    let $resourceName := xstring:substring-after-last($path, '/'),
+        $targetPath   := $collectionPath || '/' || xstring:substring-before-last($path, '/')
+    
+    (: make sure we really have an ID in the file :)
+    let $prepped := wdbRMi:replaceWs($parsed?1?body),
+        $contents := if ($contentType = ("text/xml", "application/xml") and not($prepped instance of element() or $prepped instance of document-node()))
+          then parse-xml($prepped)
+          else $prepped,
+        $id := if ($contents instance of document-node())
+          then $contents/*[1]/@xml:id
+          else ()
+    let $err := if ($contents instance of document-node() and not($id))
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no ID found in XML file")
+      else if (collection($wdb:data)/id($id))
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "a file with the ID " || $id || " is already present", 409)
         else ()
+    
+      (: store $prepped, not $contents as parse-xml() adds prefixes :)
+      let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType),
+          $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+            then wdbRMi:enterMetaXML($store[2])
+            else wdbRMi:enterMeta($store[2])
       
-      let $collectionPath := if (not($errNoCollection))
-        then replace($wdb:edocBaseDB  || '/' ||  wdb:getEdPath($collection), "//", "/")
-        else ()
-      
-      let $errNoAccess := if (not($errNoCollection)
-          and not(sm:has-access(xs:anyURI($collectionPath), "w")))
-        then "user " || $user || " has no access to write to collection " || $collectionPath
-        else ()
-      
-      let $resourceName := xstring:substring-after-last($path, '/')
-      let $targetPath := $collectionPath || '/' || xstring:substring-before-last($path, '/')
-      
-      (: all this to make sure we really have an ID in the file :)
-      let $prepped := wdbRMi:replaceWs($parsed?file?body)
-      let $contents := if ((contains($contentType, "text/xml") or contains($contentType, "application/xml"))
-          and not($prepped instance of element() or $prepped instance of document-node()))
-        then parse-xml($prepped)
-        else $prepped
-      
-      let $id := if ($contents instance of document-node())
-        then $contents/*[1]/@xml:id
-        else ()
-      let $errNoID := if ($contents instance of document-node() and not($id))
-        then "no ID found in XML file"
-        else ()
-      
-      let $errPresent := if (collection($wdb:data)/id($id))
-        then "a file with the ID " || $id || " is already present"
-        else ()
-      
-      let $status :=
-        if ($errNoCollection) then 404
-        else if ($errNoAccess) then 403
-        else if ($errNoID) then 400
-        else if ($errPresent) then 409
-        else 200
-      
-      return if ($status != 200) then
-        ( 
-          <rest:response>
-            <http:response status="{$status}">
-              <http:header name="Content-Type" value="text/plain" />
-              <http:header name="Access-Control-Allow-Origin" value="*"/>
-            </http:response>
-          </rest:response>,
-          string-join(($errNoCollection, $errNoAccess, $errNoID, $errPresent), "\n")
-        )
-      else
-        (: store $prepped, not $contents as parse-xml() adds prefixes :)
-        let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType)
-        let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-          then wdbRMi:enterMetaXML($store[2])
-          else wdbRMi:enterMeta($store[2])
-        return if ($store[1]//http:response/@status = "200"
-            and $meta[1]//http:response/@status = "200")
+      return if ($store[1]//http:response/@status = "200" and $meta[1]//http:response/@status = "200")
         then
-          (
+          ( 
             <rest:response>
               <http:response status="201">
                 <http:header name="Content-Type" value="text/plain" />
@@ -262,6 +216,25 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         else if ($store[1]//http:response/@status != "200")
         then $store
         else $meta
+  } catch wdbErr:h401 {
+    <rest:response>
+      <http:response status="401">
+        <http:header name="WWW-Authenticate" value="Basic"/>
+      </http:response>
+    </rest:response>
+  } catch * {
+    (
+      <rest:response>
+        <http:response status="{400}">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      $err:description,
+      $err:value,
+      $err:line-number || ":" || $err:column-number
+    )
+  }
 };
 
 (: list all collections :)
