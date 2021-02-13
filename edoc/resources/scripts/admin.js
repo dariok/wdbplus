@@ -50,6 +50,7 @@ const wdbAdmin = {
       data: formdata,
       contentType: false,
       processData: false,
+      dataType: "text",
       success: function (response, textStatus) {
         $(item).children("span")[0].innerText = "✓";
         $(item).append('<span class="success">' + textStatus + '</span>');
