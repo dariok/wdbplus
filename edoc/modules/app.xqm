@@ -715,22 +715,23 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: HELPERS FOR REST AND HTTP REQUESTS :)
 declare function wdb:parseMultipart ( $data, $boundary ) {
   array {
-    for $m in tokenize($data, $boundary) return
+    for $m in tokenize($data, "--" || $boundary) return
       if (string-length($m) lt 6)
       then ()
       else
-        let $parts := tokenize($m, "\n\n")
-        let $header := map:merge(
+          let $t := console:log($m)
+        let $parts := tokenize($m, "\n\r")
+        let $header := map:merge( 
           for $line in tokenize($parts[1], "\n") return
             if (normalize-space($line) eq "")
             then ()
             else
-              let $val := substring-after($line, ': ')
+              let $val := $line => substring-after(': ') => normalize-space()
               let $value := if (contains($val, '; '))
-                then map:merge(
+                then map:merge( 
                   for $entry in tokenize($val, '; ') return
                     if (contains($entry, '='))
-                    then map:entry ( substring-before($entry, '='), util:eval(substring-after($entry, '=')) )
+                    then map:entry ( substring-before($entry, '='), util:eval($entry => substring-after('=')) )
                     else map:entry ( "text", $entry )
                 )
                 else $val
