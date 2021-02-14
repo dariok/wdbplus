@@ -22,11 +22,11 @@ const wdbAdmin = {
   },
   
   getPaths: function ( data ) {
-    if (data.hasOwnProperty("path"))
-      $('#selectTarget select').append("<option>" + data.path + "</option>");
-    if (data.hasOwnProperty("collection"))
-      if (data.collection instanceof Array) data.collection.forEach(function(coll) { this.getPaths(coll); });
-      else $('#selectTarget select').append("<option>" + data.collection.path + "</option>");
+    if (data instanceof Array) {
+      data.forEach(function( subcollection ) {
+         $('#selectTarget select').append("<option>" + subcollection + "</option>");
+      });
+    }
   },
 
   // show info for a file
