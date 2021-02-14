@@ -2,11 +2,11 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
-import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -40,7 +40,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $errNoID := count($fileEntry) = 0
     
     let $parsed := wdb:parseMultipart($data, $header)
-    let $path := normalize-space($parsed?filename?body)
+    let $path := normalize-space($parsed?1?header?Content-Disposition?filename)
     let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
     let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
     
@@ -49,11 +49,8 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $user := sm:id()//sm:real/sm:username
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
-    let $contentType := $parsed?file?header?Content-Type
-(:    let $contents := if (contains($contentType, "xml"))
-      then parse-xml($parsed?file?body)
-      else $parsed?file?body:)
-    let $contents := $parsed?file?body
+    let $contentType := $parsed?1?header?Content-Type
+    let $contents := $parsed?1?body
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
     return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
