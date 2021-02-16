@@ -264,17 +264,6 @@ function wdbRc:getCollectionsXML () {
 };
 (: END list all collections :)
 
-(: get a full list of subcollections in the database (includes those not in
- : wdbmeta.xml – used e.g. to specify a subcollection when uploading :)
-declare
-  %rest:GET
-  %rest:path("/edoc/collection/{$id}/structure.json")
-  %output:method("json")
-function wdbRc:getStructureJson ( $id ) {
-  let $collection-uri := wdb:getEdPath($id, true())
-  return xmldb:get-child-collections($collection-uri)
-};
-
 (: get a full list of a collection (= subcolls and resources entered into wdbmeta.xml) :)
 declare
     %rest:GET
@@ -356,6 +345,17 @@ function wdbRc:getSubcollXML ($id) {
   wdbRc:getSubcoll($id, "application/xml")
 };
 (: END list subcollections :)
+
+(: get a full list of subcollections in the database (includes those not in
+ : wdbmeta.xml – used e.g. to specify a subcollection when uploading :)
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/structure.json")
+  %output:method("json")
+function wdbRc:getStructureJson ( $id ) {
+  let $collection-uri := wdb:getEdPath($id, true())
+  return map { $collection-uri: xmldb:get-child-collections($collection-uri) }
+};
 
 (: navigation :)
 declare

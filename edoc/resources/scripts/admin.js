@@ -24,7 +24,11 @@ const wdbAdmin = {
   getPaths: function ( data ) {
     if (data instanceof Array) {
       data.forEach(function( subcollection ) {
-         $('#selectTarget select').append("<option>" + subcollection + "</option>");
+        if (subcollection == "texts") {
+          $('#selectTarget select').append('<option selected="selected">' + subcollection + '</option>');
+        } else {
+          $('#selectTarget select').append("<option>" + subcollection + "</option>");
+        }
       });
     }
   },
@@ -85,7 +89,7 @@ const wdbAdmin = {
           wdbAdmin.reportProblem("error parsing XML from " + file.name, e, listItem);
           return false;
         }
-        
+
         // try to find an ID for the XML file
         let xml = $(parsed),
             fileID = xml.find("TEI").attr("xml:id");
@@ -94,14 +98,14 @@ const wdbAdmin = {
           wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, listItem);
           return false;
         }
-        
+
         console.log("parsed file’s ID: " + fileID);
-        
+
         let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-        
+
         let formdata = new FormData(),
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
-        
+
         formdata.append("file", file);
         formdata.append("filename", file.webkitRelativePath == "" ? file.name : file.webkitRelativePath);
           
@@ -202,11 +206,14 @@ $(function() {
   
   if (wdb.parameters.ed !== undefined && filename == "directoryForm.html") {
     let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
+    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/structure.json";
     $.ajax({
       method: "get",
       url: url,
-      success: function () {
+      success: function ( data ) {
+        let key = Object.keys(data)[0];
+        $('#selectTarget pre').first().text(key);
+        wdbAdmin.getPaths(data[key]);
         $("input[type='submit']").prop("disabled", false);
       },
       error: function (response) {
