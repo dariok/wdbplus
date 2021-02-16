@@ -143,11 +143,13 @@ const wdbAdmin = {
     this.files = fileList;
     
     $('#results').children().remove();
+    $('#results').append("<tr><th>Local file</th><th>Target path</th><th>Status</th>");
     for (let file of fileList) {
       let task = $('#selectTask input:checked').attr("id"),
-          filePath = task == "fi" ? file.name : file.webkitRelativePath;
+          filePath = task == "fi" ? file.name : file.webkitRelativePath,
+          targetPath = $('pre').text() + "/" + $('select').val() + "/" + filePath;
       
-      $('#results').append("<li>" + filePath + "<span></span></li>");
+      $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath + "</td><td></td>");
     }
 
     $("input[type='submit']").prop("disabled", false);
