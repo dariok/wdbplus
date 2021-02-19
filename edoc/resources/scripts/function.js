@@ -96,7 +96,7 @@ const wdb = (function() {
     let cred = Cookies.get("wdbplus");
     if (typeof cred == "undefined" || cred.length == 0)
       restHeaderVal.Authorization = "";
-      else restHeaderVal = { "Authorization": "Basic " + cred };
+      else restHeaderVal.Authorization = "Basic " + cred;
   };
   setAuthorizationHeader();
 
@@ -523,7 +523,7 @@ const wdbDocument = {
         let edition = wdb.meta.ed;
         
         $.ajax({
-          url: wdb.restHeaders + "collection/" + edition + "/nav.html",
+          url: wdb.meta.rest + "collection/" + edition + "/nav.html",
           success: function (data) {
             $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
           },
