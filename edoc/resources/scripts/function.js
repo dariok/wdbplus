@@ -32,7 +32,7 @@ const wdb = (function() {
   
     let username = $('#user').val(),
         password = $('#password').val();
-    console.log('login request');
+    this.report("info", "login request");
     Cookies.remove('wdbplus');
     
     $.ajax({
@@ -51,10 +51,9 @@ const wdb = (function() {
           $('#logout').on('click', () => {
             wdb.logout();
           });
-          console.log('logged in');
+          this.report("info", "logged in");
         } catch (e) {
-          console.error('error logging in:');
-          console.error(e);
+          this.report("error", "error logging in", e);
         }
       },
       dataType: 'text'
@@ -62,7 +61,7 @@ const wdb = (function() {
   };
 
   let logout = function () {
-    console.log('logout request');
+    this.report("info", "logout request");
     
     Cookies.remove('wdbplus');
     $.ajax({
@@ -79,10 +78,9 @@ const wdb = (function() {
             wdb.login(event);
           });
           setAuthorizationHeader();
-          console.log('logging off');
+          this.report("info", "logging off");
         } catch (e) {
-          console.error('error logging out:');
-          console.error(e);
+          this.report("error", "error logging out", e);
         }
       },
       dataType: 'text'
@@ -101,7 +99,7 @@ const wdb = (function() {
       else restHeaderVal = { "Authorization": "Basic " + cred };
   };
   setAuthorizationHeader();
-  
+
   return {
     meta:           meta,
     parameters:     params,
@@ -109,7 +107,31 @@ const wdb = (function() {
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
     login:          login,
-    logout:         logout
+    logout:         logout,
+
+    /* usually used internally to signal errors */
+    report: function ( reportType, message, problem, targetElement ) {
+      let symbol;
+      if ( reportType == "error" ) {
+        console.error(message, problem);
+        symbol = "✕";
+      } else if ( reportType == "warn" ) {
+        symbol = "❗";
+        console.warn(message, problem);
+      } else if ( reportType == "info" ) {
+        symbol = "ℹ";
+        console.info(message, problem);
+      } else if ( reportType == "success" ) {
+        console.info(message, problem);
+        symbol = "✓";
+      } else {
+        console.log(message, problem);
+      }
+
+      if ( targetElement ) {
+        $(targetElement).append('<span class="' + reportType + '" title="' + message + '">' + symbol + '</span>');
+      }
+    }
   };
 })();
 Object.freeze(wdb);
@@ -145,7 +167,7 @@ const wdbDocument = {
     let target = $(':target');
     if (target.length > 0) {
       if (target.attr('class') == 'pagebreak') {
-        console.log("trying to load image: " + $(':target > a').attr('href'));
+        wdb.report("info", "trying to load image: " + $(':target > a').attr('href'));
         wdbUser.displayImage($(':target > a'));
       } else {
         let pagebreak = target.parents().has('.pagebreak').first(),
@@ -197,7 +219,7 @@ const wdbDocument = {
       }
     }
     
-    console.info("position for " + referenceElementID + ': ' + targetTop);
+    wdb.report("info", "position for " + referenceElementID + ': ' + targetTop);
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
     marginNote.css('top', targetTop + "px");
@@ -315,8 +337,7 @@ const wdbDocument = {
               $(me).html($(me).html().replace('→', '↑'));
           },
           error: function (xhr, status, error) {
-            console.error('Error loading ' + url + ':',
-              status, error);
+            wdb.report("error", "Error loading " + url + " : " + status, error);
           }
         }
       );
@@ -332,10 +353,10 @@ const wdbDocument = {
   clear: function ( id ) {
     if (id == '' || id == null) {
       $('#ann').html('');
-      console.log('close all');
+      wdb.report("info", "close all");
     } else {
       $('#' + id).remove();
-      console.log('close ' + id);
+      wdb.report("info", "close " + id);
     }
   },
 
@@ -391,7 +412,6 @@ const wdbDocument = {
     } else {
       // check further down the ancestry
       let cA = $(this.commonAncestor(startMarker, endMarker));
-      // console.info("Found common ancestor: " + cA);
       
       // Step 1: highlight all »startMarker/following-sibling::node()«
       // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«

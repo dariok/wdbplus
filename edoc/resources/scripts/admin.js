@@ -13,9 +13,9 @@ const wdbAdmin = {
         this.getPaths(data);
         $("input[type='submit']").prop("disabled", false);
       },
-      error: function (response) {
-        console.log(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+      error: function ( response ) {
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+          response, $('aside'));
       }
     });
     $('#selectTarget').show();
@@ -78,7 +78,7 @@ const wdbAdmin = {
         }
       },
       error: function ( response ) {
-        wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
+        wdb.report("error", "error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
         collectionContent = false;
       }
     });
@@ -115,7 +115,7 @@ const wdbAdmin = {
         try {
           parsed = parser.parseFromString(fileContent, "application/xml");
         } catch (e) {
-          wdbAdmin.reportProblem("error parsing XML from " + file.name, e, tableData);
+          wdb.report("error", "error parsing XML from " + file.name, e, tableData);
           return false;
         }
 
@@ -124,11 +124,11 @@ const wdbAdmin = {
             fileID = xml.find("TEI").attr("xml:id");
         
         if (fileID === undefined || fileID == "") {
-          wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, tableData);
+          wdb.report("error", "no @xml:id found in " + file.name, {}, tableData);
           return false;
         }
 
-        console.log("parsed file’s ID: " + fileID);
+        wdb.report("info", "parsed file’s ID: " + fileID);
 
         let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
 
@@ -161,7 +161,7 @@ const wdbAdmin = {
             ]);
           }
         } catch (e) {
-          wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, tableData);
+          wdb.report("error", "error uploading " + file.name + " to collection " + wdb.parameters.ed, e, tableData);
           return false;
         }
       };
@@ -182,22 +182,12 @@ const wdbAdmin = {
       processData: false,
       dataType: "text",
       success: function (response, textStatus) {
-        $(item).children("span")[0].innerText = "✓";
-        $(item).append('<span class="success">' + textStatus + '</span>');
+        wdb.report("success", "uploaded to " + url, textStatus, item);
       },
       error: function (response) {
-        $(item).children("span")[0].innerText = "✕";
-        $(item).append('<span class="error">Error: ' + response.status + "</span>");
-        console.error("error " + method.toUpperCase() + "ing to " + url, response);
+        wdb.report("error", "Error uploading to " + url + " : " + response.status, response, item);
       }
     });
-  },
-
-  /* usually used internally to signal errors */
-  reportProblem: function ( message, problem, listItem ) {
-    console.error(message, problem);
-    $(listItem).children("span")[0].innerText = "✕";
-    $(listItem).append('<span class="error">' + message + '</span>');
   },
 
   files: {},
@@ -249,7 +239,7 @@ let uploadManager = (function() {
       
       activeRequests++;
       
-      console.log("queuing " + request[0]);
+      wdb.report("info", "queuing " + request[0]);
       wdbAdmin.doUpload(request[0], request[1], request[2], request[3], request[4])
         .then(function () {
           requestComplete();
@@ -281,8 +271,8 @@ $(function() {
         $("input[type='submit']").prop("disabled", false);
       },
       error: function (response) {
-        console.error(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+            response, $('aside'));
       }
     });
     $('#selectTarget').show();
