@@ -547,12 +547,12 @@ const wdbDocument = {
 
   // make the left wider/smaller when resizing of div is not available
   changeMainWidth: function () {
-    if ($('#wdbShowHide > a').html() == '»') {
+    if ($('#wdbShowHide > button').html() == '»') {
       $('body').css('grid-template-columns', '2fr 1fr');
-      $('#wdbShowHide > a').html('«').attr('title', "linke Seite schmaler");
+      $('#wdbShowHide > button').html('«').attr('title', "linke Seite schmaler");
     } else {
       $('body').css('grid-template-columns', '1fr 1fr');
-      $('#wdbShowHide > a').html('»').attr("title", "linke Seite breiter");
+      $('#wdbShowHide > button').html('»').attr("title", "linke Seite breiter");
     }
   }
 };
@@ -648,6 +648,11 @@ $(function () {
   // load navigation
   $('#showNavLink').on('click', () => {
     wdbDocument.nav.toggleNavigation();
+  });
+
+  // toggle width button solely for iOS Safari
+  $('#wdbShowHide').on('click', () =>{
+    wdbDocument.changeMainWidth();
   });
 });
 /* END DOM ready functions */
