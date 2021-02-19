@@ -159,7 +159,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
       else ()
     
     let $parsed      := wdb:parseMultipart($data, substring-after($header, 'boundary=')),
-        $path        := $parsed?2?body,
+        $path        := normalize-space($parsed?2?body),
         $contentType := $parsed?1?header?Content-Type
     let $err :=
       if (string-length($path) = 0)

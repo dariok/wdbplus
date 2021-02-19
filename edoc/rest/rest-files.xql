@@ -39,8 +39,8 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $errNumID := (count($fileEntry) > 1)
     let $errNoID := count($fileEntry) = 0
     
-    let $parsed := wdb:parseMultipart($data, $header)
-    let $path := $parsed?2?body
+    let $parsed := wdb:parseMultipart($data, substring-after($header, 'boundary='))
+    let $path := normalize-space($parsed?2?body)
     let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
     let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
     
