@@ -525,7 +525,7 @@ const wdbDocument = {
         $.ajax({
           url: wdb.meta.rest + "collection/" + edition + "/nav.html",
           success: function (data) {
-            $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
+            $("nav").replaceWith($(data));
           },
           data: "html"
         });

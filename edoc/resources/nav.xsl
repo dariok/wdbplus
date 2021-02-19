@@ -10,14 +10,14 @@
 		</nav>
 	</xsl:template>
 	
-	<xsl:template match="meta:struct[not(parent::*)]">
+	<!--<xsl:template match="meta:struct[not(parent::*)]">
 		<h2>
 			<xsl:value-of select="@label"/>
 		</h2>
 		<ul>
 			<xsl:apply-templates/>
 		</ul>
-	</xsl:template>
+	</xsl:template>-->
 	
 	<xsl:template match="meta:struct[@file]">
 		<li id="{generate-id()}">
