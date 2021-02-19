@@ -79,17 +79,17 @@ const wdbAdmin = {
       },
       error: function ( response ) {
         wdb.report("error", "error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
-        collectionContent = false;
+        return false;
       }
     });
   
-    if (collectionContent === false || collectionContent === undefined) {
-      return false;
-    }
-  
     let contents = {};
-    for (let content of collectionContent.resources) {
-      contents[content["@id"]] = content["@label"];
+    if ( Array.isArray(collectionContent.resources) ) {
+      for (let content of collectionContent.resources) {
+        contents[content["@id"]] = content["@label"];
+      }
+    } else if ( collectionContent.resources.hasOwnProperty("@id") ) {
+      contents[collectionContent.resources["@id"]] = collectionContent.resources["@label"];
     }
   
     wdbAdmin.uploadFiles(contents);
