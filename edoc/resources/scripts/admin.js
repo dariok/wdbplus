@@ -106,7 +106,7 @@ const wdbAdmin = {
       
       /* jshint loopfunc: true*/
       reader.onload = async function ( readFile ) {
-        tableData = "…";
+        tableData.innerText = ".";
         let fileContent = readFile.target.result,
             parser = new DOMParser(),
             parsed;
@@ -140,7 +140,7 @@ const wdbAdmin = {
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
-            tableData.innerText = "……";
+            tableData.innerText = "…";
             //wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
             uploadManager.queueRequest([
                 "put",
@@ -150,7 +150,7 @@ const wdbAdmin = {
                 tableData
             ]);
           } else {
-            tableData.innerText = "……";
+            tableData.innerText = "…";
             //wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
             uploadManager.queueRequest([
                 "post",
