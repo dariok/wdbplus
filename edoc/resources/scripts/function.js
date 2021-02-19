@@ -644,6 +644,11 @@ $(function () {
   $('#logout').on('click', () => {
     wdb.logout();
   });
+
+  // load navigation
+  $('#showNavLink').on('click', () => {
+    wdbDocument.nav.toggleNavigation();
+  });
 });
 /* END DOM ready functions */
 

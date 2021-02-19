@@ -325,7 +325,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
         <h1>{$model("title")}</h1>
       }
       <span class="dispOpts"> <a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a> </span>
-      <span class="dispOpts"> <a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a> </span>
+      <span class="dispOpts"><button id="showNavLink">Navigation einblenden</button></span>
       <nav style="display:none;" />
     </header>
 };
