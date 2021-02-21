@@ -92,23 +92,28 @@ declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:str
   }
 };
 
-declare function wdbfp:getHead ( $node as node(), $model as map(*) ) {
+declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFile as xs:string* ) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="wdb-template" content="templates/function.html"/>
+    <meta name="wdb-template" content="templates/{$templateFile}.html"/>
     <meta name="id" content="{$model("id")}" />
-    <meta name="ed" content="{$model("id")}" />
+    <meta name="ed" content="{$model("ed")}" />
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>
-    <link rel="stylesheet" type="text/css" href="./$shared/css/function.css"/>
-    {local:get('css', $model("pathToEd"), $model)}
+    {
+      if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
+        else ()
+    }
+    <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css"/>
+    { local:get('css', $model?pathToEd, $model) }
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
     <script src="./$shared/scripts/function.js"/>
-    {local:get('js', $model("pathToEd"), $model)}
+    { local:get('js', $model?pathToEd, $model) }
   </head>
 };
 
@@ -148,7 +153,7 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model?projectResources)}projectFunction.css" />
         else() 
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/css/' || $name || '.css'))
-        then <link rel="stylesheet" type="text/css" href="resources/css/{$name}.css" />
+        then <link rel="stylesheet" type="text/css" href="$shared/css/{$name}.css" />
         else()
       let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.css'))
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model("projectResources"))}/{$unam}.css" />
@@ -159,7 +164,7 @@ declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) 
       return ($fun, $gen, $pro, $add)
     case "js" return
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/scripts/' || $name || '.js'))
-        then <script src="resources/scripts/{$name}.js" />
+        then <script src="$shared/scripts/{$name}.js" />
         else()
       let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.js'))
         then <script src="{wdb:getUrl($model("projectResources"))}/{$unam}.js" />
