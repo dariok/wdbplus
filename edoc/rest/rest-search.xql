@@ -139,7 +139,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     "Error: no query content!"
   )
   else
-    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]/tei:text
     let $query := lower-case(xmldb:decode($q))
     (: querying for tei:w only will return no context :)
     let $res := $file//tei:p[ft:query(., $query)]
