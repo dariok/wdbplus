@@ -668,7 +668,7 @@ $(window).bind('hashchange', function () {
 /* set/reset timer for marginalia positioning and invoke actual function */
 $(window).on('load resize', function () {
   clearTimeout(wdbDocument.marginaliaTimer);
-  wdbDocument.marginaliaTimer = setTimeout(wdbDocument.positionMarginalia(), 500);
+  wdbDocument.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
 });
 
 /* preparations to show some loading animation while doing AJAX requests */
