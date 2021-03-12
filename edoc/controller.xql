@@ -45,24 +45,22 @@ if ($exist:resource eq '' or $exist:resource eq 'index.html') then
     </dispatch>
 (: login :)
 else if ($exist:resource = 'login') then
-  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    {login:set-user("wd", $cookiePath, $duration, false())}
-    {
-      try {
-        if (request:get-parameter('logout', '') = 'logout') then
-          wdba:getAuth(<br/>, map {'res': 'logout'})
-        else if (local:user-allowed()) then
-          wdba:getAuth(<br/>, map {'auth': <sm:id><sm:real><sm:username>{request:get-attribute("wd.user")}</sm:username></sm:real></sm:id>})
-        else ( 
-          response:set-status-code(401),
-          <status>fail</status>
-        )
-      } catch * {
-        response:set-status-code(403),
-        <status>{$err:description}</status>
-      }
+  (
+    login:set-user("wd", $cookiePath, $duration, false()),
+    try {
+      if (request:get-parameter('logout', '') = 'logout') then
+        wdba:getAuth(<br/>, map {'res': 'logout'})
+      else if (local:user-allowed()) then
+        wdba:getAuth(<br/>, map {'auth': <sm:id><sm:real><sm:username>{request:get-attribute("wd.user")}</sm:username></sm:real></sm:id>})
+      else ( 
+        response:set-status-code(401),
+        <status>fail</status>
+      )
+    } catch * {
+      response:set-status-code(403),
+      <status>{$err:description}</status>
     }
-  </dispatch>
+  )
 (: Konfigurationsseiten :)
 else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
