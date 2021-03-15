@@ -26,6 +26,7 @@ declare
     %templates:default("p", "")
     %templates:default("id", "")
     %templates:default("ed", "")
+    %templates:wrap
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
 try {
   (: assume a function for the whole instance if no $ed is explicitly stated :)
