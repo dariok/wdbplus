@@ -25,7 +25,8 @@ declare
     %templates:default("q", "")
     %templates:default("p", "")
     %templates:default("id", "")
-function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as xs:string, $q as xs:string) {
+    %templates:default("ed", "")
+function wdbfp:start($node as node(), $model as map(*), $ed as xs:string, $id as xs:string, $p as xs:string, $q as xs:string) {
   try {
     if ( contains(request:get-uri(), 'addins') )
       then
@@ -34,8 +35,9 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
         
         return map {
           "pathToEd": $path,
-          "id":       $id,
           "job":      $q,
+          "id":       $id,
+          "ed":       $ed,
           "auth":     sm:id()/sm:id
         }
       else
@@ -51,9 +53,10 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
         }
         let $mmap := map {
           "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
-          "p":     $pp,
           "q":     $q,
+          "p":     $pp,
           "id":    $pid,
+          "ed":    $ed,
           "auth":  sm:id()/sm:id
         }
         
@@ -65,6 +68,7 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $p as 
       "code":        "wdbErr:wdb3001",
       "model":       $model,
       "id":          $id,
+      "ed":          $ed,
       "p":           $p,
       "q":           $q,
       "wdb:data":    $wdb:data,
