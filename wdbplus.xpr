@@ -10,7 +10,47 @@
                         <scenarioAssociation-array>
                             <scenarioAssociation>
                                 <field name="url">
+                                    <String>edoc/rest/common.xqm</String>
+                                </field>
+                                <field name="scenarioIds">
+                                    <list>
+                                        <String>XQuery (ULB)</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioTypes">
+                                    <list>
+                                        <String>Validation_scenario</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioStorageLocations">
+                                    <list>
+                                        <Byte>2</Byte>
+                                    </list>
+                                </field>
+                            </scenarioAssociation>
+                            <scenarioAssociation>
+                                <field name="url">
                                     <String>edoc/rest/ingest.xqm</String>
+                                </field>
+                                <field name="scenarioIds">
+                                    <list>
+                                        <String>XQuery (ULB)</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioTypes">
+                                    <list>
+                                        <String>Validation_scenario</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioStorageLocations">
+                                    <list>
+                                        <Byte>2</Byte>
+                                    </list>
+                                </field>
+                            </scenarioAssociation>
+                            <scenarioAssociation>
+                                <field name="url">
+                                    <String>edoc/rest/rest-files.xql</String>
                                 </field>
                                 <field name="scenarioIds">
                                     <list>
