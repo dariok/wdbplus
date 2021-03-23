@@ -133,6 +133,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
         <rest:response>
           <http:response status="201">
             <http:header name="x-rest-status" value="{$subCollection}" />
+            <http:header name="Content-Type" value="text/plain" />
           </http:response>
         </rest:response>,
         $subCollection
