@@ -129,12 +129,14 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
       
-      return
+      return (
         <rest:response>
           <http:response status="201">
             <http:header name="x-rest-status" value="{$subCollection}" />
           </http:response>
-        </rest:response>
+        </rest:response>,
+        $subCollection
+      )
 };
 
 (: create a resource in a collection :)
