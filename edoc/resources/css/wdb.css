@@ -51,6 +51,22 @@ header {
   background-color: white;
   
   grid-area: header;
+  
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+/* right/left and centre, respectively, of the header section
+ * these are used when no preject specific is given or they use the right/centre/left functions */
+.headerSide {
+    min-width: 10%;
+    max-width: 10%;
+    flex: 0 1 auto;
+}
+.headerCentre {
+    width: 80%;
+    flex: 1 0 auto;
 }
 
 header h1 {

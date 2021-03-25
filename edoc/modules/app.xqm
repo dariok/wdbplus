@@ -318,21 +318,37 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
  : return the header - if there is a project specific function, use it
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
-  let $functionAvailable := if (wdb:findProjectFunction($model, 'getHeader', 1))
-  then system:function-available(xs:QName("wdbPF:getHeader"), 1)
-  else false()
+  let $content := (
+    <span class="dispOpts"><a id="searchLink" href="start.html?ed={$model("ed")}">Startseite</a></span>,
+    <span class="dispOpts"><a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a></span>,
+    <span class="dispOpts"><button id="showNavLink">Navigation einblenden</button></span>,
+    <nav style="display:none;" />
+  )
   
   return
     <header>{
-      if ($functionAvailable = true())
-      then util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
-      else
-        <h1>{$model("title")}</h1>
-      }
-      <span class="dispOpts"> <a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a> </span>
-      <span class="dispOpts"><button id="showNavLink">Navigation einblenden</button></span>
-      <nav style="display:none;" />
-    </header>
+      if (wdb:findProjectFunction($model, 'getHeader', 1)) then (
+        util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model)),
+        $content
+      )
+      else (
+        <div class="headerSide">{
+          if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
+            util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
+          else $content
+        }</div>,
+        <div class="headerCentre">{
+          if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
+            util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
+          else <h1>{$model("title")}</h1>
+        }</div>,
+        <div class="headerSide">{
+          if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
+            util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
+          else <p />
+        }</div>
+      )
+    }</header>
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
