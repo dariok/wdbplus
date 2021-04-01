@@ -157,7 +157,10 @@ declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update insert $view into $meta/meta:projectMD/meta:struct
         
@@ -200,7 +203,10 @@ declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update replace $meta//meta:view[@file = $id] with $view
         return ( 
