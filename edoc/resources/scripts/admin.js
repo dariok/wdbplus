@@ -213,6 +213,9 @@ const wdbAdmin = {
 $(document).on("change", "#picker", function() {
   wdbAdmin.setFiles(this.files);
 });
+$(document).on("change", "select[name=target]", () => {
+  wdbAdmin.setFiles($('#picker')[0].files);
+});
 
 // limit the number of concurrent PUT/POST requests to avoid lockups in eXist
 let uploadManager = (function() {
