@@ -83,7 +83,7 @@
 <!-- !!!!! CHANGE !!!!! implement changes to view outline as created in branch accessibility-view-outline
      !!!!! this includes the removal of layout.html, so adjust documentation above accordingly
      !!!!! CHANGE !!!!! -->
-<!--  <xsl:template match="/">
+  <xsl:template match="/">
     <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="header" />
     <xsl:apply-templates select="tei:TEI/tei:text" />
     <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="footer" />
@@ -122,7 +122,7 @@
     <section>
       <xsl:apply-templates />
     </section>
-  </xsl:template>-->
+  </xsl:template>
   <xsl:template match="tei:div/tei:head">
     <xsl:variable name="level" select="count(ancestor::*) - 2" />
     <xsl:element name="h{$level}">
