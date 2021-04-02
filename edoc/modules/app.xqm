@@ -395,10 +395,10 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   
   return
     try {
-      <div id="wdbContent">
+      <main>
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
-        {wdb:getFooter($node, $model)}
-      </div>
+        { wdb:getLeftFooter($node, $model) }
+      </main>
     } catch * { (console:log(
       <report>
         <file>{$file}</file>
