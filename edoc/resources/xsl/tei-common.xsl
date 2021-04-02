@@ -79,7 +79,11 @@
   <!-- basic outline is created via templating in templates/layout.html. The following templates create a semantic
     outline (see above);  requirements may change for different projects or types of texts (e.g. for transcriptions,
     introductions or journal articles -->
-  <xsl:template match="/">
+
+<!-- !!!!! CHANGE !!!!! implement changes to view outline as created in branch accessibility-view-outline
+     !!!!! this includes the removal of layout.html, so adjust documentation above accordingly
+     !!!!! CHANGE !!!!! -->
+<!--  <xsl:template match="/">
     <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="header" />
     <xsl:apply-templates select="tei:TEI/tei:text" />
     <xsl:apply-templates select="tei:TEI/tei:teiHeader" mode="footer" />
@@ -118,7 +122,7 @@
     <section>
       <xsl:apply-templates />
     </section>
-  </xsl:template>
+  </xsl:template>-->
   <xsl:template match="tei:div/tei:head">
     <xsl:variable name="level" select="count(ancestor::*) - 2" />
     <xsl:element name="h{$level}">
