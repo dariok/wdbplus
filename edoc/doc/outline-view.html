@@ -37,7 +37,11 @@
       <!--necessary for Safari and some mobile browsers -->
       <button title="linke Seite breiter">»</button>
     </div>
-    <aside aria-label="groups images of witnesses and additional information"></aside>
+    <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
+      <div id="ann" aria-label="contains footnotes and other information when selected" />
+      <div id="fac" aria-label="conains a digital facsimile or other image" />
+      <footer data-template="wdb:getRightFooter"/>
+    </aside>
     <footer data-template="wdb:getGlobalFooter"></footer>
   </body>
 </html>

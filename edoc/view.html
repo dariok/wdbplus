@@ -1,10 +1,17 @@
+<!DOCTYPE html>
 <html data-template="wdb:getEE">
-  <head data-template="wdb:getHead"/>
+  <head data-template="wdb:getHead">
+    <title>head set by app.xqm</title>
+  </head>
   <body>
-    <div class="loadingModal"/>
-    <header data-template="wdb:getHeader"/>
-    <main data-template="wdb:getContent"/>
-    <aside id="wdbRight" aria-label="groups images of witnesses and additional information"/>
-    <footer data-template="wdb:getGlobalFooter"/>
+    <div class="loadingModal"></div>
+    <header data-template="wdb:getHeader"></header>
+    <main data-template="wdb:getContent"></main>
+    <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
+      <div id="ann" aria-label="contains footnotes and other information when selected"></div>
+      <div id="fac" aria-label="conains a digital facsimile or other image"></div>
+      <footer data-template="wdb:getRightFooter"></footer>
+    </aside>
+    <footer data-template="wdb:getGlobalFooter"></footer>
   </body>
 </html>
