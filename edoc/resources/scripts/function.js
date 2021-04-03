@@ -179,15 +179,22 @@ const wdbDocument = {
 
   /* postioning of marginalia */
   positionMarginalia: function () {
-    let mRefs = $("a.mref");
-    if (mRefs.length > 0) {
-      // Show margin container only if any are to be shown
+    let mRefs = $("a.mref"),
+        marginalia = $('#marginaliaContainer *');
+
+    // Show margin container only if any are to be shown
+    if (mRefs.length > 0 || marginalia.length > 0) {
+      /* Save fragment identifier for later
+       * – avoid jumping while reflowing marginalia */
       let tar = window.location.hash;
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = '#';
       }
       
       mRefs.each(this.marginaliaPositioningCallback);
+      // need to set width by JS as CSS :has() is still not there…
+      $('#marginaliaContainer').css('width', 'calc(25% - 0.625em)');
+      $('main > section').css('width', 'calc(75% - 0.625em)');
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {

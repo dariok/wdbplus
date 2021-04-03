@@ -1,7 +1,11 @@
 /* wdbPlus: CSS for view.html
  * created: 2019-04-04
  * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
- * sources: https://www.github.com/dariok/wdbplus */
+ *          DK Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
+ * sources: https://www.github.com/dariok/wdbplus
+ *
+ * changes: 2021-04-02 DK: - adjust to new outline model
+ */
 
 body {
   grid-template-columns: 1fr 1fr;
@@ -19,19 +23,26 @@ body {
 
 /* Main content below header */
 main {
-  display: flex;
   grid-area: left;
+  display: flex;
+  flex-wrap: wrap;
   
   resize: horizontal;
   
-  overflow-y: hidden;
+  overflow-y: auto;
+  
+  padding: 0.25em 0 0 0.25em;
 }
 
-/* Content on the left */
-#wdbContent {
-  width: calc(100% - 1.5em);
-  padding-right: .5em;
-  overflow-y: scroll;
+/* Marginalia – width is set by JS as CSS :has() is still not there… */
+#marginaliaContainer {
+  margin-right: 0.25em;
+}
+
+/* the main text */
+main > section {
+  width: calc(100% - 1em);
+  padding: 0 .5em 0 .5em;
   flex: 0 1 auto;
   
   display: flex;
@@ -40,12 +51,13 @@ main {
 }
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
-  #wdbContent {
+  main > section {
     width: 100%;
   }
 }
 
 footer {
+  grid-area: bottom;
   display: block;
   flex: 1 1 auto;
   
@@ -76,7 +88,7 @@ footer span {
 }
 
 /* right side */
-aside {
+body > aside {
   grid-area: right;
   
   overflow: initial;
