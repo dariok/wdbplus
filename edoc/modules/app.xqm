@@ -413,7 +413,13 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     }
 };
 
-declare function wdb:getFooter($node as node(), $model as map(*)) {
+declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
+  if ( doc-available($wdb:data || "/resources/mainFooter.html") )
+  then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else ()
+};
+
+declare function wdb:getLeftFooter($node as node(), $model as map(*)) {
   let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
   let $functionsAvailable := if ($projectAvailable)
     then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
