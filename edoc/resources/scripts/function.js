@@ -193,8 +193,8 @@ const wdbDocument = {
       
       mRefs.each(this.marginaliaPositioningCallback);
       // need to set width by JS as CSS :has() is still not there…
-      $('#marginaliaContainer').css('width', 'calc(25% - 0.625em)');
-      $('main > section').css('width', 'calc(75% - 0.625em)');
+      $('#marginaliaContainer').css('width', 'calc(25% - 0.25em)');
+      $('main > section').css('width', 'calc(75% - 0.25em)');
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
