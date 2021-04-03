@@ -5,6 +5,7 @@
  * sources: https://www.github.com/dariok/wdbplus
  *
  * changes: 2021-04-02 DK: - adjust to new outline model
+ *                         - include styles for footnotes / critical apparatus
  */
 
 body {
@@ -100,4 +101,26 @@ body > aside {
 
 q {
   quotes: "»" "«" "›" "‹";
+}
+
+/*****
+ ***** ----- Apparatus ----- *****
+ *****/
+ 
+/* Container */
+.footnotes {
+  width: 100%;
+  flex: 1 0 auto;
+}
+
+/* footnote rule */
+.fnRule {
+  width: 33%;
+  margin: 1em 0;
+}
+
+/* use a border as separator if no hr is used */
+section + .footnotes, .footnotes + .footnotes {
+  border-top: 1px solid black;
+  margin-top: 1em;
 }
