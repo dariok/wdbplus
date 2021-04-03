@@ -124,3 +124,38 @@ section + .footnotes, .footnotes + .footnotes {
   border-top: 1px solid black;
   margin-top: 1em;
 }
+
+/* a single footnote */
+div.footnote {
+  text-align: justify;
+  display: table-row;
+}
+
+/* footnote number within the main text */
+.fnNumber {
+  font-size: 0.9em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+/* footnote number within apparatus */
+.footnotes .fnNumber {
+  color: #098AB2;
+  display: table-cell;
+  padding-right: 0.3rem;
+}
+
+/* footnote text */
+.fnText{
+  display: table-cell;
+}
+
+
+/* footnotes or other info displayed to the right or floating */
+.infoContainer {
+  background-color: white;
+  padding: 0 5px 0 5px;
+}
+.floating {
+  border: 1px solid lightgrey;
+}
