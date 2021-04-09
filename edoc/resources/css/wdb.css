@@ -104,6 +104,21 @@ span.dispOpts {
   content: ']';
 }
 
+/* parts of the header which act as dropdown menus, e.g. navigation */
+.menuItem {
+  background-color: white;
+  
+  border: 0.1px solid;
+  padding: .5em;
+  
+  position: absolute;
+  top: 105%;
+  
+  z-index: 99;
+}
+/* END header */
+
+
 /* animation during AJAX requests 
  * Taken from @Sampson, https://stackoverflow.com/questions/1964839/how-can-i-create-a-please-wait-loading-animation-using-jquery
  * Start by setting display:none to make this hidden.
@@ -130,12 +145,7 @@ body.loading .loadingModal {
 
 /* Navigation */
 nav {
-  background-color: white;
-  border: 0.1px solid;
-  padding: .5em;
   overflow-y: auto;
-  position: fixed;
-  z-index: 99;
   max-height: 75%;
 }
 

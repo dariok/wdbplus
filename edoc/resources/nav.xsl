@@ -5,7 +5,7 @@
 	<xsl:param name="id"/>
 	
 	<xsl:template match="/">
-		<nav>
+		<nav class="menuItem">
 			<xsl:apply-templates />
 		</nav>
 	</xsl:template>
