@@ -112,7 +112,7 @@ span.dispOpts {
   padding: .5em;
   
   position: absolute;
-  top: 105%;
+  top: 100%;
   
   z-index: 99;
 }
