@@ -134,9 +134,9 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
     <h2>populateModel (app.xqm)</h2>
     <dl>
       {
-        if ($id != "")
+        if ($model?id ne "")
         then
-          let $computedModel := wdb:populateModel($id, "", map {})
+          let $computedModel := wdb:populateModel($model?id, "", map {})
           return wdbErr:get($computedModel, "")
         else "Keine ID zur Auswertung vorhanden"
       }
