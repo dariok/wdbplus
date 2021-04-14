@@ -443,6 +443,10 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
   then doc($wdb:edocBaseDB || "/resources/rightFooter.html")
   else ()
 };
+
+declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) ) {
+  
+};
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
 (: FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
