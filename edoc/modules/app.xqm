@@ -496,6 +496,19 @@ declare function wdb:getEdPath($id as xs:string) as xs:string {
 };
 
 (:~
+ : Tries to return an absolute path for a path within a project
+ : 
+ : @param $ed the ID of the project
+ : @param $path the path to a file within that project
+ : @return the absolute path to this file
+ :)
+declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
+  if ( starts-with($path, '/') )
+    then $path
+    else wdb:getEdPath($ed, true()) || "/" || $path
+};
+
+(:~
  : Return the ID of a project from a resource ID within the project
  : 
  : @param $id the ID of a resource within a project
@@ -745,7 +758,6 @@ declare function wdb:parseMultipart ( $data, $boundary ) {
       if (string-length($m) lt 6)
       then ()
       else
-          let $t := console:log($m)
         let $parts := tokenize($m, "\n\r")
         let $header := map:merge( 
           for $line in tokenize($parts[1], "\n") return
