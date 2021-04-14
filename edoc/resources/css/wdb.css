@@ -60,8 +60,11 @@ header {
 /* right/left and centre, respectively, of the header section
  * these are used when no preject specific is given or they use the right/centre/left functions */
 .headerSide {
+    position: relative;
+    
     min-width: 10%;
     max-width: 10%;
+    
     flex: 0 1 auto;
 }
 .headerCentre {
@@ -116,8 +119,6 @@ span.dispOpts {
   
   z-index: 99;
 }
-/* END header */
-
 
 /* animation during AJAX requests 
  * Taken from @Sampson, https://stackoverflow.com/questions/1964839/how-can-i-create-a-please-wait-loading-animation-using-jquery
