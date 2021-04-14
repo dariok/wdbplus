@@ -110,26 +110,28 @@ const wdb = (function() {
     logout:         logout,
 
     /* usually used internally to signal errors */
-    report: function ( reportType, message, problem, targetElement ) {
-      let symbol;
+    report: function ( reportType, shortInfo, longInfo, targetElement, ...args ) {
+      let symbol,
+          report = [shortInfo + "\n" + longInfo, ...args];
+
       if ( reportType == "error" ) {
-        console.error(message, problem);
+        console.error(...report);
         symbol = "✕";
       } else if ( reportType == "warn" ) {
         symbol = "❗";
-        console.warn(message, problem);
+        console.warn(...report);
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
-        console.info(message, problem);
+        console.info(...report);
       } else if ( reportType == "success" ) {
-        console.info(message, problem);
         symbol = "✓";
+        console.info(...report);
       } else {
-        console.log(message, problem);
+        console.log(...report);
       }
 
       if ( targetElement ) {
-        $(targetElement).append('<span class="' + reportType + '" title="' + message + '">' + symbol + '</span>');
+        $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
     }
   };
