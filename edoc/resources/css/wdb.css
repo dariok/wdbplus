@@ -93,8 +93,8 @@ header h2 {
   display: inline-block;
 }
 
-/* spans within header */
-span.dispOpts {
+/* controls (e.g. buttons) within header */
+.dispOpts {
   float: right;
   
   line-height: 1.4rem;
@@ -192,9 +192,6 @@ nav button {
 }
 
 @media screen and (max-width: 768px) {
-  header {
-    padding: 0 1%;
-  }
   h1 {
     font-size: 1.1em;
   }
