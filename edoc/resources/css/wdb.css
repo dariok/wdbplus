@@ -52,24 +52,24 @@ header {
   
   grid-area: header;
   
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
+  display: grid;
+  grid-template-areas: 'hl hc hr';
 }
 
 /* right/left and centre, respectively, of the header section
  * these are used when no preject specific is given or they use the right/centre/left functions */
 .headerSide {
-    position: relative;
-    
-    min-width: 10%;
-    max-width: 10%;
-    
     flex: 0 1 auto;
 }
+.headerSide:first-of-type {
+  grid-area: hl;
+}
+.headerSide:last-of-type {
+  grid-area: hr;
+}
 .headerCentre {
-    width: 80%;
-    flex: 1 0 auto;
+  grid-area: hc;
+  flex: 1 0 auto;
 }
 
 header h1 {
@@ -156,7 +156,7 @@ nav h2 {
 }
 nav ul {
   margin: 0;
-  padding-left: 0px;
+  padding-left: 0;
   list-style-type: none;
 }
 
