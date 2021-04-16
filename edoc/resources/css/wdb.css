@@ -95,8 +95,6 @@ header h2 {
 
 /* controls (e.g. buttons) within header */
 .dispOpts {
-  float: right;
-  
   line-height: 1.4rem;
   font-family: sans-serif;
 }
