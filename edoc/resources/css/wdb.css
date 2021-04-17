@@ -58,9 +58,6 @@ header {
 
 /* right/left and centre, respectively, of the header section
  * these are used when no preject specific is given or they use the right/centre/left functions */
-.headerSide {
-    flex: 0 1 auto;
-}
 .headerSide:first-of-type {
   grid-area: hl;
 }
