@@ -3,7 +3,9 @@ xquery version "3.1";
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
 import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace templates ="http://exist-db.org/xquery/templates"      at "/db/apps/shared-resources/content/templates.xql";
+import module namespace request   = "http://exist-db.org/xquery/request"       at "java:org.exist.xquery.functions.request.RequestModule";
+import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
+import module namespace util      = "http://exist-db.org/xquery/util"          at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   at "/db/apps/edoc/modules/search.xqm";
@@ -109,12 +111,12 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
         else ()
     }
     <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css"/>
-    { local:get('css', $model?pathToEd, $model) }
+    { wdbfp:get('css', $model?pathToEd, $model) }
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
     <script src="./$shared/scripts/function.js"/>
-    { local:get('js', $model?pathToEd, $model) }
+    { wdbfp:get('js', $model?pathToEd, $model) }
   </head>
 };
 
@@ -134,8 +136,12 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
   then $psHeader
   else
     <header>
-      <h1 class="default">{$model("title")}</h1>
-      <hr/>
+      <div class="headerSide" />
+      <div class="headerCentre">
+        <h1>{$model("title")}</h1>
+        <hr/>
+      </div>
+      <div class="headerSide" />
     </header>
 };
 
@@ -143,7 +149,9 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
   wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
 };
 
-declare function local:get ( $type as xs:string, $edPath as xs:string, $model ) {
+declare
+  %private
+function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
   let $file := xstring:substring-after-last(request:get-url(), '/')
   let $name := substring-before($file, '.html')
   let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
