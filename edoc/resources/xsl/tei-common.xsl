@@ -572,7 +572,12 @@
         </xsl:choose>
       </xsl:attribute>
       <xsl:apply-templates select="@xml:lang" />
-      
+     
+			<span class="fnNumber">
+        <xsl:apply-templates select="." mode="number">
+          <xsl:with-param name="type" select="@type"/>
+        </xsl:apply-templates>
+      </span> 
       <p>
         <xsl:apply-templates />
       </p>
