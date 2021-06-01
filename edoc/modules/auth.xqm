@@ -6,10 +6,10 @@ import module namespace console = "http://exist-db.org/xquery/console" at "java:
 import module namespace login   = "http://exist-db.org/xquery/login"   at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 
 declare function wdba:getAuth($node as node(), $model as map(*)) {
-  let $current := sm:id()//sm:real/sm:username/text()
+  let $current := $model?auth//sm:real/sm:username/text()
 	
   return
-  if ($current = 'guest' or $model('res') = 'logout') then
+  if ($current = 'guest' or $model?res = 'logout') then
     <div id="auth" role="dialog" aria-roledescription="login dialog">
       <button type="button" onclick="javascript:$('#login').toggle();">Login: </button>
       <form enctype="multipart/form-data" id="login" style="display: none;">

@@ -103,6 +103,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
 (: get a resource by its ID – whatever type it might be :)
 declare
     %rest:GET
+    %output:indent("no")
     %rest:path("/edoc/resource/{$id}")
 function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
@@ -357,7 +358,7 @@ declare function wdbRf:processXSL($id as xs:string, $process as element(), $mode
       let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
       let $params := <parameters><param name="view" value="{$model?view}" /></parameters>
       
-      return transform:transform(doc($model?fileLoc), doc($model?xslt), $params, $attr, "expand-xincludes=no")
+      return transform:transform(doc($model?fileLoc), doc(normalize-space($process/meta:command)), $params, $attr, "expand-xincludes=no")
     } catch * {
       let $t0 := console:log($err:description)
       return ("error", $err:description)

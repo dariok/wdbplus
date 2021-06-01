@@ -23,6 +23,8 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdb1001" return "An error occurred while applying the transformation."
     case "wdbErr:wdb2001" return "Module not found."
     case "wdbErr:wdb2002" return "Error executing wdbq:query($map as map(*))"
+    case "wdbErr:wdb2101" return "Module not found for addin."
+    case "wdbErr:wdb2102" return "Error executing wdbadd:main($map as map(*))"
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
@@ -51,7 +53,7 @@ declare function wdbErr:error ($data as map (*)) {
     <link rel="stylesheet" type="text/css" href="resources/css/wdb.css" />
     <link rel="stylesheet" type="text/css" href="resources/css/function.css" />
     <!-- this one is being called from app root, so no ..! -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="resources/scripts/function.js"/>
   </head>,
   templates:process($content, $data("model"))
