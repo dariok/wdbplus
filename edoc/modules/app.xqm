@@ -715,41 +715,48 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $header ) {
-  let $boundary := "--" || substring-after($header, "boundary=")
+declare function wdb:parseMultipart ( $data, $headerVal ) {
+  let $boundary := "--" || substring-after($headerVal, "boundary=")
+  
   return map:merge( 
-    for $m in tokenize($data, $boundary) return
-      let $h := analyze-string($m, "^[\n\r]", "m")
-      let $header := map:merge( 
-        for $line in tokenize($h//*:non-match[1], "&#xA;")
-          let $name := substring-before($line, ": ")
-          let $value := substring-after($line, ": ")
-          let $cont := if (contains($value, "; "))
-            then map:merge( 
-              for $co at $pos in tokenize($value, "; ")
-                return map:entry ( 
-                  normalize-space(translate(if (contains($co, '=')) then substring-before($co, '=') else $name, '"', '')),
-                  normalize-space(translate(if (contains($co, '=')) then substring-after($co, '=') else $co, '"', ''))
+  for $m in tokenize($data, $boundary) return
+    let $r := analyze-string($m, "\n\r")[*],
+        $head := string-join($r/*:match[1]/preceding-sibling::*),
+        $body := string-join($r/*:match[1]/following-sibling::*),
+        $headerValues := tokenize($head, "\n")
+    
+    let $headers := map:merge (
+      for $h in $headerValues return
+        if (normalize-space($h) != "") then
+          map:entry (
+            substring-before($h, ': '),
+            map:merge(
+              for $subentry in tokenize(substring-after($h, ': '), '; ') return
+                let $before := substring-before($subentry, '=')
+                
+                return if ($before = "") then
+                  map:entry(
+                    "MAIN",
+                    normalize-space($subentry)
+                  )
+                else map:entry(
+                  substring-before($subentry, '='),
+                  substring-before(substring(substring-after($subentry, '='), 2), '"')
                 )
-              )
-            else normalize-space($value)
-          return map:entry ( translate($name, '"', ''), $cont )
-        )
-      let $tbody := string-join($h//fn:non-match[position() > 1], "
-")
-      let $body := if (starts-with(normalize-space($tbody), "&lt;?xml"))
-        then substring-after($tbody, "&gt;")
-        else if (starts-with(normalize-space($tbody), "<?xml"))
-        then substring-after($tbody, "?>")
-        else $tbody
-      return if ($body = "") then ()
-        else map:entry ( 
-          $header?Content-Disposition?name,
-          map {
-            "header": $header,
-            "body": $body
-          }
-        )
+            )
+          )
+        else ()
+    )
+    
+    return if (count($headerValues) > 0) then
+      map:entry ( 
+        $headers?Content-Disposition?name,
+        map {
+          "header": $headers,
+          "body": $body
+        }
+      )
+    else ()
   )
 };
 
