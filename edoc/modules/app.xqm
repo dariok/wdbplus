@@ -332,7 +332,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
   
   return
     <header>{
-      if (wdb:findProjectFunction($model, 'getHeader', 1)) then (
+      if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
         util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model)),
         $content
       )
@@ -347,11 +347,19 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
             util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
           else <h1>{$model("title")}</h1>
         }</div>,
-        <div class="headerSide">{
+        <div class="headerSide" tabindex="1">{
           if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
             util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
           else <p />
-        }</div>
+        }</div>,
+        <div class="headerMenu" tabindex="2">{(
+          if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
+            util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
+          else $content[not(self::*:nav)],
+          if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
+            util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
+          else <p />
+        )}</div>
       )
     }</header>
 };

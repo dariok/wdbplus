@@ -143,7 +143,7 @@ body.loading .loadingModal {
 nav {
   position: absolute;
   overflow-y: auto;
-  max-height: 75%;
+  max-height: 75vh;
 }
 
 nav h2 {
