@@ -433,8 +433,8 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
   then doc($model?projectResources || "/projectRightFooter.html")
   else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
   then wdb:eval("wdbPF:getProjectRightFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:edocBaseDB || "/resources/rightFooter.html"))
-  then doc($wdb:edocBaseDB || "/resources/rightFooter.html")
+  else if (doc-available($wdb:data || "/resources/rightFooter.html"))
+  then doc($wdb:data || "/resources/rightFooter.html")
   else ()
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
