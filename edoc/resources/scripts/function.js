@@ -513,6 +513,23 @@ const wdbDocument = {
       } else {
         $(anchorElement).html('→');
       }
+    },
+
+    /* load navigation of an imported project */
+    loadNavigation: function ( ed ) {
+      $.ajax({
+        method: "get",
+        url: wdb.meta.rest + "collection/" + ed + "/nav.html",
+        success:  ( data ) => {
+          let replacement = $(data).find('#' + ed);
+          if ( replacement.length > 0 ) {
+            $('#' + ed).replaceWith(replacement);
+          }
+        },
+        error: ( xhr, status, error ) => {
+          wdb.report("error", "error loading navigation", status + ": " + error);
+        }
+      });
     }
   },
 
