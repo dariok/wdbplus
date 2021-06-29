@@ -297,8 +297,10 @@ const wdbDocument = {
   // generic laoding function
   loadContent: function ( url, target, me ) {
     if ($('#' + target).css('display') == 'none') {
-      $.ajax(url,
+      $.ajax(
         {
+          url: url,
+          headers: wdb.restHeaders,
           dataType: 'html',
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
