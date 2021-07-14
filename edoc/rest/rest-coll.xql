@@ -2,12 +2,12 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace console = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace console = "http://exist-db.org/xquery/console"             at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
-import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon" at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"          at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"   at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"         at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -186,7 +186,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
       let $targetPath := $collectionPath || '/' || xstring:substring-before-last($path, '/')
       
       (: all this to make sure we really have an ID in the file :)
-      let $prepped := wdbRi:replaceWs($parsed?file?body)
+      let $prepped := wdbRMi:replaceWs($parsed?file?body)
       let $contents := if ((contains($contentType, "text/xml") or contains($contentType, "application/xml"))
           and not($prepped instance of element() or $prepped instance of document-node()))
         then parse-xml($prepped)
@@ -222,10 +222,10 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         )
       else
         (: store $prepped, not $contents as parse-xml() adds prefixes :)
-        let $store := wdbRi:store($targetPath, $resourceName, $prepped, $contentType)
+        let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType)
         let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-          then wdbRi:enterMetaXML($store[2])
-          else wdbRi:enterMeta($store[2])
+          then wdbRMi:enterMetaXML($store[2])
+          else wdbRMi:enterMeta($store[2])
         return if ($store[1]//http:response/@status = "200"
             and $meta[1]//http:response/@status = "200")
         then

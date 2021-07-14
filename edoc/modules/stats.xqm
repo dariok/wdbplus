@@ -65,7 +65,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
           return
             <tr>
               <td>{$id}</td>
-              <td style="padding-left: {$padding}em;"><a href="start.html?ed={$w/@xml:id'}">{normalize-space($name)}</a></td>
+              <td style="padding-left: {$padding}em;"><a href="start.html?ed={$w/@xml:id}">{normalize-space($name)}</a></td>
               {if ($admin = true()) then ( 
                 <td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
                 <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$w/@xml:id}">verwalten</a></td>
