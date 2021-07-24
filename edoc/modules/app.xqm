@@ -342,19 +342,32 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
         $content
       )
       else (
-        <div class="headerSide">{
+        <div class="headerSide" role="navigation">{
           if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
             util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
+          else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
+          then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)
           else $content
         }</div>,
         <div class="headerCentre">{
           if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
             util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
+          else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
+          then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)
           else <h1>{$model("title")}</h1>
         }</div>,
-        <div class="headerSide">{
+        <div class="headerMenu" role="navigation">{(
+          if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
+            util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
+          else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
+          then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)
+          else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+        )}</div>,
+        <div class="headerSide" role="navigation">{
           if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
             util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
+          else if ( doc-available($wdb:data || "/resources/headerRight.html") )
+          then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)
           else <p />
         }</div>
       )
