@@ -300,13 +300,13 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/view.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/view.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
@@ -316,6 +316,11 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <script src="$shared/scripts/js.cookie.js" />
     <script src="$shared/scripts/legal.js"/>
     <script src="$shared/scripts/function.js" />
+    {
+      if (util:binary-doc-available($wdb:data || "/resources/function.js"))
+        then <script src="{$wdb:data}/resources/function.js" />
+        else ()
+    }
     {wdb:getProjectFiles($node, $model, 'js')}
   </head>
 };
