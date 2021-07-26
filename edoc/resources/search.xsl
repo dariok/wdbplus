@@ -4,8 +4,7 @@
   <xsl:param name="rest"/>
   
   <xsl:template match="/results">
-    <xsl:variable name="p" select="parse-json(@p)"/>
-    <xsl:variable name="val">, "type": "<xsl:value-of select="$p?type"/>", "job": "<xsl:value-of select="$p?job"/>"</xsl:variable>
+    <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
     
     <div>
       <h1>Suchergebnisse für »<xsl:value-of select="@q"/>«</h1>
