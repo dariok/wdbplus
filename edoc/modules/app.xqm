@@ -14,13 +14,13 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "config.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
@@ -42,16 +42,19 @@ declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
  : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
  : in the Collection that contains all projects
  :)
-declare variable $wdb:data := 
-  let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
-  
-  let $paths := for $f in $editionsW
-    let $path := base-uri($f)
-    where contains($path, '.xml')
-    order by string-length($path)
-    return $path
-  
-  return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
+declare variable $wdb:data :=
+  if ($wdb:configFile//config:data)
+  then normalize-space($wdb:configFile//config:data)
+  else 
+    let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
+    
+    let $paths := for $f in $editionsW
+      let $path := base-uri($f)
+      where contains($path, '.xml')
+      order by string-length($path)
+      return $path
+    
+    return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
 ;
 
 (:~
@@ -107,35 +110,53 @@ declare variable $wdb:peer :=
 declare function wdb:test($node as node(), $model as map(*)) as node() {
 <div>
   <h1>APP CONTEXT test on {$wdb:configFile//config:name}</h1>
-  <h2>global variables (app.xqm)</h2>
-  <dl>
-    {
-      for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
-        where not(contains($var/@name, 'lookup'))
-        let $variable := '$' || normalize-space($var/@name)
-        return (
-          <dt>{$variable}</dt>,
-          <dd><pre>{
-            let $s := util:eval($variable)
-            return typeswitch ($s)
-            case node() return serialize($s)
-            default return $s
-          }</pre></dd>
-        )
-    }
-  </dl>
-  <h2>HTTP request parameters</h2>
-  <dl>
-    {
-      for $var in request:get-header-names()
-        return (
-          <dt>{$var}</dt>,
-          <dd><pre>{request:get-header($var)}</pre></dd>
-        )
-    }
-  </dl>
-  <h2>$model</h2>
-  { local:get($model, "") }
+  <div>
+    <h2>global variables (function.xqm)</h2>
+    <dl>
+      {
+        for $var in inspect:inspect-module(xs:anyURI("app.xqm"))//variable
+          where not(contains($var/@name, 'lookup'))
+          let $variable := '$' || normalize-space($var/@name)
+          return (
+            <dt>{$variable}</dt>,
+            <dd><pre>{
+              let $s := util:eval($variable)
+              return typeswitch ($s)
+              case node() return serialize($s)
+              default return $s
+            }</pre></dd>
+          )
+      }
+    </dl>
+  </div>
+    <div>
+    <h2>populateModel (app.xqm)</h2>
+    <dl>
+      {
+        if ($id != "")
+        then
+          let $computedModel := wdb:populateModel($id, "", map {})
+          return local:get($computedModel, "")
+        else "Keine ID zur Auswertung vorhanden"
+      }
+    </dl>
+  </div>
+  <div>
+    <h2>HTTP request parameters</h2>
+    <dl>
+      {
+        for $var in request:get-header-names()
+          return (
+            <dt>{$var}</dt>,
+            <dd><pre>{request:get-header($var)}</pre></dd>
+          )
+      }
+    </dl>
+  </div>
+  <div>
+    <h2>$model (from function.xqm)</h2>
+    { local:get($model, "") }
+  </div>
 </div>
 };
  
@@ -279,7 +300,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
     {wdb:getProjectFiles($node, $model, 'css')}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
     <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js" />
     <script src="resources/scripts/legal.js"/>
@@ -302,7 +323,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
       else
         <h1>{$model("title")}</h1>
       }
-      <span class="dispOpts"> <a id="searchLink" href="search.html?id={$model("ed")}">Suche</a> </span>
+      <span class="dispOpts"> <a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a> </span>
       <span class="dispOpts"> <a id="showNavLink" href="javascript:toggleNavigation();">Navigation einblenden</a> </span>
       <nav style="display:none;" />
     </header>
@@ -402,26 +423,17 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
  : @return xs:string the full URI to the file within the database
  :)
 declare function wdb:getFilePath($id as xs:string) as xs:string {
-  let $files := collection($wdb:data)/id($id)
+  let $files := wdbFiles:getFilePaths($wdb:data, $id)
   
   (: do not just return a random URI but add some checks for better error messages:
    : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
   let $pathToFile := if (count($files) = 0)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
-    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) > 1)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else if (count($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]) = 1)
-    then base-uri($files[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")])
-    else if (count($files[self::meta:file]) = 1
-        and (starts-with($files[1]/@path, '/') or contains($files[1]/@path, '://')))
-    then $files[1]/@path
-    else if (contains(base-uri($files[1]), 'wdbmeta.xml'))
-    then
-        let $p := base-uri($files[1])
-        return substring-before($p, 'wdbmeta.xml') || $files[1]/@path
-    else
-    fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0100'), "no single file with given @xml:id (" || $id || ") and no fallback")
-    
+      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
+    else if (count($files) > 1)
+      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'), "multiple files with ID " || $id || " in " || $wdb:data)
+    else (: (count($files) = 1) :)
+      xstring:substring-before-last(base-uri($files[1]), '/') || '/' || $files[1]
+  
   return $pathToFile
 };
 
@@ -454,6 +466,20 @@ declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:
  :)
 declare function wdb:getEdPath($id as xs:string) as xs:string {
   wdb:getEdPath($id, false())
+};
+
+(:~
+ : Return the ID of a project from a resource ID within the project
+ : 
+ : @param $id the ID of a resource within a project
+ : @return the ID of the project
+ :)
+declare function wdb:getEdFromFileId ($id as xs:string) as xs:string {
+  let $file := (collection($wdb:data)/id($id)[self::meta:file],
+                collection($wdb:data)//mets:file[@ID = $id])[1]
+  return if ($file[self::meta:file])
+    then $file/ancestor::meta:projectMD/@xml:id
+    else $file/ancestor::mets:mets/@OBJID
 };
 
 (: ~
@@ -577,12 +603,15 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
 };
 
 (:~
- : Return the full path to the project collection by trying to find the meta file by ID
+ : Return the full path to the project collection by trying to find the meta file by the project ID
+ :
+ : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id or mets:mets/@OBJID
+ : @return The path to the project 
  :)
-declare function wdb:getProjectPathFromId ($id as xs:string) {
+declare function wdb:getProjectPathFromId ($ed as xs:string) {
   let $md := (
-    collection($wdb:data)/id($id)[self::meta:projectMD],
-    collection($wdb:data)/mets:mets[@OBJID = $id]
+    collection($wdb:data)/id($ed)[self::meta:projectMD],
+    collection($wdb:data)/mets:mets[@OBJID = $ed]
   )
   return xstring:substring-before-last(base-uri(($md)[1]), '/')
 };

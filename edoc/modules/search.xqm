@@ -93,7 +93,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
 };
 
 declare function local:selectEd ($model) {(
-  <select name="id">{
+  <select name="ed">{
     let $md := doc($wdb:data || '/wdbmeta.xml')
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id

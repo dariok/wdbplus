@@ -4,16 +4,40 @@
  */
 
 /* global variables */
-var timer;                 // timer for marginalia positioning
-var internalUniqueId = 0;  // basis for globally unique IDs
-var id = $("meta[name='id']").attr("content");
-var rest = $("meta[name='rest']").attr("content");
-let ar = window.location.search.substr(1).split("&");
-var params = new Object();
-for (let i = 0; i < ar.length; i++) {
-  let te = ar[i].split("=");
-  params[te[0]] = te[1];
-}
+// global object for reused variables and functions
+var wdb = (function() {
+  // all meta elements
+  let meta = {};
+  metas = document.getElementsByTagName("meta");
+  for (i = 0; i < metas.length; i++) {
+    meta[metas[i].name] = metas[i].content;
+  }
+  
+  // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
+  let ar = window.location.search.substr(1).split("&"),
+      params = new Object();
+  for (let i = 0; i < ar.length; i++) {
+    let te = ar[i].split("=");
+    params[te[0]] = te[1];
+  }
+  
+  // authentication header for REST request
+  let headers = (function() {
+    let cred = Cookies.get("wdbplus");
+    if (typeof cred !== "undefined" && cred.length != 0)
+      return { "Authorization": "Basic " + cred };
+      else return "";
+  })();
+  
+  return {
+    meta:         meta,
+    search:       params,
+    restheaders:  headers
+  }
+})();
+
+var timer,                              // timer for marginalia positioning
+    internalUniqueId = 0;               // basis for globally unique IDs
 
 /* Collect all $(document).ready() .on('load') etc. functions*/
 
@@ -483,42 +507,41 @@ function highlightAll (startMarker, endMarker, color, alt) {
 
 /** Navigation **/
 function toggleNavigation() {
-    if ($('nav').css('display') == 'none')
+  if ($('nav').css('display') == 'none')
     $('#showNavLink').text('Navigation ausblenden'); else $('#showNavLink').text('Navigation einblenden');
     
-    if ($('nav').text() === '') {
-        $('nav').text('lädt...');
-        id = $('meta[name="ed"]').attr('content');
-        res = $. get (rest + 'collection/' + id + '/nav.html', '',
-        function (data) {
-            $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
-        },
-        'html');
-    }
-    $('nav').slideToggle();
+  if ($('nav').text() === '') {
+    $('nav').text('lädt...');
+    let id = $('meta[name="ed"]').attr('content'),
+        url = rest + 'collection/' + id + '/nav.html';
+    $.ajax({
+      method: "get",
+      url: url,
+      success: function (data) {
+        $('nav').replaceWith($(data));
+      }
+    });
+  }
+  
+  $('nav').slideToggle();
 }
 
-function load (url, target, me) {
-    if ($('#' + target).css('display') == 'none') {
-      res = $.ajax(url,
-        {
-          dataType: "html",
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
-          },
-          error: function (xhr, status, error) {
-            console.log("error");
-            console.log(status);
-            console.log(error);
-          }
-        }
-      );
-    } else {
-      $('#' + target).slideToggle();
-      $(me).html($(me).html().replace('↑', '→'));
+function loadNavigation (url, target, me) {
+  $.ajax({
+    method: "get",
+    url: url,
+    success: function (data) {
+      let replacement = $(data).find('#' + target);
+      if (replacement.length > 0) {
+        $('#' + target).replaceWith(replacement);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.log("error");
+      console.log(status);
+      console.log(error);
     }
+  });
 }
 
 /* create a runtime unique global ID */

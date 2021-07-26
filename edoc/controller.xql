@@ -26,6 +26,10 @@ declare function local:query-execution-allowed() {
   or sm:is-dba((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
 
+let $cookiePath := substring-before(request:get-uri(), $exist:path)
+let $duration := xs:dayTimeDuration("P2D")
+
+return
 if ($exist:resource eq '' or $exist:resource eq 'index.html') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/global/index.html"/>
@@ -33,7 +37,7 @@ if ($exist:resource eq '' or $exist:resource eq 'index.html') then
 (: login :)
 else if ($exist:resource = 'login') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        {login:set-user("wd", (), false())}
+        {login:set-user("wd", $cookiePath, $duration, false())}
         <forward url="{$exist:controller}/auth.xql">
             <set-attribute name="xquery.report-errors" value="yes"/>
             <set-header name="Cache-Control" value="no-cache"/>
@@ -55,6 +59,7 @@ else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/'
 (: generelle HTML :)
 else if (ends-with($exist:resource, ".html")) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    {login:set-user("wd", $cookiePath, $duration, false())}
     <view>
       <forward url="{$exist:controller}/modules/view.xql"/>
     </view>
@@ -71,7 +76,7 @@ else if (contains($exist:path, "/$shared/")) then
   </dispatch>
 else if (ends-with($exist:path, ".xql")) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    {login:set-user("wd", (), false())}
+    {login:set-user("wd", $cookiePath, $duration, false())}
     <set-header name="Cache-Control" value="no-cache"/>
     <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
   </dispatch>
