@@ -323,45 +323,41 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
  : return the header - if there is a project specific function, use it
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
-  let $content := (
-    <span class="dispOpts"><a id="searchLink" href="start.html?ed={$model("ed")}">Startseite</a></span>,
-    <span class="dispOpts"><a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a></span>,
-    <span class="dispOpts"><button id="showNavLink">Navigation einblenden</button></span>,
-    <nav style="display:none;" />
-  )
-  
-  return
-    <header>{
-      if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
-        util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model)),
-        $content
-      )
-      else (
-        <div class="headerSide">{
-          if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
-            util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
-          else $content
-        }</div>,
-        <div class="headerCentre">{
-          if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
-            util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
-          else <h1>{$model("title")}</h1>
-        }</div>,
-        <div class="headerSide" tabindex="1">{
-          if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
-            util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
-          else <p />
-        }</div>,
-        <div class="headerMenu" tabindex="2">{(
-          if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
-            util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
-          else $content[not(self::*:nav)],
-          if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
-            util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
-          else <p />
-        )}</div>
-      )
-    }</header>
+  <header>{
+    if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
+      util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
+    )
+    else (
+      <div class="headerSide" role="navigation">{
+        if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
+          util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)
+        else <p />
+      }</div>,
+      <div class="headerCentre">{
+        if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
+          util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)
+        else <h1>{$model("title")}</h1>
+      }</div>,
+      <div class="headerMenu" role="navigation">{(
+        if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
+          util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)
+        else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+      )}</div>,
+      <div class="headerSide" role="navigation">{
+        if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
+          util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerRight.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)
+        else <p />
+      }</div>
+    )
+  }</header>
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
