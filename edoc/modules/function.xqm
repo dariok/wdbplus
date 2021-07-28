@@ -123,6 +123,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
 declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
   let $file := xstring:substring-after-last(request:get-url(), '/'),
       $name := substring-before($file, '.html'),
+      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1),
       $projectAvailable := wdb:findProjectXQM($model?pathToEd),
       $functionsAvailable := if ( $projectAvailable )
         then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
@@ -131,8 +132,8 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
   
   let $psHeader := if (doc-available($model("projectResources") || '/' || $name || 'Header.html'))
     then templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
-    else if (wdb:findProjectFunction($model, 'get' || $name || 'Header', 1))
-    then wdb:eval('wdbPF:get' || $name || 'Header($model)', false(), (xs:QName('model'), $model))
+    else if (wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1))
+    then wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), $model))
     else if (doc-available($model?projectResources || "functionHeader.html"))
     then templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
     else ()
