@@ -28,49 +28,41 @@ declare
     %templates:default("ed", "")
     %templates:wrap
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
-try {
-  (: assume a function for the whole instance if no $ed is explicitly stated :)
-  let $projectId := if ($ed != "")
-    then $ed
-    else if ($id != "")
-    then wdb:getEdFromFileId ($id)
-    else normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-  
-  (: if $p is not JSON-like, assume it is a normal string :)
-  let $pp := try {
-      parse-json($p)
-    } catch * {
-      normalize-space($p)
-    }
-  
-  return if ( contains(request:get-uri(), 'addins') )
-    then
+  try {
+    if ( contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
       let $path := $wdb:edocBaseDB || "/addins/" || $addinName
       
       return map {
         "pathToEd": $path,
-        "id":       $id,
         "job":      $q,
+        "id":       $id,
+        "ed":       $ed,
         "auth":     sm:id()/sm:id
       }
     else
-      let $projectPath := wdb:getProjectPathFromId($projectId)
-      let $projectFile := wdb:findProjectXQM($projectPath)
-      let $infoFileLoc := wdb:getMetaFile($projectPath)
+      let $pid := if ($id = "")
+        then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
+        else $id
       
-      return map {
-        "title": (doc($infoFileLoc)//*:title)[1]/text(),
-        "p":                $pp,
-        "q":                $q,
-        "id":               $id,
-        "ed":               $projectId,
-        "pathToEd":         $projectPath,
-        "infoFileLoc":      $infoFileLoc,
-        "projectFile":      $projectFile,
-        "projectResources": substring-before($projectFile, "project.xqm") || "resources/",
-        "auth":             sm:id()/sm:id
+      let $map := wdb:populateModel($pid, "", $model)
+      let $pp := try {
+        parse-json($p)
+      } catch * {
+        normalize-space($p)
       }
+      
+      return if ( $map instance of map(*) ) then 
+        let $mmap := map {
+          "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
+          "q":     $q,
+          "p":     $pp,
+          "id":    $pid,
+          "ed":    $ed,
+          "auth":  sm:id()/sm:id
+        }
+        return map:merge(($map, $mmap))
+      else $map (: if it is an element, this usually means that populateModel has returned an error :)
   } catch * {
     wdbErr:error(map {
       "code":        "wdbErr:wdb3001",
