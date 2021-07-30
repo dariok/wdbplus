@@ -12,7 +12,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
  : templating.
  :)
 import module namespace config       = "http://exist-db.org/xquery/apps/config"          at "/db/apps/edoc/modules/config.xqm";
-import module namespace templates    = "http://exist-db.org/xquery/templates";
+import module namespace templates    = "http://exist-db.org/xquery/html-templating"      at "/db/system/repo/templating-1.0.2/content/templates.xqm";
 import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"          at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main"   at "/db/apps/edoc/modules/addin.xqm";
@@ -23,7 +23,7 @@ import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"          at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"         at "/db/apps/edoc/modules/start.xqm";
 
-declare option output:method "html5";
+declare option output:method "html";
 declare option output:media-type "text/html";
 
 let $config := map {

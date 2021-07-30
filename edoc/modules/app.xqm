@@ -12,11 +12,11 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
-import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "/db/apps/edoc/modules/config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "/db/apps/edoc/modules/config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
