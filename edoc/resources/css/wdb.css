@@ -17,6 +17,7 @@
 @font-face {
   font-family: 'mufi';
   src: url('Junicode.woff') format('woff');
+  font-display: swap;
 }
 
 /* Main layout: wide header, rest below, each scrolling on its own */
