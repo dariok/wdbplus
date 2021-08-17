@@ -722,7 +722,7 @@ function wdb:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $tar
       else () (: neither refs nor regex match and no default given :)
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return $sel (:)[1]/text():)
+  return ($sel)[1]/text()
 };
 declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
