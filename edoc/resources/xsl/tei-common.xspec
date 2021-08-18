@@ -462,7 +462,7 @@
         </TEI>
       </x:context>
       <x:expect label=".">
-        <article id="wdbContent">
+        <article>
           <section aria-label="contains the main text, e.g. transcript or introduction" id="content_container">
             <section>
               <h2>erste Überschrift</h2>

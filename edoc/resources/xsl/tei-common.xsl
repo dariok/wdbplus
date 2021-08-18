@@ -99,7 +99,8 @@
     </footer>
   </xsl:template>
   <xsl:template match="tei:text">
-    <article id="wdbContent">
+    <!-- TODO check usage of removed id="wdbContent" and rewrite these occurrences -->
+    <article>
       <xsl:if test="//tei:note[@place = 'margin']">
         <section aria-label="contains marginalia of an original text or side notes of a digital text"
           id="marginalia_container">
