@@ -48,7 +48,7 @@ a{
 }
 
 /* Content of the header */
-header {
+body > header {
   background-color: white;
   
   grid-area: header;
@@ -70,7 +70,7 @@ header {
   flex: 1 0 auto;
 }
 
-header h1 {
+body > header h1 {
   font-size: 1.1em;
   text-align: center;
   letter-spacing: 0.09em;
@@ -80,7 +80,7 @@ header h1 {
   margin-bottom: 0.5em;
   margin-top: 0.5em;
 }
-header h2 {
+body > header h2 {
   letter-spacing: 0.3em;
   font-size: 1em;
   font-weight: normal;
@@ -198,7 +198,7 @@ nav button {
   aside p, main p {
     font-size: 0.9em;
   }
-  header span {
+  body > header span {
     padding-bottom: 0;
     line-height: 1.2em;
     font-size: 0.9em;
