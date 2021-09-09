@@ -1,4 +1,8 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:tei="http://www.tei-c.org/ns/1.0"
+  xmlns:exist="http://exist.sourceforge.net/NS/exist"
+  exclude-result-prefixes="#all" version="3.0">
   
   <xsl:param name="title"/>
   <xsl:param name="rest"/>
@@ -90,6 +94,12 @@
     <p>
       <xsl:apply-templates/>
     </p>
+  </xsl:template>
+  
+  <xsl:template match="exist:match">
+    <span class="fts-match">
+      <xsl:apply-templates />
+    </span>
   </xsl:template>
   
   <xsl:template match="tei:w | tei:pc">

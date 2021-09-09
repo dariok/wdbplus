@@ -154,20 +154,15 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
         for $h in subsequence($res, $start, 25) return
           <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
             let $result := for $match in util:expand($h)//exist:match
-              let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
-                  then $match
-                  else $match/parent::*
-              let $p := if ($m/preceding-sibling::tei:w) 
-                then $m/preceding-sibling::*[position() lt 5]
-                else $m/preceding-sibling::node()[position() lt 5]
-              let $f := if ($m/following-sibling::tei:w) 
-                then $m/following-sibling::*[position() lt 5]
-                else $m/following-sibling::node()[position() lt 5]
-              return <match>{($p, $m, $f)}</match>
+              let $pt := replace(string-join($match/preceding::node()[not(self::tei:note) and position() lt 5], ' '), '\s+', ' '),
+                  $p := substring($pt, string-length($pt) - 25)
+              let $ft := replace(string-join($match/following::node()[not(self::tei:note) and position() lt 5], ' '), '\s+', ' '),
+                  $f := substring($ft, 1, 25)
+              return <match>{($p, $match, $f)}</match>
               
             return for $r at $pos in $result
-                where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
-                return $r
+              where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
+              return $r
           }</result>
       }</results>
 };
