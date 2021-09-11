@@ -414,8 +414,8 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
       then
         let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0))
           then wdb:eval("wdbPF:getNavXSLT()")
-          else if (doc-available($pathToEd || '/nav.xsl'))
-          then xs:anyURI($pathToEd || '/nav.xsl')
+          else if (doc-available($pathToEd || '/resources/nav.xsl'))
+          then xs:anyURI($pathToEd || '/resources/nav.xsl')
           else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
         let $struct := wdbRc:getCollectionNavXML($id)
         return transform:transform($struct, doc($xsl), $params)
