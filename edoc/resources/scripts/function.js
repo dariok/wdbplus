@@ -27,12 +27,13 @@ const wdb = (function() {
   };
 
   /* Login and logout */
-  let login = function (that, event) {
-	  event.preventDefault();
+  let login = function (event, reload) {
+    event.preventDefault();
   
     let username = $('#user').val(),
         password = $('#password').val();
-    console.log('login request');
+    this.report("info", "login request");
+    Cookies.remove('wdbplus');
     
     $.ajax({
       url: 'login',
@@ -44,21 +45,27 @@ const wdb = (function() {
       },
       success: function (data) {
         try {
+          Cookies.set('wdbplus', btoa(username + ':' + password));
           $('#auth').replaceWith(data);
           setAuthorizationHeader();
-          console.log('logged in');
+          $('#logout').on('click', () => {
+            wdb.logout();
+          });
+          wdb.report("info", "logged in");
+          if ( reload ) {
+             location.reload()
+          }
         } catch (e) {
-          console.error('error logging in:');
-          console.error(e);
+          wdb.report("error", "error logging in", e);
         }
       },
       dataType: 'text'
     });
-    Cookies.set('wdbplus', btoa(username + ':' + password));
   };
 
   let logout = function () {
-    console.log('logout request');
+    this.report("info", "logout request");
+    
     Cookies.remove('wdbplus');
     $.ajax({
       url: 'login',
@@ -69,11 +76,14 @@ const wdb = (function() {
       success: function (data) {
         try {
           $('#auth').replaceWith(data);
+          $('#login').on('submit', (event) => {
+            event.preventDefault();
+            wdb.login(event);
+          });
           setAuthorizationHeader();
-          console.log('logging off');
+          this.report("info", "logging off");
         } catch (e) {
-          console.error('error logging out:');
-          console.error(e);
+          this.report("error", "error logging out", e);
         }
       },
       dataType: 'text'
