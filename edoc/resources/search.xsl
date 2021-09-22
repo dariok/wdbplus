@@ -70,7 +70,7 @@
       <a href="view.html?id={@id}">
         <xsl:value-of select="tei:titleStmt/tei:title[1]"/>
       </a>
-      <a href="javascript:void(0);" onclick="load('{$rest}/search/file/{@id}.html?q={ancestor::results/@q}', '{@id}', this)"> →</a>
+      <a href="javascript:void(0);" onclick="wdbDocument.loadContent('{$rest}search/file/{@id}.html?q={ancestor::results/@q}', '{@id}', this)"> →</a>
       <div id="{@id}" class="results" style="display: none;"/>
     </li>
   </xsl:template>
