@@ -79,7 +79,10 @@
     <xsl:variable name="ids" select="descendant::*:match/ancestor::*[@xml:id][1]/@xml:id"/>
     <xsl:variable name="i" select="string-join($ids, ',')"/>
     <li>
-      <a href="view.html?id={parent::results/@id}&amp;i={$i}#{@fragment}">
+      <a href="view.html?id={
+          parent::results/@id}{
+          if ( string-length($i) gt 0 ) then '&amp;i= || $i' else ''}{
+          if ( string-length(@fragment) gt 0 ) then '#' || @fragment else ''}">
         <xsl:value-of select="@fragment"/>
       </a>
       <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
