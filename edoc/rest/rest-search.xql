@@ -11,6 +11,10 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
+declare variable $wdbRs:callback := function ( $node, $direction ) {
+    if ( $node/ancestor::tei:note ) then () else $node
+};
+
 declare
     %rest:GET
     %rest:path("/edoc/search/collection/{$id}.xml")
@@ -153,16 +157,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
       <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
         for $h in subsequence($res, $start, 25) return
           <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-            let $result := for $match in util:expand($h)//exist:match
-              let $pt := replace(string-join($match/preceding::node()[not(self::tei:note) and position() lt 5], ' '), '\s+', ' '),
-                  $p := substring($pt, string-length($pt) - 25)
-              let $ft := replace(string-join($match/following::node()[not(self::tei:note) and position() lt 5], ' '), '\s+', ' '),
-                  $f := substring($ft, 1, 25)
-              return <match>{($p, $match, $f)}</match>
-              
-            return for $r at $pos in $result
-              where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
-              return $r
+              kwic:summarize($h, <config width="40" />, $wdbRs:callback)
           }</result>
       }</results>
 };
