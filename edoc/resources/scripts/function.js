@@ -161,7 +161,7 @@ const wdbDocument = {
     // minus fixed header height
     $('html, body').animate({scrollTop: scrollto}, 0);
       
-    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
     wdbUser.displayImage(pb);
   },
 
@@ -169,12 +169,12 @@ const wdbDocument = {
     let target = $(':target');
     if (target.length > 0) {
       if (target.attr('class') == 'pagebreak') {
-        wdb.report("info", "trying to load image: " + $(':target > a').attr('href'));
-        wdbUser.displayImage($(':target > a'));
+        let url = target.dataset.ref;
+        wdb.report("info", "trying to load image: " + url);
+        wdbUser.displayImage(url);
       } else {
-        let pagebreak = target.parents().has('.pagebreak').first(),
-            pb = (pagebreak.find('a').length > 1) ? pagebreak.find('.pb a') : pagebreak.find('a');
-        wdbUser.displayImage(pb);
+        let pagebreak = target.parents().has('.pagebreak').first();
+        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
       }
     }
   },
@@ -209,7 +209,7 @@ const wdbDocument = {
   marginaliaPositioningCallback: function (index, element) {
     let referenceElementID = $(element).attr('id'),
         referenceElementTop = $('#' + referenceElementID).position().top,
-        marginNote = $("#text_" + referenceElementID),
+        marginNote = $("#margin-" + referenceElementID),
         previousMarginNote = marginNote.prev(),
         targetTop;
     
@@ -241,10 +241,11 @@ const wdbDocument = {
     this.showDataRight($('#' + elementID).html());
   },
   
+  /* show data passed in #ann; assumes that data are wrapped in .content */
   showDataRight: function ( data ) {
     let insertID = wdb.getUniqueId(),
         insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
-          data +
+          $(data).find('.content') +
           '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
           '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
       $('#ann').html(insertContent);
@@ -553,6 +554,24 @@ const wdbDocument = {
       }
     }
   },
+  
+  // display an image in the right div
+  displayImageRight: function ( url ) {
+    // default: load an html that contains an image into an iframe
+    if (window.innerWidth > 768) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+      $('#facsimile').attr('src', url).css('display', 'block');
+    }
+  },
+  
+  // load image into openseadragon – assumes there is only one level of images
+  displayImageViewer: function ( url, viewer ) {
+    if (window.innerWidth > 768 && viewer != null) {
+      let pbs = $('body').find('.pagebreak'),
+          pos = pbs.index(url);
+      viewer.goToPage(pos);
+    }
+  },
 
   // make the left wider/smaller when resizing of div is not available
   changeMainWidth: function () {
@@ -572,15 +591,34 @@ Object.freeze(wdbDocument);
  * are given for different variants.
  */
 const wdbUser = {
-  // what to do when the mouse enters a footnote pointer
-  footnoteMouseIn: function ( event ) {
+  // load entity data
+  showEntityData: function ( event ) {
+    let entityID = event.target.dataset.ref,
+        url = "entity.html?id=" + entityID;
+    
+    $.ajax({
+      method:  "get",
+      url:     url,
+      success: function ( data ) {
+        wdbDocument.showDataRight(data);
+      },
+      error: function (xhr, status, error) {
+        wdb.logError(xhr, status, error, "Error loading entity data from " + url);
+      }
+    });
+  },
+
+   // what to do when the mouse enters a footnote pointer
+   footnoteMouseIn: function ( event ) {
     event.preventDefault();
-
+    
+    let peer = event.target.dataset.note;
+    
     // example: show info text in a float
-    //wdbDocument.showInfoFloating(event.target, event.target.hash.substring(1));
-
+    //wdbDocument.showInfoFloating(event.target, peer);
+    
     // example: show info on the right
-    wdbDocument.showInfoRight(event.target.hash.substring(1));
+    wdbDocument.showInfoRight(peer);
   },
 
   // what to do when the mouse leaves the footnote pointer
@@ -592,30 +630,27 @@ const wdbUser = {
   },
 
   /* display an image in the right div */
-  displayImage: function ( element ) {
-    // default: load an html that contains an image into an iframe
-    if (window.innerWidth > 768) {
-      let href = element.attr('href');
-      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
-      $('#facsimile').attr('src', href).css('display', 'block');
-    }
-  }
-  /*
-   * example: load image into openseadragon
-  displayImage: function ( element, viewer ) {
-    if (window.innerWidth > 768 && viewer != null) {
+  displayImage: function ( url ) {
+    // default: show image in an iframe
+    wdbDocument.displayImageRight(url);
+    
+    // example: show image in viewer
+    // wdbDocument.displayImageViewer(url, viewer);
+
+    // example: load image into openseadragon
+    /*
       let pbs = $('body').find('.pagebreak a'),
           pos = pbs.index(element);
       viewer.goToPage(pos);
-    }
-  }*/
+    */
+  }
 };
 
 /***
  * Functions to be executed after the DOM is ready (formerly $(document).ready())
  * includes highlighting and image loading functions
  ***/
-$(function () {
+$( () => {
   // highlight a range of elements given by the »l« query parameter and scroll there
   if (wdb.parameters.hasOwnProperty('l')) {
     wdbDocument.highlightRange(wdb.parameters.l);
@@ -637,13 +672,10 @@ $(function () {
     }
   }
 
-  /* when hovering over a footnote, display it in the right div */
-  $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
-  
   // load image when clicking on a page number
-  $('.pagebreak a').click(function (event) {
+  $('.pagebreak').click((event) => {
     event.preventDefault();
-    wdbUser.displayImage($(this));
+    wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
   });
 
   $('#login').on('submit', (event) => {
@@ -663,6 +695,12 @@ $(function () {
   $('#wdbShowHide').on('click', () =>{
     wdbDocument.changeMainWidth();
   });
+
+  // register hover handler for footnote link buttons
+  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  
+  // register click handler for entity information
+  $('.entity').click(wdbUser.showEntityData);
 });
 /* END DOM ready functions */
 

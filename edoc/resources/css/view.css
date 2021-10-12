@@ -8,6 +8,10 @@
  *                         - include styles for footnotes / critical apparatus
  */
 
+/* changes
+ * 2021-02-01 semantic HTML inside main for release 1.5
+ */
+
 body {
   grid-template-columns: 1fr 1fr;
 }
@@ -20,16 +24,22 @@ body {
                          'left';
     grid-template-rows: max-content;
   }
+  aside {
+    display: none;
+  }
 }
 
 /* Main content below header */
+body > header{
+  padding: 0 0.5%;
+  border-bottom: 0.5px solid lightgrey;
+}
 main {
   grid-area: left;
   display: flex;
   flex-wrap: wrap;
   
   resize: horizontal;
-  
   overflow-y: auto;
   
   padding: 0.25em;
@@ -46,10 +56,19 @@ main > section {
   padding-left: 0.25em;
   flex: 0 1 auto;
   
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
+  padding: 0 0.5%;
 }
+#content_container {
+  grid-area: main;
+}
+#marginalia_container {
+  grid-area: margin;
+  margin-right: 5%;
+}
+#footnote_container {
+  grid-area: annotations;
+}
+
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
   main > section {
@@ -65,7 +84,7 @@ body > footer {
   
   padding: 1em;
   
-  background-color: #EEE;
+  background-color: var(--wdb-function-bg);
 }
 footer span {
   display: block;
@@ -150,7 +169,6 @@ div.footnote {
   display: table-cell;
 }
 
-
 /* footnotes or other info displayed to the right or floating */
 .infoContainer {
   background-color: white;
@@ -158,4 +176,11 @@ div.footnote {
 }
 .floating {
   border: 1px solid lightgrey;
+}
+
+/* footnote links */
+button[aria-label].footnoteNumber {
+  vertical-align: super;
+  font-size: 0.75rem;
+  line-height: 0;
 }
