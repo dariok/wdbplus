@@ -110,26 +110,28 @@ const wdb = (function() {
     logout:         logout,
 
     /* usually used internally to signal errors */
-    report: function ( reportType, message, problem, targetElement ) {
-      let symbol;
+    report: function ( reportType, shortInfo, longInfo, targetElement, ...args ) {
+      let symbol,
+          report = [shortInfo + "\n" + longInfo, ...args];
+
       if ( reportType == "error" ) {
-        console.error(message, problem);
+        console.error(...report);
         symbol = "✕";
       } else if ( reportType == "warn" ) {
         symbol = "❗";
-        console.warn(message, problem);
+        console.warn(...report);
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
-        console.info(message, problem);
+        console.info(...report);
       } else if ( reportType == "success" ) {
-        console.info(message, problem);
         symbol = "✓";
+        console.info(...report);
       } else {
-        console.log(message, problem);
+        console.log(...report);
       }
 
       if ( targetElement ) {
-        $(targetElement).append('<span class="' + reportType + '" title="' + message + '">' + symbol + '</span>');
+        $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
     }
   };
@@ -179,15 +181,22 @@ const wdbDocument = {
 
   /* postioning of marginalia */
   positionMarginalia: function () {
-    let mRefs = $("a.mref");
-    if (mRefs.length > 0) {
-      // Show margin container only if any are to be shown
+    let mRefs = $("a.mref"),
+        marginalia = $('#marginaliaContainer *');
+
+    // Show margin container only if any are to be shown
+    if (mRefs.length > 0 || marginalia.length > 0) {
+      /* Save fragment identifier for later
+       * – avoid jumping while reflowing marginalia */
       let tar = window.location.hash;
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = '#';
       }
       
       mRefs.each(this.marginaliaPositioningCallback);
+      // need to set width by JS as CSS :has() is still not there…
+      $('#marginaliaContainer').css('width', 'calc(25% - 0.25em)');
+      $('main > section').css('width', 'calc(75% - 0.25em)');
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {

@@ -1,11 +1,15 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta"
+   exclude-result-prefixes="#all"
+   version="3.0">
    
    <xsl:output indent="1" method="html"/>
    
    <xsl:param name="id"/>
    
    <xsl:template match="/">
-      <nav>
+      <nav class="menuItem">
          <xsl:apply-templates />
       </nav>
    </xsl:template>
@@ -35,7 +39,9 @@
             <xsl:value-of select="@label"/>
          </button>
          <ul>
-            <xsl:apply-templates select="meta:struct"/>
+            <xsl:apply-templates select="meta:struct">
+               <xsl:sort select="number(@order)" />
+            </xsl:apply-templates>	
          </ul>
       </li>
    </xsl:template>
@@ -47,7 +53,7 @@
          </button>
          <ul id="{generate-id()}" style="display: none;">
             <xsl:apply-templates>
-               <xsl:sort select="@order" />
+               <xsl:sort select="number(@order)" />
             </xsl:apply-templates>
          </ul>
       </li>

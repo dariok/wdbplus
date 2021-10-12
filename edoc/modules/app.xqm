@@ -328,50 +328,41 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
  : return the header - if there is a project specific function, use it
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
-  let $content := (
-    <span class="dispOpts"><a id="searchLink" href="start.html?ed={$model("ed")}">Startseite</a></span>,
-    <span class="dispOpts"><a id="searchLink" href="search.html?ed={$model("ed")}">Suche</a></span>,
-    <span class="dispOpts"><button id="showNavLink">Navigation einblenden</button></span>,
-    <nav style="display:none;" />
-  )
-  
-  return
-    <header>{
-      if (wdb:findProjectFunction($model, 'getHeader', 1)) then (
-        util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model)),
-        $content
-      )
-      else (
-        <div class="headerSide" role="navigation">{
-          if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
-            util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
-          else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
-          then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)
-          else $content
-        }</div>,
-        <div class="headerCentre">{
-          if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
-            util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
-          else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
-          then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)
-          else <h1>{$model("title")}</h1>
-        }</div>,
-        <div class="headerMenu" role="navigation">{(
-          if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
-            util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
-          else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
-          then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)
-          else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
-        )}</div>,
-        <div class="headerSide" role="navigation">{
-          if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
-            util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
-          else if ( doc-available($wdb:data || "/resources/headerRight.html") )
-          then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)
-          else <p />
-        }</div>
-      )
-    }</header>
+  <header>{
+    if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
+      util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
+    )
+    else (
+      <div class="headerSide" role="navigation">{
+        if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
+          util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)/*
+        else <p />
+      }</div>,
+      <div class="headerCentre">{
+        if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
+          util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)/*
+        else <h1>{$model("title")}</h1>
+      }</div>,
+      <div class="headerMenu" role="navigation">{(
+        if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
+          util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)/*
+        else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+      )}</div>,
+      <div class="headerSide" role="navigation">{
+        if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
+          util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/headerRight.html") )
+        then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)/*
+        else <p />
+      }</div>
+    )
+  }</header>
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
@@ -413,10 +404,10 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   
   return
     try {
-      <div id="wdbContent">
+      <main>
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
-        {wdb:getFooter($node, $model)}
-      </div>
+        { wdb:getLeftFooter($node, $model) }
+      </main>
     } catch * { (console:log(
       <report>
         <file>{$file}</file>
@@ -431,7 +422,13 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     }
 };
 
-declare function wdb:getFooter($node as node(), $model as map(*)) {
+declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
+  if ( doc-available($wdb:data || "/resources/mainFooter.html") )
+  then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else ()
+};
+
+declare function wdb:getLeftFooter($node as node(), $model as map(*)) {
   let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
   let $functionsAvailable := if ($projectAvailable)
     then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
@@ -454,6 +451,10 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
   else if (doc-available($wdb:data || "/resources/rightFooter.html"))
   then doc($wdb:data || "/resources/rightFooter.html")
   else ()
+};
+
+declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) ) {
+  
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
