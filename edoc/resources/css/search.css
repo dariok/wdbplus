@@ -9,3 +9,7 @@
 .search ul {
     margin-top: 0;
 }
+
+.fts-match {
+   background-color: yellow;
+}

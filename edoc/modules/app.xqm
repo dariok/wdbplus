@@ -12,11 +12,11 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
-import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"   at "/db/apps/edoc/modules/config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "/db/apps/edoc/modules/config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
@@ -134,9 +134,9 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
     <h2>populateModel (app.xqm)</h2>
     <dl>
       {
-        if ($id != "")
+        if ($model?id ne "")
         then
-          let $computedModel := wdb:populateModel($id, "", map {})
+          let $computedModel := wdb:populateModel($model?id, "", map {})
           return wdbErr:get($computedModel, "")
         else "Keine ID zur Auswertung vorhanden"
       }
@@ -300,13 +300,13 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/view.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/view.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
@@ -316,6 +316,11 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <script src="$shared/scripts/js.cookie.js" />
     <script src="$shared/scripts/legal.js"/>
     <script src="$shared/scripts/function.js" />
+    {
+      if (util:binary-doc-available($wdb:data || "/resources/function.js"))
+        then <script src="{$wdb:data}/resources/function.js" />
+        else ()
+    }
     {wdb:getProjectFiles($node, $model, 'js')}
   </head>
 };
@@ -443,8 +448,8 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
   then doc($model?projectResources || "/projectRightFooter.html")
   else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
   then wdb:eval("wdbPF:getProjectRightFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:edocBaseDB || "/resources/rightFooter.html"))
-  then doc($wdb:edocBaseDB || "/resources/rightFooter.html")
+  else if (doc-available($wdb:data || "/resources/rightFooter.html"))
+  then doc($wdb:data || "/resources/rightFooter.html")
   else ()
 };
 
@@ -507,6 +512,19 @@ declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:
  :)
 declare function wdb:getEdPath($id as xs:string) as xs:string {
   wdb:getEdPath($id, false())
+};
+
+(:~
+ : Tries to return an absolute path for a path within a project
+ : 
+ : @param $ed the ID of the project
+ : @param $path the path to a file within that project
+ : @return the absolute path to this file
+ :)
+declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
+  if ( starts-with($path, '/') )
+    then $path
+    else wdb:getEdPath($ed, true()) || "/" || $path
 };
 
 (:~
@@ -705,7 +723,7 @@ function wdb:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $tar
       else () (: neither refs nor regex match and no default given :)
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return $sel (:)[1]/text():)
+  return ($sel)[1]/text()
 };
 declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
   let $mets := doc($metsLoc)
@@ -759,7 +777,6 @@ declare function wdb:parseMultipart ( $data, $boundary ) {
       if (string-length($m) lt 6)
       then ()
       else
-          let $t := console:log($m)
         let $parts := tokenize($m, "\n\r")
         let $header := map:merge( 
           for $line in tokenize($parts[1], "\n") return

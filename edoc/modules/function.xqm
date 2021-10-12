@@ -2,15 +2,15 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace request   = "http://exist-db.org/xquery/request"       at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace templates = "http://exist-db.org/xquery/templates"     at "/db/apps/shared-resources/content/templates.xql";
-import module namespace util      = "http://exist-db.org/xquery/util"          at "java:org.exist.xquery.functions.util.UtilModule";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"   at "/db/apps/edoc/modules/search.xqm";
-import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"  at "/db/apps/edoc/modules/start.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"   at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace console   = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace request   = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
+import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace util      = "http://exist-db.org/xquery/util"            at "java:org.exist.xquery.functions.util.UtilModule";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"     at "/db/apps/edoc/modules/search.xqm";
+import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"    at "/db/apps/edoc/modules/start.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -30,49 +30,41 @@ declare
     %templates:default("ed", "")
     %templates:wrap
 function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
-try {
-  (: assume a function for the whole instance if no $ed is explicitly stated :)
-  let $projectId := if ($ed != "")
-    then $ed
-    else if ($id != "")
-    then wdb:getEdFromFileId ($id)
-    else normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-  
-  (: if $p is not JSON-like, assume it is a normal string :)
-  let $pp := try {
-      parse-json($p)
-    } catch * {
-      normalize-space($p)
-    }
-  
-  return if ( contains(request:get-uri(), 'addins') )
-    then
+  try {
+    if ( contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
       let $path := $wdb:edocBaseDB || "/addins/" || $addinName
       
       return map {
         "pathToEd": $path,
-        "id":       $id,
         "job":      $q,
+        "id":       $id,
+        "ed":       $ed,
         "auth":     sm:id()/sm:id
       }
     else
-      let $projectPath := wdb:getProjectPathFromId($projectId)
-      let $projectFile := wdb:findProjectXQM($projectPath)
-      let $infoFileLoc := wdb:getMetaFile($projectPath)
+      let $pid := if ($id = "")
+        then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
+        else $id
       
-      return map {
-        "title": (doc($infoFileLoc)//*:title)[1]/text(),
-        "p":                $pp,
-        "q":                $q,
-        "id":               $id,
-        "ed":               $projectId,
-        "pathToEd":         $projectPath,
-        "infoFileLoc":      $infoFileLoc,
-        "projectFile":      $projectFile,
-        "projectResources": substring-before($projectFile, "project.xqm") || "resources/",
-        "auth":             sm:id()/sm:id
+      let $map := wdb:populateModel($pid, "", $model)
+      let $pp := try {
+        parse-json($p)
+      } catch * {
+        normalize-space($p)
       }
+      
+      return if ( $map instance of map(*) ) then 
+        let $mmap := map {
+          "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
+          "q":     $q,
+          "p":     $pp,
+          "id":    $pid,
+          "ed":    $ed,
+          "auth":  sm:id()/sm:id
+        }
+        return map:merge(($map, $mmap))
+      else $map (: if it is an element, this usually means that populateModel has returned an error :)
   } catch * {
     wdbErr:error(map {
       "code":        "wdbErr:wdb3001",
