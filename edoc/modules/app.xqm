@@ -241,7 +241,6 @@ try {
   let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
     then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
     else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-    let $t := console:log($xsl)
   
   let $xslt := if (doc-available($xsl))
     then $xsl
