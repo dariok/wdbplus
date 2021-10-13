@@ -13,10 +13,10 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "/db/apps/edoc/modules/config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
@@ -134,7 +134,7 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
     <h2>populateModel (app.xqm)</h2>
     <dl>
       {
-        if ($model?id ne "")
+        if (exists($model?id))
         then
           let $computedModel := wdb:populateModel($model?id, "", map {})
           return wdbErr:get($computedModel, "")
@@ -205,7 +205,7 @@ declare
     %templates:wrap
     %templates:default("view", "")
     %templates:default("p", "")
-function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item() {
+function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
   wdb:populateModel($id, $view, $model, $p)
 };
 
@@ -221,12 +221,12 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
 declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
     wdb:populateModel($id, $view, $model, "")
 };
-declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*), $p as xs:string) as item() {
+declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*), $p as xs:string) as item()* {
 try {
   let $pTF := wdb:getFilePath($id)
   let $pathToFile := if (sm:has-access($pTF, "r"))
-  then $pTF
-  else error(xs:QName("wdbErr:wdb0004"))
+    then $pTF
+    else error(xs:QName("wdbErr:wdb0004"))
   
   let $pathToEd := wdb:getEdPath($id, true())
   let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
@@ -297,28 +297,35 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")} – {normalize-space($wdb:configFile//config:short)}</title>
-    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
+    <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
         then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
         else ()
     }
-    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
+    <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/view.css"))
         then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
         else ()
     }
-    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
+    { if ( $model?annotation = true() )
+        then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
+        else ()
+    }
     {wdb:getProjectFiles($node, $model, 'css')}
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" />
-    <script src="$shared/scripts/js.cookie.js" />
-    <script src="$shared/scripts/legal.js"/>
-    <script src="$shared/scripts/function.js" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    {
+      if ( $model?annotation = true() )
+        then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        else ()
+    }
+    <script src="$shared/scripts/js.cookie.js"></script>
+    <script src="$shared/scripts/legal.js"></script>
+    <script src="$shared/scripts/function.js"></script>
     {
       if (util:binary-doc-available($wdb:data || "/resources/function.js"))
-        then <script src="{$wdb:data}/resources/function.js" />
+        then <script src="{$wdb:data}/resources/function.js"></script>
         else ()
     }
     {wdb:getProjectFiles($node, $model, 'js')}
@@ -376,9 +383,9 @@ declare function wdb:pageTitle($node as node(), $model as map(*)) {
 declare function wdb:getContent($node as node(), $model as map(*)) {
   let $file := $model("fileLoc")
   
-  let $xslt := if ($model("xslt") != "")
-  then $model("xslt")
-  else wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
+  let $xslt := if (string-length($model?xslt) = 0)
+    then wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
+    else $model("xslt")
   
   let $params :=
     <parameters>
@@ -418,7 +425,10 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
         <additional>{$err:additional}</additional>
       </report>),
-      wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "additional": $params}))
+      wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "additional": $params, "error": map {
+          "code": $err:code, "desc": $err:description, "module": $err:module, "line": $err:line-number,
+          "col": $err:column-number, "add": $err:additional
+      }}))
     }
 };
 
@@ -454,7 +464,7 @@ declare function wdb:getRightFooter($node as node(), $model as map(*)) {
 };
 
 declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) ) {
-  
+  ()
 };
 (: END FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
 
@@ -581,8 +591,9 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     (: no specific function available, so we assume standards
      : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
      : but rather throws an error... :)
-    let $css := $model?pathToEd || "/scripts/project.css"
-    let $js := $model?pathToEd || "/scripts/project.js"
+    let $css := $model?pathToEd || "/scripts/project.css",
+        $js := $model?pathToEd || "/scripts/project.js"
+	
     return
     (
       try {
