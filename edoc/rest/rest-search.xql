@@ -147,6 +147,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     let $query := lower-case(xmldb:decode($q))
     (: querying for tei:w only will return no context :)
     let $res := $file//tei:p[ft:query(., $query)]
+          | $file//tei:ab[ft:query(., $query)]
           | $file//tei:table[ft:query(., $query)]
           | $file//tei:item[ft:query(., $query)]
           | $file//tei:head[ft:query(., $query)]
