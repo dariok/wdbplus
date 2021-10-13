@@ -297,13 +297,13 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")} – {normalize-space($wdb:configFile//config:short)}</title>
-    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
+    <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
         then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
         else ()
     }
-    <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
+    <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/view.css"))
         then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
@@ -320,9 +320,9 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
         then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
         else ()
     }
-    <script src="{$wdb:edocBaseURL}/resources/scripts/js.cookie.js"></script>
-    <script src="resources/scripts/legal.js"></script>
-    <script src="{$wdb:edocBaseURL}/resources/scripts/function.js"></script>
+    <script src="$shared/scripts/js.cookie.js"></script>
+    <script src="$shared/scripts/legal.js"></script>
+    <script src="$shared/scripts/function.js"></script>
     {
       if (util:binary-doc-available($wdb:data || "/resources/function.js"))
         then <script src="{$wdb:data}/resources/function.js"></script>
