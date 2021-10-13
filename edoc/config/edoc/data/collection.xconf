@@ -55,6 +55,7 @@
       <ignore qname="tei:pb"/>
       <ignore qname="tei:fw"/>
       <ignore qname="tei:lb"/>
+      <ignore qname="tei:pb" /> 
       <ignore qname="tei:pc"/>
     </lucene>
     <range>
@@ -78,6 +79,7 @@
       <create qname="@when" type="xs:date"/>
       <create qname="@notBefore" type="xs:date"/>
       <create qname="@notAfter" type="xs:date"/>
+      <create qname="tei:w" type="xs:string"/>
     </range>
   </index>
 </collection>

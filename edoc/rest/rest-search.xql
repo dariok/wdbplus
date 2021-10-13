@@ -3,13 +3,17 @@ xquery version "3.1";
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
 import module namespace console = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+
+declare variable $wdbRs:callback := function ( $node, $direction ) {
+    if ( $node/ancestor::tei:note ) then () else $node
+};
 
 declare
     %rest:GET
@@ -54,7 +58,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
           <http:header name="Cache-Control" value="no-cache" />
         </http:response>
       </rest:response>,
-      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
         for $f in subsequence($result, $start, 25)
         return
           <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
@@ -139,7 +143,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     "Error: no query content!"
   )
   else
-    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]/tei:text
     let $query := lower-case(xmldb:decode($q))
     (: querying for tei:w only will return no context :)
     let $res := $file//tei:p[ft:query(., $query)]
@@ -151,20 +155,10 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     let $max := count($res)
     
     return
-      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
         for $h in subsequence($res, $start, 25) return
           <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
-              let $result := for $match in util:expand($h)//exist:match
-              let $m := if ($match/parent::tei:p or $match/parent::tei:item or $match/parent::tei:cell)
-                  then $match
-                  else $match/parent::*
-              let $p := $m/preceding-sibling::*[position() < 5]
-              let $f := $m/following-sibling::*[position() < 5]
-              return <match>{($p, $m, $f)}</match>
-              
-              return for $r at $pos in $result
-                  where $pos mod count(tokenize(normalize-space($query), ' ')) = 0
-                  return $r
+              kwic:summarize($h, <config width="40" />, $wdbRs:callback)
           }</result>
       }</results>
 };

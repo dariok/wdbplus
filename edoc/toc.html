@@ -1,8 +1,15 @@
-<body xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page2.html" data-template-at="container">
+<body xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/widepage.html" data-template-at="container">
   <header>
-    <h1> <span data-template="wdbs:getInstanceName"/></h1>
-    <h2 data-template="wdba:getAuth"/>
-    <hr/>
+    <div class="headerSide">
+      <div data-template="wdba:getAuth" />
+    </div>
+		<div class="headerCentre">
+			<h1><span data-template="wdbs:getInstanceName"/></h1>
+		</div>
+		<div class="headerSide">
+			<p />
+		</div>
+		<hr/>
   </header>
   <main>
     <h2>Projekte im <span data-template="wdbs:getInstanceShort"/></h2>

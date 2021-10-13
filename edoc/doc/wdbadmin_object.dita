@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdbadmin_object">
+    <title>wdbAdmin object</title>
+    <shortdesc>Members of the wdbAdmin object. It is an immutable const.</shortdesc>
+    <refbody>
+        <properties>
+            <property>
+                <proptype>displayRight(url)</proptype>
+                <propdesc>get info from URL and display it on the right</propdesc>
+            </property>
+            <property>
+                <proptype>showFile(ed, file)</proptype>
+                <propdesc>Show file information on the right</propdesc>
+            </property>
+            <property>
+                <proptype>showJob(job, file)</proptype>
+                <propdesc>Show job results</propdesc>
+            </property>
+            <property>
+                <proptype>doUpload()</proptype>
+                <propdesc>uploads one file</propdesc>
+            </property>
+            <property>
+                <proptype>uploadFiles()</proptype>
+                <propdesc>go throught the list of files, check for problems and call doUpload() if there are none</propdesc>
+            </property>
+            <property>
+                <proptype>reportProblem()</proptype>
+                <propdesc>uniform error reporting</propdesc>
+            </property>
+            <property>
+                <proptype>setFiles()</proptype>
+                <propdesc>set the list of files to be uploaded from form selection</propdesc>
+            </property>
+        </properties>
+    </refbody>
+</reference>
