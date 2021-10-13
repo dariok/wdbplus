@@ -2,13 +2,15 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace console   = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace templates ="http://exist-db.org/xquery/templates"   at "/db/apps/shared-resources/content/templates.xql";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace console   = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
 
-declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
-declare namespace mods   = "http://www.loc.gov/mods/v3";
+declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets = "http://www.loc.gov/METS/";
+declare namespace mods = "http://www.loc.gov/mods/v3";
+declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)
@@ -35,11 +37,12 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
     )[1]
   
   return map {
-    "ed": $ed,
+    "ed":          $ed,
     "infoFileLoc": $infoFileLoc,
-    "page": substring-after(request:get-uri(), "admin/"),
-    "pathToEd": $pathToEd,
-    "title": $title
+    "page":        substring-after(request:get-uri(), "admin/"),
+    "pathToEd":    $pathToEd,
+    "title":       $title,
+    "auth":        sm:id()/sm:id
   }
 };
 
@@ -68,7 +71,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
       switch ($model?page)
         case "projects.html" return (
           <button type="button">(Unter-)Projekt erstellen</button>,<br/>,
-          <a href="directoryForm.html?id={$model?ed}">Dateien hochladen</a>
+          <a href="directoryForm.html?ed={$model?ed}">Dateien hochladen</a>
         )
         default return ()
     }
@@ -77,7 +80,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
     <hr />
     <div class="info" role="contentinfo">
       <h2>Projekt-Info</h2>
-      {wdb:get($model, "")}
+      <dl>{ wdbErr:get($model, "") }</dl>
     </div>
   </aside>
 };

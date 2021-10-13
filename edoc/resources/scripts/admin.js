@@ -12,22 +12,25 @@ const wdbAdmin = {
       success: function (data) {
         this.getPaths(data);
         $("input[type='submit']").prop("disabled", false);
-        $("aside").html("");
       },
-      error: function (response) {
-        console.log(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+      error: function ( response ) {
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+          response, $('aside'));
       }
     });
     $('#selectTarget').show();
   },
   
   getPaths: function ( data ) {
-    if (data.hasOwnProperty("path"))
-      $('#selectTarget select').append("<option>" + data.path + "</option>");
-    if (data.hasOwnProperty("collection"))
-      if (data.collection instanceof Array) data.collection.forEach(function(coll) { this.getPaths(coll); });
-      else $('#selectTarget select').append("<option>" + data.collection.path + "</option>");
+    if (data instanceof Array) {
+      data.forEach(function( subcollection ) {
+        if (subcollection == "texts") {
+          $('#selectTarget select').append('<option selected="selected">' + subcollection + '</option>');
+        } else {
+          $('#selectTarget select').append("<option>" + subcollection + "</option>");
+        }
+      });
+    }
   },
 
   // show info for a file
@@ -42,25 +45,54 @@ const wdbAdmin = {
     this.displayRight ( url );
   },
 
+  ingestAction: function ( event ) {
+    if(event.target.id == "fi") {
+      $('#picker').attr('webkitdirectory', null);
+      $('#selectInputDir label').text("Datei auswählen");
+    }
+    else {
+      $('#picker').attr('webkitdirectory', 'true');
+      $('#selectInputDir label').text("Verzeichnis auswählen");
+    }
+  },
+
   /* actual upload */
-  doUpload: async function (method, url, headers, formdata, item) {
-    return $.ajax({
-      method: method,
-      url: url,
-      headers: headers,
-      data: formdata,
-      contentType: false,
-      processData: false,
-      success: function (response, textStatus) {
-        $(item).children("span")[0].innerText = "✓";
-        $(item).append('<span class="success">' + textStatus + '</span>');
+  dirupload: async function ( event ) {
+    event.preventDefault();
+  
+    // try to determine whether a file with that ID already exists in the target collection
+    /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
+     * a 409 will be returned upon POST or PUT */
+    let collectionContent,
+        delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+    
+    await $.ajax({
+      method: "get",
+      dataType: "json",
+      url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
+      success: function ( data, textStatus, jqXHR ) {
+        if (jqXHR.status == 204) {
+          collectionContent = { resources: [] };
+        } else {
+          collectionContent = data;
+        }
       },
-      error: function (response) {
-        $(item).children("span")[0].innerText = "✕";
-        $(item).append('<span class="error">Error: ' + response.status + "</span>");
-        console.error("error " + method.toUpperCase() + "ing to " + url, response);
+      error: function ( response ) {
+        wdb.report("error", "error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
+        return false;
       }
     });
+  
+    let contents = {};
+    if ( Array.isArray(collectionContent.resources) ) {
+      for (let content of collectionContent.resources) {
+        contents[content["@id"]] = content["@label"];
+      }
+    } else if ( collectionContent.resources.hasOwnProperty("@id") ) {
+      contents[collectionContent.resources["@id"]] = collectionContent.resources["@label"];
+    }
+  
+    wdbAdmin.uploadFiles(contents);
   },
 
   uploadFiles: function ( collectionContent ) {
@@ -69,11 +101,12 @@ const wdbAdmin = {
     for (let i = 0; i < this.files.length; i++) {
       let reader = new FileReader(),
           file = this.files[i],
-          listItem = $('#results').children()[i];
+          tableRow = $('#results').children()[i + 1], // first child: table head
+          tableData = tableRow.children[2];           // last child: status column
       
       /* jshint loopfunc: true*/
       reader.onload = async function ( readFile ) {
-        $(listItem).children("span")[0].innerText = "…";
+        tableData.innerText = ".";
         let fileContent = readFile.target.result,
             parser = new DOMParser(),
             parsed;
@@ -82,7 +115,7 @@ const wdbAdmin = {
         try {
           parsed = parser.parseFromString(fileContent, "application/xml");
         } catch (e) {
-          wdbAdmin.reportProblem("error parsing XML from " + file.name, e, listItem);
+          wdb.report("error", "error parsing XML from " + file.name, e, tableData);
           return false;
         }
 
@@ -91,11 +124,11 @@ const wdbAdmin = {
             fileID = xml.find("TEI").attr("xml:id");
         
         if (fileID === undefined || fileID == "") {
-          wdbAdmin.reportProblem("no @xml:id found in " + file.name, {}, listItem);
+          wdb.report("error", "no @xml:id found in " + file.name, {}, tableData);
           return false;
         }
 
-        console.log("parsed file’s ID: " + fileID);
+        wdb.report("info", "parsed file’s ID: " + fileID);
 
         let delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
 
@@ -103,20 +136,32 @@ const wdbAdmin = {
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
         formdata.append("file", file);
-        formdata.append("filename", file.webkitRelativePath);
+        formdata.append("filename", file.webkitRelativePath == "" ? $('select').val() + '/' + file.name : $('select').val() + '/' + file.webkitRelativePath);
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
-            $(listItem).children("span")[0].innerText = "……";
+            tableData.innerText = "…";
             //wdbAdmin.doUpload("put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem);
-            uploadManager.queueRequest(["put", wdb.meta.rest + delimiter + "resource/" + fileID + mdMode, wdb.restHeaders, formdata, listItem]);
+            uploadManager.queueRequest([
+                "put",
+                wdb.meta.rest + delimiter + "resource/" + fileID + mdMode,
+                wdb.restHeaders,
+                formdata,
+                tableData
+            ]);
           } else {
-            $(listItem).children("span")[0].innerText = "……";
+            tableData.innerText = "…";
             //wdbAdmin.doUpload("post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem);
-            uploadManager.queueRequest(["post", wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode, wdb.restHeaders, formdata, listItem]);
+            uploadManager.queueRequest([
+                "post",
+                wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed + mdMode,
+                wdb.restHeaders,
+                formdata,
+                tableData
+            ]);
           }
         } catch (e) {
-          wdbAdmin.reportProblem("error uploading " + file.name + " to collection " + wdb.parameters.ed, e, listItem);
+          wdb.report("error", "error uploading " + file.name + " to collection " + wdb.parameters.ed, e, tableData);
           return false;
         }
       };
@@ -127,11 +172,22 @@ const wdbAdmin = {
     $('p img').hide();
   },
 
-  /* usually used internally to signal errors */
-  reportProblem: function ( message, problem, listItem ) {
-    console.error(message, problem);
-    $(listItem).children("span")[0].innerText = "✕";
-    $(listItem).append('<span class="error">' + message + '</span>');
+  doUpload: async function (method, url, headers, formdata, item) {
+    return $.ajax({
+      method: method,
+      url: url,
+      headers: headers,
+      data: formdata,
+      contentType: false,
+      processData: false,
+      dataType: "text",
+      success: function (response, textStatus) {
+        wdb.report("success", "uploaded to " + url, textStatus, item);
+      },
+      error: function (response) {
+        wdb.report("error", "Error uploading to " + url + " : " + response.status, response, item);
+      }
+    });
   },
 
   files: {},
@@ -139,11 +195,13 @@ const wdbAdmin = {
     this.files = fileList;
     
     $('#results').children().remove();
+    $('#results').append("<tr><th>Local file</th><th>Target path</th><th>Status</th>");
     for (let file of fileList) {
       let task = $('#selectTask input:checked').attr("id"),
-          filePath = task == "fi" ? file.name : file.webkitRelativePath;
+          filePath = task == "fi" ? file.name : file.webkitRelativePath,
+          targetPath = $('pre').text() + "/" + $('select').val() + "/" + filePath;
       
-      $('#results').append("<li>" + filePath + "<span></span></li>");
+      $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath + "</td><td></td>");
     }
 
     $("input[type='submit']").prop("disabled", false);
@@ -154,6 +212,9 @@ const wdbAdmin = {
 /* event listeners */
 $(document).on("change", "#picker", function() {
   wdbAdmin.setFiles(this.files);
+});
+$(document).on("change", "select[name=target]", () => {
+  wdbAdmin.setFiles($('#picker')[0].files);
 });
 
 // limit the number of concurrent PUT/POST requests to avoid lockups in eXist
@@ -181,7 +242,7 @@ let uploadManager = (function() {
       
       activeRequests++;
       
-      console.log("queuing " + request[0]);
+      wdb.report("info", "queuing " + request[0]);
       wdbAdmin.doUpload(request[0], request[1], request[2], request[3], request[4])
         .then(function () {
           requestComplete();
@@ -198,70 +259,31 @@ let uploadManager = (function() {
 })();
 
 $(function() {
-  if (wdb.parameters.ed !== undefined) {
+  let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+  
+  if (wdb.parameters.ed !== undefined && filename == "directoryForm.html") {
     let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/collections.json";
+    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/structure.json";
     $.ajax({
       method: "get",
       url: url,
-      success: function () {
+      success: function ( data ) {
+        let key = Object.keys(data)[0];
+        $('#selectTarget pre').first().text(key);
+        wdbAdmin.getPaths(data[key]);
         $("input[type='submit']").prop("disabled", false);
-        $("aside").html("");
       },
       error: function (response) {
-        console.error(response);
-        $("aside").html("<p>Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.</p>");
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+            response, $('aside'));
       }
     });
     $('#selectTarget').show();
+
+    // dirupload() is called by the form’s formaction handler
+    $('form').on("submit", ( event ) => { wdbAdmin.dirupload(event); });
+    
+    // ingestAction() is called by the fieldset’s change handler
+    $('#selectTask').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
   }
 });
-
-// dirupload() is called by the form’s formaction handler
-$('form').on("submit", dirupload);
-async function dirupload ( event ) {
-  event.preventDefault();
-
-  // try to determine whether a file with that ID already exists in the target collection
-  /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
-   * a 409 will be returned upon POST or PUT */
-  let collectionContent,
-      delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-  
-  await $.ajax({
-    method: "get",
-    dataType: "json",
-    url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
-    success: function ( data ) {
-      collectionContent = data;
-    },
-    error: function ( response ) {
-      wdbAdmin.reportProblem("error getting contents of collection " + wdb.parameters.ed, response, $('p.status'));
-      collectionContent = false;
-    }
-  });
-
-  if (collectionContent === false || collectionContent === undefined) {
-    return false;
-  }
-
-  let contents = {};
-  for (let content of collectionContent.resources) {
-    contents[content["@id"]] = content["@label"];
-  }
-
-  wdbAdmin.uploadFiles(contents);
-}
-
-// ingestAction() is called by the fieldset’s change handler
-$('#selectTask').on("change", ingestAction);
-function ingestAction(event) {
-  if(event.target.id == "fi") {
-    $('#picker').attr('webkitdirectory', null);
-    $('#selectInputDir label').text("Datei auswählen");
-  }
-  else {
-    $('#picker').attr('webkitdirectory', 'true');
-    $('#selectInputDir label').text("Verzeichnis auswählen");
-  }
-}

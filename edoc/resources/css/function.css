@@ -6,6 +6,11 @@
 body {
   grid-template-columns: 3fr 7fr;
 }
+
+body > footer {
+  grid-area: bottom;
+}
+
 h1 {
   width: 100%;
   text-align: center;

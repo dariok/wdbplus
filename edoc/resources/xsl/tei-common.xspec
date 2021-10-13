@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:description xmlns:x="http://www.jenitennison.com/xslt/xspec"
+  stylesheet="tei-common.xsl">
+  
+  <x:variable name="ed">testproject</x:variable>
+  
+  <x:scenario label="T1: rs">
+    <x:scenario label="T1.1">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <rs type="person" ref="#pagebreak"><w xml:id="w1">page-<pb n="1" />break</w></rs>
+      </x:context>
+      <x:expect label=".">
+        <button class="entity person"
+          data-ref="pagebreak"
+          aria-label="opens information about an entity"><span
+            id="w1"
+            class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-1">1</span><button
+          class="entity person"
+          data-ref="pagebreak"
+          aria-label="opens information about an entity"><span
+            id="w1"
+            class="w">break</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.2">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        <rs type="person" ref="person:pagebreak"><w
+          xml:id="w2">another</w> <w
+          xml:id="w3">page-<pb n="2" />break</w></rs>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          data-ref="pagebreak"
+          aria-label="opens information about an entity">another <span
+            id="w3"
+            class="w">page-</span></button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
+          class="entity person"
+          data-ref="pagebreak"
+          aria-label="opens information about an entity"><span
+            id="w3"
+            class="w">break</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.3">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        <rs type="person" ref="http://example.org/pb">no w in page-<pb
+          n="2" />break</rs>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          data-ref="http://example.org/pb"
+          aria-label="opens information about an entity"
+          >no w in page-</button><span class="pagebreak" aria-label="..." id="p-2">2</span><button
+          class="entity person"
+          data-ref="http://example.org/pb"
+          aria-label="opens information about an entity">break</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.4 margin note">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        before <rs type="person" ref="http://example.org/pb"
+          >within<lb /><note place="margin">margin</note> rs</rs> after
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        before <button class="entity person"
+          data-ref="http://example.org/pb"
+          aria-label="opens information about an entity">within rs</button><a class="marginAnchor"
+          id="..." /> after
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.5 other note">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0" xml:space="preserve">
+        <body>before <rs type="person" ref="http://example.org/pb"
+            >within<lb /><note type="footnote">footnote</note> rs</rs> after</body>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        before <button class="entity person"
+          data-ref="http://example.org/pb"
+          aria-label="opens information about an entity">within</button><button class="footnoteNumber"
+          data-note="footnote1" id="sfootnote1" aria-label="opens a footnote">1</button><button class="entity person"
+          data-ref="http://example.org/pb"
+          aria-label="opens information about an entity"> rs</button> after
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.6 choice">
+      <x:context xml:space="preserve">
+        <body><rs xmlns="http://www.tei-c.org/ns/1.0" type="person" ref="#armandus_bellovisu">
+          <choice>
+            <corr>Armandi</corr>
+            <corr type="corrigenda" corresp="#corr016">Armandus</corr>
+            <sic>Armanni</sic>
+          </choice>
+        </rs></body>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          data-ref="armandus_bellovisu"
+          aria-label="opens information about an entity">Armandi</button><button class="footnoteNumber"
+          data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.7 app">
+      <x:context xml:space="preserve">
+        <body xmlns="http://www.tei-c.org/ns/1.0"><rs type="person" ref="#heinrich_gent"><w>Hen<lb
+          xml:id="z27" n="26"/>ricus</w> <app>
+            <lem wit="#g #S">de Gandavo</lem>
+            <rdg wit="#N #B #V #P"/>
+          </app></rs></body>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <button class="entity person"
+          data-ref="heinrich_gent"
+          aria-label="opens information about an entity">Henricus </button><button class="footnoteNumber"
+          data-note="crita" id="scrita" aria-label="opens a footnote">a</button><button class="entity person"
+          data-ref="heinrich_gent"
+          aria-label="opens information about an entity">de Gandavo</button><button class="footnoteNumber"
+          data-note="crita" id="ecrita" aria-label="opens a footnote">a</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T1.8 multiple">
+      <x:context xml:space="preserve">
+        <body xmlns="http://www.tei-c.org/ns/1.0"><subst><add/></subst> <rs type="person" ref="#heinrich_gent"><w>Hen<lb
+            xml:id="z27" n="26"/>ricus</w> <app><lem wit="#g #S">after</lem><rdg wit="#N #B #V #P"/></app></rs></body>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+         <button class="entity person"
+           data-ref="heinrich_gent"
+           aria-label="opens information about an entity">Henricus </button><button
+           data-ref="heinrich_gent" class="entity person"
+           aria-label="opens information about an entity">after</button><button class="footnoteNumber"
+           data-note="critb" id="ecritb" aria-label="opens a footnote">b</button>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T2: footnotes">
+    <x:scenario label="T2.1">
+      <x:context mode="fnLink" xmlns="http://www.tei-c.org/ns/1.0">
+        <app /><app />
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="opens a footnote" class="footnoteNumber" data-note="α" id="sα">α</button>
+        <button aria-label="opens a footnote" class="footnoteNumber" data-note="β" id="sβ">β</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T2.2: button for full text notes">
+      <x:context>
+        <body xmlns="http://www.tei-c.org/ns/1.0">
+          <note type="annotation"
+            >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+            von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+        </body>
+      </x:context>
+      <x:expect label=".">
+        <button id="sannotation1" data-note="annotation1" class="footnoteNumber" aria-label="...">1</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T2.3: text of full text notes">
+      <x:context mode="fnText">
+        <note xmlns="http://www.tei-c.org/ns/1.0" type="annotation" xml:id="n145"
+          >Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</note>
+      </x:context>
+      <x:expect label=".">
+        <div class="annotation" id="n145">
+          <p>Tochter des Landgrafen Philipp I. von Hessen; sie heiratete am 9.1.1541 Kurfürst Moritz 
+          von Sachsen und in zweiter Ehe am 26.5.1555 Herzog Johann Friedrich II. von Sachsen</p>
+        </div>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T3: page breaks">
+    <x:scenario label="T3.1">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <body>
+          <pb n="1" facs="http://example.org" />
+        </body>
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-1"
+          data-image="http://example.org">1</button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T3.2">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <TEI>
+          <facsimile>
+            <surface xml:id="test">
+              <graphic url="https://example.org/test" />
+            </surface>
+          </facsimile>
+          <body>
+            <pb n="42r" facs="#test" />
+          </body>
+        </TEI>
+      </x:context>
+      <x:expect label=".">
+        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p-42r"
+          data-image="https://example.org/test">42<span class="rectoVerso">r</span></button>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T3.3">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <pb n="12v" ed="ed1" />
+      </x:context>
+      <x:expect label=".">
+        <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="ped1-12v">12<span
+          class="rectoVerso">v</span></span>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T4: miscellaneous">
+    <x:scenario label="T4.1: anchor">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <p>Text before<anchor type="start" xml:id="a1s" /> and after</p>
+      </x:context>
+      <x:expect label=".">
+        <p>Text before<a class="anchor start" id="a1s" /> and after</p>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.3: cit">
+      <x:context>
+        <cit xmlns="http://www.tei-c.org/ns/1.0">
+          <quote source="#quoteref6">In fact, the nature of a given class of elements can be considered along two 
+            dimensions: ...</quote>
+          <ref target="#tei15" xml:id="quoteref6" type="bibl">TEI Consortium 2014, 1.3.2</ref>
+        </cit>
+      </x:context>
+      <x:expect label=".">
+        <blockquote>
+          <p>...</p>
+        </blockquote>
+        <a href="#tei15" class="ref bibl" id="quoteref6" aria-label="link to an external file">TEI Consortium 2014, 1.3.2</a>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.4: hi">
+      <x:context>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" rend="font-style: italic;">Obedientia erga legem Dei, est necessaria in reconciliatis. ibidem, </hi>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" style="font-style: italic;">II. Chronikbuch</hi>
+        <hi xmlns="http://www.tei-c.org/ns/1.0" rendition="#i">Karolus Quartus Divina Favente Clemencia Romanorum Imperator Semper Augustus Et
+          Boemie Rex.</hi>
+      </x:context>
+      <x:expect label=".">
+        <span>Obedientia erga legem Dei, est necessaria in reconciliatis. ibidem, </span>
+        <span style="font-style: italic;">II. Chronikbuch</span>
+        <span class="i">Karolus Quartus Divina Favente Clemencia Romanorum Imperator Semper Augustus Et
+          Boemie Rex.</span>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.5: quote">
+      <x:context>
+        <quote xmlns="http://www.tei-c.org/ns/1.0" xml:id="q101" xml:lang="de">Solchs wil ich, das du fest lerest, auff das die, <hi
+          style="font-style: italic;">so an Gott gleubig seind worden, in eim stand guter wercke funden werden. Solches ist gut vnd nuͤtze den menschen.</hi>
+        </quote>
+      </x:context>
+      <x:expect label=".">
+        <q id="q101" lang="de">Solchs wil ich, das du fest lerest, auff das die, <span style="font-style: italic;"
+          >so an Gott gleubig seind worden, in eim stand guter wercke funden werden. Solches ist gut vnd nuͤtze den menschen.</span>
+        </q>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.6">
+      <x:context>
+        <seg xmlns="http://www.tei-c.org/ns/1.0" xml:id="bedeutung_frieden" xml:lang="de" type="addendum"
+          >Die Zuweisung, das Edikt sei ewig und unwiderruflich, strich die besondere Bedeutung dieses Friedens für <rs
+            type="person" ref="#karl_viiii">Karl IX.</rs> hervor.</seg>
+      </x:context>
+      <x:expect label=".">
+        <span id="bedeutung_frieden" lang="de" class="seg addendum"
+          >Die Zuweisung, das Edikt sei ewig und unwiderruflich, strich die besondere Bedeutung dieses Friedens für <button
+            class="entity person" data-ref="karl_viiii" aria-label="...">Karl IX.</button> hervor.</span>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T4.7: term">
+      <x:context>
+        <term xmlns="http://www.tei-c.org/ns/1.0">term</term>
+      </x:context>
+      <x:expect label=".">
+        <span class="term">term</span>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T5: linking">
+    <x:scenario label="T5.1">
+      <x:context>
+        <ptr xmlns="http://www.tei-c.org/ns/1.0"
+          target="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf"/>
+        <ptr xmlns="http://www.tei-c.org/ns/1.0" type="external"
+          target="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf"/>
+        <ptr xmlns="http://www.tei-c.org/ns/1.0" type="link"
+          target="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf"/>
+      </x:context>
+      <x:expect label=".">
+        <a href="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf" class="ptr"
+          aria-label="link to an external file">http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
+        <a href="http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf" class="ptr"
+          aria-label="link to an external file">http://subs.emis.de/LNI/Proceedings/Proceedings72/GI-Proceedings.72-11.pdf</a>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T5.2">
+      <x:context>
+        <ref xmlns="http://www.tei-c.org/ns/1.0" target="http://www.controversia-et-confessio.de/">Controversia
+          <lb/> et Confessio</ref>
+      </x:context>
+      <x:expect label=".">
+        <a href="http://www.controversia-et-confessio.de/" class="ref"
+          aria-label="link to an external file">Controversia
+           et Confessio</a>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T5.3">
+      <x:context xmlns="http://www.tei-c.org/ns/1.0">
+        <ref target="#tei15" xml:id="quoteref6" type="bibl">TEI Consortium 2014, 1.3.2</ref>
+      </x:context>
+      <x:expect label=".">
+        <a class="ref bibl" href="#tei15" id="quoteref6"
+          aria-label="link to an external file">TEI Consortium 2014, 1.3.2</a>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T5.4">
+      <x:context>
+        <ptr xmlns="http://www.tei-c.org/ns/1.0" type="wdb" target="../xspec-testitem.xml"/>
+        <ptr xmlns="http://www.tei-c.org/ns/1.0" type="wdb" target="../xspec-testitem.xml#fragment"/>
+      </x:context>
+      <x:expect label=".">
+        <a href="view.html?id=xspec-testitem" class="crossRef"
+          aria-label="link to a place within this file or another file in the framework">Test-TEI for XSpec Unit Testing</a>
+        <a href="view.html?id=xspec-testitem#fragment" class="crossRef"
+          aria-label="link to a place within this file or another file in the framework">Test-TEI for XSpec Unit Testing</a>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T6: tables">
+    <x:scenario label="T6.1">
+      <x:context>
+        <table xmlns="http://www.tei-c.org/ns/1.0" xml:id="table1" rend="border">
+          <head>Responses to demographic questions pertaining to the respondent’s institutional affiliation (n=112).</head>
+          <row role="label">
+            <cell cols="2">Where is your institution located?</cell>
+            <cell cols="2">Indicate the type of library for which you work.</cell>
+            <cell cols="2">What is the size of your academic institution based on student enrollment or number of patrons served?</cell>
+          </row>
+          <row>
+            <cell>Asia</cell>
+            <cell>2</cell>
+            <cell>Academic Library</cell>
+            <cell>92</cell>
+            <cell>Up to 5,000</cell>
+            <cell>8</cell>
+          </row>
+          <row>
+            <cell cols="2"/>
+            <cell>No Response</cell>
+            <cell>0</cell>
+            <cell>No Response</cell>
+            <cell>25</cell>
+          </row>
+        </table>
+      </x:context>
+      <x:expect label=".">
+        <table id="table1">
+          <caption>Responses to demographic questions pertaining to the respondent’s institutional affiliation (n=112).</caption>
+          <thead>
+            <tr>
+              <th colspan="2">Where is your institution located?</th>
+              <th colspan="2">Indicate the type of library for which you work.</th>
+              <th colspan="2">What is the size of your academic institution based on student enrollment or number of patrons served?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Asia</td>
+              <td>2</td>
+              <td>Academic Library</td>
+              <td>92</td>
+              <td>Up to 5,000</td>
+              <td>8</td>
+            </tr>
+            <tr>
+              <td colspan="2"/>
+              <td>No Response</td>
+              <td>0</td>
+              <td>No Response</td>
+              <td>25</td>
+            </tr>
+          </tbody>
+        </table>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T6.2">
+      <x:context xml:space="preserve">
+        <table xmlns="http://www.tei-c.org/ns/1.0" facs="#facs_13_tbl_14_14">
+          <row n="0">
+            <cell facs="#facs_13_r_14_1_1" n="0" rend="0000"> <lb facs="#facs_13_r_14_1_1l1" n="N001"/><w
+              xml:id="w26028">Ringband</w> <pc xml:id="pc6814">.</pc> <pc xml:id="pc6815">.</pc> <pc xml:id="pc6816"
+                >.</pc> <pc xml:id="pc6817">.</pc> <w xml:id="w26029">Meter</w></cell>
+            <cell facs="#facs_13_r_14_1_2" n="1" rend="0000"> <lb facs="#facs_13_r_14_1_2l1" n="N001"/><num
+              xml:id="num1335">10</num> <w xml:id="w26030">₰</w></cell>
+          </row>
+          <row n="1">
+            <cell facs="#facs_13_r_14_2_1" n="0" rend="0000"> <lb facs="#facs_13_r_14_2_1l1" n="N001"/><w
+              xml:id="w26031">Brise</w><pc xml:id="pc6818">-</pc><w xml:id="w26032">Bisesstangen</w> <pc
+              xml:id="pc6819">„</pc></cell>
+            <cell facs="#facs_13_r_14_2_2" n="1" rend="0000"> <lb facs="#facs_13_r_14_2_2l1" n="N001"/><num
+              xml:id="num1336">5</num> <w xml:id="w26033">₰</w></cell>
+          </row>
+        </table>
+      </x:context>
+      <x:expect label="." xml:space="preserve">
+        <table>
+          <tr>
+            <td> Ringband . . . . Meter</td>
+            <td> 10 ₰</td>
+          </tr>
+          <tr>
+            <td> Brise-Bisesstangen „</td>
+            <td> 5 ₰</td>
+          </tr>
+        </table>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T7: outline">
+    <x:scenario label="T7.1">
+      <x:context>
+        <TEI xmlns="http://www.tei-c.org/ns/1.0">
+          <facsimile>
+            <surface xml:id="cetc-2-46">
+              <graphic url="test" />
+            </surface>
+          </facsimile>
+          <text>
+            <body>
+              <div>
+                <head>erste Überschrift</head>
+              </div>
+              <div>
+                <pb ed="ed2" facs="#cetc-2-46" n="46"/>
+                <head>Die Autoren/Herausgeber</head>
+                <div>
+                  <head>Die Hamburger Prediger</head>
+                  <p>In allen Drucken sind lediglich pauschal die Hamburger Prediger als Absender</p>
+                  <div>
+                    <head>Johannes Aepin(us)</head>
+                    <p>Er wurde <date when="1499">1499</date> als Sohn des Ratsherrn</p>
+                  </div>
+                  <div>
+                    <head><rs type="person">Joachim Francke</rs><note type="footnote"><rs type="bibl"
+                      >Jensen 72</rs>; <rs type="bibl" ref="#mbw">MBW 12, 80</rs></note>
+                    </head>
+                    <p>Er stammte aus <rs type="place" ref="#stralsund">Stralsund</rs>.</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+          </text>
+        </TEI>
+      </x:context>
+      <x:expect label=".">
+        <article>
+          <section aria-label="contains the main text, e.g. transcript or introduction" id="content_container">
+            <section>
+              <h2>erste Überschrift</h2>
+            </section>
+            <section>
+              <button aria-label="..." class="pagebreak" id="ped2-46" data-image="test">46</button>
+              <h2>Die Autoren/Herausgeber</h2>
+              <section>
+                <h3>Die Hamburger Prediger</h3>
+                <p>In allen Drucken sind lediglich pauschal die Hamburger Prediger als Absender</p>
+                <section>
+                  <h4>Johannes Aepin(us)</h4>
+                  <p>Er wurde 1499 als Sohn des Ratsherrn</p>
+                </section>
+                <section>
+                  <h4><button class="entity person" data-ref="..." aria-label="...">Joachim Francke</button><button
+                    id="sfootnote1" data-note="footnote1" aria-label="..." class="footnoteNumber">1</button>
+                  </h4>
+                  <p>Er stammte aus <button class="entity place" data-ref="stralsund" aria-label="..."
+                    >Stralsund</button>.</p>
+                </section>
+              </section>
+            </section>
+          </section>
+          <section aria-label="contains full text footnotes for this text" id="footnote_container">
+            <div class="annotation" id="footnote1">
+              <p><button class="entity bibl" data-ref="" aria-label="...">Jensen 72</button>; <button
+                class="entity bibl" data-ref="mbw" aria-label="...">MBW 12, 80</button></p>
+            </div>
+          </section>
+        </article>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+  
+  <x:scenario label="T8: lists">
+    <x:scenario label="T8.1: list with labels">
+      <x:context>
+        <list type="testList" xmlns="http://www.tei-c.org/ns/1.0">
+          <label>label</label>
+          <item>item</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <dl class="testList">
+          <dt>label</dt>
+          <dd>item</dd>
+        </dl>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T8.2: ordered list">
+      <x:context>
+        <list type="testList" rend="numbered" xmlns="http://www.tei-c.org/ns/1.0">
+          <item>item1</item>
+          <item>item2</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <ol class="testList">
+          <li>item1</li>
+          <li>item2</li>
+        </ol>
+      </x:expect>
+    </x:scenario>
+    <x:scenario label="T8.3: unordered list">
+      <x:context>
+        <list type="testList" xmlns="http://www.tei-c.org/ns/1.0">
+          <item>item1</item>
+          <item>item2</item>
+        </list>
+      </x:context>
+      <x:expect label=".">
+        <ul class="testList">
+          <li>item1</li>
+          <li>item2</li>
+        </ul>
+      </x:expect>
+    </x:scenario>
+  </x:scenario>
+</x:description>

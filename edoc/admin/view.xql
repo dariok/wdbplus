@@ -6,11 +6,9 @@
 xquery version "3.1";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
-declare option output:method "html5";
-declare option output:media-type "text/html";
 
 import module namespace config    = "http://exist-db.org/xquery/apps/config"           at "../modules/config.xqm";
-import module namespace templates = "http://exist-db.org/xquery/templates";
+import module namespace templates = "http://exist-db.org/xquery/html-templating"       at "/db/system/repo/templating-1.0.2/content/templates.xqm";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"            at "../modules/app.xqm";
 import module namespace wdbAdmin  = "https://github.com/dariok/wdbplus/Admin"          at "admin.xqm";
 import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"           at "../modules/auth.xqm";
@@ -18,12 +16,13 @@ import module namespace wdbGS     = "https://github.com/dariok/wdbplus/GlobalSet
 import module namespace wdbPL     = "https://github.com/dariok/wdbplus/ProjectList"    at "projects.xqm";
 import module namespace wdbPN     = "https://github.com/dariok/wdbplus/ProjectNew"     at "new.xqm";
 
+declare option output:method "html";
+declare option output:media-type "text/html";
+
 (: 
  : The following modules provide functions which will be called by the 
  : templating.
  :)
-import module namespace config = "http://exist-db.org/xquery/apps/config" 	at "config.xqm";
-
 let $config := map {
   $templates:CONFIG_APP_ROOT: $config:app-root,
   $templates:CONFIG_STOP_ON_ERROR: true()

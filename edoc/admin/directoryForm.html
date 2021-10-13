@@ -1,24 +1,29 @@
 <div data-template="templates:surround" data-template-with="templates/admin.html" data-template-at="container">
   <h1>Funktion</h1>
-  <form action="#" method="post" onsubmit="dirupload(event);">
-    <fieldset id="selectTask" onchange="ingestAction(event);">
-      <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta (restore)</input>
-      <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta (ingest)</input>
-      <input type="radio" name="task" id="fi" checked="checked">Einzeldatei mit Eintragen in wdbmeta</input>
+  <form action="#" method="post">
+    <fieldset id="selectTask">
+      <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta (restore)</input><br />
+      <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta (ingest)</input><br />
+      <input type="radio" name="task" id="fo" checked="checked">Einzeldatei ohne Eintragen in wdbmeta</input><br />
+      <input type="radio" name="task" id="fi" checked="checked">Einzeldatei mit Eintragen in wdbmeta</input><br />
     </fieldset>
     <fieldset id="selectTarget">
+      <label>Collection: </label>
+      <pre/>
+      <br/>
       <label>Zielcollection auswählen: </label>
-      <select name="target"></select>
+      <select name="target">
+        <option/>
+      </select>
     </fieldset>
     <fieldset id="selectInputDir">
       <label>Datei auswählen: </label>
-      <input type="file" id="picker" name="fileList" />
+      <input type="file" id="picker" name="fileList"/>
     </fieldset>
-    <input type="submit" disabled="disabled" />
+    <input type="submit" disabled="disabled"/>
   </form>
-  <p class="status" style="padding: 1em 0;">Ausgewähltes Quellverzeichnis: <i></i></p>
   <p>
     <img src="../resources/FhHRx.gif" style="display: none;" alt="loading"/>
   </p>
-  <ul id="results"/>
+  <table id="results"/>
 </div>
