@@ -592,8 +592,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
      : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
      : but rather throws an error... :)
     let $css := $model?pathToEd || "/scripts/project.css",
-        $js := $model?pathToEd || "/scripts/project.js",
-        $t := console:log($css)
+        $js := $model?pathToEd || "/scripts/project.js"
+	
     return
     (
       try {
