@@ -27,8 +27,8 @@ const wdb = (function() {
   };
 
   /* Login and logout */
-  let login = function (event) {
-	  event.preventDefault();
+  let login = function (event, reload) {
+    event.preventDefault();
   
     let username = $('#user').val(),
         password = $('#password').val();
@@ -51,9 +51,12 @@ const wdb = (function() {
           $('#logout').on('click', () => {
             wdb.logout();
           });
-          this.report("info", "logged in");
+          wdb.report("info", "logged in");
+          if ( reload ) {
+             location.reload()
+          }
         } catch (e) {
-          this.report("error", "error logging in", e);
+          wdb.report("error", "error logging in", e);
         }
       },
       dataType: 'text'
@@ -338,8 +341,10 @@ const wdbDocument = {
   // generic laoding function
   loadContent: function ( url, target, me ) {
     if ($('#' + target).css('display') == 'none') {
-      $.ajax(url,
+      $.ajax(
         {
+          url: url,
+          headers: wdb.restHeaders,
           dataType: 'html',
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
@@ -552,6 +557,23 @@ const wdbDocument = {
       } else {
         $(anchorElement).html('→');
       }
+    },
+
+    /* load navigation of an imported project */
+    loadNavigation: function ( ed ) {
+      $.ajax({
+        method: "get",
+        url: wdb.meta.rest + "collection/" + ed + "/nav.html",
+        success:  ( data ) => {
+          let replacement = $(data).find('#' + ed);
+          if ( replacement.length > 0 ) {
+            $('#' + ed).replaceWith(replacement);
+          }
+        },
+        error: ( xhr, status, error ) => {
+          wdb.report("error", "error loading navigation", status + ": " + error);
+        }
+      });
     }
   },
   

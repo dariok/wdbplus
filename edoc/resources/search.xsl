@@ -8,25 +8,24 @@
   <xsl:param name="rest"/>
   
   <xsl:template match="/results">
-    <xsl:variable name="p" select="parse-json(@p)" />
-    <xsl:variable name="val">, "type": "<xsl:value-of select="$p?type" />", "job": "<xsl:value-of select="$p?job" />"</xsl:variable>
+    <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
     
     <div>
       <h1>Suchergebnisse für »<xsl:value-of select="@q"/>«</h1>
       <xsl:if test="@count &gt; 25 and (@from != '' and @from &gt; 1)">
         <xsl:variable name="f1">
-          <xsl:text>&#x7B;"start": 1</xsl:text>
+          <xsl:text>{"start": 1</xsl:text>
           <xsl:value-of select="$val"/>
-          <xsl:text>&#x7D;</xsl:text>
+          <xsl:text>}</xsl:text>
         </xsl:variable>
         <xsl:variable name="f2">
-          <xsl:text>&#x7B;"start": 1</xsl:text>
+          <xsl:text>{"start": 1</xsl:text>
           <xsl:value-of select="if(@from &gt; 25) then @from - 25 else 1"/>
           <xsl:value-of select="$val"/>
-          <xsl:text>&#x7D;</xsl:text>
+          <xsl:text>}</xsl:text>
         </xsl:variable>
-        <a href="search.html?id={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">[1]</a>
-        <a href="search.html?id={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[<xsl:value-of select="@from - 25"/>–<xsl:value-of select="@from - 1"/>]</a>
+        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">[1]</a>
+        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[<xsl:value-of select="@from - 25"/>–<xsl:value-of select="@from - 1"/>]</a>
       </xsl:if>
       <span>
         <xsl:text> – Treffer </xsl:text>
@@ -39,25 +38,25 @@
       </span>
       <xsl:if test="@count &gt; 25 and @from + 25 &lt; @count">
         <xsl:variable name="f1">
-          <xsl:text>&#x7B;"start": </xsl:text>
+          <xsl:text>{"start": </xsl:text>
           <xsl:value-of select="@from + 25"/>
           <xsl:value-of select="$val"/>
-          <xsl:text>&#x7D;</xsl:text>
+          <xsl:text>}</xsl:text>
         </xsl:variable>
         <xsl:variable name="f2">
-          <xsl:text>&#x7B;"start": </xsl:text>
+          <xsl:text>{"start": </xsl:text>
           <xsl:value-of select="@count - 24"/>
           <xsl:value-of select="$val"/>
-          <xsl:text>&#x7D;</xsl:text>
+          <xsl:text>}</xsl:text>
         </xsl:variable>
-        <a href="search.html?id={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">
+        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">
           <xsl:text>[</xsl:text>
           <xsl:value-of select="@from + 25"/>
           <xsl:text>–</xsl:text>
           <xsl:value-of select="if(@from + 49 &lt; @count) then @from + 49 else @count"/>
           <xsl:text>]</xsl:text>
         </a>
-        <a href="search.html?id={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[Ende]</a>
+        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[Ende]</a>
       </xsl:if>
       <ul>
         <xsl:apply-templates/>
