@@ -300,13 +300,13 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/wdb.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/resources/css/view.css" />
     {
       if (util:binary-doc-available($wdb:data || "/resources/view.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/view.css" />
+        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
         else ()
     }
     { if ( $model?annotation = true() )
@@ -325,7 +325,7 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <script src="{$wdb:edocBaseURL}/resources/scripts/function.js"></script>
     {
       if (util:binary-doc-available($wdb:data || "/resources/function.js"))
-        then <script src="{$wdb:edocBaseURL}/data/resources/function.js"></script>
+        then <script src="{$wdb:data}/resources/function.js"></script>
         else ()
     }
     {wdb:getProjectFiles($node, $model, 'js')}
