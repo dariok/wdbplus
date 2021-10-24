@@ -134,9 +134,12 @@ const wdbAdmin = {
 
         let formdata = new FormData(),
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
+        
+        let filenameBase = file.webkitRelativePath == "" ? $('select').val() + '/' + file.name : $('select').val() + '/' + file.webkitRelativePath,
+            filenameMod = filenameBase.replaceAll(',', '').replaceAll(' ', '_').replaceAll('&', '-');
 
         formdata.append("file", file);
-        formdata.append("filename", file.webkitRelativePath == "" ? $('select').val() + '/' + file.name : $('select').val() + '/' + file.webkitRelativePath);
+        formdata.append("filename", filenameMod);
           
         try {
           if (collectionContent.hasOwnProperty(fileID)) {
