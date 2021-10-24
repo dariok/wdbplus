@@ -799,7 +799,7 @@ declare function wdb:parseMultipart ( $data, $boundary ) {
                 then map:merge( 
                   for $entry in tokenize($val, '; ') return
                     if (contains($entry, '='))
-                    then map:entry ( substring-before($entry, '='), util:eval($entry => substring-after('=')) )
+                    then map:entry ( substring-before($entry, '='), substring-after($entry, '=') )
                     else map:entry ( "text", $entry )
                 )
                 else $val
