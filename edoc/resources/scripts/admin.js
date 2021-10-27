@@ -287,6 +287,6 @@ $(function() {
     $('form').on("submit", ( event ) => { wdbAdmin.dirupload(event); });
     
     // ingestAction() is called by the fieldset’s change handler
-    $('#selectTask').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
+    $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
   }
 });
