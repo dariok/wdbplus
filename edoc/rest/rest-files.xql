@@ -75,10 +75,10 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
       let $collectionPath := xstring:substring-before-last($fullPath, '/')
       
-      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType)
-      let $meta := if (contains($contentType, "xml"))
-      then wdbRi:enterMetaXML($store[2])
-      else wdbRi:enterMeta($store[2])
+      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType),
+          $meta := if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") )
+            then wdbRi:enterMetaXML($store[2])
+            else wdbRi:enterMeta($store[2])
     return if ($store[1]//http:response/@status = "200"
         and $meta[1]//http:response/@status = "200")
     then

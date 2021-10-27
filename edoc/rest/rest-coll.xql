@@ -200,7 +200,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
     
       (: store $prepped, not $contents as parse-xml() adds prefixes :)
       let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType),
-          $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
+          $meta := if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") )
             then wdbRMi:enterMetaXML($store[2])
             else wdbRMi:enterMeta($store[2])
       
