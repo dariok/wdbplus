@@ -195,7 +195,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
     let $err := if ($contents instance of document-node() and not($id))
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no ID found in XML file")
       else if (collection($wdb:data)/id($id))
-        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "a file with the ID " || $id || " is already present", 409)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h409"), "a file with the ID " || $id || " is already present")
         else ()
     
       (: store $prepped, not $contents as parse-xml() adds prefixes :)
@@ -228,7 +228,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
   } catch * {
     (
       <rest:response>
-        <http:response status="{400}">
+        <http:response status="{substring($err:code, 9)}">
           <http:header name="Content-Type" value="text/plain" />
           <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
