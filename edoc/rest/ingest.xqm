@@ -315,6 +315,8 @@ declare function wdbRMi:createCollection ($coll as xs:string) {
 declare function wdbRMi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
   if ($element instance of document-node() and $element/*/@xml:id)
   then string($element/*/@xml:id)
+  else if  ( $element instance of element() )
+  then string($element/@xml:id)
   else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
 };
 
