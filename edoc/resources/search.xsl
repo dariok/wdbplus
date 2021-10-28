@@ -87,18 +87,18 @@
       <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
       <a href="javascript:void(0);" onclick="$('#{parent::results/@id}{@fragment}').toggle();"> →</a>
       <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
-        <xsl:apply-templates select="match"/>
+        <xsl:apply-templates select="*"/>
       </div>
     </li>
   </xsl:template>
   
-  <xsl:template match="match">
+  <xsl:template match="match | *:p">
     <p>
       <xsl:apply-templates/>
     </p>
   </xsl:template>
   
-  <xsl:template match="exist:match">
+  <xsl:template match="exist:match | *:span[@class eq 'hi']">
     <span class="fts-match">
       <xsl:apply-templates />
     </span>
