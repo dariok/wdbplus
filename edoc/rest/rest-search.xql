@@ -58,7 +58,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
           <http:header name="Cache-Control" value="no-cache" />
         </http:response>
       </rest:response>,
-      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
         for $f in subsequence($result, $start, 25)
         return
           <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
@@ -147,6 +147,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     let $query := lower-case(xmldb:decode($q))
     (: querying for tei:w only will return no context :)
     let $res := $file//tei:p[ft:query(., $query)]
+          | $file//tei:ab[ft:query(., $query)]
           | $file//tei:table[ft:query(., $query)]
           | $file//tei:item[ft:query(., $query)]
           | $file//tei:head[ft:query(., $query)]
@@ -154,7 +155,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     let $max := count($res)
     
     return
-      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
+      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
         for $h in subsequence($res, $start, 25) return
           <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
               kwic:summarize($h, <config width="40" />, $wdbRs:callback)
