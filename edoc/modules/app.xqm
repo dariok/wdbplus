@@ -330,10 +330,11 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() 
     { wdb:getProjectFiles($node, $model, 'js') }
   </head>
 };
+
 (:~
  : return the header - if there is a project specific function, use it
  :)
-declare function wdb:getHeader ( $node as node(), $model as map(*) ) {
+declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
     if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
       util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
