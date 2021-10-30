@@ -2,13 +2,11 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace console   = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace request   = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
 import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
 import module namespace util      = "http://exist-db.org/xquery/util"            at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"     at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"    at "/db/apps/edoc/modules/start.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
 
@@ -17,8 +15,8 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)
  : 
- : @param $ed The ID of a _project_
  : @param $id The ID of a _resource_
+ : @param $ed The ID of a _project_
  : @param $p  A string or a JSON-like string containing additional query parameters
  : @param $q  The main query parameter
  : @return    The model
@@ -29,7 +27,8 @@ declare
     %templates:default("id", "")
     %templates:default("ed", "")
     %templates:wrap
-function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string, $q as xs:string) {
+function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
+    $q as xs:string ) as item()* {
   try {
     if ( contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
@@ -42,12 +41,20 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as
         "ed":       $ed,
         "auth":     sm:id()/sm:id
       }
-    else
-      let $pid := if ($id = "")
-        then normalize-space(doc($wdb:data || '/wdbmeta.xml')/*[1]/@xml:id)
-        else $id
+    else if ( $id = '' ) then
+      (: no ID: related to a project :)
+      let $pathToEd := if ( $ed = '' )
+        then $wdb:data
+        else wdb:getEdPath($ed, true())
       
-      let $map := wdb:populateModel($pid, "", $model)
+      return map {
+        "pathToEd": $pathToEd,
+        "job": $q,
+        "ed": $ed,
+        "auth": sm:id()/sm:id
+      }
+    else
+      let $map := wdb:populateModel($id, "", $model)
       let $pp := try {
         parse-json($p)
       } catch * {
@@ -59,7 +66,7 @@ function wdbfp:start($node as node(), $model as map(*), $id as xs:string, $ed as
           "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
           "q":     $q,
           "p":     $pp,
-          "id":    $pid,
+          "id":    $id,
           "ed":    $ed,
           "auth":  sm:id()/sm:id
         }
