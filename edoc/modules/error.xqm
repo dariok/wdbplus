@@ -45,11 +45,13 @@ declare function wdbErr:error ($data as map (*)) {
       <script src="resources/scripts/function.js"/>
     </head>,
     <body>
-      <div>
-        <h1>Something has gone wrong...</h1>
-        <p>{$error}</p>
-        { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
-      </div>
+      <main>
+        <div>
+          <h1>Something has gone wrong...</h1>
+          <p>{$error}</p>
+          { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
+        </div>
+      </main>
     </body>
   )
 };
