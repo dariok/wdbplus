@@ -218,10 +218,10 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
-declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*)) as item() {
+declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
     wdb:populateModel($id, $view, $model, "")
 };
-declare function wdb:populateModel($id as xs:string, $view as xs:string, $model as map(*), $p as xs:string) as item()* {
+declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
 try {
   let $pTF := wdb:getFilePath($id)
   let $pathToFile := if (sm:has-access($pTF, "r"))
@@ -267,8 +267,6 @@ try {
     "view":             $view,
     "xslt":             $xslt
   }
-  
-  (: let $t := console:log($map) :)
   
   return $map
 } catch * {
