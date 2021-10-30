@@ -33,7 +33,7 @@ declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()
   then templates:apply(doc($model("projectResources") || '/startLeft.html'),  $wdbst:lookup, $model)
   else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
   then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
-  else (<h1>Inhalt</h1>, wdbRc:getCollectionNavHTML($model?ed))
+  else (<h1>Inhalt</h1>, wdbRc:getCollectionNavHTML($model?ed)[2]/*:ul)
   (: this is currently necessary due to some eXist bug that throws an error when trying to open the REST URL via doc() or unparsed-text() :)
 };
 
