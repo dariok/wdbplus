@@ -11,3 +11,4 @@ build
 __pycache__/
 .pydevproject
 edoc/resources/xsl/xspec/
+.existdb.json
