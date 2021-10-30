@@ -3,9 +3,11 @@ xquery version "3.1";
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
 import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace functx    = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
+
 
 declare function wdbErr:error ($data as map (*)) {
   let $error := switch (xs:string($data("code")))
@@ -30,35 +32,25 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $content :=
-    <div id="content" data-template="templates:surround" data-template-with="templates/error.html" data-template-at="container">
-      <h1>Something has gone wrong...</h1>
+  return (
+    console:log($error),
+    response:set-status-code(418),
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta name="wdb-template" content="(error page)" />
+      <title>ERROR</title>
+      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
+      <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
+      <script src="resources/scripts/function.js"/>
+    </head>,
+    <body>
+      <div>
+        <h1>Something has gone wrong...</h1>
         <p>{$error}</p>
         { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
-    </div>
-  
-  let $lookup := function($functionName as xs:string, $arity as xs:int) {
-      try {
-          function-lookup(xs:QName($functionName), $arity)
-      } catch * {
-          ()
-      }
-  }
-  
-  let $t := console:log($error)
-  
-  return (
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="wdb-template" content="(error page)" />
-    <title>ERROR</title>
-    <link rel="stylesheet" type="text/css" href="resources/css/wdb.css" />
-    <link rel="stylesheet" type="text/css" href="resources/css/function.css" />
-    <!-- this one is being called from app root, so no ..! -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
-    <script src="resources/scripts/function.js"/>
-  </head>,
-  templates:process($content, $data("model"))
+      </div>
+    </body>
   )
 };
 
