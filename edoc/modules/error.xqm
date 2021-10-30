@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
 import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
 import module namespace console   = "http://exist-db.org/xquery/console";

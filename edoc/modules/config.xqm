@@ -6,7 +6,7 @@ xquery version "3.0";
  :)
 module namespace config = "http://exist-db.org/xquery/apps/config";
 
-import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
 
 declare namespace repo   = "http://exist-db.org/xquery/repo";
 declare namespace expath = "http://expath.org/ns/pkg";

@@ -12,7 +12,7 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
-import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
 import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "config.xqm";

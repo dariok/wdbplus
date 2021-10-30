@@ -2,10 +2,10 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace console   = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
+import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets = "http://www.loc.gov/METS/";

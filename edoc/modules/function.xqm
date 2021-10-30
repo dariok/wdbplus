@@ -3,7 +3,7 @@ xquery version "3.1";
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
 import module namespace request   = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace templates = "http://exist-db.org/xquery/html-templating" at "/db/system/repo/templating-1.0.2/content/templates.xqm";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace util      = "http://exist-db.org/xquery/util"            at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
