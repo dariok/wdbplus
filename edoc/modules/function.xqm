@@ -44,14 +44,17 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
     else if ( $id = '' ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = '' )
-        then $wdb:data
-        else wdb:getEdPath($ed, true())
+            then $wdb:data
+            else wdb:getEdPath($ed, true()),
+          $infoFileLoc := wdb:getMetaFile($pathToEd)
       
       return map {
         "pathToEd": $pathToEd,
         "job": $q,
         "ed": $ed,
-        "auth": sm:id()/sm:id
+        "auth": sm:id()/sm:id,
+        "infoFileLoc": $infoFileLoc,
+        "title": doc($infoFileLoc)//meta:title[1]/text()
       }
     else
       let $map := wdb:populateModel($id, "", $model)
