@@ -43,9 +43,9 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       
       let $create := wdbRc:createSubcollectionXml ($collectionData, 'data')
       
-      return if ( $create//http:response/@status = '201')
+      return if ( ($create)[1]//http:response/@status = '201')
       then
-        let $collection-uri := $create//http:header[@name = "x-rest-status"]/@value
+        let $collection-uri := $create[2]
         let $textCollection := xmldb:create-collection($collection-uri, "texts")
         let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
         let $metaFile := $collection-uri || "/wdbmeta.xml"
@@ -100,7 +100,7 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         return
           <dl>
             <dd>Collection</dd>
-            <dt>{$collection-uri/string()}</dt>
+            <dt>{$create[2]}</dt>
             <dd>wdbmeta.xml:</dd>
             <dt>{$metaFile}</dt>
             <dd>Admin</dd>
