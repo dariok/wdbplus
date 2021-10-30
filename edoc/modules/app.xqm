@@ -286,7 +286,7 @@ try {
  : Create the head for HTML files served via the templating system
  : @created 2018-02-02 DK
  :)
-declare function wdb:getHead ($node as node(), $model as map(*)) {
+declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -294,24 +294,25 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <meta name="ed" content="{$model("ed")}" />
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
-    <title>{$model("title")} – {normalize-space($wdb:configFile//config:short)}</title>
+    <title>{ $model("title") } – { normalize-space($wdb:configFile//config:short) }</title>
     <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
     {
-      if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/wdb.css" />
+      if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
+        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
     {
-      if (util:binary-doc-available($wdb:data || "/resources/view.css"))
-        then <link rel="stylesheet" type="text/css" href="{$wdb:data}/resources/view.css" />
+      if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
+        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
         else ()
     }
-    { if ( $model?annotation = true() )
+    {
+      if ( $model?annotation = true() )
         then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
         else ()
     }
-    {wdb:getProjectFiles($node, $model, 'css')}
+    { wdb:getProjectFiles($node, $model, 'css') }
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     {
       if ( $model?annotation = true() )
@@ -322,11 +323,11 @@ declare function wdb:getHead ($node as node(), $model as map(*)) {
     <script src="$shared/scripts/legal.js"></script>
     <script src="$shared/scripts/function.js"></script>
     {
-      if (util:binary-doc-available($wdb:data || "/resources/function.js"))
-        then <script src="{$wdb:data}/resources/function.js"></script>
+      if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
+        then <script src="$shared/../data/resources/function.js"></script>
         else ()
     }
-    {wdb:getProjectFiles($node, $model, 'js')}
+    { wdb:getProjectFiles($node, $model, 'js') }
   </head>
 };
 (:~
