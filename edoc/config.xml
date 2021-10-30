@@ -25,10 +25,10 @@
   
   <!-- setting the base URL to edoc can speed up all processing steps; in cases app.xqm cannot figure out the right
       setting, this value must be set to ensure stable operation. It should _not_ end with a '/' -->
-  <server>http://mydomain.tld:8088/exist/apps/edoc</server>
+  <server>http://localhost:8080/exist/apps/edoc</server>
   
   <!-- Full path for the instance’s REST base URL -->
-  <rest>http://mydomin.tld:8080/exist/restxq/edoc/</rest>
+  <rest>http://localhost:8080/exist/restxq/edoc/</rest>
   
   <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
      default: /db/apps/edoc/data -->
