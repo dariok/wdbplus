@@ -136,7 +136,9 @@ const wdbAdmin = {
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
         
         let filenameBase = file.webkitRelativePath == "" ? $('select').val() + '/' + file.name : $('select').val() + '/' + file.webkitRelativePath,
-            filenameMod = filenameBase.replaceAll(',', '').replaceAll(' ', '_').replaceAll('&', '-');
+            filenameMod = filenameBase.replaceAll(',', '').replaceAll(' ', '_').replaceAll('&', '-').replaceAll('ä', 'ae')
+                .replaceAll('Ä', 'Ae').replaceAll('ö', 'oe').replaceAll('Ö', 'Oe').replaceAll('ü', 'ue').replaceAll('Ü', 'Ue')
+                .replaceAll('ß', 'ss');
 
         formdata.append("file", file);
         formdata.append("filename", filenameMod);
