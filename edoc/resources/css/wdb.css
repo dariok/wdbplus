@@ -117,7 +117,7 @@ body > header h2 {
   padding: .5em;
   
   position: absolute;
-  top: 100%;
+  top: 5em;
   
   z-index: 99;
 }
