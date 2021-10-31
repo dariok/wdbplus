@@ -18,6 +18,39 @@ declare namespace util   = "http://exist-db.org/xquery/util";
 declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
+(:
+ : Get a resource’s ID by its persistent identifier
+ :)
+declare
+  %rest:GET
+  %rest:path("/edoc/resource/pid/{$pid}")
+  function wdbRf:getIdfromPid ( $pid as xs:anyURI ) as item()+ {
+    let $files := collection($wdb:data)//meta:file[@pid = $pid]
+    return if ( count($files) = 0 ) then 
+        <rest:response>
+          <http:response status="404">
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>
+      else if ( count($files) gt 1 ) then (
+        <rest:response>
+          <http:response status="400">
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        count($files)
+      )
+      else (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+            <http:header name="Content-Type" value="text/plain" />
+          </http:response>
+        </rest:response>,
+        $files/@xml:id/string()
+      )
+};
+
 (: upload a single file with known ID (i.e. one that is already present)
    - if the ID is not found, return an error
    - replace the file and update its meta:file
