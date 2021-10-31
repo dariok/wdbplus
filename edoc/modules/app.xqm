@@ -708,27 +708,25 @@ declare function wdb:getMetaFile($pathToEd) {
  :
  : @returns The path to the XSLT
 :)
-declare
-function wdb:getXslFromWdbMeta($infoFileLoc as xs:string, $id as xs:string, $target as xs:string) {
-  let $metaFile := doc($infoFileLoc)
-  
-  let $process := (
-    $metaFile//meta:process[@target = $target],
-    $metaFile//meta:process[1]
-  )[1]
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as xs:string {
+  let $metaFile := doc($infoFileLoc),
+      $process := (
+        $metaFile//meta:process[@target = $target],
+        $metaFile//meta:process[1]
+      )[1]
   
   let $sel := for $c in $process/meta:command
-    return if ($c/@refs)
+    return if ( $c/@refs )
       then
         (: if a list of IDREFS is given, this command matches if $id is part of that list :)
         let $map := tokenize($c/@refs, ' ')
-        return if ($map = $id) then $c else ()
-      else if ($c/@regex and matches($id, $c/@regex))
+        return if ( $map = $id ) then $c else ()
+      else if ( $c/@regex and matches($id, $c/@regex) )
         (: if a regex is given and $id matches that regex, the command matches :)
       then $c
-      else if ($c/@group and $metaFile/id($id)/parent::meta:fileGroup/@xml:id = $c/@group)
+      else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
       then $c
-      else if (not($c/@refs or $c/@regex or $c/@group))
+      else if ( not($c/@refs or $c/@regex or $c/@group) )
         (: if no selection method is given, the command is considered the default :)
         then $c
       else () (: neither refs nor regex match and no default given :)
