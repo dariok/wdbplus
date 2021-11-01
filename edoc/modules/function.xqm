@@ -49,12 +49,12 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
           $infoFileLoc := wdb:getMetaFile($pathToEd)
       
       return map {
-        "pathToEd": $pathToEd,
-        "job": $q,
-        "ed": $ed,
-        "auth": sm:id()/sm:id,
+        "pathToEd":    $pathToEd,
+        "q":           $q,
+        "ed":          $ed,
+        "auth":        sm:id()/sm:id,
         "infoFileLoc": $infoFileLoc,
-        "title": doc($infoFileLoc)//meta:title[1]/text()
+        "title":       doc($infoFileLoc)//meta:title[1]/text()
       }
     else
       let $map := wdb:populateModel($id, "", $model)
