@@ -5,10 +5,8 @@ xquery version "3.1";
 
 module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main";
 
-import module namespace request = "http://exist-db.org/xquery/request"       at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"   at "/db/apps/edoc/modules/auth.xqm";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 
 declare namespace wdbadd = "https://github.com/dariok/wdbplus/addins";
 
