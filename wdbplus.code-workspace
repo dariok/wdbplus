@@ -1,11 +1,11 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../wdbmeta"
-		}
-	],
-	"settings": {}
+   "folders": [
+      {
+         "path": "."
+      },
+      {
+         "path": "../wdbmeta"
+      }
+   ],
+   "settings": {}
 }
