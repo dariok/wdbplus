@@ -10,3 +10,5 @@ build
 # Python-related directories or files
 __pycache__/
 .pydevproject
+edoc/resources/xsl/xspec/
+.existdb.json

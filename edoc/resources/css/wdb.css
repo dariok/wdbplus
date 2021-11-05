@@ -6,6 +6,7 @@
 /* changes
  * 2019-06-06 Move to a grid-based layout
  * 2019-09-13 use CSS custom properties to make responsive styling easier
+ * 2021-02-01 some additions for release 1.5
  */
 
 /* declare a global custom property to determine the width of the browser window
@@ -13,10 +14,15 @@
 /*@env {
   --mobile-width: 768px;
 }*/
+:root {
+  --wdb-link-colour: #098AB2;
+  --wdb-function-bg: lightgrey;
+}
 
 @font-face {
   font-family: 'mufi';
   src: url('Junicode.woff') format('woff');
+  font-display: swap;
 }
 
 /* Main layout: wide header, rest below, each scrolling on its own */
@@ -42,18 +48,35 @@ body {
 }
 
 a{
-  color: #098AB2;
+  overflow-wrap: anywhere;
+  color: var(--wdb-link-colour);
   text-decoration: none;
 }
 
 /* Content of the header */
-header {
+body > header {
   background-color: white;
   
   grid-area: header;
+  
+  display: grid;
+  grid-template-areas: 'hl hc hr';
 }
 
-header h1 {
+/* right/left and centre, respectively, of the header section
+ * these are used when no preject specific is given or they use the right/centre/left functions */
+.headerSide:first-of-type {
+  grid-area: hl;
+}
+.headerSide:last-of-type {
+  grid-area: hr;
+}
+.headerCentre {
+  grid-area: hc;
+  flex: 1 0 auto;
+}
+
+body > header h1 {
   font-size: 1.1em;
   text-align: center;
   letter-spacing: 0.09em;
@@ -63,7 +86,7 @@ header h1 {
   margin-bottom: 0.5em;
   margin-top: 0.5em;
 }
-header h2 {
+body > header h2 {
   letter-spacing: 0.3em;
   font-size: 1em;
   font-weight: normal;
@@ -74,10 +97,8 @@ header h2 {
   display: inline-block;
 }
 
-/* spans within header */
-span.dispOpts {
-  float: right;
-  
+/* controls (e.g. buttons) within header */
+.dispOpts {
   line-height: 1.4rem;
   font-family: sans-serif;
 }
@@ -86,6 +107,19 @@ span.dispOpts {
 }
 .dispOpts:after {
   content: ']';
+}
+
+/* parts of the header which act as dropdown menus, e.g. navigation */
+.menuItem {
+  background-color: white;
+  
+  border: 0.1px solid;
+  padding: .5em;
+  
+  position: absolute;
+  top: 5em;
+  
+  z-index: 99;
 }
 
 /* animation during AJAX requests 
@@ -114,13 +148,9 @@ body.loading .loadingModal {
 
 /* Navigation */
 nav {
-  background-color: white;
-  border: 0.1px solid;
-  padding: .5em;
+  position: absolute;
   overflow-y: auto;
-  position: fixed;
-  z-index: 99;
-  max-height: 75%;
+  max-height: 75vh;
 }
 
 nav h2 {
@@ -129,7 +159,7 @@ nav h2 {
 }
 nav ul {
   margin: 0;
-  padding-left: 0px;
+  padding-left: 0;
   list-style-type: none;
 }
 
@@ -151,10 +181,30 @@ nav button {
   cursor: pointer;
 }
 
+/* login dialogue (usually placed in header) */
+#auth {
+    display: inline-block;
+}
+
+#auth button {
+    background-color: transparent;
+    cursor: pointer;
+    color: #098AB2;
+    border: 0;
+    font-size: 1rem;
+}
+
+button[aria-label] {
+  border: none;
+  background-color: white;
+  padding: 0;
+  font-size: 1rem;
+  font-family: 'mufi';
+  cursor: pointer;
+  color: var(--wdb-link-colour);
+}
+
 @media screen and (max-width: 768px) {
-  header {
-    padding: 0 1%;
-  }
   h1 {
     font-size: 1.1em;
   }
@@ -164,7 +214,7 @@ nav button {
   aside p, main p {
     font-size: 0.9em;
   }
-  header span {
+  body > header span {
     padding-bottom: 0;
     line-height: 1.2em;
     font-size: 0.9em;

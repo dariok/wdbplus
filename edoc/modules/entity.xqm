@@ -22,7 +22,6 @@ declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:str
   (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
   
   (: let $t := console:dump("default", ("edPath", "regFile", "testPath", "entryEd")) :)
-  
   return map { "entry": $entryEd, "id": $id, "ed": $ed }
 };
 

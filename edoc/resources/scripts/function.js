@@ -27,12 +27,13 @@ const wdb = (function() {
   };
 
   /* Login and logout */
-  let login = function (that, event) {
-	  event.preventDefault();
+  let login = function (event, reload) {
+    event.preventDefault();
   
     let username = $('#user').val(),
         password = $('#password').val();
-    console.log('login request');
+    this.report("info", "login request");
+    Cookies.remove('wdbplus');
     
     $.ajax({
       url: 'login',
@@ -44,21 +45,27 @@ const wdb = (function() {
       },
       success: function (data) {
         try {
+          Cookies.set('wdbplus', btoa(username + ':' + password));
           $('#auth').replaceWith(data);
           setAuthorizationHeader();
-          console.log('logged in');
+          $('#logout').on('click', () => {
+            wdb.logout();
+          });
+          wdb.report("info", "logged in");
+          if ( reload ) {
+             location.reload()
+          }
         } catch (e) {
-          console.error('error logging in:');
-          console.error(e);
+          wdb.report("error", "error logging in", e);
         }
       },
       dataType: 'text'
     });
-    Cookies.set('wdbplus', btoa(username + ':' + password));
   };
 
   let logout = function () {
-    console.log('logout request');
+    this.report("info", "logout request");
+    
     Cookies.remove('wdbplus');
     $.ajax({
       url: 'login',
@@ -69,11 +76,14 @@ const wdb = (function() {
       success: function (data) {
         try {
           $('#auth').replaceWith(data);
+          $('#login').on('submit', (event) => {
+            event.preventDefault();
+            wdb.login(event);
+          });
           setAuthorizationHeader();
-          console.log('logging off');
+          this.report("info", "logging off");
         } catch (e) {
-          console.error('error logging out:');
-          console.error(e);
+          this.report("error", "error logging out", e);
         }
       },
       dataType: 'text'
@@ -89,10 +99,10 @@ const wdb = (function() {
     let cred = Cookies.get("wdbplus");
     if (typeof cred == "undefined" || cred.length == 0)
       restHeaderVal.Authorization = "";
-      else restHeaderVal = { "Authorization": "Basic " + cred };
+      else restHeaderVal.Authorization = "Basic " + cred;
   };
   setAuthorizationHeader();
-  
+
   return {
     meta:           meta,
     parameters:     params,
@@ -100,7 +110,33 @@ const wdb = (function() {
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
     login:          login,
-    logout:         logout
+    logout:         logout,
+
+    /* usually used internally to signal errors */
+    report: function ( reportType, shortInfo, longInfo, targetElement, ...args ) {
+      let symbol,
+          report = [shortInfo + "\n" + longInfo, ...args];
+
+      if ( reportType == "error" ) {
+        console.error(...report);
+        symbol = "✕";
+      } else if ( reportType == "warn" ) {
+        symbol = "❗";
+        console.warn(...report);
+      } else if ( reportType == "info" ) {
+        symbol = "ℹ";
+        console.info(...report);
+      } else if ( reportType == "success" ) {
+        symbol = "✓";
+        console.info(...report);
+      } else {
+        console.log(...report);
+      }
+
+      if ( targetElement ) {
+        $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
+      }
+    }
   };
 })();
 Object.freeze(wdb);
@@ -128,7 +164,7 @@ const wdbDocument = {
     // minus fixed header height
     $('html, body').animate({scrollTop: scrollto}, 0);
       
-    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak a');
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
     wdbUser.displayImage(pb);
   },
 
@@ -136,27 +172,34 @@ const wdbDocument = {
     let target = $(':target');
     if (target.length > 0) {
       if (target.attr('class') == 'pagebreak') {
-        console.log("trying to load image: " + $(':target > a').attr('href'));
-        wdbUser.displayImage($(':target > a'));
+        let url = target.dataset.ref;
+        wdb.report("info", "trying to load image: " + url);
+        wdbUser.displayImage(url);
       } else {
-        let pagebreak = target.parents().has('.pagebreak').first(),
-            pb = (pagebreak.find('a').length > 1) ? pagebreak.find('.pb a') : pagebreak.find('a');
-        wdbUser.displayImage(pb);
+        let pagebreak = target.parents().has('.pagebreak').first();
+        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
       }
     }
   },
 
   /* postioning of marginalia */
   positionMarginalia: function () {
-    let mRefs = $("a.mref");
-    if (mRefs.length > 0) {
-      // Show margin container only if any are to be shown
+    let mRefs = $("a.mref"),
+        marginalia = $('#marginaliaContainer *');
+
+    // Show margin container only if any are to be shown
+    if (mRefs.length > 0 || marginalia.length > 0) {
+      /* Save fragment identifier for later
+       * – avoid jumping while reflowing marginalia */
       let tar = window.location.hash;
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = '#';
       }
       
       mRefs.each(this.marginaliaPositioningCallback);
+      // need to set width by JS as CSS :has() is still not there…
+      $('#marginaliaContainer').css('width', 'calc(25% - 0.25em)');
+      $('main > section').css('width', 'calc(75% - 0.25em)');
       $('#marginalia_container').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
@@ -169,7 +212,7 @@ const wdbDocument = {
   marginaliaPositioningCallback: function (index, element) {
     let referenceElementID = $(element).attr('id'),
         referenceElementTop = $('#' + referenceElementID).position().top,
-        marginNote = $("#text_" + referenceElementID),
+        marginNote = $("#margin-" + referenceElementID),
         previousMarginNote = marginNote.prev(),
         targetTop;
     
@@ -188,7 +231,7 @@ const wdbDocument = {
       }
     }
     
-    console.info("position for " + referenceElementID + ': ' + targetTop);
+    wdb.report("info", "position for " + referenceElementID + ': ' + targetTop);
     // offset is relative to the document, so the header has to be substracted if top is set via
     // CSS - which is necessary because setting the offset will change position and left
     marginNote.css('top', targetTop + "px");
@@ -201,10 +244,11 @@ const wdbDocument = {
     this.showDataRight($('#' + elementID).html());
   },
   
+  /* show data passed in #ann; assumes that data are wrapped in .content */
   showDataRight: function ( data ) {
     let insertID = wdb.getUniqueId(),
         insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
-          data +
+          $(data).find('.content') +
           '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
           '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
       $('#ann').html(insertContent);
@@ -297,8 +341,10 @@ const wdbDocument = {
   // generic laoding function
   loadContent: function ( url, target, me ) {
     if ($('#' + target).css('display') == 'none') {
-      $.ajax(url,
+      $.ajax(
         {
+          url: url,
+          headers: wdb.restHeaders,
           dataType: 'html',
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
@@ -306,8 +352,7 @@ const wdbDocument = {
               $(me).html($(me).html().replace('→', '↑'));
           },
           error: function (xhr, status, error) {
-            console.error('Error loading ' + url + ':',
-              status, error);
+            wdb.report("error", "Error loading " + url + " : " + status, error);
           }
         }
       );
@@ -323,10 +368,10 @@ const wdbDocument = {
   clear: function ( id ) {
     if (id == '' || id == null) {
       $('#ann').html('');
-      console.log('close all');
+      wdb.report("info", "close all");
     } else {
       $('#' + id).remove();
-      console.log('close ' + id);
+      wdb.report("info", "close " + id);
     }
   },
 
@@ -382,7 +427,6 @@ const wdbDocument = {
     } else {
       // check further down the ancestry
       let cA = $(this.commonAncestor(startMarker, endMarker));
-      // console.info("Found common ancestor: " + cA);
       
       // Step 1: highlight all »startMarker/following-sibling::node()«
       // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -494,9 +538,9 @@ const wdbDocument = {
         let edition = wdb.meta.ed;
         
         $.ajax({
-          url: wdb.restHeaders + "collection/" + edition + "/nav.html",
+          url: wdb.meta.rest + "collection/" + edition + "/nav.html",
           success: function (data) {
-            $("nav").html($(data)).prepend($("<h2>Navigation</h2>"));
+            $("nav").replaceWith($(data));
           },
           data: "html"
         });
@@ -513,17 +557,52 @@ const wdbDocument = {
       } else {
         $(anchorElement).html('→');
       }
+    },
+
+    /* load navigation of an imported project */
+    loadNavigation: function ( ed ) {
+      $.ajax({
+        method: "get",
+        url: wdb.meta.rest + "collection/" + ed + "/nav.html",
+        success:  ( data ) => {
+          let replacement = $(data).find('#' + ed);
+          if ( replacement.length > 0 ) {
+            $('#' + ed).replaceWith(replacement);
+          }
+        },
+        error: ( xhr, status, error ) => {
+          wdb.report("error", "error loading navigation", status + ": " + error);
+        }
+      });
+    }
+  },
+  
+  // display an image in the right div
+  displayImageRight: function ( url ) {
+    // default: load an html that contains an image into an iframe
+    if (window.innerWidth > 768) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+      $('#facsimile').attr('src', url).css('display', 'block');
+    }
+  },
+  
+  // load image into openseadragon – assumes there is only one level of images
+  displayImageViewer: function ( url, viewer ) {
+    if (window.innerWidth > 768 && viewer != null) {
+      let pbs = $('body').find('.pagebreak'),
+          pos = pbs.index(url);
+      viewer.goToPage(pos);
     }
   },
 
   // make the left wider/smaller when resizing of div is not available
   changeMainWidth: function () {
-    if ($('#wdbShowHide > a').html() == '»') {
+    if ($('#wdbShowHide > button').html() == '»') {
       $('body').css('grid-template-columns', '2fr 1fr');
-      $('#wdbShowHide > a').html('«').attr('title', "linke Seite schmaler");
+      $('#wdbShowHide > button').html('«').attr('title', "linke Seite schmaler");
     } else {
       $('body').css('grid-template-columns', '1fr 1fr');
-      $('#wdbShowHide > a').html('»').attr("title", "linke Seite breiter");
+      $('#wdbShowHide > button').html('»').attr("title", "linke Seite breiter");
     }
   }
 };
@@ -534,15 +613,34 @@ Object.freeze(wdbDocument);
  * are given for different variants.
  */
 const wdbUser = {
-  // what to do when the mouse enters a footnote pointer
-  footnoteMouseIn: function ( event ) {
+  // load entity data
+  showEntityData: function ( event ) {
+    let entityID = event.target.dataset.ref,
+        url = "entity.html?id=" + entityID;
+    
+    $.ajax({
+      method:  "get",
+      url:     url,
+      success: function ( data ) {
+        wdbDocument.showDataRight(data);
+      },
+      error: function (xhr, status, error) {
+        wdb.logError(xhr, status, error, "Error loading entity data from " + url);
+      }
+    });
+  },
+
+   // what to do when the mouse enters a footnote pointer
+   footnoteMouseIn: function ( event ) {
     event.preventDefault();
-
+    
+    let peer = event.target.dataset.note;
+    
     // example: show info text in a float
-    //wdbDocument.showInfoFloating(event.target, event.target.hash.substring(1));
-
+    //wdbDocument.showInfoFloating(event.target, peer);
+    
     // example: show info on the right
-    wdbDocument.showInfoRight(event.target.hash.substring(1));
+    wdbDocument.showInfoRight(peer);
   },
 
   // what to do when the mouse leaves the footnote pointer
@@ -554,30 +652,27 @@ const wdbUser = {
   },
 
   /* display an image in the right div */
-  displayImage: function ( element ) {
-    // default: load an html that contains an image into an iframe
-    if (window.innerWidth > 768) {
-      let href = element.attr('href');
-      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
-      $('#facsimile').attr('src', href).css('display', 'block');
-    }
-  }
-  /*
-   * example: load image into openseadragon
-  displayImage: function ( element, viewer ) {
-    if (window.innerWidth > 768 && viewer != null) {
+  displayImage: function ( url ) {
+    // default: show image in an iframe
+    wdbDocument.displayImageRight(url);
+    
+    // example: show image in viewer
+    // wdbDocument.displayImageViewer(url, viewer);
+
+    // example: load image into openseadragon
+    /*
       let pbs = $('body').find('.pagebreak a'),
           pos = pbs.index(element);
       viewer.goToPage(pos);
-    }
-  }*/
+    */
+  }
 };
 
 /***
  * Functions to be executed after the DOM is ready (formerly $(document).ready())
  * includes highlighting and image loading functions
  ***/
-$(function () {
+$( () => {
   // highlight a range of elements given by the »l« query parameter and scroll there
   if (wdb.parameters.hasOwnProperty('l')) {
     wdbDocument.highlightRange(wdb.parameters.l);
@@ -599,14 +694,35 @@ $(function () {
     }
   }
 
-  /* when hovering over a footnote, display it in the right div */
-  $('.fn_number').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
-  
   // load image when clicking on a page number
-  $('.pagebreak a').click(function (event) {
+  $('.pagebreak').click((event) => {
     event.preventDefault();
-    wdbUser.displayImage($(this));
+    wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
   });
+
+  $('#login').on('submit', (event) => {
+    event.preventDefault();
+    wdb.login(event);
+  });
+  $('#logout').on('click', () => {
+    wdb.logout();
+  });
+
+  // load navigation
+  $('#showNavLink').on('click', () => {
+    wdbDocument.nav.toggleNavigation();
+  });
+
+  // toggle width button solely for iOS Safari
+  $('#wdbShowHide').on('click', () =>{
+    wdbDocument.changeMainWidth();
+  });
+
+  // register hover handler for footnote link buttons
+  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  
+  // register click handler for entity information
+  $('.entity').click(wdbUser.showEntityData);
 });
 /* END DOM ready functions */
 
@@ -621,7 +737,7 @@ $(window).bind('hashchange', function () {
 /* set/reset timer for marginalia positioning and invoke actual function */
 $(window).on('load resize', function () {
   clearTimeout(wdbDocument.marginaliaTimer);
-  wdbDocument.marginaliaTimer = setTimeout(wdbDocument.positionMarginalia(), 500);
+  wdbDocument.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
 });
 
 /* preparations to show some loading animation while doing AJAX requests */

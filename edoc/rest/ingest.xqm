@@ -3,8 +3,8 @@ xquery version "3.1";
 module namespace wdbRMi = "https://github.com/dariok/wdbplus/RestMIngest";
 
 import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "../modules/app.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -157,7 +157,10 @@ declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { $doc//tei:titleStmt/tei:title[1] }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update insert $view into $meta/meta:projectMD/meta:struct
         
@@ -200,7 +203,10 @@ declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { $doc//tei:titleStmt/tei:title[1] }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update replace $meta//meta:view[@file = $id] with $view
         return ( 
@@ -309,6 +315,8 @@ declare function wdbRMi:createCollection ($coll as xs:string) {
 declare function wdbRMi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
   if ($element instance of document-node() and $element/*/@xml:id)
   then string($element/*/@xml:id)
+  else if  ( $element instance of element() )
+  then string($element/@xml:id)
   else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
 };
 

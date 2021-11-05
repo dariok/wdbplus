@@ -1,6 +1,7 @@
-<html>
+<!DOCTYPE html>
+<html data-template="wdbAdmin:start">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="wdb-template" content="templates/admin.html" />
     <meta name="rest" data-template="wdbGS:getRest" />
@@ -15,14 +16,14 @@
   </head>
   <body>
     <header>
-      <h1 data-template="wdbPL:head"/>
-      <h2 data-template="wdba:getAuth"/>
+      <h1 data-template="wdbAdmin:heading">[template: heading]</h1>
+      <h2 data-template="wdba:getAuth">[template: authentication]</h2>
       <span class="dispOpts"><a href="admin.html">Admin-Seite</a></span>
       <hr/>
     </header>
-    <aside />
+    <aside data-template="wdbAdmin:getAside">[template: aside]</aside>
     <main>
-      <div id="container" />
+      <div id="container"></div>
     </main>
   </body>
 </html>
