@@ -32,7 +32,7 @@ const wdb = (function() {
   
     let username = $('#user').val(),
         password = $('#password').val();
-    this.report("info", "login request");
+    wdb.report("info", "login request");
     Cookies.remove('wdbplus');
     
     $.ajax({
@@ -64,7 +64,7 @@ const wdb = (function() {
   };
 
   let logout = function () {
-    this.report("info", "logout request");
+    wdb.report("info", "logout request");
     
     Cookies.remove('wdbplus');
     $.ajax({
@@ -81,9 +81,9 @@ const wdb = (function() {
             wdb.login(event);
           });
           setAuthorizationHeader();
-          this.report("info", "logging off");
+          wdb.report("info", "logging off");
         } catch (e) {
-          this.report("error", "error logging out", e);
+          wdb.report("error", "error logging out", e);
         }
       },
       dataType: 'text'
