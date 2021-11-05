@@ -41,9 +41,9 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         "ed":       $ed,
         "auth":     sm:id()/sm:id
       }
-    else if ( $id = '' ) then
+    else if ( $id = "" ) then
       (: no ID: related to a project :)
-      let $pathToEd := if ( $ed = '' )
+      let $pathToEd := if ( $ed = "" )
             then $wdb:data
             else wdb:getEdPath($ed, true()),
           $infoFileLoc := wdb:getMetaFile($pathToEd)
@@ -80,6 +80,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
       "code":        "wdbErr:wdb3001",
       "model":       $model,
       "id":          $id,
+      "ed":          $ed,
       "p":           $p,
       "q":           $q,
       "wdb:data":    $wdb:data,
