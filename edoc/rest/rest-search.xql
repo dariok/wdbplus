@@ -2,7 +2,8 @@ xquery version "3.1";
 
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
-import module namespace console = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule";
+(: import module namespace console = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule"; :)
+import module namespace kwic    = "http://exist-db.org/xquery/kwic";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
