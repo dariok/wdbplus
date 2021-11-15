@@ -22,19 +22,18 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 (: get the left part of the start page from either projectSpec HTML, projectSpec function or a generic heading :)
-declare function wdbst:getStartLeft($node as node(), $model as map(*)) as node()* {
-  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
-  let $functionsAvailable := if ($projectAvailable)
-    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($projectAvailable))
-    else false()
-    
-  return if (doc-available($model("projectResources") || '/startLeft.html'))
-  then templates:apply(doc($model("projectResources") || '/startLeft.html'),  $wdbst:lookup, $model)
-  else if (wdb:findProjectFunction($model, 'getStartLeft', 1))
-  then wdb:eval('wdbPF:getStartLeft($model)', false(), (xs:QName('model'), $model))
-  else (<h1>Inhalt</h1>, wdbRc:getCollectionNavHTML($model?ed)[2])
-  (: this is currently necessary due to some eXist bug that throws an error when trying to open the REST URL via doc() or unparsed-text() :)
+declare function wdbst:getStartLeft( $node as node(), $model as map(*) ) as node()* {
+  if ( doc-available($model("projectResources") || '/startLeft.html') )
+    then templates:apply(doc($model("projectResources") || '/startLeft.html'),  $wdbst:lookup, $model)
+    else
+      try {
+        let $pathToProjectXQM := wdb:findProjectXQM($model?pathToEd),
+            $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $pathToProjectXQM }),
+            $getStart := $functions?functions(xs:QName("wdbPF:getStartLeft"))?1
+        return $getStart($model)
+      } catch * {
+        (<h1>Inhalt</h1>, wdbRc:getCollectionNavHTML($model?ed)[2])
+      }
 };
 
 (: get the main part of the start page from either projectSpec HTML, projectSpec function or return an empty seq :)
