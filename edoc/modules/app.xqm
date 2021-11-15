@@ -696,6 +696,15 @@ declare function wdb:getMetaFile($pathToEd) {
     then $pathToEd || '/mets.xml'
     else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 };
+
+(:~
+ : Get the meta data file by project ID
+ : 
+ : @param $ed The project ID to be evaluated
+ :)
+declare function wdb:getMetaElementFromEd ( $ed as xs:string ) as element() {
+  collection($wdb:data)/id($ed)[self::meta:projectMD or self::mets:mets]
+};
 (: END GENERAL HELPER FUNCTIONS :)
 
 (: LOCAL HELPER FUNCTIONS :)
