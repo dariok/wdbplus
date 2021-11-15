@@ -54,7 +54,8 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         "ed":          $ed,
         "auth":        sm:id()/sm:id,
         "infoFileLoc": $infoFileLoc,
-        "title":       doc($infoFileLoc)//meta:title[1]/text()
+        "title":       doc($infoFileLoc)//meta:title[1]/text(),
+        "projectResources": $pathToEd || "/resources/"
       }
     else
       let $map := wdb:populateModel($id, "", $model)
