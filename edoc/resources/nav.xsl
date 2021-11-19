@@ -15,9 +15,8 @@
    </xsl:template>
    
    <xsl:template match="meta:struct[not(parent::*)]">
-      <h2>
-         <xsl:value-of select="@label"/>
-      </h2>
+      <xsl:apply-templates select="@label"/>
+      
       <ul>
          <xsl:apply-templates>
             <xsl:sort select="@order" />
@@ -75,7 +74,10 @@
    </xsl:template>
    
    <xsl:template match="@label">
-      <xsl:value-of select="normalize-space()" />
+      <xsl:variable name="pos" select="count(ancestor::meta:struct)" />
+      <xsl:element name="h{$pos}">
+         <xsl:value-of select="normalize-space()" />
+      </xsl:element>
    </xsl:template>
    
    <xsl:template match="meta:i | meta:u | meta:b">
