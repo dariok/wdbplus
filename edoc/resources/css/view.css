@@ -48,6 +48,13 @@ main {
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
 #marginaliaContainer {
   margin-right: 0.25em;
+  width: calc(20% - 2em);
+  display: none;
+  position: relative;
+}
+
+.marginText {
+  position: absolute;
 }
 
 /* the main text */
@@ -60,10 +67,6 @@ main > section {
 }
 #content_container {
   grid-area: main;
-}
-#marginalia_container {
-  grid-area: margin;
-  margin-right: 5%;
 }
 #footnote_container {
   grid-area: annotations;

@@ -184,7 +184,7 @@ const wdbDocument = {
 
   /* postioning of marginalia */
   positionMarginalia: function () {
-    let mRefs = $("a.mref"),
+    let mRefs = $("a.marginaliaAnchor"),
         marginalia = $('#marginaliaContainer *');
 
     // Show margin container only if any are to be shown
@@ -198,9 +198,8 @@ const wdbDocument = {
       
       mRefs.each(this.marginaliaPositioningCallback);
       // need to set width by JS as CSS :has() is still not there…
-      $('#marginaliaContainer').css('width', 'calc(25% - 0.25em)');
-      $('main > section').css('width', 'calc(75% - 0.25em)');
-      $('#marginalia_container').children('span').css('visibility', 'visible');
+      $('#content').css('width', 'calc(75% - 2em)');
+      $('#marginaliaContainer').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = tar;
@@ -211,23 +210,22 @@ const wdbDocument = {
   /* actual positioning */
   marginaliaPositioningCallback: function (index, element) {
     let referenceElementID = $(element).attr('id'),
-        referenceElementTop = $('#' + referenceElementID).position().top,
+        referenceElementTop = $(element).position().top,
         marginNote = $("#margin-" + referenceElementID),
         previousMarginNote = marginNote.prev(),
         targetTop;
     
     if (previousMarginNote.length == 0) {
-      targetTop = referenceElementTop - $('header').height();
+      targetTop = referenceElementTop;
     } else {
       let previousNoteHeight = $(previousMarginNote).height(),
           previousNoteTop = $(previousMarginNote).position().top,
-          headerHeight = $('header').height(),
           minimumTargetTop = previousNoteHeight + previousNoteTop;
   
-      if (Math.floor(referenceElementTop - headerHeight) < minimumTargetTop) {
+      if ( Math.floor(referenceElementTop) < minimumTargetTop ) {
         targetTop = previousNoteTop + previousNoteHeight;
       } else {
-        targetTop = referenceElementTop - headerHeight;
+        targetTop = referenceElementTop;
       }
     }
     

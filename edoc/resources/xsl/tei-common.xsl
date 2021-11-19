@@ -103,7 +103,7 @@
     <article>
       <xsl:if test="//tei:note[@place = 'margin']">
         <section aria-label="contains marginalia of an original text or side notes of a digital text"
-          id="marginalia_container">
+          id="marginaliaContainer">
           <xsl:apply-templates select="descendant::tei:note[@place = 'margin']" mode="margin" />
         </section>
       </xsl:if>
@@ -319,7 +319,7 @@
     </div>
   </xsl:template>
   <xsl:template match="tei:note[@place = 'margin']">
-    <a class="marginAnchor" id="{generate-id()}" />
+    <a class="marginaliaAnchor" id="{generate-id()}" />
   </xsl:template>
   
   <!-- generic anchors -->
