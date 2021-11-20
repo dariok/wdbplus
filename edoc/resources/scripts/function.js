@@ -53,7 +53,7 @@ const wdb = (function() {
           });
           wdb.report("info", "logged in");
           if ( reload ) {
-             location.reload()
+             location.reload();
           }
         } catch (e) {
           wdb.report("error", "error logging in", e);
@@ -136,7 +136,18 @@ const wdb = (function() {
       if ( targetElement ) {
         $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
-    }
+    },
+
+    /* taken from https://github.com/30-seconds/30-seconds-of-code/blob/master/snippets/URLJoin.md */
+    URLJoin: ( ...args ) =>
+      args
+        .join('/')
+        .replace(/[\/]+/g, '/')
+        .replace(/^(.+):\//, '$1://')
+        .replace(/^file:/, 'file:/')
+        .replace(/\/(\?|&|#[^!])/g, '$1')
+        .replace(/\?/g, '&')
+        .replace('&', '?')
   };
 })();
 Object.freeze(wdb);
