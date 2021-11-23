@@ -9,7 +9,8 @@
    <xsl:param name="id"/>
    
    <xsl:template match="/">
-      <nav class="menuItem">
+      <!-- no class (e.g. menuitem) here: can be added by JS depending on context -->
+      <nav>
          <xsl:apply-templates />
       </nav>
    </xsl:template>
