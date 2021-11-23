@@ -547,7 +547,7 @@ const wdbDocument = {
         let edition = wdb.meta.ed;
         
         $.ajax({
-          url: wdb.meta.rest + "collection/" + edition + "/nav.html",
+          url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
           success: function (data) {
             $("nav").replaceWith($(data));
           },
