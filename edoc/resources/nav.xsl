@@ -80,6 +80,10 @@
       </xsl:element>
    </xsl:template>
    
+   <xsl:template match="meta:view/@label">
+      <xsl:value-of select="." />
+   </xsl:template>
+   
    <xsl:template match="meta:i | meta:u | meta:b">
       <xsl:element name="{local-name()}">
          <xsl:apply-templates />
