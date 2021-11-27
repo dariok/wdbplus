@@ -67,6 +67,7 @@ declare function wdbAdmin:heading ($node as node(), $model as map(*)) {
 
 declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as element() {
   <aside>
+    <h3>Funktionen</h3>
     {
       switch ($model?page)
         case "projects.html" return (

@@ -87,11 +87,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
         default return
           <div id="data"><div><h3>Strange Error</h3></div></div>
     (: no job given :)
-    else if (($model?ed = 'data' or $model?ed = '') and $file = '') then
-      <div id="content">
-        <h3>Liste der Projekte</h3>
-        {wdbs:projectList(true(), '')}
-      </div>
+    else if ( ($model?ed = 'data' or $model?ed = '') and $file = '' ) then (
+      <h3>Liste der Projekte</h3>,
+      wdbs:projectList(true(), '')
+    )
     else if ($model?ed != 'data' and $model?ed != ''and $file = '') then
       local:getFiles($model)
     else
