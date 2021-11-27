@@ -162,9 +162,9 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no data provided")
       else ()
     
-    let $parsed      := wdb:parseMultipart($data, substring-after($header, 'boundary=')),
-        $path        := normalize-space($parsed?2?body),
-        $contentType := $parsed?1?header?Content-Type
+    let $parsed      := wdb:parseMultipart($data, $header),
+        $path        := normalize-space($parsed?filename?body),
+        $contentType := $parsed?file?header?Content-Type
     let $err :=
       if (string-length($path) = 0)
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no filename provided in form data")
@@ -186,7 +186,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         $targetPath   := $collectionPath || '/' || xstring:substring-before-last($path, '/')
     
     (: make sure we really have an ID in the file :)
-    let $prepped := wdbRMi:replaceWs($parsed?1?body),
+    let $prepped := wdbRMi:replaceWs($parsed?file?body),
         $contents := if ($contentType = ("text/xml", "application/xml") and not($prepped instance of element() or $prepped instance of document-node()))
           then parse-xml($prepped)
           else $prepped,

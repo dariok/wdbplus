@@ -72,8 +72,8 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $errNumID := (count($fileEntry) > 1)
     let $errNoID := count($fileEntry) = 0
     
-    let $parsed := wdb:parseMultipart($data, substring-after($header, 'boundary='))
-    let $path := normalize-space($parsed?2?body)
+    let $parsed := wdb:parseMultipart($data, $header)
+    let $path := normalize-space($parsed?filename?body)
     let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
     let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
     
@@ -82,8 +82,8 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $user := sm:id()//sm:real/sm:username
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
-    let $contentType := $parsed?1?header?Content-Type
-    let $contents := $parsed?1?body
+    let $contentType := $parsed?file?header?Content-Type
+    let $contents := $parsed?file?body
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
     return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
