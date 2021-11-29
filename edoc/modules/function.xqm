@@ -41,6 +41,12 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         "ed":       $ed,
         "auth":     sm:id()/sm:id
       }
+    else if ( request:get-uri() => ends-with('/toc.html') ) then
+      map {
+        "auth":     sm:id()/sm:id,
+        "title":    $wdb:configFile//*:name || " – Table of Contents",
+        "pathToEd": $wdb:data
+      }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
@@ -110,8 +116,13 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     <title>{$model("title")}</title>
     <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>
     {
-      if (util:binary-doc-available($wdb:data || "/resources/wdb.css"))
+      if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
         then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
+        else ()
+    }
+    {
+      if ( util:binary-doc-available($wdb:data || "/resources/function.css") )
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/function.css" />
         else ()
     }
     <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css"/>
