@@ -132,6 +132,11 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     <script src="./$shared/scripts/legal.js"/>
     <script src="./$shared/scripts/function.js"/>
     { wdbfp:get('js', $model?pathToEd, $model) }
+    {
+      if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
+        then <script src="data/resources/function.js" />
+        else ()
+    }
   </head>
 };
 
@@ -162,6 +167,13 @@ declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
         <h1>{$model("title")}</h1>
         <hr/>
       </div>
+      <div class="headerMenu" role="navigation">{(
+        if ( wdb:findProjectFunction($model, 'getFunctionHeaderMenu', 1) ) then
+          util:eval("wdbPF:getFunctionHeaderMenu($model)", false(), (xs:QName('map'), $model))
+        else if ( doc-available($wdb:data || "/resources/functionHeaderMenu.html") )
+        then templates:apply(doc($wdb:data || "/resources/functionHeaderMenu.html"),  $wdb:lookup, $model)/*
+        else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+      )}</div>
       <div class="headerSide" />
     </header>
 };
