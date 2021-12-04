@@ -229,11 +229,12 @@ declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
         xs:anyURI($projectAvailable))
     else false()
     
-  return if (doc-available($model("projectResources") || 'functionFooter.html'))
-  then 
-      templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbst:lookup, $model)
-  else if (wdb:findProjectFunction($model, 'getFunctionFooter', 1))
-  then wdb:eval('wdbPF:getFunctionFooter($model)', false(), (xs:QName('model'), $model))
+  return if (doc-available($model("projectResources") || 'functionFooter.html')) then 
+    templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbst:lookup, $model)
+  else if (wdb:findProjectFunction($model, 'getFunctionFooter', 1)) then
+    wdb:eval('wdbPF:getFunctionFooter($model)', false(), (xs:QName('model'), $model))
+  else if ( doc-available($wdb:data || "/resources/mainFooter.html") ) then
+    doc($wdb:data || "/resources/mainFooter.html")
   else ()
 };
 
