@@ -45,7 +45,7 @@ body {
   grid-template-areas: 'header header'
                        'left right'
                        'bottom bottom';
-  grid-template-rows: max-content;
+  grid-template-rows: min-content auto min-content;
 }
 
 /* main header */

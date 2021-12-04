@@ -20,7 +20,6 @@ body {
     grid-template-columns: none;
     grid-template-areas: 'header'
                          'left';
-    grid-template-rows: max-content;
   }
   aside {
     display: none;
