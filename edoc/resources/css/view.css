@@ -4,12 +4,10 @@
  *          DK Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  * sources: https://www.github.com/dariok/wdbplus
  *
- * changes: 2021-04-02 DK: - adjust to new outline model
+ * changes: 2021-02-01 DK: - semantic HTML inside main for release 1.5
+ *          2021-04-02 DK: - adjust to new outline model
  *                         - include styles for footnotes / critical apparatus
- */
-
-/* changes
- * 2021-02-01 semantic HTML inside main for release 1.5
+ *          2021-12-04 DK: - move all styles for body > header, body > footer to wdb.css
  */
 
 body {
@@ -30,10 +28,6 @@ body {
 }
 
 /* Main content below header */
-body > header{
-  padding: 0 0.5%;
-  border-bottom: 0.5px solid lightgrey;
-}
 main {
   grid-area: left;
   display: flex;
@@ -77,20 +71,6 @@ main > section {
   main > section {
     width: 100%;
   }
-}
-
-/* main footer, e.g. set by instance specifics */
-body > footer {
-  grid-area: bottom;
-  display: block;
-  flex: 1 1 auto;
-  
-  padding: 1em;
-  
-  background-color: var(--wdb-function-bg);
-}
-footer span {
-  display: block;
 }
 
 /* Show/hide bar */
