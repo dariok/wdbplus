@@ -35,8 +35,6 @@ main {
   
   resize: horizontal;
   overflow-y: auto;
-  
-  padding: 0.25em;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
