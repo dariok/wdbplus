@@ -203,7 +203,10 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
       let $add := if ( util:binary-doc-available($edPath || "/addin.css") )
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($edPath)}/addin.css" />
         else()
-      return ($fun, $gen, $pro, $add)
+      let $ins := if ( util:binary-doc-available($wdb:data || "/resources/" || $name || ".css") )
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/{$name}.css" />
+        else ()
+      return ($fun, $gen, $ins, $pro, $add)
     case "js" return
       let $gen := if (util:binary-doc-available($wdb:edocBaseDB || '/resources/scripts/' || $name || '.js'))
         then <script src="$shared/scripts/{$name}.js" />
