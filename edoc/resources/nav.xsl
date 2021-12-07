@@ -9,7 +9,6 @@
    <xsl:param name="id"/>
    
    <xsl:template match="/">
-      <!-- no class (e.g. menuitem) here: can be added by JS depending on context -->
       <nav>
          <xsl:apply-templates />
       </nav>
@@ -48,14 +47,21 @@
    
    <xsl:template match="meta:struct[not(@file or @ed)]">
       <li>
-         <button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
-            <xsl:value-of select="@label"/>
-         </button>
-         <ul id="{generate-id()}" style="display: none;">
-            <xsl:apply-templates>
-               <xsl:sort select="number(@order)" />
-            </xsl:apply-templates>
-         </ul>
+         <xsl:choose>
+            <xsl:when test="*">
+               <button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
+                  <xsl:value-of select="@label"/>
+               </button>
+               <ul id="{generate-id()}" style="display: none;">
+                  <xsl:apply-templates>
+                     <xsl:sort select="number(@order)"/>
+                  </xsl:apply-templates>
+               </ul>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:value-of select="@label" />
+            </xsl:otherwise>
+         </xsl:choose>
       </li>
    </xsl:template>
    
@@ -76,7 +82,7 @@
    
    <xsl:template match="@label">
       <xsl:variable name="pos" select="count(ancestor::meta:struct)" />
-      <xsl:element name="h{$pos}">
+      <xsl:element name="h{$pos + 1}">
          <xsl:value-of select="normalize-space()" />
       </xsl:element>
    </xsl:template>
