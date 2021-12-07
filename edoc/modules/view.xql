@@ -23,7 +23,7 @@ import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"          at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"         at "/db/apps/edoc/modules/start.xqm";
 
-declare option output:method "html";
+declare option output:method "html5";
 declare option output:media-type "text/html";
 
 let $config := map {
