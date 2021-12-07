@@ -6,6 +6,7 @@ import module namespace request   = "http://exist-db.org/xquery/request"        
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace util      = "http://exist-db.org/xquery/util"            at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"     at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"    at "/db/apps/edoc/modules/start.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
@@ -140,43 +141,117 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
   </head>
 };
 
-declare function wdbfp:getHeader ($node as node(), $model as map (*)) {
+(:~
+ : Return the header for function pages. Uses the usual approcach:
+ : 1. project specific HTML, then project specific function for the page (e.g. toc.html)
+ : 2. project specific HTML, then project specific function for function pages in general
+ : 3. instance specific HTML, then instance specific function for the page (e.g. toc.html)
+ : 4. instance specific HTML, then instance specific function for function pages in general
+ : 5. generic HTML
+ : To limit complexity, the complete header is templated here, not its specific parts as is the case in app.xqm.
+ :
+ : @see https://github.com/dariok/wdbplus/wiki/Instance-specifics
+ : @see https://github.com/dariok/wdbplus/wiki/Project-specifics
+ : @return element(html:header)
+ :)
+declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as element(header) {
   let $file := xstring:substring-after-last(request:get-url(), '/'),
       $name := substring-before($file, '.html'),
-      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1),
-      $projectAvailable := wdb:findProjectXQM($model?pathToEd),
-      $functionsAvailable := if ( $projectAvailable )
-        then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-          xs:anyURI($projectAvailable))
-        else false()
+      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
-  let $psHeader := if (doc-available($model("projectResources") || '/' || $name || 'Header.html'))
-    then templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
-    else if (wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1))
-    then wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), $model))
-    else if (doc-available($model?projectResources || "functionHeader.html"))
-    then templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
-    else ()
-
-  return if (count($psHeader) > 0)
-  then $psHeader
-  else
-    <header>
-      <div class="headerSide" />
-      <div class="headerCentre">
-        <h1>{$model("title")}</h1>
-        <hr/>
-      </div>
-      <div class="headerMenu" role="navigation">{(
-        if ( wdb:findProjectFunction($model, 'getFunctionHeaderMenu', 1) ) then
-          util:eval("wdbPF:getFunctionHeaderMenu($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/functionHeaderMenu.html") )
-        then templates:apply(doc($wdb:data || "/resources/functionHeaderMenu.html"),  $wdb:lookup, $model)/*
-        else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
-      )}</div>
-      <div class="headerSide" />
-    </header>
+  return
+    (: 1a. :)
+    if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
+      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
+    (: 1b. :)
+    else if ( wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1) ) then
+      wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), $model))
+    (: 2a. :)
+    else if ( doc-available($model?projectResources || "functionHeader.html") ) then
+      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
+    (: 2b. :)
+    else if ( wdb:findProjectFunction($model, 'getFunctionHeader', 1) ) then
+      wdb:eval('wdbPF:getFunctionHeader($model)', false(), (xs:QName('model'), $model))
+    (: 3a. :)
+    else if ( doc-available($wdb:data || '/resources/' || $name || 'Header.html') ) then
+      templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdb:lookup, $model)
+    (: 3b. :)
+    else if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'get' || $unam || 'Header', 1) ) then
+      wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), map { "pathToEd": $wdb:data }))
+    (: 4a. :)
+    else if ( doc-available($wdb:data || "/resources/functionHeader.html") ) then
+      templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdb:lookup, $model)
+    (: 4b. :)
+    else if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'getFunctionHeader', 1) ) then
+      wdb:eval('wdbPF:getFunctionHeader($model)', false(), (xs:QName('model'), map { "pathToEd": $wdb:data }))
+    (: 5. :)
+    else
+      <header>
+        <div class="headerSide">
+          { wdba:getAuth($node, $model) }
+        </div>
+        <div class="headerCentre">
+          <h1>{$model("title")}</h1>
+        </div>
+        <div class="headerMenu" role="navigation">
+          <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+        </div>
+        <div class="headerSide" />
+      </header>
 };
+(:
+let $file := xstring:substring-after-last(request:get-url(), '/'),
+      $name := substring-before($file, '.html'),
+      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  
+  return
+    (: 1a. :)
+    if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
+      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
+    (: 1b. :)
+    else 
+      let $fn := wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1)
+      return if ( $fn instance of function(*) ) then
+      $fn($model)
+    (: 2a. :)
+    else if ( doc-available($model?projectResources || "functionHeader.html") ) then
+      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
+    (: 2b. :)
+    else
+      let $fn := wdb:findProjectFunction($model, 'getFunctionHeader', 1)
+      return if ( $fn instance of function(*) ) then
+      $fn($model)
+    (: 3a. :)
+    else if ( doc-available($wdb:data || '/resources/' || $name || 'Header.html') ) then
+      templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdb:lookup, $model)
+    (: 3b. :)
+    else
+      let $fn := wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'get' || $unam || 'Header', 1)
+      return if ( $fn instance of function(*) ) then
+      $fn(map { "pathToEd": $wdb:data })
+    (: 4a. :)
+    else if ( doc-available($wdb:data || "/resources/functionHeader.html") ) then
+      templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdb:lookup, $model)
+    (: 4b. :)
+    else 
+      let $fn := wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'getFunctionHeader', 1)
+      return if ( $fn instance of function(*) ) then
+      $fn(map { "pathToEd": $wdb:data })
+    (: 5. :)
+    else
+      <header>
+        <div class="headerSide">
+          { wdba:getAuth($node, $model) }
+        </div>
+        <div class="headerCentre">
+          <h1>{$model("title")}</h1>
+        </div>
+        <div class="headerMenu" role="navigation">
+          <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
+        </div>
+        <div class="headerSide" />
+      </header>
+:)
 
 declare function wdbfp:test ( $node as node(), $model as map(*) ) {
   wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
