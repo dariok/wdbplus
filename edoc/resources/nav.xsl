@@ -45,23 +45,16 @@
       </li>
    </xsl:template>
    
-   <xsl:template match="meta:struct[not(@file or @ed)]">
+   <xsl:template match="meta:struct[not(@file or @ed) and *]">
       <li>
-         <xsl:choose>
-            <xsl:when test="*">
-               <button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
-                  <xsl:value-of select="@label"/>
-               </button>
-               <ul id="{generate-id()}" style="display: none;">
-                  <xsl:apply-templates>
-                     <xsl:sort select="number(@order)"/>
-                  </xsl:apply-templates>
-               </ul>
-            </xsl:when>
-            <xsl:otherwise>
-               <xsl:value-of select="@label" />
-            </xsl:otherwise>
-         </xsl:choose>
+         <button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
+            <xsl:value-of select="@label"/>
+         </button>
+         <ul id="{generate-id()}" style="display: none;">
+            <xsl:apply-templates>
+               <xsl:sort select="number(@order)"/>
+            </xsl:apply-templates>
+         </ul>
       </li>
    </xsl:template>
    
