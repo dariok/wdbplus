@@ -1,0 +1,9 @@
+{
+  "esversion": 8,
+  "undef": true,
+  "unused": true,
+  "globals": {
+    "$": false,
+    "console": false
+  }
+}
