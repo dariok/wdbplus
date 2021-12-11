@@ -185,10 +185,10 @@ const wdbDocument = {
    * @returns {void} - executes wdbUser.displayImage()
    */
   loadTargetImage: function () {
-    let fragment = window.location.hash;
+    let targetID = window.location.hash.substr(1);
 
-    if ( fragment.length > 0 ) {
-      wdbUser.displayImage(document.getElementById(fragment));
+    if ( targetID.length > 0 ) {
+      wdbUser.displayImage(document.getElementById(targetID));
     } else {
       wdbUser.displayImage($('.pagebreak')[0]);
     }
