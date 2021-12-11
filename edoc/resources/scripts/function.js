@@ -717,7 +717,7 @@ $( () => {
   }
 
   // load image when clicking on a page number
-  $('.pagebreak').click((event) => {
+  $('body').on('click', '.pagebreak', ( event ) => {
     event.preventDefault();
     wdbUser.displayImage(event.target);
   });
