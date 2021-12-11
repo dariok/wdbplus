@@ -3,6 +3,7 @@
  * https://github.com/dariok/wdbplus
  */
 /* jshint browser: true */
+"use strict";
 
 const wdb = (function() {
   // all meta elements
@@ -175,21 +176,21 @@ const wdbDocument = {
     // minus fixed header height
     $('html, body').animate({scrollTop: scrollto}, 0);
       
-    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0];
     wdbUser.displayImage(pb);
   },
 
+  /**
+   * load the image for the page containing a target element or the first page if no target is given
+   * @returns {void} - executes wdbUser.displayImage()
+   */
   loadTargetImage: function () {
-    let target = $(':target');
-    if (target.length > 0) {
-      if (target.attr('class') == 'pagebreak') {
-        let url = target.dataset.ref;
-        wdb.report("info", "trying to load image: " + url);
-        wdbUser.displayImage(url);
-      } else {
-        let pagebreak = target.parents().has('.pagebreak').first();
-        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
-      }
+    let fragment = window.location.hash;
+
+    if ( fragment.length > 0 ) {
+      wdbUser.displayImage(document.getElementById(fragment));
+    } else {
+      wdbUser.displayImage($('.pagebreak')[0]);
     }
   },
 
@@ -586,9 +587,12 @@ const wdbDocument = {
     }
   },
   
-  // display an image in the right div
+  /**
+   * display an image in the right div – does not use an viewer but inserts an iframe
+   * @param {string} url - the URL from which to load the image
+   * @returns {void}
+   */
   displayImageRight: function ( url ) {
-    // default: load an html that contains an image into an iframe
     if (window.innerWidth > 768) {
       $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
       $('#facsimile').attr('src', url).css('display', 'block');
@@ -660,9 +664,22 @@ const wdbUser = {
       //wdbDocument.mouseOut(event.target);
   },
 
-  /* display an image in the right div */
-  displayImage: function ( url ) {
+  /**
+   * What to do to display an image
+   * Default behaviour: wdbDocument.displayImageRight(url); the URL to use is taken from the element passed: either
+   * html:a/@href or html:button/@data-image.
+   * May be overwritten by instance or project specifics
+   * @param {HTMLElement} element - The element to evaluate
+   * @return {void} - (void)
+   */
+  displayImage: function ( element ) {
     // default: show image in an iframe
+    let url;
+    if ( element.attributes.hasOwnProperty('href') ) {
+      url = element.getAttribute('href');
+    } else if ( element.dataset.hasOwnProperty('image') ) {
+      url = element.dataset['image'];
+    }
     wdbDocument.displayImageRight(url);
     
     // example: show image in viewer
@@ -695,18 +712,14 @@ $( () => {
   }
 
   // load image for target page (or first page if no fragment requested)
-  if($('.pagebreak').length > 0) {
-    if (window.location.hash != "") {
-      wdbDocument.loadTargetImage();
-    } else {
-      wdbUser.displayImage($('.pagebreak a').first());
-    }
+  if ( $('.pagebreak').length > 0 ) {
+    wdbDocument.loadTargetImage();
   }
 
   // load image when clicking on a page number
   $('.pagebreak').click((event) => {
     event.preventDefault();
-    wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
+    wdbUser.displayImage(event.target);
   });
 
   $('#login').on('submit', (event) => {
