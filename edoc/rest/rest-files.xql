@@ -138,57 +138,60 @@ declare
 function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
-  let $files := (collection($wdb:data)//id($id)[self::meta:file])
+  let $files := collection($wdb:data)//id($id)[self::meta:file]
   let $f := $files[1]
   let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
   
   let $readable := sm:has-access($path, "r")
-  let $doc := if (not($readable)) then ()
-    else if (doc-available($path))
-    then doc($path)
-    else if (util:binary-doc-available($path))
-    then util:binary-doc($path)
+  let $doc := if ( not($readable) ) then
+      ()
+    else if ( doc-available($path) ) then
+      doc($path)
+    else if ( util:binary-doc-available($path) ) then
+      util:binary-doc($path)
     else ()
   
-  let $mtype := if (count($doc) = 1)
+  let $mtype := if ( count($doc) = 1 )
     then xmldb:get-mime-type($path)
     else ()
-  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
+  let $type := if ( $mtype = 'application/xml' and $doc//tei:TEI )
     then "application/tei+xml"
     else $mtype
   
-  let $method := switch ($type)
-    case "text/xml"
-    case "application/xml"
-    case "application/xsl+xml"
-    case "application/tei+xml"
-      return "xml"
-    default return "binary"
+  let $method := if ( contains($type, 'xml') ) then
+      "xml"
+    else if ( contains($type, 'html') ) then
+      "html"
+    else
+      "binary"
   
-  let $respCode := if (count($files) = 0)
-  then 404
-  else if (not($readable))
-  then 401
-  else if (count($files) = 1 and count($doc) = 1)
-  then 200
-  else 500
+  let $respCode := if ( count($files) = 0 ) then
+      404
+    else if ( not($readable) ) then
+      401
+    else if ( count($files) = 1 and count($doc) = 1 ) then
+      200
+    else
+      500
   
   return (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="{$method}"/>
       </output:serialization-parameters>
-      <http:response status="{$respCode}">{
-        if (string-length($type) = 0) then () else
-          <http:header name="Content-Type" value="{$type}" />
-        }{
-        if ($respCode = 401) then
-          <http:header name="WWW-Authenticate" value="Basic"/>
-          else ()
-        }{
-        if ($respCode = 200)
-          then <http:header name="rest-status" value="REST:SUCCESS" />
-          else <http:header name="rest-status" value="REST:ERROR" />
+      <http:response status="{$respCode}">
+        {
+          if ( string-length($type) = 0 )
+            then ()
+            else <http:header name="Content-Type" value="{$type}" />
+          ,
+          if ( $respCode = 401 )
+            then <http:header name="WWW-Authenticate" value="Basic"/>
+            else ()
+          ,
+          if (  $respCode = 200 )
+            then <http:header name="rest-status" value="REST:SUCCESS" />
+            else <http:header name="rest-status" value="REST:ERROR" />
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
