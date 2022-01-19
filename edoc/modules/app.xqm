@@ -635,6 +635,18 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
         xs:anyURI($location))
     return system:function-available(xs:QName($functionName), $arity)
 };
+(:
+try {
+    let $location := wdb:findProjectXQM($model("pathToEd")),
+        $functionName := if (starts-with($name, 'wdbPF:')) then $name else 'wdbPF:' || $name,
+        $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles",
+            map { "location-hints": $location })
+        
+    return $functions?functions(xs:QName($functionName))($arity)
+  } catch * {
+    ()
+  }
+:)
 
 (:~
  : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
@@ -678,7 +690,7 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id or mets:mets/@OBJID
  : @return The path to the project 
  :)
-declare function wdb:getProjectPathFromId ($ed as xs:string) {
+declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
   let $md := (
     collection($wdb:data)/id($ed)[self::meta:projectMD],
     collection($wdb:data)/mets:mets[@OBJID = $ed]
