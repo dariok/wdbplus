@@ -295,39 +295,35 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() 
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{ $model("title") } – { normalize-space($wdb:configFile//config:short) }</title>
-    <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
     {
-      if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
-        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
-        else ()
+      if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, "overrideCssJs", 1) ) then
+        wdb:eval("wdbPF:overrideCssJs($model)", false(), (xs:QName("model"), $model))
+      else (
+        <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
+        if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
+          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
+          else (),
+        <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
+        if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
+          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
+          else (),
+        if ( $model?annotation = true() )
+          then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
+          else (),
+        wdb:getProjectFiles($node, $model, 'css'),
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>,
+        if ( $model?annotation = true() )
+          then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+          else (),
+        <script src="$shared/scripts/js.cookie.js"></script>,
+        <script src="$shared/scripts/legal.js"></script>,
+        <script src="$shared/scripts/function.js"></script>,
+        if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
+          then <script src="$shared/../data/resources/function.js"></script>
+          else (),
+        wdb:getProjectFiles($node, $model, 'js')
+      )
     }
-    <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
-    {
-      if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
-        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
-        else ()
-    }
-    {
-      if ( $model?annotation = true() )
-        then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
-        else ()
-    }
-    { wdb:getProjectFiles($node, $model, 'css') }
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    {
-      if ( $model?annotation = true() )
-        then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-        else ()
-    }
-    <script src="$shared/scripts/js.cookie.js"></script>
-    <script src="$shared/scripts/legal.js"></script>
-    <script src="$shared/scripts/function.js"></script>
-    {
-      if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-        then <script src="$shared/../data/resources/function.js"></script>
-        else ()
-    }
-    { wdb:getProjectFiles($node, $model, 'js') }
   </head>
 };
 
