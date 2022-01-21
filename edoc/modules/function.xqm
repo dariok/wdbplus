@@ -132,10 +132,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
         <script src="./$shared/scripts/js.cookie.js"/>,
         <script src="./$shared/scripts/legal.js"/>,
         <script src="./$shared/scripts/function.js"/>,
-        wdbfp:get('js', $model?pathToEd, $model),
-        if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-          then <script src="data/resources/function.js" />
-          else ()
+        wdbfp:get('js', $model?pathToEd, $model)
       )
     }
   </head>
@@ -292,7 +289,10 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
       let $add := if ( util:binary-doc-available($edPath || "/addin.js") )
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
-      return ($gen, $pro, $add)
+      let $ins := if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
+          then <script src="data/resources/function.js" />
+          else ()
+      return ($ins, $gen, $pro, $add)
     default return <meta name="specFile" value="{$name}" />
 };
 
