@@ -123,10 +123,10 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
         if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
           then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/wdb.css" />
           else (),
-        if ( util:binary-doc-available($wdb:data || "/resources/function.css") )
-          then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/function.css" />
+        <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css" />,
+        if ( util:binary-doc-available($wdb:data || "/resources/" || $templateFile || ".css") )
+          then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/{$templateFile}.css" />
           else (),
-        <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css"/>,
         wdbfp:get('css', $model?pathToEd, $model),
         <script src="https://code.jquery.com/jquery-3.5.1.min.js" />,
         <script src="./$shared/scripts/js.cookie.js"/>,
@@ -134,8 +134,8 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
         <script src="./$shared/scripts/function.js"/>,
         wdbfp:get('js', $model?pathToEd, $model),
         if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-         then <script src="data/resources/function.js" />
-         else ()
+          then <script src="data/resources/function.js" />
+          else ()
       )
     }
   </head>
