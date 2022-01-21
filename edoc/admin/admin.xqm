@@ -86,7 +86,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
   </aside>
 };
 
-declare function wdbAdmin:css ( $node as node(), $model as map(*) ) as element()+ {
+declare function wdbAdmin:css ( $node as node(), $model as map(*) ) as element()* {
   if ( unparsed-text-available($wdb:data || "/resources/wdb.css") )
     then <link rel="stylesheet" type="text/css" href="../data/resources/wdb.css" />
     else (),
