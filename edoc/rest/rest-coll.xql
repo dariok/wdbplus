@@ -399,26 +399,36 @@ declare function local:imported ( $import, $child ) {
     else $struct
 };
 
+(:~
+ : Return the navigation for a given project as HTML
+ : Tries to load a project specific function, project specific XSLT, instance specific XSLT or uses the WDB+ default
+ :
+ : @param $ed The project’s ID
+ : @return HTML (should be a html:nav element)
+ :)
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$id}/nav.html")
-function wdbRc:getCollectionNavHTML ($id as xs:string) {
-  let $pathToEd := wdb:getProjectPathFromId($id)
-  let $mf := wdb:getMetaFile($pathToEd)
-  let $params :=
-    <parameters>
-      <param name="id" value="{$id}"/>
-    </parameters>
+    %rest:path("/edoc/collection/{$ed}/nav.html")
+function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
+  let $pathToEd := wdb:getProjectPathFromId($ed),
+      $mf := wdb:getMetaFile($pathToEd),
+      $params :=
+        <parameters>
+          <param name="id" value="{$ed}"/>
+        </parameters>
   
   let $html := try {
-    if(ends-with($mf, 'wdbmeta.xml'))
+    if( ends-with($mf, 'wdbmeta.xml') )
       then
-        let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0))
-          then wdb:eval("wdbPF:getNavXSLT()")
-          else if (doc-available($pathToEd || '/resources/nav.xsl'))
-          then xs:anyURI($pathToEd || '/resources/nav.xsl')
-          else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
-        let $struct := wdbRc:getCollectionNavXML($id)
+        let $struct := wdbRc:getCollectionNavXML($ed),
+            $xsl := if ( wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0) )
+              then wdb:eval("wdbPF:getNavXSLT()")
+              else if ( doc-available($pathToEd || '/resources/nav.xsl') )
+              then xs:anyURI($pathToEd || '/resources/nav.xsl')
+              else if ( doc-available($wdb:data || '/resources/nav.xsl') )
+              then xs:anyURI($wdb:data || '/resources/nav.xsl')
+              else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+        
         return transform:transform($struct, doc($xsl), $params)
       else
         transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), $params)
@@ -427,20 +437,18 @@ function wdbRc:getCollectionNavHTML ($id as xs:string) {
       {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
   }
   
-  let $status := if ($html[self::*:p]) then '500' else '200'
+  let $status := if ( $html[self::*:p] ) then '500' else '200'
   
   return (
     <rest:response>
       <http:response status="{$status}">
         <http:header name="Access-Control-Allow-Origin" value="*" />
         <http:header name="Content-Type" value="text/html" />
-        <http:header name="REST-Status" value="REST:SUCCESS" />
       </http:response>
     </rest:response>,
     $html
   )
 };
-
 
 declare
   %private
