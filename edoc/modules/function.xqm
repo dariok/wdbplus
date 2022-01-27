@@ -54,8 +54,14 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
             then $wdb:data
             else wdb:getEdPath($ed, true()),
           $infoFileLoc := wdb:getMetaFile($pathToEd)
+        , $pp := try {
+              parse-json($p)
+            } catch * {
+              normalize-space($p)
+            }
       
       return map {
+        "p":           $pp,
         "pathToEd":    $pathToEd,
         "q":           $q,
         "ed":          $ed,
