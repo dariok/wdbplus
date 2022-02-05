@@ -109,7 +109,7 @@ declare function local:selectEd ($model) {(
           {normalize-space($label)}
         </option>
     return (
-      <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+      if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),
       $opts
     )
   }</select>,
