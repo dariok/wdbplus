@@ -30,7 +30,7 @@ declare
     %templates:wrap
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
     $q as xs:string ) as item()* {
-  try {
+  let $newModel := try {
     if ( contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
       let $path := $wdb:edocBaseDB || "/addins/" || $addinName
@@ -104,6 +104,15 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
       "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
     })
   }
+
+  (: TODO: use a function to get the actual content language :)
+  return
+    <html lang="de">
+      {
+        for $h in $node/* return
+          templates:apply($h, $wdb:Lookup, $newModel)
+      }
+    </html>
 };
 
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
