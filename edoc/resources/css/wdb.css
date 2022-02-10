@@ -116,13 +116,10 @@ body > header h2 {
 /* parts of the header which act as dropdown menus, e.g. navigation */
 .menuItem {
   background-color: white;
-  
   border: 0.1px solid;
   padding: .5em;
-  
   position: absolute;
   top: 5em;
-  
   z-index: 99;
 }
 

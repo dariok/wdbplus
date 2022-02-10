@@ -68,14 +68,16 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
       </http:response>
     </rest:response>
   else
-    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
-    let $errNumID := (count($fileEntry) > 1)
-    let $errNoID := count($fileEntry) = 0
+    (: get entries from metaFile :)
+    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file],
+        $errNumID := (count($fileEntry) > 1),
+        $errNoID := count($fileEntry) = 0
     
+    (: parse data an try to get the intended path :)
     let $parsed := wdb:parseMultipart($data, $header)
-    let $path := normalize-space($parsed?filename?body)
-    let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
-    let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
+      , $path := normalize-space($parsed?filename?body)
+      , $pathEntry := collection($wdb:data)//meta:file[@path = $path]
+      , $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
     
     let $fullPath := substring-before(base-uri($fileEntry), "wdbmeta.xml") || $path
     let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
@@ -86,32 +88,56 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $contents := $parsed?file?body
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
-    return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
-    then
+    return if ( $errNonMatch or $errNumID or $errNoAccess or $errNoID ) then
       let $reason := (
-        if ($errNoID) then "no file found with ID " || $id else (),
-        if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
-        if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
-        if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
+          if ($errNoID) then
+            "no file found with ID " || $id
+          else
+            ()
+        , if ($errNumID) then
+            "illegal number of file entries: " || count($fileEntry)
+              || " for ID " || $id
+          else
+            ()
+        , if ($errNonMatch) then
+            "path " || $path || " is already in use for ID "
+              || $pathEntry[1]/@xml:id
+          else
+            ()
+        , if ($errNoAccess) then
+            "user " || $user || " has no access to resource " || $fullPath
+          else
+            ()
       )
-      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 403 else 500
+      
+      let $status :=
+            if ( $errNoID ) then
+              404
+            else if ( $errNoAccess ) then
+              403
+            else
+              500
+
       return (
-        <rest:response>
-          <http:response status="{$status}">
-            <http:header name="Content-Type" value="text/plain" />
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-          </http:response>
-        </rest:response>,
-        $reason
+          <rest:response>
+            <http:response status="{$status}">
+              <http:header name="Content-Type" value="text/plain" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>
+        , $reason
       )
+
     else
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
       let $collectionPath := xstring:substring-before-last($fullPath, '/')
       
       let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType),
-          $meta := if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") )
-            then wdbRi:enterMetaXML($store[2])
-            else wdbRi:enterMeta($store[2])
+          $meta := 
+            if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") ) then
+              wdbRi:enterMetaXML($store[2])
+            else
+              wdbRi:enterMeta($store[2])
     return if ($store[1]//http:response/@status = "200"
         and $meta[1]//http:response/@status = "200")
     then
