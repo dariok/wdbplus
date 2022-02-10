@@ -202,11 +202,21 @@ declare function wdb:getServerApp() as xs:string {
  : Templating function; called from layout.html. Entry point for content pages
  :)
 declare
-    %templates:wrap
     %templates:default("view", "")
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
-  wdb:populateModel($id, $view, $model, $p)
+  let $newModel := wdb:populateModel($id, $view, $model, $p)
+  
+  (: TODO: use a function to get the actual content language :)
+  return 
+    <html lang="de">
+      {
+        for $h in $node/* return
+          if ( $h/*[@data-template] )
+            then for $c in $h/* return try { templates:apply($c, $wdbfp:lookup, $newModel) } catch * { util:log("error", $err:description) }
+            else templates:apply($h, $wdbfp:lookup, $newModel)
+      }
+    </html>
 };
 
 (:~
