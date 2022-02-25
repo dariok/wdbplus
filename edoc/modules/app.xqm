@@ -213,8 +213,8 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
       {
         for $h in $node/* return
           if ( $h/*[@data-template] )
-            then for $c in $h/* return try { templates:apply($c, $wdbfp:lookup, $newModel) } catch * { util:log("error", $err:description) }
-            else templates:apply($h, $wdbfp:lookup, $newModel)
+            then for $c in $h/* return try { templates:apply($c, $wdb:lookup, $newModel) } catch * { util:log("error", $err:description) }
+            else templates:apply($h, $wdb:lookup, $newModel)
       }
     </html>
 };
