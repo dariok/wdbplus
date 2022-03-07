@@ -251,16 +251,17 @@ const wdbDocument = {
 
   /* load an element by ID and display it to the right */
   showInfoRight: function ( elementID ) {
-    this.showDataRight($('#' + elementID).html());
+    this.showDataRight($('#' + elementID));
   },
   
   /* show data passed in #ann; assumes that data are wrapped in .content */
   showDataRight: function ( data ) {
     let insertID = wdb.getUniqueId(),
-        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
-          $(data).find('.content') +
+        insertContent = '<div id="' + insertID + '" class="infoContainer right">' +
+          $(data).find('.content').html() +
           '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
-          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>';
+    
       $('#ann').html(insertContent);
   },
 
