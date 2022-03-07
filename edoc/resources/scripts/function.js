@@ -257,10 +257,12 @@ const wdbDocument = {
   /* show data passed in #ann; assumes that data are wrapped in .content */
   showDataRight: function ( data, replace ) {
     let insertID = wdb.getUniqueId(),
-        insertContent = '<div id="' + insertID + '" class="infoContainer right">' +
-          $(data).find('.content').html() +
-          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
-          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>';
+        insertContent = '<div id="' + insertID + '" class="infoContainer right">'
+          + $(data).find('.content').html()
+          + '<div class="controls">'
+          + '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>'
+          + '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button>'
+          + '</div></div>';
     
     if ( replace === true ) {
       $('#ann').html(insertContent);
