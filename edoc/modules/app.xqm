@@ -202,11 +202,21 @@ declare function wdb:getServerApp() as xs:string {
  : Templating function; called from layout.html. Entry point for content pages
  :)
 declare
-    %templates:wrap
     %templates:default("view", "")
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
-  wdb:populateModel($id, $view, $model, $p)
+  let $newModel := wdb:populateModel($id, $view, $model, $p)
+  
+  (: TODO: use a function to get the actual content language :)
+  return 
+    <html lang="de">
+      {
+        for $h in $node/* return
+          if ( $h/*[@data-template] )
+            then for $c in $h/* return try { templates:apply($c, $wdb:lookup, $newModel) } catch * { util:log("error", $err:description) }
+            else templates:apply($h, $wdb:lookup, $newModel)
+      }
+    </html>
 };
 
 (:~
@@ -218,13 +228,13 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
-declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
+declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
     wdb:populateModel($id, $view, $model, "")
 };
-declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
+declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
 try {
   let $pTF := wdb:getFilePath($id)
-  let $pathToFile := if (sm:has-access($pTF, "r"))
+  let $pathToFile := if ( sm:has-access($pTF, "r") )
     then $pTF
     else error(xs:QName("wdbErr:wdb0004"))
   
@@ -286,7 +296,7 @@ try {
  : Create the head for HTML files served via the templating system
  : @created 2018-02-02 DK
  :)
-declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() {
+declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -829,20 +839,57 @@ declare function wdb:parseMultipart ( $data, $header ) {
   )
 };
 
-declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace as xs:anyURI?) {
-  switch ($extension)
-    case "css" return "text/css"
-    case "js" return "application/javascript"
-    case "xql"
-    case "xqm" return "application/xquery"
-    case "html" return "text/html"
-    case "gif" return "image/gif"
-    case "png" return "image/png"
-    case "json" return "application/json"
-    case "zip" return "application/zip"
-    case "xml" return
-      if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
-    case "xsl" return "application/xslt+xml"
-    default return "application/octet-stream"
+(:~
+ : Get a MIME type from an extension and an optional XML namespace
+ :
+ : @param $extension (string): the file extension
+ : @param $namespace (string) optional: a namespace URI for more detailed MIME types of XML files
+ : @return (string): the MIME type
+ :)
+declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace as xs:anyURI? ) as xs:string {
+  switch ( $extension )
+    case 'css'
+      return
+        'text/css'
+    case 'js'
+      return
+        'application/javascript'
+    case 'xql'
+    case 'xqm'
+      return
+        let $t := 'abs'
+
+        return if ( $q ) then
+          'application/xquery'
+        else
+          $t
+    
+    case 'html'
+      return
+        'text/html'
+    case 'gif'
+      return
+        'image/gif'
+    case 'png'
+      return
+        'image/png'
+    case 'json'
+      return
+        'application/json'
+    case 'zip'
+      return
+        'application/zip'
+    case 'xml'
+      return
+        if ( $namespace = 'http://www.tei-c.org/ns/1.0' ) then
+          'application/tei+xml'
+        else
+          'application/xml'
+    case 'xsl'
+      return
+        'application/xslt+xml'
+    default
+      return
+        'application/octet-stream'
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)

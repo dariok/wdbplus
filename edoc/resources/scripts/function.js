@@ -157,11 +157,11 @@ Object.freeze(wdb);
 const wdbDocument = {
   // get the common ancestor of 2 elements
   commonAncestor: function ( element1, element2 ) {
-    let parent1 = element1.parents().add(element1).get(),
-        parent2 = element2.parents().add(element2).get();
+    let parent1 = element1.parents().add(element1).get()
+      , parent2 = element2.parents().add(element2).get();
     
-    for (let i = 0; i < parent1.length; i++) {
-      if (parent1[i] != parent2[i]) return parent1[i - 1];
+    for ( let i = 0; i < parent1.length; i++ ) {
+      if ( parent1[i] != parent2[i] ) return parent1[i - 1];
     }
   },
 
