@@ -416,6 +416,10 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
         <parameters>
           <param name="id" value="{$ed}"/>
         </parameters>
+    , $attributes :=
+        <attributes>
+          <attr name="http://saxon.sf.net/feature/expandAttributeDefaults" value="off" />
+        </attributes>
   
   let $html := try {
     if( ends-with($mf, 'wdbmeta.xml') )
@@ -429,7 +433,7 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
               then xs:anyURI($wdb:data || '/resources/nav.xsl')
               else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
         
-        return transform:transform($struct, doc($xsl), $params)
+        return transform:transform($struct, doc($xsl), $params, $attributes, ())
       else
         transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), $params)
   } catch * {
