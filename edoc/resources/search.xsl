@@ -28,13 +28,20 @@
         <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[<xsl:value-of select="@from - 25"/>–<xsl:value-of select="@from - 1"/>]</a>
       </xsl:if>
       <span>
-        <xsl:text> – Treffer </xsl:text>
-        <xsl:value-of select="@from"/>
-        <xsl:text> bis </xsl:text>
-        <xsl:value-of select="if(@from + 25 &gt; @count) then @count else @from + 25"/>
-        <xsl:text> von insgesamt </xsl:text>
-        <xsl:value-of select="@count"/>
-        <xsl:text> Ausgaben – </xsl:text>
+        <xsl:choose>
+          <xsl:when test="$max gt 0">
+            <xsl:text> – Treffer </xsl:text>
+            <xsl:value-of select="@from"/>
+            <xsl:text> bis </xsl:text>
+            <xsl:value-of select="if(@from + 25 &gt; $max) then $max else @from + 25"/>
+            <xsl:text> von insgesamt </xsl:text>
+            <xsl:value-of select="$max"/>
+            <xsl:text> Texten – </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text> – keine Treffer – </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </span>
       <xsl:if test="@count &gt; 25 and @from + 25 &lt; @count">
         <xsl:variable name="f1">

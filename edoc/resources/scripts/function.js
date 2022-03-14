@@ -251,17 +251,24 @@ const wdbDocument = {
 
   /* load an element by ID and display it to the right */
   showInfoRight: function ( elementID ) {
-    this.showDataRight($('#' + elementID).html());
+    this.showDataRight($('#' + elementID));
   },
   
   /* show data passed in #ann; assumes that data are wrapped in .content */
-  showDataRight: function ( data ) {
+  showDataRight: function ( data, replace ) {
     let insertID = wdb.getUniqueId(),
-        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
-          $(data).find('.content') +
-          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
-          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+        insertContent = '<div id="' + insertID + '" class="infoContainer right">'
+          + $(data).find('.content').html()
+          + '<div class="controls">'
+          + '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>'
+          + '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button>'
+          + '</div></div>';
+    
+    if ( replace === true ) {
       $('#ann').html(insertContent);
+    } else {
+      $('#ann').append(insertContent);
+    }
   },
 
   /* toggle facsimile div visibility */
