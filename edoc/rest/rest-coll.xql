@@ -93,10 +93,12 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       </rest:response>,
       "user " || sm:id()//sm:real/sm:username || " does not have access to collection " || $collection
     )
-    else if ($errCollectionPresent instance of xs:string) then
+    else if ($errCollectionPresent instance of xs:string) then (
       <rest:response>
         <http:response status="409" />
-      </rest:response>
+      </rest:response>,
+      "collection " || $collectionData?id || " already created at " || $errCollectionPresent
+    )
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
