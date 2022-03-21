@@ -71,7 +71,7 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
     {
       switch ($model?page)
         case "projects.html" return (
-          <button type="button">(Unter-)Projekt erstellen</button>,<br/>,
+          <a href="new.html?ed={$model?ed}">(Unter-)Projekt erstellen</a>,<br/>,
           <a href="directoryForm.html?ed={$model?ed}">Dateien hochladen</a>
         )
         default return ()
