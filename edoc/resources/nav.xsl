@@ -17,7 +17,7 @@
    <xsl:template match="meta:struct[not(parent::*)]">
       <xsl:apply-templates select="@label"/>
       
-      <ul>
+      <ul id="{$id}">
          <xsl:apply-templates>
             <xsl:sort select="@order" />
          </xsl:apply-templates>
@@ -26,9 +26,15 @@
    
    <xsl:template match="meta:struct[@file]">
       <li id="{generate-id()}">
-         <button title="Navigation einblenden" type="button" onclick="loadNavigation(rest + 'collection/{@file}/nav.html', '{generate-id()}', this)">
+         <button title="Navigation einblenden" type="button" onclick="wdbDocument.nav.loadNavigation('{@file}', '{generate-id()}', this)">
             <xsl:value-of select="@label"/>
          </button>
+         <!-- ul and li must not be void, so a space in li must help browsers understand this -->
+         <ul id="{@file}" style="display: none;">
+            <li>
+               <xsl:text> </xsl:text>
+            </li>
+         </ul>
       </li>
    </xsl:template>
    

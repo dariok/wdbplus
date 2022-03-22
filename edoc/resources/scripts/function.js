@@ -567,9 +567,9 @@ const wdbDocument = {
 
     /* toggle TOC level visibility */
     switchnav: function ( id, anchorElement ) {	
-      $(id).children('ul').children().toggle();
+      $('#' + id).toggle();
       
-      if (anchorElement.length() > 0 && $(anchorElement).html() == '→') {
+      if (anchorElement !== undefined && anchorElement.length() > 0 && $(anchorElement).html() == '→') {
         $(anchorElement).html('↑');
       } else {
         $(anchorElement).html('→');
@@ -578,6 +578,7 @@ const wdbDocument = {
 
     /* load navigation of an imported project */
     loadNavigation: function ( ed ) {
+      let callingButton = event.target;
       $.ajax({
         method: "get",
         url: wdb.meta.rest + "collection/" + ed + "/nav.html",
@@ -585,6 +586,10 @@ const wdbDocument = {
           let replacement = $(data).find('#' + ed);
           if ( replacement.length > 0 ) {
             $('#' + ed).replaceWith(replacement);
+            callingButton.onclick = null;
+            callingButton.addEventListener('click', () => {
+              wdbDocument.nav.switchnav(ed);
+            });
           }
         },
         error: ( xhr, status, error ) => {
