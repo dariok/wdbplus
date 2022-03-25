@@ -33,10 +33,16 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
   let $newModel := try {
     if ( contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
-      let $path := $wdb:edocBaseDB || "/addins/" || $addinName
+        , $path := $wdb:edocBaseDB || "/addins/" || $addinName
+        , $pp := try {
+            parse-json($p)
+          } catch * {
+            normalize-space($p)
+          }
       
       return map {
         "pathToEd": $path,
+        "p":        $pp,
         "job":      $q,
         "id":       $id,
         "ed":       $ed,
