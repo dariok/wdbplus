@@ -165,10 +165,11 @@ function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
   let $files := collection($wdb:data)//id($id)[self::meta:file]
-  let $f := $files[1]
-  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
-  
-  let $readable := sm:has-access($path, "r")
+    , $collectionPath := wdb:getEdPath($id, true())
+    , $f := $files[1]
+    , $path := $collectionPath || '/' || $f/@path
+    , $readable := sm:has-access($path, "r")
+
   let $doc := if ( not($readable) ) then
       ()
     else if ( doc-available($path) ) then
@@ -195,7 +196,7 @@ function wdbRf:getResource ($id as xs:string) {
       404
     else if ( not($readable) ) then
       401
-    else if ( count($files) = 1 and count($doc) = 1 ) then
+    else if ( count($doc) = 1 ) then
       200
     else
       500
