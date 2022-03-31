@@ -807,8 +807,8 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $header ) {
-  let $boundary := substring-after($header, 'boundary=')
+declare function wdb:parseMultipart ( $data, $postHeader ) {
+  let $boundary := $header => substring-after('boundary=') => translate('"', '')
   return map:merge(
     for $m in tokenize($data, "--" || $boundary) return
       if (string-length($m) lt 6)
