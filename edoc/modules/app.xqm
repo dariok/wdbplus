@@ -618,11 +618,14 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     then $files[self::*:link]
     else $files[self::*:script]
 };
+
 (:~ 
  : Look up $function in the given project's project.xqm if it exists
  : This involves registering the module: if the function is available, it can
  : immediately be used by the calling script if this lookup is within the caller's scope
  : The scope is the project as given in $model("pathToEd")
+ : !!! A global data/project.xqm will interfere with this mechanism as the new module will not be loaded due to
+ :     conflicting module URIs
  : 
  : @param $model a map of parameters that conforms to the global structure
  : @param $name the (local) name of the function to be looked for
@@ -641,18 +644,28 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
         xs:anyURI($location))
     return system:function-available(xs:QName($functionName), $arity)
 };
-(:
-try {
-    let $location := wdb:findProjectXQM($model("pathToEd")),
-        $functionName := if (starts-with($name, 'wdbPF:')) then $name else 'wdbPF:' || $name,
-        $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles",
-            map { "location-hints": $location })
-        
+
+(:~ 
+ : Load the project.xqm given in $model?projectFile and return the function with the given name and arity iif it exists
+ : 
+ : @param $model a map of parameters that conforms to the global structure
+ : @param $name the (local) name of the function to be looked for
+ : @param $arity the arity (i.e. number of arguments) of said function
+ : @return function(*)? a function item representing the function if it was found, the empry sequence otherwise
+ :)
+declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
+  try {
+    let $functionName := if ( starts-with($name, 'wdbPF:') ) then $name else 'wdbPF:' || $name
+      , $functions := load-xquery-module(
+          "https://github.com/dariok/wdbplus/projectFiles",
+          map { "location-hints": $model?projectFile }
+        )
+    
     return $functions?functions(xs:QName($functionName))($arity)
   } catch * {
     ()
   }
-:)
+};
 
 (:~
  : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
