@@ -247,8 +247,6 @@ const wdbDocument = {
     marginNote.css('top', targetTop + "px");
   },
 
-  marginaliaTimer: {},
-
   /* load an element by ID and display it to the right */
   showInfoRight: function ( elementID ) {
     this.showDataRight($('#' + elementID));
@@ -703,7 +701,10 @@ const wdbUser = {
           pos = pbs.index(element);
       viewer.goToPage(pos);
     */
-  }
+  },
+
+  /* a timer for marginalia positioning; needs to be reset upon resize */
+  marginaliaTimer: {},
 };
 
 /***
@@ -770,8 +771,8 @@ $(window).bind('hashchange', function () {
 
 /* set/reset timer for marginalia positioning and invoke actual function */
 $(window).on('load resize', function () {
-  clearTimeout(wdbDocument.marginaliaTimer);
-  wdbDocument.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
+  clearTimeout(wdbUser.marginaliaTimer);
+  wdbUser.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
 });
 
 /* preparations to show some loading animation while doing AJAX requests */
