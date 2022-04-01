@@ -354,11 +354,14 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
         else <p />
       }</div>,
       <div class="headerCentre">{
-        if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
-          util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)/*
-        else <h1>{$model("title")}</h1>
+        (: TODO: this is a proof of concept; this whole part has to be updated for #507 and #508 :)
+        let $f := wdb:getProjectFunction($model, 'getHeaderCentre', 1)
+        return if ( count($f) eq 1 ) then
+          $f($model)
+        else if ( doc-available($wdb:data || "/resources/headerCentre.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)/*
+        else
+          <h1>{$model("title")}</h1>
       }</div>,
       <div class="headerMenu" role="navigation">{(
         if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
@@ -657,8 +660,8 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
   try {
     let $functionName := if ( starts-with($name, 'wdbPF:') ) then $name else 'wdbPF:' || $name
       , $functions := load-xquery-module(
-          "https://github.com/dariok/wdbplus/projectFiles",
-          map { "location-hints": $model?projectFile }
+            "https://github.com/dariok/wdbplus/projectFiles",
+            map { "location-hints": $model?projectFile }
         )
     
     return $functions?functions(xs:QName($functionName))($arity)
