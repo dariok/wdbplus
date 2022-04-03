@@ -70,6 +70,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
 declare
     %rest:GET
     %rest:path("/edoc/search/collection/{$id}.html")
+    %rest:produces("text/html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
@@ -167,6 +168,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
 declare
     %rest:GET
     %rest:path("/edoc/search/file/{$id}.html")
+    %rest:produces("text/html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
