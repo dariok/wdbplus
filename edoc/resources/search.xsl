@@ -8,6 +8,7 @@
   <xsl:param name="rest"/>
   
   <xsl:template match="/results">
+    <xsl:variable name="p" select="parse-json(@p)" />
     <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
     
     <div>
@@ -33,7 +34,7 @@
             <xsl:text> – Treffer </xsl:text>
             <xsl:value-of select="@from"/>
             <xsl:text> bis </xsl:text>
-            <xsl:value-of select="if(@from + 25 &gt; $max) then $max else @from + 25"/>
+            <xsl:value-of select="if(@from + 24 &gt; $max) then $max else @from + 24"/>
             <xsl:text> von insgesamt </xsl:text>
             <xsl:value-of select="$max"/>
             <xsl:text> Texten – </xsl:text>
@@ -52,7 +53,7 @@
         </xsl:variable>
         <xsl:variable name="f2">
           <xsl:text>{"start": </xsl:text>
-          <xsl:value-of select="@count - 24"/>
+          <xsl:value-of select="if ( $max gt 25 ) then floor($max div 25) * 25 + 1 else 1"/>
           <xsl:value-of select="$val"/>
           <xsl:text>}</xsl:text>
         </xsl:variable>
