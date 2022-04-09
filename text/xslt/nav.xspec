@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:description stylesheet="../../edoc/resources/nav.xsl"
+   xmlns:x="http://www.jenitennison.com/xslt/xspec"
+   xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta">
+   
+   <x:scenario label="T1: labels">
+      <x:scenario label="T1.1">
+         <x:context>
+            <meta:view label="Inhalt" />
+         </x:context>
+         <x:expect label="text unaltered">
+            <li>
+               <a href="...">Inhalt</a>
+            </li>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T1.2">
+         <x:context>
+            <view file="pa000016-0006" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <label style="font-size: 1pt">Flacius, Dass die Buße allein aus dem Gesetz zu predigen sei (1559)</label>
+            </view>
+         </x:context>
+         <x:expect label="span with styled content">
+            <li>
+               <a href="view.html?id=pa000016-0006">
+                  <span style="font-size: 1pt"
+                     >Flacius, Dass die Buße allein aus dem Gesetz zu predigen sei (1559)</span>
+               </a>
+            </li>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T1.3">
+         <x:context>
+            <view file="pa000016-0006" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <label style="font-size: 1pt"><b>Flacius</b>, <i>Dass die Buße allein aus dem Gesetz zu predigen sei</i> <u>(1559)</u></label>
+            </view>
+         </x:context>
+         <x:expect label="html elements for i, b, u">
+            <li><a href="view.html?id=pa000016-0006">
+               <span style="font-size: 1pt"><b>Flacius</b>, <i>Dass die Buße allein aus dem Gesetz zu predigen sei</i> <u>(1559)</u></span>
+            </a></li>
+         </x:expect>
+      </x:scenario>
+   </x:scenario>
+   
+</x:description>

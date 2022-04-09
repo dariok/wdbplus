@@ -14,7 +14,7 @@
       </nav>
    </xsl:template>
    
-   <xsl:template match="meta:struct[not(parent::*)]">
+   <!--<xsl:template match="meta:struct[not(parent::*)]">
       <xsl:apply-templates select="@label"/>
       
       <ul id="{$id}">
@@ -29,7 +29,7 @@
          <button title="Navigation einblenden" type="button" onclick="wdbDocument.nav.loadNavigation('{@file}', '{generate-id()}', this)">
             <xsl:value-of select="@label"/>
          </button>
-         <!-- ul and li must not be void, so a space in li must help browsers understand this -->
+         <!-\- ul and li must not be void, so a space in li must help browsers understand this -\->
          <ul id="{@file}" style="display: none;">
             <li>
                <xsl:text> </xsl:text>
@@ -62,7 +62,14 @@
             </xsl:apply-templates>
          </ul>
       </li>
-   </xsl:template>
+   </xsl:template>-->
+   
+<!--   <xsl:template match="@label">
+      <xsl:variable name="pos" select="count(ancestor::meta:struct)" />
+      <xsl:element name="h{$pos + 1}">
+         <xsl:value-of select="normalize-space()" />
+      </xsl:element>
+   </xsl:template>-->
    
    <xsl:template match="meta:view">
       <li>
@@ -77,13 +84,6 @@
          <xsl:sequence select="@style" />
          <xsl:apply-templates />
       </span>
-   </xsl:template>
-   
-   <xsl:template match="@label">
-      <xsl:variable name="pos" select="count(ancestor::meta:struct)" />
-      <xsl:element name="h{$pos + 1}">
-         <xsl:value-of select="normalize-space()" />
-      </xsl:element>
    </xsl:template>
    
    <xsl:template match="meta:view/@label">
