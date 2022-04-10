@@ -39,6 +39,9 @@
             <xsl:if test="@ed != $id or not(@ed)">
                <xsl:attribute name="style">display: none;</xsl:attribute>
             </xsl:if>
+            <xsl:if test="not(meta:struct or meta:view)">
+               <li>Noch kein Inhalt</li>
+            </xsl:if>
             <xsl:apply-templates select="*">
                <xsl:sort select="@order" />
             </xsl:apply-templates>
