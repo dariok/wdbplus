@@ -575,19 +575,15 @@ const wdbDocument = {
     },
 
     /* load navigation of an imported project */
-    loadNavigation: function ( ed ) {
-      let callingButton = event.target;
+    loadNavigation: function ( event ) {
+      let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
         url: wdb.meta.rest + "collection/" + ed + "/nav.html",
         success:  ( data ) => {
-          let replacement = $(data).find('#' + ed);
+          let replacement = $(data).find('#' + ed).prev().addBack();
           if ( replacement.length > 0 ) {
-            $('#' + ed).replaceWith(replacement);
-            callingButton.onclick = null;
-            callingButton.addEventListener('click', () => {
-              wdbDocument.nav.switchnav(ed);
-            });
+            $(event.currentTarget).replaceWith(replacement);
           }
         },
         error: ( xhr, status, error ) => {
@@ -746,6 +742,16 @@ $( () => {
   // load navigation
   $('#showNavLink').on('click', () => {
     wdbDocument.nav.toggleNavigation();
+  });
+
+  // toggle navigation level visibility
+  $('body').on('click', '.wdbNav.level', ( event ) => {
+    wdbDocument.nav.switchnav(event.currentTarget.dataset.lvl);
+  });
+
+  // load a navigation level 
+  $('body').on('click', '.wdbNav.load', ( event ) => {
+    wdbDocument.nav.loadNavigation(event);
   });
 
   // toggle width button solely for iOS Safari

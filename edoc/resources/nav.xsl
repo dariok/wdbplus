@@ -1,5 +1,6 @@
 <xsl:stylesheet
    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:xs="http://www.w3.org/2001/XMLSchema"
    xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta"
    exclude-result-prefixes="#all"
    version="3.0">
@@ -8,68 +9,67 @@
    
    <xsl:param name="id"/>
    
-   <xsl:template match="/">
+   <xsl:template match="meta:struct[not(parent::*)]">
       <nav>
-         <xsl:apply-templates />
+         <ul>
+            <xsl:apply-templates select="*">
+               <xsl:sort select="@order" />
+            </xsl:apply-templates>
+         </ul>
       </nav>
    </xsl:template>
    
-   <!--<xsl:template match="meta:struct[not(parent::*)]">
-      <xsl:apply-templates select="@label"/>
+   <xsl:template match="meta:struct[parent::* and *]">
+      <xsl:variable name="id">
+         <xsl:call-template name="makeID" />
+      </xsl:variable>
       
-      <ul id="{$id}">
-         <xsl:apply-templates>
-            <xsl:sort select="@order" />
-         </xsl:apply-templates>
-      </ul>
-   </xsl:template>
-   
-   <xsl:template match="meta:struct[@file]">
-      <li id="{generate-id()}">
-         <button title="Navigation einblenden" type="button" onclick="wdbDocument.nav.loadNavigation('{@file}', '{generate-id()}', this)">
-            <xsl:value-of select="@label"/>
-         </button>
-         <!-\- ul and li must not be void, so a space in li must help browsers understand this -\->
-         <ul id="{@file}" style="display: none;">
-            <li>
-               <xsl:text> </xsl:text>
-            </li>
-         </ul>
-      </li>
-   </xsl:template>
-   
-   <xsl:template match="meta:struct[@ed and parent::*]">
-      <li id="{generate-id()}">
-         <button title="Navigation einblenden" type="button" onclick="$('#{generate-id()}').children('ul').toggle();">
-            <xsl:value-of select="@label"/>
+      <li>
+         <button class="wdbNav level" data-lvl="{$id}">
+            <xsl:attribute name="title">
+               <xsl:choose>
+                  <xsl:when test="@ed = $id">Navigationsebene ausblenden</xsl:when>
+                  <xsl:otherwise>Navigationsebene einblenden</xsl:otherwise>
+               </xsl:choose>
+            </xsl:attribute>
+            <xsl:apply-templates select="@label" />
          </button>
          <ul>
-            <xsl:apply-templates select="meta:struct">
-               <xsl:sort select="number(@order)" />
-            </xsl:apply-templates>	
-         </ul>
-      </li>
-   </xsl:template>
-   
-   <xsl:template match="meta:struct[not(@file or @ed) and *]">
-      <li>
-         <button type="button" title="Navigation einblenden" onclick="$('#{generate-id()}').toggle()">
-            <xsl:value-of select="@label"/>
-         </button>
-         <ul id="{generate-id()}" style="display: none;">
-            <xsl:apply-templates>
-               <xsl:sort select="number(@order)"/>
+            <xsl:attribute name="id" select="$id" />
+            <xsl:if test="@ed != $id or not(@ed)">
+               <xsl:attribute name="style">display: none;</xsl:attribute>
+            </xsl:if>
+            <xsl:apply-templates select="*">
+               <xsl:sort select="@order" />
             </xsl:apply-templates>
          </ul>
       </li>
-   </xsl:template>-->
+   </xsl:template>
    
-<!--   <xsl:template match="@label">
-      <xsl:variable name="pos" select="count(ancestor::meta:struct)" />
-      <xsl:element name="h{$pos + 1}">
-         <xsl:value-of select="normalize-space()" />
-      </xsl:element>
-   </xsl:template>-->
+   <xsl:template name="makeID">
+      <xsl:param name="context" select="." />
+      
+      <xsl:choose>
+         <xsl:when test="$context/@ed">
+            <xsl:value-of select="$context/@ed" />
+         </xsl:when>
+         <xsl:otherwise>
+            <xsl:call-template name="makeID">
+               <xsl:with-param name="context" select="parent::meta:struct" />
+            </xsl:call-template>
+            <xsl:text>-</xsl:text>
+            <xsl:value-of select="generate-id($context)" />
+         </xsl:otherwise>
+      </xsl:choose>
+   </xsl:template>
+   
+   <xsl:template match="meta:struct[@file]">
+      <li>
+         <button class="wdbNav load" data-ed="{@file}" title="Navigationsebene einblenden">
+            <xsl:apply-templates select="@label" />
+         </button>
+      </li>
+   </xsl:template>
    
    <xsl:template match="meta:view">
       <li>
@@ -94,14 +94,6 @@
       <xsl:element name="{local-name()}">
          <xsl:apply-templates />
       </xsl:element>
-   </xsl:template>
-   
-   <xsl:template match="meta:label/text()">
-      <xsl:value-of select="."/>
-   </xsl:template>
-   
-   <xsl:template match="text()">
-      <xsl:value-of select="normalize-space()" />
    </xsl:template>
    
    <xsl:template match="*:user"/>
