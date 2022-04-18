@@ -22,8 +22,8 @@
         </legal>
     </metaData>
     <files></files>
-    <process target="">
-        <command type=""></command>
+    <process target="html">
+        <command type="xsl">xsl/tei-transcript.xsl</command>
     </process>
     <struct></struct>
 </projectMD>
