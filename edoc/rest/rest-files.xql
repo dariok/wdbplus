@@ -5,7 +5,7 @@ module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -85,7 +85,12 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
     let $contentType := $parsed?file?header?Content-Type
-    let $contents := $parsed?file?body
+    
+    let $prepped := wdbRMi:replaceWs($parsed?file?body),
+        $contents := if ($contentType = ("text/xml", "application/xml") and not($prepped instance of element() or $prepped instance of document-node()))
+          then parse-xml($prepped)
+          else $prepped
+    
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
     return if ( $errNonMatch or $errNumID or $errNoAccess or $errNoID ) then
@@ -132,12 +137,12 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
       let $collectionPath := xstring:substring-before-last($fullPath, '/')
       
-      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType),
+      let $store := wdbRMi:store($collectionPath, $resourceName, $contents, $contentType),
           $meta := 
             if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") ) then
-              wdbRi:enterMetaXML($store[2])
+              wdbRMi:enterMetaXML($store[2])
             else
-              wdbRi:enterMeta($store[2])
+              wdbRMi:enterMeta($store[2])
     return if ($store[1]//http:response/@status = "200"
         and $meta[1]//http:response/@status = "200")
     then
