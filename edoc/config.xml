@@ -33,4 +33,10 @@
   <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
      default: /db/apps/edoc/data -->
   <data>/db/apps/edoc/data</data>
+
+  <!-- Allowed origins for CORS requests – these may be necessary when wdb+ is behind a rewriting proxy
+       If all sources are to be allowed or no check should be undertaken, this element can be removed -->
+  <origins>
+    <origin>http://localhost:8080</origin>
+  </origins>
 </config>

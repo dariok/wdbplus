@@ -38,6 +38,15 @@
       <element name="data">
         <text/>
       </element>
+      <optional>
+        <element name="origins" >
+          <oneOrMore>
+            <element name="origin">
+              <text />
+            </element>
+          </oneOrMore>
+        </element>
+      </optional>
     </element>
   </start>
 </grammar>

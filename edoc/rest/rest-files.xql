@@ -5,7 +5,8 @@ module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -49,6 +50,15 @@ declare
         </rest:response>,
         $files/@xml:id/string()
       )
+};
+
+(: Evaluate preflight requests before PUTing a file :)
+declare
+  %rest:OPTIONS
+  %rest:path("/edoc/resource/{$id}")
+  %rest:header-param("origin", "{$origin}", "")
+function wdbRf:storeFilePreflight ( $id as xs:string, $origin as xs:string* ) as element(rest:response) {
+  wdbRCo:evaluatePreflight($origin, "PUT")
 };
 
 (: upload a single file with known ID (i.e. one that is already present)

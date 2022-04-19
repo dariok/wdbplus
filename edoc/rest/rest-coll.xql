@@ -144,6 +144,15 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
 };
 
 (: create a resource in a collection :)
+(: Evaluate preflight requests before PUTing a file :)
+declare
+  %rest:OPTIONS
+  %rest:path("/edoc/collection/{$collection}")
+  %rest:header-param("origin", "{$origin}", "")
+function wdbRc:createFilePreflight ($collection as xs:string, $origin as xs:string*) as element(rest:response) {
+  wdbRCo:evaluatePreflight($origin, "POST")
+};
+
 (: create a single file for which no entry has been created in wdbmeta.
    - if a file with the same ID, MIME type and path is found, update it (if these are not a match, return 409)
    - if no target collection is given, return 500
