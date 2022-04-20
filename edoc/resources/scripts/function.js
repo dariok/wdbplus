@@ -98,9 +98,11 @@ const wdb = (function() {
   let restHeaderVal = { };
   let setAuthorizationHeader = function () {
     let cred = Cookies.get("wdbplus");
-    if (typeof cred == "undefined" || cred.length == 0)
-      restHeaderVal.Authorization = "";
-      else restHeaderVal.Authorization = "Basic " + cred;
+    if ( typeof cred == "undefined" || cred.length == 0 ) {
+      delete restHeaderVal.Authorization;
+    } else {
+      restHeaderVal.Authorization = "Basic " + cred;
+    } 
   };
   setAuthorizationHeader();
 
