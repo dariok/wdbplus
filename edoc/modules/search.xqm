@@ -73,7 +73,7 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
         $auth := request:get-cookie-value("wdbplus")
     let $request-headers := (
         <http:header name="cache-control" value="no-cache" />,
-        if ( $auth = "" )
+        if ( string-length($auth) = 0 )
           then ()
           else <http:header name="authorization" value="Basic {$auth}" />
       )
