@@ -267,6 +267,10 @@ try {
   let $map := map {
     "ed":               $ed,
     "fileLoc":          $pathToFile,
+    "functions":        load-xquery-module(
+                            "https://github.com/dariok/wdbplus/projectFiles",
+                            map { "location-hints": $proFile }
+                        ),
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
     "p":                $p,
@@ -659,12 +663,8 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
 declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
   try {
     let $functionName := if ( starts-with($name, 'wdbPF:') ) then $name else 'wdbPF:' || $name
-      , $functions := load-xquery-module(
-            "https://github.com/dariok/wdbplus/projectFiles",
-            map { "location-hints": $model?projectFile }
-        )
     
-    return $functions?functions(xs:QName($functionName))($arity)
+    return $model?functions?functions(xs:QName($functionName))($arity)
   } catch * {
     ()
   }
