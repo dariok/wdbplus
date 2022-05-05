@@ -41,18 +41,18 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
           }
       
       return map {
-        "pathToEd": $path,
-        "p":        $pp,
-        "job":      $q,
-        "id":       $id,
-        "ed":       $ed,
-        "auth":     sm:id()/sm:id
+        "pathToEd":  $path,
+        "p":         $pp,
+        "job":       $q,
+        "id":        $id,
+        "ed":        $ed,
+        "auth":      sm:id()/sm:id
       }
     else if ( request:get-uri() => ends-with('/toc.html') ) then
       map {
-        "auth":     sm:id()/sm:id,
-        "title":    $wdb:configFile//*:name || " – Table of Contents",
-        "pathToEd": $wdb:data
+        "auth":      sm:id()/sm:id,
+        "title":     $wdb:configFile//*:name || " – Table of Contents",
+        "pathToEd":  $wdb:data
       }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
@@ -65,16 +65,26 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
             } catch * {
               normalize-space($p)
             }
+      let $proFile := wdb:findProjectXQM($pathToEd)
+      let $projectFunctions := 
+            if ( $proFile != "" )
+              then load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $proFile })
+              else map { }
+        , $instanceFunctions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
+        , $mergedFunctions := map:merge(($instanceFunctions?functions, $projectFunctions?functions))
       
       return map {
-        "p":           $pp,
-        "pathToEd":    $pathToEd,
-        "q":           $q,
-        "ed":          $ed,
-        "auth":        sm:id()/sm:id,
-        "infoFileLoc": $infoFileLoc,
-        "title":       doc($infoFileLoc)//meta:title[1]/text(),
-        "projectResources": $pathToEd || "/resources/"
+        "p":                $pp,
+        "pathToEd":         $pathToEd,
+        "q":                $q,
+        "ed":               $ed,
+        "auth":             sm:id()/sm:id,
+        "functions":        $mergedFunctions,
+        "infoFileLoc":      $infoFileLoc,
+        "title":            doc($infoFileLoc)//meta:title[1]/text(),
+        "projectFile":      $proFile,
+        "projectResources": $pathToEd || "/resources/",
+        "requestUrl":       request:get-url()
       }
     else
       let $map := wdb:populateModel($id, "", $model)
@@ -129,7 +139,7 @@ declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:str
   }
 };
 
-declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFile as xs:string* ) {
+declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFile as xs:string* ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -139,8 +149,8 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{$model("title")}</title>
     {
-      if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, "overrideFunctionCssJs", 2) ) then
-        wdb:eval("wdbPF:overrideFunctionCssJs($model, $templateFile)", false(), (xs:QName("model"), $model, xs:QName("templateFile"), $templateFile))
+      if ( wdb:findProjectFunction($model, "wdbPF:overrideFunctionCssJs", 2) ) then
+        (wdb:getProjectFunction($model, "wdbPF:overrideFunctionCssJs", 2))($model, $templateFile)
       else (
         <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>,
         if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
@@ -184,26 +194,20 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
     if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
       templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
     (: 1b. :)
-    else if ( wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1) ) then
-      wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), $model))
+    else if ( wdb:findProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1) ) then
+      (wdb:getProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1))($model)
     (: 2a. :)
     else if ( doc-available($model?projectResources || "functionHeader.html") ) then
       templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
     (: 2b. :)
-    else if ( wdb:findProjectFunction($model, 'getFunctionHeader', 1) ) then
-      wdb:eval('wdbPF:getFunctionHeader($model)', false(), (xs:QName('model'), $model))
+    else if ( wdb:findProjectFunction($model, 'wdbPF:getFunctionHeader', 1) ) then
+      (wdb:getProjectFunction($model, 'wdbPF:getFunctionHeader', 1))($model)
     (: 3a. :)
     else if ( doc-available($wdb:data || '/resources/' || $name || 'Header.html') ) then
       templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdb:lookup, $model)
-    (: 3b. :)
-    else if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'get' || $unam || 'Header', 1) ) then
-      wdb:eval('wdbPF:get' || $unam || 'Header($model)', false(), (xs:QName('model'), map { "pathToEd": $wdb:data }))
     (: 4a. :)
     else if ( doc-available($wdb:data || "/resources/functionHeader.html") ) then
       templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdb:lookup, $model)
-    (: 4b. :)
-    else if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'getFunctionHeader', 1) ) then
-      wdb:eval('wdbPF:getFunctionHeader($model)', false(), (xs:QName('model'), map { "pathToEd": $wdb:data }))
     (: 5. :)
     else
       <header>
@@ -219,59 +223,6 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
         <div class="headerSide" />
       </header>
 };
-(:
-let $file := xstring:substring-after-last(request:get-url(), '/'),
-      $name := substring-before($file, '.html'),
-      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
-  
-  return
-    (: 1a. :)
-    if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
-      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
-    (: 1b. :)
-    else 
-      let $fn := wdb:findProjectFunction($model, 'get' || $unam || 'Header', 1)
-      return if ( $fn instance of function(*) ) then
-      $fn($model)
-    (: 2a. :)
-    else if ( doc-available($model?projectResources || "functionHeader.html") ) then
-      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
-    (: 2b. :)
-    else
-      let $fn := wdb:findProjectFunction($model, 'getFunctionHeader', 1)
-      return if ( $fn instance of function(*) ) then
-      $fn($model)
-    (: 3a. :)
-    else if ( doc-available($wdb:data || '/resources/' || $name || 'Header.html') ) then
-      templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdb:lookup, $model)
-    (: 3b. :)
-    else
-      let $fn := wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'get' || $unam || 'Header', 1)
-      return if ( $fn instance of function(*) ) then
-      $fn(map { "pathToEd": $wdb:data })
-    (: 4a. :)
-    else if ( doc-available($wdb:data || "/resources/functionHeader.html") ) then
-      templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdb:lookup, $model)
-    (: 4b. :)
-    else 
-      let $fn := wdb:findProjectFunction(map { "pathToEd": $wdb:data }, 'getFunctionHeader', 1)
-      return if ( $fn instance of function(*) ) then
-      $fn(map { "pathToEd": $wdb:data })
-    (: 5. :)
-    else
-      <header>
-        <div class="headerSide">
-          { wdba:getAuth($node, $model) }
-        </div>
-        <div class="headerCentre">
-          <h1>{$model("title")}</h1>
-        </div>
-        <div class="headerMenu" role="navigation">
-          <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
-        </div>
-        <div class="headerSide" />
-      </header>
-:)
 
 declare function wdbfp:test ( $node as node(), $model as map(*) ) {
   wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
@@ -319,20 +270,16 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
     default return <meta name="specFile" value="{$name}" />
 };
 
-(: get the footerfor function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
+(: get the footer for function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
 declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
-  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
-  let $functionsAvailable := if ($projectAvailable)
-    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($projectAvailable))
-    else false()
-    
-  return if (doc-available($model("projectResources") || 'functionFooter.html')) then 
+  if (doc-available($model("projectResources") || 'functionFooter.html')) then 
     templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbst:lookup, $model)
-  else if (wdb:findProjectFunction($model, 'getFunctionFooter', 1)) then
-    wdb:eval('wdbPF:getFunctionFooter($model)', false(), (xs:QName('model'), $model))
+  else if (wdb:findProjectFunction($model, 'wdbPF:getFunctionFooter', 1)) then
+    (wdb:getProjectFunction($model, 'wdbPF:getFunctionFooter', 1))($model)
   else if ( doc-available($wdb:data || "/resources/mainFooter.html") ) then
     doc($wdb:data || "/resources/mainFooter.html")
+  else if (wdb:findProjectFunction($model, 'wdbPF:getMainFooter', 1)) then
+    (wdb:getProjectFunction($model, 'wdbPF:getMainFooter', 1))($model)
   else ()
 };
 

@@ -263,14 +263,18 @@ try {
   let $proFile := wdb:findProjectXQM($pathToEd)
   let $resource := substring-before($proFile, "project.xqm") || "resources/"
   
+  let $projectFunctions := 
+        if ( $proFile != "" )
+          then load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $proFile })
+          else map { }
+    , $instanceFunctions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
+    , $mergedFunctions := map:merge(($instanceFunctions?functions, $projectFunctions?functions))
+  
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
     "ed":               $ed,
     "fileLoc":          $pathToFile,
-    "functions":        load-xquery-module(
-                            "https://github.com/dariok/wdbplus/projectFiles",
-                            map { "location-hints": $proFile }
-                        ),
+    "functions":        $mergedFunctions,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
     "p":                $p,
@@ -310,8 +314,8 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{ $model("title") } – { normalize-space($wdb:configFile//config:short) }</title>
     {
-      if ( wdb:findProjectFunction(map { "pathToEd": $wdb:data }, "overrideCssJs", 1) ) then
-        wdb:eval("wdbPF:overrideCssJs($model)", false(), (xs:QName("model"), $model))
+      if ( wdb:findProjectFunction($model, "wdbPF:overrideCssJs", 1) ) then
+        (wdb:getProjectFunction($model, "wdbPF:overrideCssJs", 1))($model)
       else (
         <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
         if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
@@ -346,39 +350,36 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
-    if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
-      util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
-    )
+    if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
+      (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
       <div class="headerSide" role="navigation">{
-        if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
-          util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerLeft.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerLeft.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>,
       <div class="headerCentre">{
-        (: TODO: this is a proof of concept; this whole part has to be updated for #507 and #508 :)
-        let $f := wdb:getProjectFunction($model, 'getHeaderCentre', 1)
-        return if ( count($f) eq 1 ) then
-          $f($model)
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
         else if ( doc-available($wdb:data || "/resources/headerCentre.html") ) then
-          templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)/*
+          templates:apply(doc($wdb:data || "/resources/headerCentre.html"), $wdb:lookup, $model)/*
         else
           <h1>{$model("title")}</h1>
       }</div>,
       <div class="headerMenu" role="navigation">{(
-        if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
-          util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerMenu.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerMenu.html"), $wdb:lookup, $model)/*
         else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
       )}</div>,
       <div class="headerSide" role="navigation">{
-        if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
-          util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerRight.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerRight.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerRight.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>
     )
@@ -447,32 +448,28 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 
 declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
   if ( doc-available($wdb:data || "/resources/mainFooter.html") )
-  then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+    then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
+    (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
 };
 
-declare function wdb:getLeftFooter($node as node(), $model as map(*)) {
-  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
-  let $functionsAvailable := if ($projectAvailable)
-    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($projectAvailable))
-    else false()
-  
-  return if (doc-available($model?projectResources || "/footer.html"))
-  then templates:apply(doc($model?projectResources || "/footer.html"),  $wdb:lookup, $model)
-  else if (wdb:findProjectFunction($model, "getProjectFooter", 1))
-  then wdb:eval("wdbPF:getProjectFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:edocBaseDB || "/resources/footer.html"))
-  then doc($wdb:edocBaseDB || "/resources/footer.html")
+declare function wdb:getLeftFooter($node as node(), $model as map(*)) as element()? {
+  if (doc-available($model?projectResources || "/footer.html")) then
+    templates:apply(doc($model?projectResources || "/footer.html"), $wdb:lookup, $model)
+  else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then
+    (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
+  else if (doc-available($wdb:edocBaseDB || "/resources/footer.html")) then
+    doc($wdb:edocBaseDB || "/resources/footer.html")
   else ()
 };
-declare function wdb:getRightFooter($node as node(), $model as map(*)) {
-  if (doc-available($model?projectResources || "/projectRightFooter.html"))
-  then doc($model?projectResources || "/projectRightFooter.html")
-  else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
-  then wdb:eval("wdbPF:getProjectRightFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:data || "/resources/rightFooter.html"))
-  then doc($wdb:data || "/resources/rightFooter.html")
+declare function wdb:getRightFooter($node as node(), $model as map(*)) as element()? {
+  if (doc-available($model?projectResources || "/projectRightFooter.html")) then
+    doc($model?projectResources || "/projectRightFooter.html")
+  else if (wdb:findProjectFunction($model, "wdbPF:getProjectRightFooter", 1)) then
+    (wdb:getProjectFunction($model, "wdbPF:getProjectRightFooter", 1))($model)
+  else if (doc-available($wdb:data || "/resources/rightFooter.html")) then
+    doc($wdb:data || "/resources/rightFooter.html")
   else ()
 };
 
@@ -598,8 +595,8 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  : @created 2018-02-02 DK
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
-  let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
-  then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
+  let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
+    (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
   else
     (: no specific function available, so we assume standards
      : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
@@ -627,47 +624,29 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
 };
 
 (:~ 
- : Look up $function in the given project's project.xqm if it exists
- : This involves registering the module: if the function is available, it can
- : immediately be used by the calling script if this lookup is within the caller's scope
- : The scope is the project as given in $model("pathToEd")
- : !!! A global data/project.xqm will interfere with this mechanism as the new module will not be loaded due to
- :     conflicting module URIs
+ : Check whether the function given in $name with arity $arity has been loaded into $model?functions
  : 
  : @param $model a map of parameters that conforms to the global structure
- : @param $name the (local) name of the function to be looked for
+ : @param $name the FQName of the function to be looked for
  : @param $arity the arity (i.e. number of arguments) of said function
- : @return true() if project.xqm exists for the project and contains a function
- : with the given parameters; else() otherwise.
+ : @return true() if the function was found with the given arity; else() otherwise.
  :)
 declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
-  let $location := wdb:findProjectXQM($model("pathToEd"))
-  let $functionName := if (starts-with($name, 'wdbPF:')) then $name else 'wdbPF:' || $name
-  
-  return if ($location instance of xs:boolean and $location = false())
-  then false()
-  else
-    let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($location))
-    return system:function-available(xs:QName($functionName), $arity)
+  if ( map:contains($model, 'functions') )
+    then map:contains($model?functions, xs:QName($name))
+    else false()
 };
 
 (:~ 
- : Load the project.xqm given in $model?projectFile and return the function with the given name and arity iif it exists
+ : Return the function with the given name and arity if it exists in the global model
  : 
  : @param $model a map of parameters that conforms to the global structure
- : @param $name the (local) name of the function to be looked for
+ : @param $name the FQName of the function to be looked for
  : @param $arity the arity (i.e. number of arguments) of said function
- : @return function(*)? a function item representing the function if it was found, the empry sequence otherwise
+ : @return a function item representing the function if it was found, the empry sequence otherwise
  :)
 declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
-  try {
-    let $functionName := if ( starts-with($name, 'wdbPF:') ) then $name else 'wdbPF:' || $name
-    
-    return $model?functions?functions(xs:QName($functionName))($arity)
-  } catch * {
-    ()
-  }
+  $model?functions(xs:QName($name))($arity)
 };
 
 (:~
