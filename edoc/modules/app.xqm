@@ -281,6 +281,7 @@ try {
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,
     "projectResources": $resource,
+    "requestUrl":       request:get-url(),
     "title":            $title,
     "view":             $view,
     "xslt":             $xslt
