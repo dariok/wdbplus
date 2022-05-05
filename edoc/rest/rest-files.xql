@@ -236,6 +236,7 @@ function wdbRf:getResource ($id as xs:string) {
             else <http:header name="rest-status" value="REST:ERROR" />
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
       </http:response>
     </rest:response>,
     if ($respCode = 200)
