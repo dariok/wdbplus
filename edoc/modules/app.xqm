@@ -657,12 +657,13 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
  : @param $project a string representation of the path to the project
  : @returns the path to a project.xqm if one was found; false() otherwise
  :)
-declare function wdb:findProjectXQM ($project as xs:string) {
-  if (util:binary-doc-available($project || "/project.xqm"))
-  then $project || "/project.xqm"
-  else if (substring-after($project, $wdb:data) = '')
-  then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0020'), "cannae find project.xqm anywhere")
-  else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+declare function wdb:findProjectXQM ( $project as xs:string ) {
+  if ( util:binary-doc-available($project || "/project.xqm") ) then
+    $project || "/project.xqm"
+  else if (substring-after($project, $wdb:data) = '') then
+    $wdb:data || "/instance.xqm"
+  else
+    wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
