@@ -269,12 +269,15 @@ try {
           else map { }
     , $instanceFunctions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
     , $mergedFunctions := map:merge(($instanceFunctions?functions, $projectFunctions?functions))
+
+  let $header := map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
   
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
     "ed":               $ed,
     "fileLoc":          $pathToFile,
     "functions":        $mergedFunctions,
+    "header":           $header,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
     "p":                $p,
