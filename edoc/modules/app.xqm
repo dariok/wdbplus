@@ -479,16 +479,16 @@ declare function wdb:getLeftFooter($node as node(), $model as map(*)) as element
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
   else if (doc-available($wdb:edocBaseDB || "/resources/footer.html")) then
-    doc($wdb:edocBaseDB || "/resources/footer.html")
+    templates:apply(doc($wdb:edocBaseDB || "/resources/footer.html"), $wdb:lookup, $model)
   else ()
 };
 declare function wdb:getRightFooter($node as node(), $model as map(*)) as element()? {
   if (doc-available($model?projectResources || "/projectRightFooter.html")) then
-    doc($model?projectResources || "/projectRightFooter.html")
+    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $wdb:lookup, $model)
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectRightFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectRightFooter", 1))($model)
   else if (doc-available($wdb:data || "/resources/rightFooter.html")) then
-    doc($wdb:data || "/resources/rightFooter.html")
+    templates:apply(doc($wdb:data || "/resources/rightFooter.html"), $wdb:lookup, $model)
   else ()
 };
 
