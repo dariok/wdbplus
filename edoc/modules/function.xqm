@@ -23,16 +23,9 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
  : @param $q  The main query parameter
  : @return    The model
  :)
-declare
-    %templates:default("q", "")
-    %templates:default("p", "")
-    %templates:default("id", "")
-    %templates:default("ed", "")
-    %templates:wrap
-function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
-    $q as xs:string ) as item()* {
-  let $newModel := try {
-    if ( contains(request:get-uri(), 'addins') ) then
+declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p as xs:string?, $q as xs:string? ) as map(*) {
+  try {
+    if ( request:exists() and contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
         , $path := $wdb:edocBaseDB || "/addins/" || $addinName
         , $pp := try {
@@ -49,7 +42,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         "ed":        $ed,
         "auth":      sm:id()/sm:id
       }
-    else if ( request:get-uri() => ends-with('/toc.html') ) then
+    else if ( request:exists() and request:get-uri() => ends-with('/toc.html') ) then
       map {
         "auth":      sm:id()/sm:id,
         "title":     $wdb:configFile//*:name || " – Table of Contents",
@@ -85,10 +78,10 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         "title":            doc($infoFileLoc)//meta:title[1]/text(),
         "projectFile":      $proFile,
         "projectResources": $pathToEd || "/resources/",
-        "requestUrl":       request:get-url()
+        "requestUrl":       if ( request:exists() ) then request:get-url() else ""
       }
     else
-      let $map := wdb:populateModel($id, "", $model)
+      let $map := wdb:populateModel($id, "", map{})
       let $pp := try {
         parse-json($p)
       } catch * {
@@ -109,7 +102,6 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
   } catch * {
     wdbErr:error(map {
       "code":        "wdbErr:wdb3001",
-      "model":       $model,
       "id":          $id,
       "ed":          $ed,
       "p":           $p,
@@ -120,7 +112,21 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
       "errM":        $err:description,
       "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
     })
-  }
+  }  
+};
+
+(:~
+ : create the outer HTML shell for a function page, including an html:lang attribute
+ :)
+declare
+    %templates:default("q", "")
+    %templates:default("p", "")
+    %templates:default("id", "")
+    %templates:default("ed", "")
+    %templates:wrap
+function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
+    $q as xs:string ) as item()* {
+  let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
 
   (: TODO: use a function to get the actual content language :)
   return 
