@@ -3,11 +3,12 @@ xquery version "3.1";
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
 import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbfp   = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"    at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest"   at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"          at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -416,11 +417,14 @@ declare function local:imported ( $import, $child ) {
  : @param $ed The project’s ID
  : @return HTML (should be a html:nav element)
  :)
+declare function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
+    wdbRc:getCollectionNavHTML ( $ed, () )
+};
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.html")
-function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
-  let $model := wdbfp:populateModel("", $ed, "", "")
+function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)? ) {
+  let $model := if ( exists($externalModel) ) then $externalModel else wdbfp:populateModel("", $ed, "", "")
     , $params :=
         <parameters>
           <param name="id" value="{$ed}"/>
