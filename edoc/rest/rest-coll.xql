@@ -2,7 +2,6 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
@@ -421,9 +420,8 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.html")
 function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
-  let $pathToEd := wdb:getProjectPathFromId($ed),
-      $mf := wdb:getMetaFile($pathToEd),
-      $params :=
+  let $model := wdbfp:populateModel("", $ed, "", "")
+    , $params :=
         <parameters>
           <param name="id" value="{$ed}"/>
         </parameters>
@@ -433,23 +431,22 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
         </attributes>
   
   let $html := try {
-    if( ends-with($mf, 'wdbmeta.xml') )
+    if( ends-with($model?infoFileLoc, 'wdbmeta.xml') )
       then
-        let $struct := wdbRc:getCollectionNavXML($ed),
-            $xsl := if ( wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0) )
-              then wdb:eval("wdbPF:getNavXSLT()")
-              else if ( doc-available($pathToEd || '/resources/nav.xsl') )
-              then xs:anyURI($pathToEd || '/resources/nav.xsl')
+        let $struct := wdbRc:getCollectionNavXML($ed)
+          , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
+              then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
+              else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
+              then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
               else if ( doc-available($wdb:data || '/resources/nav.xsl') )
               then xs:anyURI($wdb:data || '/resources/nav.xsl')
               else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
         
         return transform:transform($struct, doc($xsl), $params, $attributes, ())
       else
-        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), $params)
+        transform:transform(doc($model?infoFileLoc), doc($model?pathToEd || '/mets.xsl'), $params)
   } catch * {
-    <p>Error transforming meta data file {$mf} to navigation using
-      {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
+    <p>Error transforming meta data file {$model?infoFileLoc} to navigation HTML:<br/>{$err:description}</p>
   }
   
   let $status := if ( $html[self::*:p] ) then '500' else '200'
