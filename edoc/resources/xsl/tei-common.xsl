@@ -539,51 +539,63 @@
     </dt>
   </xsl:template>
   
-  <!-- pointers to footnotes -->
-  <xsl:template match="tei:*" mode="fnLink">
-    <xsl:param name="type" select="@type" />
-    <xsl:param name="position">s</xsl:param>
-    
-    <xsl:variable name="number">
-      <xsl:apply-templates select="." mode="number">
-        <xsl:with-param name="type" select="$type" />
-      </xsl:apply-templates>
-    </xsl:variable>
-    
-    <button id="{$position}{$type}{$number}" data-note="{$type}{$number}" class="footnoteNumber"
-      aria-label="opens a footnote">
-      <xsl:value-of select="$number"/>
-    </button>
-  </xsl:template>
-  
-  <!-- general representation of notes -->
-  <xsl:template match="*" mode="fnText">
-    <div class="annotation">
-      <xsl:attribute name="id">
-        <xsl:choose>
-          <xsl:when test="@xml:id">
-            <xsl:apply-templates select="@xml:id" />
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select="@type"/>
+   <!-- pointers to footnotes -->
+   <xsl:template match="tei:*" mode="fnLink">
+      <xsl:param name="type" select="@type" />
+      <xsl:param name="position">s</xsl:param>
+      
+      <xsl:variable name="number">
+         <xsl:apply-templates select="." mode="number">
+         <xsl:with-param name="type" select="$type" />
+         </xsl:apply-templates>
+      </xsl:variable>
+      
+      <button id="{$position}{$type}{$number}" class="footnoteNumber" aria-label="opens a footnote">
+         <xsl:attribute name="data-note">
+            <xsl:choose>
+               <xsl:when test="@xml:id">
+                  <xsl:apply-templates select="@xml:id"/>
+               </xsl:when>
+               <xsl:otherwise>
+                  <xsl:value-of select="@type"/>
+                  <xsl:apply-templates select="." mode="number">
+                     <xsl:with-param name="type" select="@type"/>
+                  </xsl:apply-templates>
+               </xsl:otherwise>
+            </xsl:choose>
+         </xsl:attribute>
+         <xsl:value-of select="$number"/>
+      </button>
+   </xsl:template>
+   
+   <!-- general representation of notes -->
+   <xsl:template match="*" mode="fnText">
+      <div class="annotation">
+         <xsl:attribute name="id">
+            <xsl:choose>
+               <xsl:when test="@xml:id">
+                  <xsl:apply-templates select="@xml:id" />
+               </xsl:when>
+               <xsl:otherwise>
+                  <xsl:value-of select="@type"/>
+                  <xsl:apply-templates select="." mode="number">
+                     <xsl:with-param name="type" select="@type" />
+                  </xsl:apply-templates>
+               </xsl:otherwise>
+            </xsl:choose>
+         </xsl:attribute>
+         <xsl:apply-templates select="@xml:lang" />
+         
+         <span class="fnNumber">
             <xsl:apply-templates select="." mode="number">
-              <xsl:with-param name="type" select="@type" />
+               <xsl:with-param name="type" select="@type"/>
             </xsl:apply-templates>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:attribute>
-      <xsl:apply-templates select="@xml:lang" />
-     
-			<span class="fnNumber">
-        <xsl:apply-templates select="." mode="number">
-          <xsl:with-param name="type" select="@type"/>
-        </xsl:apply-templates>
-      </span> 
-      <p>
-        <xsl:apply-templates />
-      </p>
-    </div>
-  </xsl:template>
+         </span> 
+         <p>
+            <xsl:apply-templates />
+         </p>
+      </div>
+   </xsl:template>
   
   <!-- creation of footnote numbering -->
   <xsl:template match="*" mode="number">
