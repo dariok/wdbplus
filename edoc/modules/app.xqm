@@ -208,7 +208,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
   let $newModel := wdb:populateModel($id, $view, $model, $p)
   
   (: TODO: use a function to get the actual content language :)
-  return 
+  return  if ( count($newModel) = 1 ) then
     <html lang="de">
       {
         for $h in $node/* return
@@ -231,6 +231,10 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
               , console:log($h)
             }
       }
+    </html>
+  else
+    <html>
+      { $newModel } 
     </html>
 };
 
