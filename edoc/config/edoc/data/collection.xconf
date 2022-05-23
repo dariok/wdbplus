@@ -20,20 +20,22 @@
       <text qname="tei:note"/>
       
       <!-- main structure types that contain relevant text -->
-      <text qname="tei:p"/>
       <text qname="tei:ab"/>
-      <text qname="tei:opener"/>
-      <text qname="tei:closer"/>
-      <text qname="tei:postscript"/>
       <text qname="tei:cell"/>
-      <text qname="tei:label"/>
-      <text qname="tei:item"/>
-      <text qname="tei:quote"/>
+      <text qname="tei:closer"/>
+      <text qname="tei:epigraph"/>
       <text qname="tei:head"/>
-      <text qname="tei:l"/>
+      <text qname="tei:item"/>
+<!--      <text qname="tei:l"/>-->
+      <text qname="tei:label"/>
+      <text qname="tei:lg"/>
+      <text qname="tei:opener"/>
+      <text qname="tei:p"/>
+      <text qname="tei:postscript"/>
+<!--      <text qname="tei:quote"/>-->
       
       <!-- index w for fast queries for single words if text is tokenized -->
-      <text qname="tei:w"/>
+<!--      <text qname="tei:w"/>-->
       
       <!-- lists are not indexed, only the main entry head -->
       <ignore qname="tei:listPerson"/>
@@ -55,7 +57,6 @@
       <ignore qname="tei:pb"/>
       <ignore qname="tei:fw"/>
       <ignore qname="tei:lb"/>
-      <ignore qname="tei:pb" /> 
       <ignore qname="tei:pc"/>
     </lucene>
     <range>
@@ -79,7 +80,7 @@
       <create qname="@when" type="xs:date"/>
       <create qname="@notBefore" type="xs:date"/>
       <create qname="@notAfter" type="xs:date"/>
-      <create qname="tei:w" type="xs:string"/>
+<!--      <create qname="tei:w" type="xs:string"/>-->
     </range>
   </index>
 </collection>

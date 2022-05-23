@@ -23,7 +23,7 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
  : @param $q  The main query parameter
  : @return    The model
  :)
-declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p as xs:string?, $q as xs:string? ) as map(*) {
+declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p as xs:string?, $q as xs:string? ) as item()+ {
   try {
     if ( request:exists() and contains(request:get-uri(), 'addins') ) then
       let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
@@ -129,7 +129,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
   let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
 
   (: TODO: use a function to get the actual content language :)
-  return 
+  return if ( count($newModel) = 1 ) then
     <html lang="de">
       {
         for $h in $node/* return
@@ -137,6 +137,10 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
             then for $c in $h/* return try { templates:apply($c, $wdbfp:lookup, $newModel) } catch * { util:log("error", $err:description) }
             else templates:apply($h, $wdbfp:lookup, $newModel)
       }
+    </html>
+  else
+    <html>
+      { $newModel } 
     </html>
 };
 
