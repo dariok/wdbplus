@@ -37,6 +37,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         , $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
       
       return map {
+        "requestUrl": request:get-uri(),
         "pathToEd":  $path,
         "p":         $pp,
         "job":       $q,
