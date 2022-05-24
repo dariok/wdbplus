@@ -2,15 +2,16 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace request   = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace util      = "http://exist-db.org/xquery/util"            at "java:org.exist.xquery.functions.util.UtilModule";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdba      = "https://github.com/dariok/wdbplus/auth"     at "/db/apps/edoc/modules/auth.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs"     at "/db/apps/edoc/modules/search.xqm";
-import module namespace wdbst     = "https://github.com/dariok/wdbplus/start"    at "/db/apps/edoc/modules/start.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace request      = "http://exist-db.org/xquery/request";
+import module namespace templates    = "http://exist-db.org/xquery/html-templating";
+import module namespace util         = "http://exist-db.org/xquery/util";
+import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"        at "/db/apps/edoc/modules/auth.xqm";
+import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
+import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
+import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "/db/apps/edoc/modules/start.xqm";
+import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -134,13 +135,19 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
       {
         for $h in $node/* return
           if ( $h/*[@data-template] )
-            then for $c in $h/* return try { templates:apply($c, $wdbfp:lookup, $newModel) } catch * { util:log("error", $err:description) }
-            else templates:apply($h, $wdbfp:lookup, $newModel)
+            then for $c in $h/* return
+              try { 
+                templates:apply($c, $wdbfp:lookup, $newModel)
+              } catch * {
+                util:log("error", $err:description)
+              }
+            else 
+              templates:apply($h, $wdbfp:lookup, $newModel)
       }
     </html>
   else
     <html>
-      { $newModel } 
+      { $newModel }
     </html>
 };
 
