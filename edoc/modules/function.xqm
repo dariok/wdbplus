@@ -64,12 +64,15 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
               normalize-space($p)
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
+      
       let $projectFunctions := 
-            if ( $proFile != "" )
-              then load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $proFile })
-              else map { }
-        , $instanceFunctions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
-        , $mergedFunctions := map:merge(($instanceFunctions?functions, $projectFunctions?functions))
+            if ( $proFile != "" ) then
+              for $function in inspect:inspect-module($proFile)/function
+                return $function/@name || '#' || count($function/argument)
+            else ()
+        , $instanceFunctions :=
+            for $function in inspect:inspect-module(xs:anyURI($wdb:data || "/instance.xqm"))/function
+              return $function/@name || '#' || count($function/argument)
       
       return map {
         "p":                $pp,
@@ -77,7 +80,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "q":                $q,
         "ed":               $ed,
         "auth":             sm:id()/sm:id,
-        "functions":        $mergedFunctions,
+        "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
         "infoFileLoc":      $infoFileLoc,
         "title":            doc($infoFileLoc)//meta:title[1]/text(),
         "projectFile":      $proFile,
