@@ -65,14 +65,10 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
       
-      let $projectFunctions := 
-            if ( $proFile != "" ) then
-              for $function in inspect:inspect-module($proFile)/function
-                return $function/@name || '#' || count($function/argument)
-            else ()
-        , $instanceFunctions :=
-            for $function in inspect:inspect-module(xs:anyURI($wdb:data || "/instance.xqm"))/function
-              return $function/@name || '#' || count($function/argument)
+      let $projectFunctions := for $function in doc($pathToEd || "/project-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
+        , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
       
       return map {
         "p":                $pp,

@@ -282,14 +282,10 @@ try {
   let $proFile := wdb:findProjectXQM($pathToEd)
   let $resource := substring-before($proFile, "project.xqm") || "resources/"
   
-  let $projectFunctions := 
-        if ( $proFile != "" ) then
-          for $function in inspect:inspect-module($proFile)/function
-            return $function/@name || '#' || count($function/argument)
-        else ()
-    , $instanceFunctions :=
-        for $function in inspect:inspect-module(xs:anyURI($wdb:data || "/instance.xqm"))/function
-          return $function/@name || '#' || count($function/argument)
+  let $projectFunctions := for $function in doc($pathToEd || "/project-functions.xml")//function
+        return $function/@name || '#' || count($function/argument)
+    , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+        return $function/@name || '#' || count($function/argument)
 
   let $header := map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
   
@@ -297,7 +293,7 @@ try {
   let $map := map {
     "ed":               $ed,
     "fileLoc":          $pathToFile,
-    "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
+    "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
     "header":           $header,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
@@ -657,8 +653,10 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
  : @return true() if the signature was found in 1) project, 2) instance specifics, false() otherwise
  :)
 declare function wdb:findProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as xs:boolean {
-  ( $model?functions?project = $name || '#' || $arity )
-  or ( $model?functions?instance = $name || '#' || $arity )
+  if ( exists($model?functions) and $model?functions instance of map(*) ) then
+    ( $model?functions?project = $name || '#' || $arity )
+    or ( $model?functions?instance = $name || '#' || $arity )
+  else false()
 };
 
 (:~ 
@@ -671,9 +669,9 @@ declare function wdb:findProjectFunction ( $model as map(*), $name as xs:string,
  :)
 declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
   if ( $model?functions?project = $name || "#" || $arity ) then
-    inspect:module-functions(xs:anyURI($model?projectFile))[function-name(.) = xs:QName($name) and function-arity(.) = $arity]
+    ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $model?projectFile} ))?functions)(xs:QName($name))($arity)
   else if ( $model?functions?instance = $name || "#" || $arity ) then
-    inspect:module-functions(xs:anyURI($wdb:data || "/instance.xqm"))[function-name(.) = xs:QName($name) and function-arity(.) = $arity]
+    ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $wdb:data || "/instance.xqm"} ))?functions)(xs:QName($name))($arity)
   else ()
 };
 
