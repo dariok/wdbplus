@@ -211,10 +211,14 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     , $collection := string-join($pathParts[not(position() = last())], '/')
     , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
     , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
     , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+    
+  let $requestedModified := request:get-attribute("if-modified")
+    , $requestedModifiedParsed := parse-ietf-date($requestedModified)
   
   (: TODO: use a function to get the actual content language :)
-  return  if ( count($newModel) = 1 ) then
+  return  if ( count($newModel) = 1 and ($requestedModifiedParsed lt $modifiedWithoutMillisecs or empty($requestedModified)) ) then
     (
       response:set-header("Last-Modified", $last-modified),
       <html lang="de">
@@ -241,6 +245,8 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
         }
       </html>
     )
+  else if ( $requestedModifiedParsed gt $modifiedWithoutMillisecs ) then
+    response:set-status-code(304)
   else
     <html>
       { $newModel } 
