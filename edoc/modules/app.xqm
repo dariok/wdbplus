@@ -206,32 +206,40 @@ declare
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
   let $newModel := wdb:populateModel($id, $view, $model, $p)
+
+  let $pathParts := tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+    , $collection := string-join($pathParts[not(position() = last())], '/')
+    , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
+    , $last-modified := format-dateTime($dateTime, "[F,3-3], [D00] [MNn] [Y] [H]:[m]:[s] [z]")
   
   (: TODO: use a function to get the actual content language :)
   return  if ( count($newModel) = 1 ) then
-    <html lang="de">
-      {
-        for $h in $node/* return
-          if ( $h/*[@data-template] ) then
-            for $c in $h/* return try { 
-              templates:apply($c, $wdb:lookup, $newModel)
-            } catch * {
-                util:log("error", $err:description)
-              , console:log($err:description)
-              , console:log($newModel)
-              , console:log($c)
-            }
-          else
-            try {
-              templates:apply($h, $wdb:lookup, $newModel)
-            } catch * {
-                util:log("error", $err:description)
-              , console:log($err:description)
-              , console:log($newModel)
-              , console:log($h)
-            }
-      }
-    </html>
+    (
+      response:set-header("Last-Modified", $last-modified),
+      <html lang="de">
+        {
+          for $h in $node/* return
+            if ( $h/*[@data-template] ) then
+              for $c in $h/* return try { 
+                templates:apply($c, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+                , console:log($err:description)
+                , console:log($newModel)
+                , console:log($c)
+              }
+            else
+              try {
+                templates:apply($h, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+                , console:log($err:description)
+                , console:log($newModel)
+                , console:log($h)
+              }
+        }
+      </html>
+    )
   else
     <html>
       { $newModel } 
