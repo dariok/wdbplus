@@ -210,7 +210,8 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
   let $pathParts := tokenize(replace($newModel?fileLoc, '//', '/'), '/')
     , $collection := string-join($pathParts[not(position() = last())], '/')
     , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
-    , $last-modified := format-dateTime($dateTime, "[F,3-3], [D00] [MNn] [Y] [H]:[m]:[s] [z]")
+    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
   
   (: TODO: use a function to get the actual content language :)
   return  if ( count($newModel) = 1 ) then
