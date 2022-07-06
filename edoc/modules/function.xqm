@@ -38,13 +38,13 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
       
       return map {
         "requestUrl": request:get-uri(),
-        "pathToEd":  $path,
-        "p":         $pp,
-        "job":       $q,
-        "id":        $id,
-        "functions": $functions?functions,
-        "ed":        $ed,
-        "auth":      sm:id()/sm:id
+        "pathToEd":   $path,
+        "p":          $pp,
+        "job":        $q,
+        "id":         $id,
+        "functions":  $functions?functions,
+        "ed":         $ed,
+        "auth":       sm:id()/sm:id
       }
     else if ( request:exists() and request:get-uri() => ends-with('/toc.html') ) then
       map {
@@ -274,7 +274,7 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
       let $ins := if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-          then <script src="data/resources/function.js" />
+          then <script src="{$wdb:edocBaseURL}/data/resources/function.js" />
           else ()
       return ($ins, $gen, $pro, $add)
     default return <meta name="specFile" value="{$name}" />
