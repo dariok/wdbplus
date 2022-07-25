@@ -276,7 +276,10 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
       let $ins := if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
           then <script src="{$wdb:edocBaseURL}/data/resources/function.js" />
           else ()
-      return ($ins, $gen, $pro, $add)
+      let $spec := if ( util:binary-doc-available($wdb:data || "/resources/" || $name || ".js") )
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/{$name}.js" />
+        else ()
+      return ($ins, $gen, $pro, $add, $spec)
     default return <meta name="specFile" value="{$name}" />
 };
 
