@@ -621,27 +621,19 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
   let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
-    (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
-  else
-    (: no specific function available, so we assume standards
-     : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
-     : but rather throws an error... :)
-    let $css := $model?pathToEd || "/scripts/project.css",
-        $js := $model?pathToEd || "/scripts/project.js"
-	
-    return
-    (
-      try {
-        if (util:binary-doc-available($css))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
-        else ()
-      } catch * { () },
-      try {
-        if (util:binary-doc-available($js))
-        then <script src="{wdb:getUrl($js)}" />
-        else ()
-      } catch * { () }
-    )
+      (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
+    else
+      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
+        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      
+      return (
+        if ( $css != "" )
+          then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
+          else (),
+        if ( $js != "" )
+          then <script src="{wdb:getUrl($js)}" />
+          else ()
+      )
   
   return if ($type = 'css')
     then $files[self::*:link]
@@ -702,7 +694,7 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
  : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
  :)
 declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
-if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
     xs:anyURI($pathToEd || "/" || $fileName)
   else if ( ends-with($pathToEd, 'data') ) then
     xs:anyURI("")
