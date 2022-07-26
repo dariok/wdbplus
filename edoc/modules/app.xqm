@@ -699,12 +699,15 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
  : 
  : @param $pathToEd path to the project to search from)
  : @param $fileName name of the file to search
- : @returns the full path to the file in the lowest position; false() if it cannot be found
+ : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
  :)
 declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
-  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
     xs:anyURI($pathToEd || "/" || $fileName)
-  else wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
+  else if ( ends-with($pathToEd, 'data') ) then
+    xs:anyURI("")
+  else
+    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
