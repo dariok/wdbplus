@@ -692,6 +692,20 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
   else
     wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
 };
+
+(:~
+ : Generic finder for files in the project hierarchy (bottom up)
+ : it is assumed that this is a binary file
+ : 
+ : @param $pathToEd path to the project to search from)
+ : @param $fileName name of the file to search
+ : @returns the full path to the file in the lowest position; false() if it cannot be found
+ :)
+declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+    xs:anyURI($pathToEd || "/" || $fileName)
+  else wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
+};
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
 (: GENERAL HELPER FUNCTIONS :)
