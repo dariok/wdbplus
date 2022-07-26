@@ -295,9 +295,10 @@ try {
   let $title := normalize-space((doc($pathToFile)//tei:title)[1])
   
   let $proFile := wdb:findProjectXQM($pathToEd)
-  let $resource := substring-before($proFile, "project.xqm") || "resources/"
+    , $mainProject := substring-before($proFile, "project.xqm")
+    , $resource := $mainProject || "resources/"
   
-  let $projectFunctions := for $function in doc($pathToEd || "/project-functions.xml")//function
+  let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
         return $function/@name || '#' || count($function/argument)
     , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
         return $function/@name || '#' || count($function/argument)
