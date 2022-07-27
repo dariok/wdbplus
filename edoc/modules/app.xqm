@@ -696,7 +696,7 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
 declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
   if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
     xs:anyURI($pathToEd || "/" || $fileName)
-  else if ( substring-after($project, $wdb:data) = '' ) then
+  else if ( substring-after($pathToEd, $wdb:data) = '' ) then
     xs:anyURI("")
   else
     wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
