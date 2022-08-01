@@ -187,10 +187,16 @@ const wdbDocument = {
    * @returns {void} - executes wdbUser.displayImage()
    */
   loadTargetImage: function () {
-    let targetID = window.location.hash.substr(1);
-
-    if ( targetID.length > 0 ) {
-      wdbUser.displayImage(document.getElementById(targetID));
+    if ( window.location.hash.length > 1 ) {
+      /* JS does not know about the concept of preceding::pb, so we have to use some other means to find the immediately
+         preceding pagebreak – 2022-08-01 DK */
+      let all = $('*')
+        , targetElement = $(window.location.hash)
+        , indexOfTarget = all.index(targetElement);
+      
+    let prevAll = all.filter(function(index){ return index < indexOfTarget && $(this).hasClass('pagebreak') });
+    
+    wdbUser.displayImage(prevAll.last()[0]);
     } else {
       wdbUser.displayImage($('.pagebreak')[0]);
     }
