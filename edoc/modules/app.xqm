@@ -621,27 +621,19 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
   let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
-    (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
-  else
-    (: no specific function available, so we assume standards
-     : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
-     : but rather throws an error... :)
-    let $css := $model?pathToEd || "/scripts/project.css",
-        $js := $model?pathToEd || "/scripts/project.js"
-	
-    return
-    (
-      try {
-        if (util:binary-doc-available($css))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
-        else ()
-      } catch * { () },
-      try {
-        if (util:binary-doc-available($js))
-        then <script src="{wdb:getUrl($js)}" />
-        else ()
-      } catch * { () }
-    )
+      (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
+    else
+      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
+        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      
+      return (
+        if ( $css != "" )
+          then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
+          else (),
+        if ( $js != "" )
+          then <script src="{wdb:getUrl($js)}" />
+          else ()
+      )
   
   return if ($type = 'css')
     then $files[self::*:link]
@@ -691,6 +683,23 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
     $wdb:data || "/instance.xqm"
   else
     wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+};
+
+(:~
+ : Generic finder for files in the project hierarchy (bottom up)
+ : it is assumed that this is a binary file
+ : 
+ : @param $pathToEd path to the project to search from)
+ : @param $fileName name of the file to search
+ : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
+ :)
+declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+    xs:anyURI($pathToEd || "/" || $fileName)
+  else if ( substring-after($pathToEd, $wdb:data) = '' ) then
+    xs:anyURI("")
+  else
+    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
