@@ -372,7 +372,7 @@ const wdbDocument = {
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
-              $(me).html('↑');
+              $(me).html('↑').attr('title', 'Hide results');
           },
           error: function (xhr, status, error) {
             wdb.report("error", "Error loading " + url + " : " + status, error);
@@ -381,11 +381,11 @@ const wdbDocument = {
       );
     } else if ( $('#' + target).css('display') == 'none' ) {
       $('#' + target).slideToggle();
-      $(me).html('↑');
+      $(me).html('↑').attr('title', 'Hide results');
     } else {
       $('#' + target).slideToggle();
       if ( me !== undefined ) {
-        $(me).html('→');
+        $(me).html('→').attr('title', 'Show results');
       }
     }
   },

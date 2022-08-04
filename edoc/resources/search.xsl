@@ -77,7 +77,7 @@
       <a href="view.html?id={@id}">
         <xsl:value-of select="tei:titleStmt/tei:title[1]"/>
       </a>
-      <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}">→</button>
+      <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}" title="Show results">→</button>
       <div id="{@id}" class="results" style="display: none;"/>
     </li>
   </xsl:template>
@@ -93,7 +93,7 @@
         <xsl:value-of select="@fragment"/>
       </a>
       <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
-      <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}">→</button>
+      <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}" title="Show results">→</button>
       <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
         <xsl:apply-templates select="*"/>
       </div>
