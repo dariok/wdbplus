@@ -13,10 +13,11 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
+import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "/db/apps/edoc/data/instance.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"         at "config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
@@ -687,7 +688,7 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
   if ( $model?functions?project = $name || "#" || $arity ) then
     ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $model?projectFile} ))?functions)(xs:QName($name))($arity)
   else if ( $model?functions?instance = $name || "#" || $arity ) then
-    ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $wdb:data || "/instance.xqm"} ))?functions)(xs:QName($name))($arity)
+    function-lookup(xs:QName($name), $arity)
   else ()
 };
 
