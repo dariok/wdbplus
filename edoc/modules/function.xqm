@@ -38,13 +38,13 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
       
       return map {
         "requestUrl": request:get-uri(),
-        "pathToEd":  $path,
-        "p":         $pp,
-        "job":       $q,
-        "id":        $id,
-        "functions": $functions?functions,
-        "ed":        $ed,
-        "auth":      sm:id()/sm:id
+        "pathToEd":   $path,
+        "p":          $pp,
+        "job":        $q,
+        "id":         $id,
+        "functions":  $functions?functions,
+        "ed":         $ed,
+        "auth":       sm:id()/sm:id
       }
     else if ( request:exists() and request:get-uri() => ends-with('/toc.html') ) then
       map {
@@ -65,14 +65,10 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
       
-      let $projectFunctions := 
-            if ( $proFile != "" ) then
-              for $function in inspect:inspect-module($proFile)/function
-                return $function/@name || '#' || count($function/argument)
-            else ()
-        , $instanceFunctions :=
-            for $function in inspect:inspect-module(xs:anyURI($wdb:data || "/instance.xqm"))/function
-              return $function/@name || '#' || count($function/argument)
+      let $projectFunctions := for $function in doc($pathToEd || "/project-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
+        , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
       
       return map {
         "p":                $pp,
@@ -278,9 +274,12 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
       let $ins := if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-          then <script src="data/resources/function.js" />
+          then <script src="{$wdb:edocBaseURL}/data/resources/function.js" />
           else ()
-      return ($ins, $gen, $pro, $add)
+      let $spec := if ( util:binary-doc-available($wdb:data || "/resources/" || $name || ".js") )
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/{$name}.js" />
+        else ()
+      return ($ins, $gen, $pro, $add, $spec)
     default return <meta name="specFile" value="{$name}" />
 };
 

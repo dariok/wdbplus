@@ -13,10 +13,11 @@ module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
+import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "/db/apps/edoc/data/instance.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"         at "config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
@@ -206,32 +207,47 @@ declare
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
   let $newModel := wdb:populateModel($id, $view, $model, $p)
+
+  let $pathParts := tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+    , $collection := string-join($pathParts[not(position() = last())], '/')
+    , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
+    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
+    , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+    
+  let $requestedModified := request:get-attribute("if-modified")
+    , $requestedModifiedParsed := parse-ietf-date($requestedModified)
   
   (: TODO: use a function to get the actual content language :)
-  return  if ( count($newModel) = 1 ) then
-    <html lang="de">
-      {
-        for $h in $node/* return
-          if ( $h/*[@data-template] ) then
-            for $c in $h/* return try { 
-              templates:apply($c, $wdb:lookup, $newModel)
-            } catch * {
-                util:log("error", $err:description)
-              , console:log($err:description)
-              , console:log($newModel)
-              , console:log($c)
-            }
-          else
-            try {
-              templates:apply($h, $wdb:lookup, $newModel)
-            } catch * {
-                util:log("error", $err:description)
-              , console:log($err:description)
-              , console:log($newModel)
-              , console:log($h)
-            }
-      }
-    </html>
+  return  if ( count($newModel) = 1 and ($requestedModifiedParsed lt $modifiedWithoutMillisecs or empty($requestedModified)) ) then
+    (
+      response:set-header("Last-Modified", $last-modified),
+      <html lang="de">
+        {
+          for $h in $node/* return
+            if ( $h/*[@data-template] ) then
+              for $c in $h/* return try { 
+                templates:apply($c, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+                , console:log($err:description)
+                , console:log($newModel)
+                , console:log($c)
+              }
+            else
+              try {
+                templates:apply($h, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+                , console:log($err:description)
+                , console:log($newModel)
+                , console:log($h)
+              }
+        }
+      </html>
+    )
+  else if ( $requestedModifiedParsed gt $modifiedWithoutMillisecs ) then
+    response:set-status-code(304)
   else
     <html>
       { $newModel } 
@@ -280,16 +296,13 @@ try {
   let $title := normalize-space((doc($pathToFile)//tei:title)[1])
   
   let $proFile := wdb:findProjectXQM($pathToEd)
-  let $resource := substring-before($proFile, "project.xqm") || "resources/"
+    , $mainProject := substring-before($proFile, "project.xqm")
+    , $resource := $mainProject || "resources/"
   
-  let $projectFunctions := 
-        if ( $proFile != "" ) then
-          for $function in inspect:inspect-module($proFile)/function
-            return $function/@name || '#' || count($function/argument)
-        else ()
-    , $instanceFunctions :=
-        for $function in inspect:inspect-module(xs:anyURI($wdb:data || "/instance.xqm"))/function
-          return $function/@name || '#' || count($function/argument)
+  let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+        return $function/@name || '#' || count($function/argument)
+    , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+        return $function/@name || '#' || count($function/argument)
 
   let $header := map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
   
@@ -297,7 +310,7 @@ try {
   let $map := map {
     "ed":               $ed,
     "fileLoc":          $pathToFile,
-    "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
+    "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
     "header":           $header,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
@@ -649,8 +662,10 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
  : @return true() if the signature was found in 1) project, 2) instance specifics, false() otherwise
  :)
 declare function wdb:findProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as xs:boolean {
-  ( $model?functions?project = $name || '#' || $arity )
-  or ( $model?functions?instance = $name || '#' || $arity )
+  if ( exists($model?functions) and $model?functions instance of map(*) ) then
+    ( $model?functions?project = $name || '#' || $arity )
+    or ( $model?functions?instance = $name || '#' || $arity )
+  else false()
 };
 
 (:~ 
@@ -663,9 +678,9 @@ declare function wdb:findProjectFunction ( $model as map(*), $name as xs:string,
  :)
 declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
   if ( $model?functions?project = $name || "#" || $arity ) then
-    inspect:module-functions(xs:anyURI($model?projectFile))[function-name(.) = xs:QName($name) and function-arity(.) = $arity]
+    ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $model?projectFile} ))?functions)(xs:QName($name))($arity)
   else if ( $model?functions?instance = $name || "#" || $arity ) then
-    inspect:module-functions(xs:anyURI($wdb:data || "/instance.xqm"))[function-name(.) = xs:QName($name) and function-arity(.) = $arity]
+    function-lookup(xs:QName($name), $arity)
   else ()
 };
 
