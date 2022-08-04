@@ -363,7 +363,7 @@ const wdbDocument = {
 
   // generic laoding function
   loadContent: function ( url, target, me ) {
-    if ($('#' + target).css('display') == 'none') {
+    if ( url.length > 0 && $('#' + target).children().length == 0 ) {
       $.ajax(
         {
           url: url,
@@ -372,17 +372,20 @@ const wdbDocument = {
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
+              $(me).html('↑');
           },
           error: function (xhr, status, error) {
             wdb.report("error", "Error loading " + url + " : " + status, error);
           }
         }
       );
+    } else if ( $('#' + target).css('display') == 'none' ) {
+      $('#' + target).slideToggle();
+      $(me).html('↑');
     } else {
       $('#' + target).slideToggle();
-      if (me.length > 0) {
-        $(me).html($(me).html().replace('↑', '→'));
+      if ( me !== undefined ) {
+        $(me).html('→');
       }
     }
   },
