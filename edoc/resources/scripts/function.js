@@ -775,7 +775,7 @@ $( () => {
   $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
   
   // register click handler for entity information
-  $('.entity').click(wdbUser.showEntityData);
+  $('body').on('click', '.entity', wdbUser.showEntityData);
 });
 /* END DOM ready functions */
 
