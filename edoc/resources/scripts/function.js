@@ -340,6 +340,7 @@ const wdbDocument = {
     }
     inserted.offset({ left: targetLeft, top: targetTop})
       .css('max-width' , maxWidth)
+      .css('display', 'block')
       .outerWidth(targetWidth);
   },
   
