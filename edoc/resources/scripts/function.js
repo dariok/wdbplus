@@ -299,48 +299,52 @@ const wdbDocument = {
     const maxWidth = 400,
           distance = 20;
     let insertID = wdb.getUniqueId(),
-        insert = $('<div id="' + insertID + '" class="infoContainer floating"/>').append(data);
-    $('#ann').html(insert);
+        insert = $('<div id="' + insertID + '" class="infoContainer floating"/>')
+          .append(data)
+          .css('display', 'inline');
+    $('#ann').html(insert[0]);
+    pointerElement.dataset.float = insertID;
 
-    let $inserted = $('#' + insertID);
-    $inserted.hover(
-      function () {
+    let inserted = $('#' + insertID);
+    inserted.on('mouseenter', ( ) => {
         // mousein
-        $(this).stop()
+        $(inserted).stop()
           .css("opacity", "1");
-      },
-      function () {
+      }).on('mouseleave', ( ) => {
         // mouseout
-        $(this).fadeOut(
+        $(inserted).fadeOut(
           2000,
           function () {
-            $(this).remove();
+            $(inserted).remove();
           }
         );
       }
     );
 
     // position the info box close to the pointing element
-    let targetTop,
+    let insertedWidth = inserted.innerWidth() ?? 0,
+        mainWidth = $('main').innerWidth() ?? 0,
+        pointer = $(pointerElement),
+        pointerOffsetLeft = pointer.offset().left ?? 0,
         targetLeft,
-        $pointer = $(pointerElement),
-        targetWidth = Math.min(maxWidth, $inserted.innerWidth);
+        targetTop,
+        targetWidth = Math.min(maxWidth, insertedWidth);
     
     // set the left coordinate for the info box. The right end must not leave the visible ares
-    if ((targetWidth + $pointer.offset().left + distance) > $(window).width()) {								// position the info window
-      targetLeft = $(window).width() - targetWidth - distance;
-      targetTop = $pointer.position().top + distance;
+    if ( (targetWidth + pointerOffsetLeft + distance) > mainWidth ) {
+      targetLeft = mainWidth - targetWidth - distance;
+      targetTop = pointer.offset().top + distance;
     } else {
-      targetLeft = $pointer.position().left + distance;
-      targetTop = $pointer.position().top + distance;
+      targetLeft = pointer.offset().left + distance;
+      targetTop = pointer.offset().top + distance;
     }
-    $inserted.offset({ left: targetLeft, top: targetTop})
+    inserted.offset({ left: targetLeft, top: targetTop})
       .css('max-width' , maxWidth)
       .outerWidth(targetWidth);
   },
   
   mouseOut: function (pointerElement) {
-    let id = '#wdb' + $(pointerElement).attr('href').substring(1);
+    let id = '#' + pointerElement.dataset.float;
     $(id).fadeOut(
       2000,
       function () {
