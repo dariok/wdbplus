@@ -328,7 +328,7 @@ const wdbDocument = {
         pointerOffsetLeft = pointer.offset().left ?? 0,
         targetLeft,
         targetTop,
-        targetWidth = Math.min(maxWidth, insertedWidth);
+        targetWidth = Math.min(maxWidth, insertedWidth + 2);  // insertedWidth + 2px for border
     
     // set the left coordinate for the info box. The right end must not leave the visible ares
     if ( (targetWidth + pointerOffsetLeft + distance) > mainWidth ) {
@@ -340,8 +340,7 @@ const wdbDocument = {
     }
     inserted.offset({ left: targetLeft, top: targetTop})
       .css('max-width' , maxWidth)
-      .css('display', 'block')
-      .outerWidth(targetWidth);
+      .css('display', 'block');
   },
   
   mouseOut: function (pointerElement) {
