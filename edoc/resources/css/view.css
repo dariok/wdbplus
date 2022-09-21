@@ -94,6 +94,10 @@ body > aside {
   overflow: initial;
 }
 
+#ann {
+  position: absolute;
+}
+
 #fac {
   height: 100%;
 }
