@@ -333,12 +333,13 @@ const wdbDocument = {
     // set the left coordinate for the info box. The right end must not leave the visible ares
     if ( (targetWidth + pointerOffsetLeft + distance) > mainWidth ) {
       targetLeft = mainWidth - targetWidth - distance;
-      targetTop = pointer.offset().top + distance;
     } else {
       targetLeft = pointer.offset().left + distance;
-      targetTop = pointer.offset().top + distance;
     }
-    inserted.offset({ left: targetLeft, top: targetTop})
+    inserted.offset({
+        left: targetLeft,
+        top: 1.5 * pointer.height() + pointer.offset().top
+      })
       .css('max-width' , maxWidth)
       .css('display', 'flex');
   },
