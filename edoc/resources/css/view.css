@@ -160,6 +160,12 @@ div.footnote {
 }
 .floating {
   border: 1px solid lightgrey;
+  display: flex;
+}
+.floating .fnNumber {
+  color: black;
+  font-size: 1em;
+  padding-right: .25em;
 }
 
 /* footnote links */
