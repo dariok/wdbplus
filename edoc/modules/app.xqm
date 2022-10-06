@@ -304,7 +304,12 @@ try {
     , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
         return $function/@name || '#' || count($function/argument)
 
-  let $header := map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+  let $header := if ( request:exists() )
+        then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+        else ()
+    , $requestUrl := if ( request:exists() )
+        then request:get-url()
+        else ()
   
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
@@ -318,7 +323,7 @@ try {
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,
     "projectResources": $resource,
-    "requestUrl":       request:get-url(),
+    "requestUrl":       $requestUrl,
     "title":            $title,
     "view":             $view,
     "xslt":             $xslt
@@ -905,13 +910,7 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
     case 'xql'
     case 'xqm'
       return
-        let $t := 'abs'
-
-        return if ( $q ) then
           'application/xquery'
-        else
-          $t
-    
     case 'html'
       return
         'text/html'
