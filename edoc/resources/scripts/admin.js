@@ -1,6 +1,7 @@
 /* globals wdb */
 /* jshint browser: true */
 /* globals wdb */
+"use strict";
 
 const wdbAdmin = {
   displayRight: function ( url ) {
@@ -46,12 +47,12 @@ const wdbAdmin = {
   },
 
   ingestAction: function ( event ) {
-    if(event.target.id == "fi") {
-      $('#picker').attr('webkitdirectory', null);
+    if ( event.target.id === "fi" ) {
+      $('#picker').attr({'webkitdirectory': null, 'multiple': 'multiple'});
       $('#selectInputDir label').text("Datei auswählen");
     }
     else {
-      $('#picker').attr('webkitdirectory', 'true');
+      $('#picker').attr({'webkitdirectory': 'true', 'multiple': null});
       $('#selectInputDir label').text("Verzeichnis auswählen");
     }
   },
