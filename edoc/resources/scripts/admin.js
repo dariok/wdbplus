@@ -194,7 +194,7 @@ const wdbAdmin = {
         wdb.report("success", "uploaded to " + url, textStatus, item);
       },
       error: function (response) {
-        wdb.report("error", "Error uploading to " + url + " : " + response.status, response, item);
+        wdb.report("error", "Error uploading to " + url + " : " + response.status, response.responseText, item);
       }
     });
   },
