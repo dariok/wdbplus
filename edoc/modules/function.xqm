@@ -64,8 +64,9 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
               normalize-space($p)
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
+        , $mainProject := substring-before($proFile, "project.xqm")
       
-      let $projectFunctions := for $function in doc($pathToEd || "/project-functions.xml")//function
+      let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
         , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
