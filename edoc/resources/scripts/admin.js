@@ -31,6 +31,9 @@ const wdbAdmin = {
           $('#selectTarget select').append("<option>" + subcollection + "</option>");
         }
       });
+    } else {
+      // only one entry
+      $('#selectTarget select').append('<option selected="selected">' + data + '</option>');
     }
   },
 
