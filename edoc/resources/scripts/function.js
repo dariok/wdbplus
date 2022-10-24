@@ -266,8 +266,8 @@ const wdbDocument = {
         insertContent = '<div id="' + insertID + '" class="infoContainer right">'
           + $(data).find('.content').html()
           + '<div class="controls">'
-          + '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>'
-          + '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button>'
+          + '<button data-clear="' + insertID + '" title="Diesen Eintrag schließen">[x]</button>'
+          + '<button title="Alle Informationen rechts schließen">[X]</button>'
           + '</div></div>';
     
     if ( replace === true ) {
@@ -775,6 +775,15 @@ $( () => {
   // register hover handler for footnote link buttons
   $('body').on('mouseenter', '.footnoteNumber', wdbUser.footnoteMouseIn)
            .on('mouseleave', '.footnoteNumber', wdbUser.footnoteMouseOut);
+  
+  // handler to close one or all footnotes
+  $('body').on('click', '.controls button', ( event ) => {
+    if ( event.target.dataset.clear !== undefined ) {
+      wdbDocument.clear(event.target.dataset.clear);
+    } else {
+      wdbDocument.clear();
+    }
+  });
   
   // register click handler for entity information
   $('body').on('click', '.entity', wdbUser.showEntityData);
