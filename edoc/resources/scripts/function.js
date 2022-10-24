@@ -773,7 +773,8 @@ $( () => {
   });
 
   // register hover handler for footnote link buttons
-  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  $('body').on('mouseenter', '.footnoteNumber', wdbUser.footnoteMouseIn)
+           .on('mouseleave', '.footnoteNumber', wdbUser.footnoteMouseOut);
   
   // register click handler for entity information
   $('body').on('click', '.entity', wdbUser.showEntityData);
