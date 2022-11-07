@@ -319,6 +319,7 @@ try {
     "header":           $header,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
+    "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
     "p":                $p,
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,

@@ -65,6 +65,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
         , $mainProject := substring-before($proFile, "project.xqm")
+        , $resource := $mainProject || "resources/"
       
       let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
@@ -79,9 +80,10 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "auth":             sm:id()/sm:id,
         "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
         "infoFileLoc":      $infoFileLoc,
+        "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
         "title":            doc($infoFileLoc)//meta:title[1]/text(),
         "projectFile":      $proFile,
-        "projectResources": $pathToEd || "/resources/",
+        "projectResources": $resource,
         "requestUrl":       if ( request:exists() ) then request:get-url() else ""
       }
     else
