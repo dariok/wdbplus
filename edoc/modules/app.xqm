@@ -16,7 +16,6 @@ import module namespace templates = "http://exist-db.org/xquery/html-templating"
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
 import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "/db/apps/edoc/data/instance.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"         at "config.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
@@ -30,15 +29,15 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
- : the base of this instance within the db
- :)
-declare variable $wdb:edocBaseDB := $xConf:app-root;
-
-(:~
  : load the config file
  : See https://github.com/dariok/wdbplus/wiki/Global-Configuration
  :)
-declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
+declare variable $wdb:configFile := doc('../config.xml');
+
+(:~
+ : the base of this instance within the db
+ :)
+declare variable $wdb:edocBaseDB := $wdb:configFile => base-uri() => substring-before('/config.xml');
 
 (:~
  : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
