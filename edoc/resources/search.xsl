@@ -10,17 +10,19 @@
   <xsl:template match="/results">
     <xsl:variable name="p" select="parse-json(@p)" />
     <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
+     
+     <xsl:variable name="max" select="number(@count)" />
     
     <div>
       <h1>Suchergebnisse für »<xsl:value-of select="@q"/>«</h1>
-      <xsl:if test="@count &gt; 25 and (@from != '' and @from &gt; 1)">
+      <xsl:if test="$max gt 25 and (@from != '' and @from &gt; 1)">
         <xsl:variable name="f1">
-          <xsl:text>{"start": 1</xsl:text>
+          <xsl:text>{"start": </xsl:text>
           <xsl:value-of select="$val"/>
           <xsl:text>}</xsl:text>
         </xsl:variable>
         <xsl:variable name="f2">
-          <xsl:text>{"start": 1</xsl:text>
+          <xsl:text>{"start": </xsl:text>
           <xsl:value-of select="if(@from &gt; 25) then @from - 25 else 1"/>
           <xsl:value-of select="$val"/>
           <xsl:text>}</xsl:text>
@@ -44,7 +46,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </span>
-      <xsl:if test="@count &gt; 25 and @from + 25 &lt; @count">
+      <xsl:if test="$max gt 25 and @from + 25 lt $max">
         <xsl:variable name="f1">
           <xsl:text>{"start": </xsl:text>
           <xsl:value-of select="@from + 25"/>
@@ -61,7 +63,7 @@
           <xsl:text>[</xsl:text>
           <xsl:value-of select="@from + 25"/>
           <xsl:text>–</xsl:text>
-          <xsl:value-of select="if(@from + 49 &lt; @count) then @from + 49 else @count"/>
+          <xsl:value-of select="if(@from + 49 lt $max) then @from + 49 else $max"/>
           <xsl:text>]</xsl:text>
         </a>
         <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[Ende]</a>
