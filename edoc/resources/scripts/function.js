@@ -198,9 +198,9 @@ const wdbDocument = {
         , targetElement = $(window.location.hash)
         , indexOfTarget = all.index(targetElement);
       
-    let prevAll = all.filter(function(index){ return index < indexOfTarget && $(this).hasClass('pagebreak') });
-    
-    wdbUser.displayImage(prevAll.last()[0]);
+      let prevAll = all.filter(function(index){ return index < indexOfTarget && $(this).hasClass('pagebreak'); });
+      
+      wdbUser.displayImage(prevAll.last()[0]);
     } else {
       wdbUser.displayImage($('.pagebreak')[0]);
     }
