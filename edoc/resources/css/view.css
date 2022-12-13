@@ -175,3 +175,10 @@ button[aria-label].footnoteNumber {
   font-size: 0.75rem;
   line-height: 0;
 }
+
+/* Spans acting as buttons to display entity information */
+.entity {
+  color: #098AB2;
+  padding: 0;
+  cursor: pointer;
+}

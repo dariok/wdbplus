@@ -1,4 +1,4 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" exclude-result-prefixes="#all" version="3.0">
 	<xsl:param name="title"/>
 	<xsl:param name="rest"/>
 	
@@ -49,7 +49,7 @@
 				<xsl:value-of select="normalize-space(@id)"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}entities/collection/{ancestor::results/@collection}/{@id}.html', '{@id}', this)">→</a>
+			<a href="javascript:void(0);" onclick="load('{$rest}/entities/collection/{ancestor::results/@collection}/{ancestor::results/@type}/{@id}.html', '{@id}', this)">→</a>
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
@@ -60,16 +60,23 @@
 				<xsl:value-of select="*:titleStmt/*[descendant::text()][1]"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
+			<a href="javascript:void(0);" onclick="load('{$rest}/entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
 	
 	<xsl:template match="result[@fragment]">
+        <xsl:variable name="ids" select="descendant::*:match//@xml:id"/>
+        <xsl:variable name="i" select="string-join($ids, ',')"/>
 		<li>
-			<a href="view.html?id={ancestor::results/@id}#{@fragment}">
+			<a href="view.html?id={ancestor::results/@id}#{@fragment}&amp;i={$i}#{@fragment}">
 				<xsl:value-of select="normalize-space(@fragment)"/>
 			</a>
+            <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
+            <a href="javascript:void(0);" onclick="$('#{parent::results/@id}{@fragment}').toggle();"> →</a>
+            <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
+                <xsl:apply-templates select="match"/>
+            </div>
 		</li>
 	</xsl:template>
 	
@@ -83,4 +90,26 @@
 			</a>
 		</li>
 	</xsl:template>
+	
+  <xsl:template match="match">
+    <p>
+      <xsl:apply-templates/>
+    </p>
+  </xsl:template>
+  
+  <xsl:template match="tei:w | tei:pc">
+    <xsl:choose>
+      <xsl:when test="*:match">
+        <span class="match">
+          <xsl:apply-templates/>
+        </span>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:if test="not(following-sibling::*[1][self::tei:pc][matches(., '[.,!?]')])">
+      <xsl:text> </xsl:text>
+    </xsl:if>
+  </xsl:template>
 </xsl:stylesheet>

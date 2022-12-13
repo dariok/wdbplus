@@ -3,8 +3,7 @@
  * author: Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  */
 
-// to contain the dialogue box object
-var dialogue;
+var dialogue; // to contain the dialogue box object 
 
 /* 
  * when loading the page:
@@ -31,32 +30,50 @@ $(function() {
     method: "get",
     url: wdb.meta.rest+ "anno/" + wdb.meta.id,
     headers: wdb.restheaders,
-    success: function(data){
-      $.each(
-        data.entry,
-        function( index, value ) {
-          if (index > 0 && value.range.from != '') {
-            let start = $('#' + value.range.from);
-            
-            let end = (value.range.to == '' || value.range.to === undefined)
-              ? start
-              : $('#' + value.range.to);
-            
-            let cat = value.range.from + "–" + value.range.to + ": " + value.cat;
-            
-            let from = value.range.from.substring(1),
-                to = value.range.to.substring(1);
-            
-            if(to > from)
-              highlightAll(start, end, 'red', cat);
-              else highlightAll(end, start, 'red', cat);
-          } else {
-            console.log("annotation error: unexpected full text annotation:\n"
-              + index + ": " + value.from + "–" + value.to + " = " + value.cat);
+    success: function(data, textStatus, jqXHR){
+      if (jqXHR.status == 200) {
+        $.each(
+          data.entry,
+          function( index, value ) {
+            if (value.range.from != '') {
+              /* find the target elements */
+              let start = $('#' + value.range.from),
+                  end = (value.range.to == '' || value.range.to === undefined)
+                    ? start
+                    : $('#' + value.range.to);
+              
+              /* hightlight the target elements */
+              let from = value.range.from.substring(1),
+                  to = value.range.to.substring(1);
+              let entry = '<dd id="' + value.id + '"><i>' + value.user + ':</i>&nbsp;'
+                  + value.cat + '&nbsp; <button onclick="annoDelete(\'' 
+                  + value.id + '\')" title="Eintrag löschen">&#x1F5D1;</button></dd>';
+              
+              if(to > from)
+                highlightAll(start, end, 'red', entry);
+                else highlightAll(end, start, 'red', entry);
+            } else {
+              console.log("annotation error: incorrect full text annotation:\n"
+                + index + ": " + value.from + "–" + value.to + " = " + value.cat);
+            }
           }
-        }
-      );
+        );
+      } else {
+        console.log("GETting annotations returned status " + jqXHR.status);
+      }
     }
+  });
+  
+  // for all entity annotations, add their info to the list, too
+  var entityEntryID = 0;
+  $("button.entity").each(function () {
+    let start = $(this).first(),
+        end = $(this).last(),
+        content = '<dd id="ent' + entityEntryID + '">Entitäten-Verknüpfung&nbsp;'
+            + '&nbsp; <button onclick="entityDelete(\'ent' + entityEntryID 
+            + '\')" title="Eintrag löschen">&#x1F5D1;</button></dd>';
+    highlightAll(start, end, "white", content);
+    entityEntryID++;
   });
 });
 
@@ -77,26 +94,69 @@ function anno() {
   
   let backwards = (selection.focusNode === selection.getRangeAt(0).startContainer);
   
-  let end, start;
-  // start may only be the text node within the element; also, a text-only node may be selected
+  let end, start, an, ao, fn, fo;
   if (backwards) {
-    end = selection.anchorNode.wholeText.trim() == ''
-      ? selection.anchorNode.previousElementSibling.id
-      : selection.anchorNode.parentNode.id;
-    start = selection.focusNode.wholeText.trim() == ''
-      ? selection.focusNode.nextElementSibling.id
-      : (selection.focusNode.parentNode.id == ''
-        ? selection.focusNode.parentNode.parentNode.id
-        : selection.focusNode.parentNode.id);
+    // an, ao are the start = leftmost part of the selection
+    an = selection.focusNode;
+    ao = selection.focusOffset;
+    fn = selection.anchorNode;
+    fo = selection.anchorOffset;
   } else {
-    start = selection.anchorNode.wholeText.trim() == ''
-      ? selection.anchorNode.nextElementSibling.id
-      : (selection.anchorNode.parentNode.id == ''
-        ? selection.anchorNode.parentNode.parentNode.id
-        : selection.anchorNode.parentNode.id);
-    end = selection.focusNode.wholeText.trim() == ''
-      ? selection.focusNode.previousElementSibling.id
-      : selection.focusNode.parentNode.id;
+    an = selection.anchorNode;
+    ao = selection.anchorOffset;
+    fn = selection.focusNode;
+    fo = selection.focusOffset;
+  }
+  
+  // get start
+  if (an.parentNode.classList.contains("w") && ao < an.length) {  // selection started in .w
+    start = an.parentNode.id;
+  } else {
+    // selection starts between elements – first, check whether we have a sibling to work from
+    let lookForSibling;
+    if (an.nextElementSibling !== null) {
+      lookForSibling = an;
+    } else if (an.parentNode.nextElementSibling !== null) {
+      // we’re at the end of a .w which has a sibling 
+      lookForSibling = an.parentNode;
+    } else {
+      // we’re at the end of a .w which is inside another element
+      lookForSibling = an.parentNode.parentNode;
+    }
+    
+    if (lookForSibling.nextElementSibling.classList.contains("w")) {
+      // next sibling is a .w, this is our start node
+      start = lookForSibling.nextElementSibling.id;
+    } else {
+      // some other element follows, find the first .w in there
+      start = $(lookForSibling.nextElementSibling).find(".w").first()[0].id;
+    }
+  }
+  
+  // get the end
+  if (fn.parentNode.classList.contains("w") && fo > 0){
+    // within a .w, so this is the end of the selection
+    end = fn.parentNode.id;
+  } else {
+    // selection ended between elements; first, check whether we ha a sibling to work from
+    let lookForSibling;
+    if (fn.previousElementSibling !== null) {
+      lookForSibling = fn;
+    } else if (fn.parentNode.previousElementSibling !== null) {
+      // our parent .w has a previous sibling
+      lookForSibling = fn.parentNode;
+    } else {
+      // our parent .w is within another element
+      lookForSibling = fn.parentNode.parentNode;
+    }
+    
+    if (lookForSibling.previousElementSibling.classList.contains("w")) {
+      // previous sibling is a .w, which is the end of the selection
+      end = lookForSibling.previousElementSibling.id;
+    } else {
+      // previous sibling is sth. else, whose last .w is the end of the selection
+      end = $(lookForSibling.previousElementSibling).find(".w").last()[0].id;
+    }
   }
   
   $('#annText').text(selection.toString());
@@ -106,13 +166,37 @@ function anno() {
   dialogue.dialog("open");
 }
 
+function annoDelete ( id ) {
+  console.log("Delete " + id);
+  $.ajax({
+    method: "delete",
+    url: wdb.meta.rest + "anno/" + id,
+    headers: wdb.restheaders,
+    success: function (data, textStatus, jqXHR) {
+      let container = $('#' + id).parent(),
+          ancestor = $('#' + id).closest(".w");
+      $('#' + id).detach();
+      if (container.children("dd").length === 0) {
+        container.detach();
+      }
+      if (ancestor.children("ul").length === 0) {
+        ancestor.css("background-color", "unset");
+      }
+    },
+    error: function (data, textStatus, jqXHR) {
+      console.log (textStatus);
+    }
+  });
+}
+
 /* 
  * full text annotations
  */
 function parsefta() {
   let start = $('#annFrom').text(),     // first ID in annotation range
       end = $('#annTo').text(),         // last ID in annotation range
-      annoText = $('#ftaText').val();   // text of the fta
+      annoText = $('#ftaText').val(),   // text of the fta
+      chkPublic = $("#public").prop("checked");
   dialogue.dialog("close");
   
   // POST the the fta
@@ -124,7 +208,7 @@ function parsefta() {
       from: start,
       to: end,
       text: annoText,
-      public: $('#public').val()
+      public: chkPublic
     }),
     contentType: "application/json; charset=UTF-8",
     dataType: 'json'
@@ -206,31 +290,43 @@ function process(data, type) {
 //  let result = { results: [] };
   results = [];
   $(data).find('result').each(function (index, element) {
-    let sn = element.getElementsByTagName("surname").length > 0
-          ? element.getElementsByTagName("surname")[0].textContent : "",
-        fn = element.getElementsByTagName("forename").length > 0
-          ? Array.from(element.getElementsByTagName("forename")) : "",
-        fo = (fn.length > 0)
-          ? fn.map(function(elem){ return elem.textContent; }).join(" ") : "",
-        sc = (sn.length > 0 && fo.length > 0)
-          ? ", " : "",
-        nl = element.getElementsByTagName("nameLink").length > 0
-          ? " " + element.getElementsByTagName("nameLink")[0].textContent : "",
-        bi = element.getElementsByTagName("birth"),
-        de = element.getElementsByTagName("death"),
-        da = "";
-    if (bi.length > 0 || de.length > 0) {
-      da = " (";
-      da += bi.length > 0 ? bi[0].textContent : "";
-      da += bi.length > 0 && de.length > 0 ? "–" : "";
-      da += de.length > 0 ? de[0].textContent : "";
-      da += bi.length > 0 || de.length > 0 ? ")" : "";
+    switch (type) {
+      case "per":
+        let sn = element.getElementsByTagName("surname").length > 0
+              ? element.getElementsByTagName("surname")[0].textContent : "",
+            fn = element.getElementsByTagName("forename").length > 0
+              ? Array.from(element.getElementsByTagName("forename")) : "",
+            fo = (fn.length > 0)
+              ? fn.map(function(elem){ return elem.textContent; }).join(" ") : "",
+            sc = (sn.length > 0 && fo.length > 0)
+              ? ", " : "",
+            nl = element.getElementsByTagName("nameLink").length > 0
+              ? " " + element.getElementsByTagName("nameLink")[0].textContent : "",
+            bi = element.getElementsByTagName("birth"),
+            de = element.getElementsByTagName("death"),
+            da = "";
+        if (bi.length > 0 || de.length > 0) {
+          da = " (";
+          da += bi.length > 0 ? bi[0].textContent : "";
+          da += bi.length > 0 && de.length > 0 ? "–" : "";
+          da += de.length > 0 ? de[0].textContent : "";
+          da += bi.length > 0 || de.length > 0 ? ")" : "";
+        }
+        let text = sn + nl + sc + fo + da;
+        results.push({
+          id: element.id,
+          "text": text
+        });
+        break;
+      case "pla":
+        let placeName = element.getElementsByTagName("placeName")[0].textContent,
+            id = element.id;
+        results.push({
+          id: id,
+          text: placeName
+        });
+        break;
     }
-    let text = sn + nl + sc + fo + da;
-    results.push({
-      id: element.id,
-      "text": text
-    });
   });
   
   positionResults();
@@ -247,7 +343,7 @@ function identifyEntity() {
   
   $.ajax({
     method: "post",
-    url: wdb.meta.rest+ "anno/entity/" + wdb.meta.id,
+    url: wdb.meta.rest + "anno/entity/" + wdb.meta.id,
     headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
@@ -266,12 +362,42 @@ function identifyEntity() {
   });
 }
 
+// DELETE an entity = replace tei:rs by its contents
+function deleteEntity() {
+  let type = $("#deleteType").val(),    // the type of entity to be deleted
+      start = $('#annFrom').text(),     // first ID in annotation range
+      end = $('#annTo').text();         // last ID in annotation range
+  
+  if (start !== end) {
+    alert("Es darf nur ein Wort ausgewählt werden!");
+    return false;
+  } else {
+    let url = wdb.meta.rest + "anno/entity/" + wdb.meta.id + "/" + type + "/" + start;
+    
+    $.ajax({
+      method: "delete",
+      url: url,
+      headers: wdb.restheaders,
+      success: function (data) {
+        console.info("deleted entity (ancestor of " + start + ")");
+        $('#annoInfo').text("Erfolgreich gelöscht").css("background-color", "white");
+        return true;
+      },
+      error: function ( jqXHR, textStatus, errorThrown ) {
+        let errorText = jqXHR.responseText.split("\n");
+        $('#annoInfo').text(errorText[1]).css("background-color", "lightcoral");
+        console.error(errorThrown, textStatus, jqXHR);
+      }
+    });
+  }
+}
+
 /* 
  * change full text
  */
 function editText() {
   let edit = $("#corr").val(),          // the new text for the selection
-      start = $('#annFrom').test(),     // first ID in annotation range
+      start = $('#annFrom').text(),     // first ID in annotation range
       end = $('#annTo').text();         // last ID in annotation range
   dialogue.dialog("close");
   
@@ -284,7 +410,7 @@ function editText() {
       url: wdb.meta.rest+ "anno/word/" + wdb.meta.id,
       headers: wdb.restheaders,
       data: JSON.stringify({
-        id: start,
+        from: start,
         text: edit,
         job: "edit"
       }),

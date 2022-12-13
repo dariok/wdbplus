@@ -4,10 +4,12 @@
  *          DK Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  * sources: https://github.com/dariok/wdbplus 
  *
- * changes: 2019-06-06 DK: - Move to a grid-based layout
- *          2019-09-13 DK: - use CSS custom properties to make responsive styling easier
- *          2021-02-01 DK: - some additions for release 1.5
- *          2021-12-04 DK: - move styles for body > footer, body > header here from view.css
+ * changes:
+ * 2019-06-06 DK: Move to a grid-based layout
+ * 2019-09-13 DK: use CSS custom properties to make responsive styling easier
+ * 2020-08-14 DK: styling for annotation dialogue
+ * 2021-02-01 DK: some additions for release 1.5
+ * 2021-12-04 DK: move styles for body > footer, body > header here from view.css
  */
 
 /* declare a global custom property to determine the width of the browser window
@@ -210,6 +212,24 @@ button[aria-label] {
   font-family: 'mufi';
   cursor: pointer;
   color: var(--wdb-link-colour);
+}
+
+/* Annotation dialogue */
+#annotationDialog h2 {
+  color: initial;
+}
+#annotationDialog div:last-child span {
+  margin-top: 10px;
+}
+#annoAuth {
+  float: left;
+}
+#annoInfo {
+  display: inline-block;
+  width: 80%;
+  float: right;
+  text-align: right;
+  padding-right: 2px;
 }
 
 @media screen and (max-width: 768px) {
