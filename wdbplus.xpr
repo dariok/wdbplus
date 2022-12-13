@@ -6,6 +6,31 @@
             <serialized xml:space="preserve">
                 <serializableOrderedMap>
                     <entry>
+                        <String>scenario.associations</String>
+                        <scenarioAssociation-array>
+                            <scenarioAssociation>
+                                <field name="url">
+                                    <String>edoc/doc/javascript.ditamap</String>
+                                </field>
+                                <field name="scenarioIds">
+                                    <list>
+                                        <String>6/dita/ditamap-lw.framework/Lightweight DITA - Map/DITA Map WebHelp Responsive</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioTypes">
+                                    <list>
+                                        <String>DITAMAP</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioStorageLocations">
+                                    <list>
+                                        <Byte>2</Byte>
+                                    </list>
+                                </field>
+                            </scenarioAssociation>
+                        </scenarioAssociation-array>
+                    </entry>
+                    <entry>
                         <String>validation.scenario.associations</String>
                         <scenarioAssociation-array>
                             <scenarioAssociation>
@@ -346,6 +371,9 @@
                                             <field name="validationSchema">
                                                 <null/>
                                             </field>
+                                            <field name="validationAdvancedSettings">
+                                                <null/>
+                                            </field>
                                         </validationUnit>
                                     </list>
                                 </field>
@@ -401,6 +429,9 @@
                                                         <String>http://exist3.ulb.tu-darmstadt.de:8080/exist/apps/eXide/resources/schema/collection.xconf.xsd</String>
                                                     </field>
                                                 </validationUnitSchema>
+                                            </field>
+                                            <field name="validationAdvancedSettings">
+                                                <null/>
                                             </field>
                                         </validationUnit>
                                     </list>

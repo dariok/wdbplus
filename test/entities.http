@@ -1,0 +1,11 @@
+GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/entities/list/file/pa000008-0130/person.xml
+
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/collection/pa000015
+Accept: application/xml
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/collection/pa000015/resources.xml
