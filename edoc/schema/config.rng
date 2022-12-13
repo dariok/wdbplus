@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="https://github.com/dariok/wdbplus/config" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <element name="config">
+      <element name="meta">
+        <element name="name">
+          <text/>
+        </element>
+        <element name="short">
+          <data type="NCName"/>
+        </element>
+        <element name="logo">
+          <data type="anyURI"/>
+        </element>
+      </element>
+      <element name="role">
+        <element name="type">
+          <data type="NCName"/>
+        </element>
+        <element name="peer">
+          <data type="anyURI"/>
+        </element>
+      </element>
+      <element name="params">
+        <element name="param">
+          <attribute name="name">
+            <data type="NCName"/>
+          </attribute>
+          <data type="anyURI"/>
+        </element>
+      </element>
+      <element name="server">
+        <data type="anyURI"/>
+      </element>
+      <element name="rest">
+        <data type="anyURI"/>
+      </element>
+      <element name="data">
+        <text/>
+      </element>
+      <optional>
+        <element name="origins" >
+          <oneOrMore>
+            <element name="origin">
+              <text />
+            </element>
+          </oneOrMore>
+        </element>
+      </optional>
+    </element>
+  </start>
+</grammar>

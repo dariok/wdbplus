@@ -16,39 +16,62 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
-  let $coll := wdb:getEdPath($collection, true())
+  let $coll := try { wdb:getEdPath($collection, true()) } catch * { "" }
   let $query := xmldb:decode($q) || '*'
-  
-  let $res := switch ($type)
-    case "bib" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
-    case "per" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
-    case "pla" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
-    case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
-    case "evt" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
-    default return ()
-    
+
+  let $errNoColl := if ($coll eq "")
+    then (404, "Project " || $collection || " not found")
+    else ()
+  let $errWrongType := if($type = ("bib", "per", "pla", "org", "evt"))
+    then ()
+    else (400, "Error: no or wrong type")
+  let $errors := ($errNoColl, $errWrongType)
+
   return
-  if ($res = ())
-  then (
+  if (count($errors) gt 0)
+  then 
+    (
     <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:ERR" />
+      <http:response status="{$errors[1]}">
+        <http:header name="X-Rest-Status" value="REST:ERR, {$errors[2]}" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    "Error: no or wrong type")
-  else (
+    string-join($errors, "&#x0A;")
+    )  
+  else
+    let $res := switch ($type)
+      case "bib" return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
+      case "per" return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
+      case "pla" return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
+      case "org" return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
+      case "evt" return collection($coll)//tei:event[ft:query(., $query)][ancestor::tei:listEvent]
+      default return ()
+    
+    return (
     <rest:response>
       <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="X-Rest-Status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results q="{$query}" type="{$type}" collection="{$collection}">{
-    for $r in $res
-    group by $id := $r/ancestor::*[@xml:id][1]/@xml:id
-    return
-      <result id="{$id}" />
+    <results q="{$query}" type="{$type}" collection="{$collection}" n="{count($res)}">{
+      for $r in $res
+        let $id := $r/ancestor::*[@xml:id][1]/@xml:id
+        return
+          <result id="{$id}">{
+            switch ($type)
+              case "per" return
+                let $name := $r/tei:surname
+                let $fo := if ($r/tei:forename) then ", " || $r/tei:forename else ()
+                let $nl := if ($r/tei:nameLink) then " " || $r/tei:nameLink else ()
+                let $da := if($r/parent::*/tei:birth or $r/parent::*/tei:death)
+                  then " (" || $r/parent::*/tei:birth || "–" || $r/parent::*/tei:death || ")"
+                  else ()
+                return concat($name, $fo, $nl, $da)
+              case "pla" return normalize-space($r)
+              default return ""
+          }</result>
     }</results>)
 };
 declare
@@ -198,25 +221,24 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$id}/{$q}.xml")
+    %rest:path("/edoc/entities/list/collection/{$id}/{$type}.xml")
     %rest:query-param("start", "{$start}", 1)
     %rest:query-param("p", "{$p}")
-function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
+function wdbRe:listCollectionEntities ( $id as xs:string*, $type as xs:string*, $start as xs:int*, $p as xs:string* ) as element()+ {
   let $coll := wdb:getEdPath($id, true())
-  let $query := xmldb:decode($q)
+    , $params := parse-json($p)
   
-  let $params := parse-json($p)
+  let $r := if ( exists($params?type) ) then
+        collection($coll)//tei:rs[(starts-with(@ref, $type) and @type = $params("type"))
+            or starts-with(@ref, $params?type || ':' || $type)]
+      else collection($coll)//tei:rs[@type = $type]
   
-  let $r := if ($p != "" and $params("type") != "")
-    then collection($coll)//tei:rs[(starts-with(@ref, $query) and @type = $params("type"))
-    or starts-with(@ref, $params?type || ':' || $query)]
-    else collection($coll)//tei:rs[starts-with(@ref, $query)]
+  let $max := count($r)
+  
   let $res := for $f in $r
-    group by $ref := $f/@ref
-    order by $ref
-    return
-      <result ref="{$ref}" count="{count($f)}" />
-  let $max := count($res)
+        group by $ref := $f/@ref
+        order by $ref
+        return $ref
   
   return (
     <rest:response>
@@ -225,9 +247,11 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" p="{$p}">{
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$type}" p="{$p}">{
       for $f in subsequence($res, $start, 25)
-      return $f
+        let $count := $coll//tei:rs[@ref = $f]
+        return
+          <result ref="{$f}" count="{count($count)}" />
     }</results>
   )
 };

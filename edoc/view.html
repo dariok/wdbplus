@@ -1,1 +1,18 @@
-<div data-template="templates:surround" data-template-with="./templates/layout.html" data-template-at="container" />
+<!DOCTYPE html>
+<html data-template="wdb:getEE">
+  <head data-template="wdb:getHead">
+    <title>head set by app.xqm</title>
+  </head>
+  <body>
+    <div class="loadingModal"></div>
+    <header data-template="wdb:getHeader"></header>
+    <main data-template="wdb:getContent"></main>
+    <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
+      <div id="ann" role="note" aria-label="contains footnotes and other information when selected"></div>
+      <div id="fac" role="figure" aria-label="conains a digital facsimile or other image"></div>
+      <footer data-template="wdb:getRightFooter"></footer>
+    </aside>
+    <aside id="wdbAnnotations" data-template="wdb:getAnnotationDialogue"></aside>
+    <footer data-template="wdb:getGlobalFooter"></footer>
+  </body>
+</html>

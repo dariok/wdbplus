@@ -4,12 +4,12 @@ xquery version "3.0";
  : A set of helper functions to access the application context from
  : within a module.
  :)
-module namespace config		= "http://exist-db.org/xquery/apps/config";
+module namespace config = "http://exist-db.org/xquery/apps/config";
 
-declare namespace templates	= "http://exist-db.org/xquery/templates";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
 
-declare namespace repo		= "http://exist-db.org/xquery/repo";
-declare namespace expath	= "http://expath.org/ns/pkg";
+declare namespace repo   = "http://exist-db.org/xquery/repo";
+declare namespace expath = "http://expath.org/ns/pkg";
 
 (: 
     Determine the application root collection from the current module load path.

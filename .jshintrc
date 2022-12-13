@@ -1,0 +1,22 @@
+{
+  "-W014": true,
+  "bitwise": true,
+  "curly": true,
+  "eqeqeq": true,
+  "esversion": 11,
+  "globals": {
+    "$": false,
+    "console": false
+   },
+  "latedef": true,
+  "maxcomplexity": 5,
+  "maxdepth": 3,
+  "nocomma": true,
+  "nonew": true,
+  "regexpu": true,
+  "shadow": "outer",
+  "strict": "global",
+  "sub": true,
+  "undef": true,
+  "unused": true
+}

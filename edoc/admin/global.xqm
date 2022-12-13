@@ -106,5 +106,5 @@ declare function local:roleForm($metaFile) {
 };
 
 declare function wdbGS:ingest($node as node(), $model as map(*)) {
-  <a href="directoryForm.html?id={doc($wdb:data || '/wdbmeta.xml')/meta:projectMD/@xml:id}">bestehendes Projekt hochladen</a>
+  <a href="directoryForm.html?ed={doc($wdb:data || '/wdbmeta.xml')/meta:projectMD/@xml:id}">bestehendes Projekt hochladen</a>
 };

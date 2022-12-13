@@ -1,10 +1,10 @@
 xquery version "3.1";
 
-module namespace wdbRi = "https://github.com/dariok/wdbplus/RestMIngest";
+module namespace wdbRMi = "https://github.com/dariok/wdbplus/RestMIngest";
 
 import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "../modules/app.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -14,7 +14,7 @@ declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace util = "http://exist-db.org/xquery/util";
 
 (: uploaded a single non-XML file with the intent to create/update entry :)
-declare function wdbRi:enterMeta ($path as xs:anyURI) {
+declare function wdbRMi:enterMeta ($path as xs:anyURI) {
     (: non-XML files have no internally defined ID and in general no view :)
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
@@ -22,7 +22,7 @@ declare function wdbRi:enterMeta ($path as xs:anyURI) {
     let $doc := doc($path)
     let $uuid := util:uuid($doc)
     let $metaFile := $meta//meta:file[@path = $path]
-    let $id := wdbRi:getID(<void />, $collectionID, $path)
+    let $id := wdbRMi:getID(<void />, $collectionID, $path)
     
     let $errorNum := count($metaFile) > 2
     
@@ -107,13 +107,13 @@ declare function wdbRi:enterMeta ($path as xs:anyURI) {
     )}
 };
 (: uploaded a single XML file with intent to create/update entry :)
-declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
+declare function wdbRMi:enterMetaXML ($path as xs:anyURI) {
     let $project := wdb:getEdFromPath($path, true())
     let $meta := doc($project || '/wdbmeta.xml')
     let $doc := doc($path)
     let $uuid := util:uuid($doc)
     let $relPath := substring-after($path, $project || "/")
-    let $id := wdbRi:getID($doc, string($meta/meta:projectMD/@xml:id), $relPath)
+    let $id := wdbRMi:getID($doc, string($meta/meta:projectMD/@xml:id), $relPath)
     
     let $metaFile := ( 
       $meta/id($id),
@@ -157,7 +157,10 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { $doc//tei:titleStmt/tei:title[1] }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update insert $view into $meta/meta:projectMD/meta:struct
         
@@ -200,7 +203,10 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
           else
             <view xmlns="https://github.com/dariok/wdbplus/wdbmeta">{( 
               attribute file { $id },
-              attribute label { $doc//tei:titleStmt/tei:title[1] }
+              attribute label { normalize-space(($doc//tei:titleStmt/tei:title[@level eq 'a'], $doc//tei:titleStmt/tei:title[1])[1]) },
+              if ( $doc//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($doc//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
             )}</view>
         let $updv := update replace $meta//meta:view[@file = $id] with $view
         return ( 
@@ -223,7 +229,7 @@ declare function wdbRi:enterMetaXML ($path as xs:anyURI) {
       )}
 };
   
-declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item()) {
+declare function wdbRMi:store($collection as xs:string, $resource-name as xs:string, $contents as item()) {
   let $mime-type := switch (substring-after($resource-name, '.'))
     case "css" return "text/css"
     case "js" return "application/javascript"
@@ -238,12 +244,12 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     case "xsl" return "application/xslt+xml"
     default return "application/octet-stream"
     
-  return wdbRi:store($collection, $resource-name, $contents, $mime-type)
+  return wdbRMi:store($collection, $resource-name, $contents, $mime-type)
 };
 
-declare function wdbRi:store($collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string) {
+declare function wdbRMi:store($collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string) {
   let $coll := if (not(xmldb:collection-available($collection)))
-    then wdbRi:createCollection($collection)
+    then wdbRMi:createCollection($collection)
     else ()
   let $hasAccess := sm:has-access(xs:anyURI($collection), 'w')
   
@@ -265,9 +271,9 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
       let $path := xmldb:store($collection, $resource-name, $contents, $mime-type)
       let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
       let $ch := (
+        sm:chmod($path, $mode),
         sm:chown($path, "wdb"),
         sm:chgrp($path, "wdbusers"),
-        sm:chmod($path, $mode),
         console:log("storing " || $mime-type || " to " || $path)
       )
       return (
@@ -287,7 +293,7 @@ declare function wdbRi:store($collection as xs:string, $resource-name as xs:stri
     }
 };
 
-declare function wdbRi:createCollection ($coll as xs:string) {
+declare function wdbRMi:createCollection ($coll as xs:string) {
   let $target-collection := xstring:substring-before-last($coll, '/')
   let $new-collection := xstring:substring-after-last($coll, '/')
   
@@ -301,18 +307,20 @@ declare function wdbRi:createCollection ($coll as xs:string) {
     return console:log("creating " || $new-collection || " in " || $target-collection)
   )
   else ( 
-    wdbRi:createCollection($target-collection),
+    wdbRMi:createCollection($target-collection),
     xmldb:create-collection($target-collection, $new-collection)
   )
 };
 
-declare function wdbRi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
+declare function wdbRMi:getID ($element as item(), $collection as xs:string, $path) as xs:string {
   if ($element instance of document-node() and $element/*/@xml:id)
   then string($element/*/@xml:id)
+  else if  ( $element instance of element() )
+  then string($element/@xml:id)
   else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
 };
 
-declare function wdbRi:replaceWs($string) {
+declare function wdbRMi:replaceWs($string) {
   if (matches($string, "^\s+<"))
   then replace($string, "^\s+<", "<")
   else replace($string,

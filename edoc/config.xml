@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="schema/config.xsd" type="application/xml-schema"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://github.com/dariok/wdbplus/config schema/config.xsd" xmlns="https://github.com/dariok/wdbplus/config">
-	<!-- General meta data -->
-	<!-- name and short are mandatory -->
-	<meta>
-		<!-- long name -->
-		<name>W. digitale Bibliothek</name>
-		<!-- short title -->
-		<short>W.DB</short>
-		<!-- a logo -->
-		<!-- <logo>http://mydomain.tld/logo.png</logo> -->
-	</meta>
-	
-	<!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
-	<!--<role>
-		<type>workbench</type>
-		<peer>http://my.domain.tld/edoc</peer>
-	</role>-->
-	
-	<!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
-	<!--<params>
-		<param name="vd16">http://gateway-bayern.de/VD16+</param>
-	</params>-->
-	
-	<!-- if the base address cannot be correctly extracted, a value – full URI to the instance's root, possibly including
-		ports – can be given here. It should _not_ end with a '/' -->
-	<!--<server>http://mydomain.tld:8088/my/path</server>-->
+<?xml-model href="schema/config.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<config xmlns="https://github.com/dariok/wdbplus/config">
+  <!-- General meta data -->
+  <!-- name and short are mandatory -->
+  <meta>
+    <!-- long name -->
+    <name>W. digitale Bibliothek</name>
+    <!-- short title -->
+    <short>W.DB</short>
+    <!-- a logo -->
+     <logo>http://mydomain.tld/logo.png</logo> 
+  </meta>
+  
+  <!-- if not a standalone, role contains the role type and the related instance for that role, if applicable -->
+  <role>
+    <type>workbench</type>
+    <peer>http://my.domain.tld/edoc</peer>
+  </role>
+  
+  <!-- may contain a list of parameter / value pairs that can either be read by XSL or from the model in XQuery -->
+  <params>
+    <param name="vd16">http://gateway-bayern.de/VD16+</param>
+  </params>
+  
+  <!-- setting the base URL to edoc can speed up all processing steps; in cases app.xqm cannot figure out the right
+      setting, this value must be set to ensure stable operation. It should _not_ end with a '/' -->
+  <server>http://localhost:8080/exist/apps/edoc</server>
+  
+  <!-- Full path for the instance’s REST base URL -->
+  <rest>http://localhost:8080/exist/restxq/edoc/</rest>
+  
+  <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
+     default: /db/apps/edoc/data -->
+  <data>/db/apps/edoc/data</data>
 
-	<!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
-	     default: /db/apps/edoc/data -->
-	<data>/db/apps/edoc/data</data>
+  <!-- Allowed origins for CORS requests – these may be necessary when wdb+ is behind a rewriting proxy
+       If all sources are to be allowed or no check should be undertaken, this element can be removed -->
+  <origins>
+    <origin>http://localhost:8080</origin>
+  </origins>
 </config>
