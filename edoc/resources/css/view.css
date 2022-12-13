@@ -94,6 +94,10 @@ body > aside {
   overflow: initial;
 }
 
+#ann {
+  position: absolute;
+}
+
 #fac {
   height: 100%;
 }
@@ -156,6 +160,13 @@ div.footnote {
 }
 .floating {
   border: 1px solid lightgrey;
+  display: flex;
+}
+.floating .fnNumber {
+  color: black;
+  font-size: 1em;
+  padding-right: .5em;
+  white-space: nowrap;
 }
 
 /* footnote links */

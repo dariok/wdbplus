@@ -105,7 +105,7 @@ declare function local:selectEd ($model) {(
       let $label := $md//meta:struct[@file = $id]/@label
       return
         <option value="{$id}">
-          {if ($id = $model?ed) then attribute selected {"selected"} else ()}
+          {if ($id = $model?mainEd) then attribute selected {"selected"} else ()}
           {normalize-space($label)}
         </option>
     return (

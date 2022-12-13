@@ -25,20 +25,19 @@ declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
- : the base of this instance within the db
- :)
-declare variable $wdb:edocBaseDB := $xConf:app-root;
-
-(:~
  : load the config file
  : See https://github.com/dariok/wdbplus/wiki/Global-Configuration
  :)
-declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
+declare variable $wdb:configFile := doc('../config.xml');
+
+(:~
+ : the base of this instance within the db
+ :)
+declare variable $wdb:edocBaseDB := $wdb:configFile => base-uri() => substring-before('/config.xml');
 
 (:~
  : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
@@ -304,7 +303,12 @@ try {
     , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
         return $function/@name || '#' || count($function/argument)
 
-  let $header := map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+  let $header := if ( request:exists() )
+        then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+        else ()
+    , $requestUrl := if ( request:exists() )
+        then request:get-url()
+        else ()
   
   (: TODO read global parameters from config.xml and store as a map :)
   let $map := map {
@@ -314,11 +318,12 @@ try {
     "header":           $header,
     "id":               $id,
     "infoFileLoc":      $infoFileLoc,
+    "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
     "p":                $p,
     "pathToEd":         $pathToEd,
     "projectFile":      $proFile,
     "projectResources": $resource,
-    "requestUrl":       request:get-url(),
+    "requestUrl":       $requestUrl,
     "title":            $title,
     "view":             $view,
     "xslt":             $xslt
@@ -634,27 +639,19 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
   let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
-    (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
-  else
-    (: no specific function available, so we assume standards
-     : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
-     : but rather throws an error... :)
-    let $css := $model?pathToEd || "/scripts/project.css",
-        $js := $model?pathToEd || "/scripts/project.js"
-	
-    return
-    (
-      try {
-        if (util:binary-doc-available($css))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
-        else ()
-      } catch * { () },
-      try {
-        if (util:binary-doc-available($js))
-        then <script src="{wdb:getUrl($js)}" />
-        else ()
-      } catch * { () }
-    )
+      (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
+    else
+      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
+        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      
+      return (
+        if ( $css != "" )
+          then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
+          else (),
+        if ( $js != "" )
+          then <script src="{wdb:getUrl($js)}" />
+          else ()
+      )
   
   return if ($type = 'css')
     then $files[self::*:link]
@@ -706,6 +703,23 @@ declare function wdb:findProjectXQM ( $project as xs:string ) {
     $wdb:data || "/instance.xqm"
   else
     wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+};
+
+(:~
+ : Generic finder for files in the project hierarchy (bottom up)
+ : it is assumed that this is a binary file
+ : 
+ : @param $pathToEd path to the project to search from)
+ : @param $fileName name of the file to search
+ : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
+ :)
+declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+    xs:anyURI($pathToEd || "/" || $fileName)
+  else if ( substring-after($pathToEd, $wdb:data) = '' ) then
+    xs:anyURI("")
+  else
+    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
@@ -896,13 +910,7 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
     case 'xql'
     case 'xqm'
       return
-        let $t := 'abs'
-
-        return if ( $q ) then
           'application/xquery'
-        else
-          $t
-    
     case 'html'
       return
         'text/html'

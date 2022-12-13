@@ -1,6 +1,7 @@
 /* globals wdb */
 /* jshint browser: true */
 /* globals wdb */
+"use strict";
 
 const wdbAdmin = {
   displayRight: function ( url ) {
@@ -30,6 +31,9 @@ const wdbAdmin = {
           $('#selectTarget select').append("<option>" + subcollection + "</option>");
         }
       });
+    } else {
+      // only one entry
+      $('#selectTarget select').append('<option selected="selected">' + data + '</option>');
     }
   },
 
@@ -46,12 +50,12 @@ const wdbAdmin = {
   },
 
   ingestAction: function ( event ) {
-    if(event.target.id == "fi") {
-      $('#picker').attr('webkitdirectory', null);
+    if ( event.target.id === "fi" ) {
+      $('#picker').attr({'webkitdirectory': null, 'multiple': 'multiple'});
       $('#selectInputDir label').text("Datei auswählen");
     }
     else {
-      $('#picker').attr('webkitdirectory', 'true');
+      $('#picker').attr({'webkitdirectory': 'true', 'multiple': null});
       $('#selectInputDir label').text("Verzeichnis auswählen");
     }
   },
@@ -190,7 +194,7 @@ const wdbAdmin = {
         wdb.report("success", "uploaded to " + url, textStatus, item);
       },
       error: function (response) {
-        wdb.report("error", "Error uploading to " + url + " : " + response.status, response, item);
+        wdb.report("error", "Error uploading to " + url + " : " + response.status, response.responseText, item);
       }
     });
   },

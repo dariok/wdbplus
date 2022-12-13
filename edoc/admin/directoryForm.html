@@ -2,10 +2,10 @@
   <h1>Funktion</h1>
   <form action="#" method="post">
     <fieldset id="selectTask">
-      <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta (restore)</input><br />
-      <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta (ingest)</input><br />
-      <input type="radio" name="task" id="fo" checked="checked">Einzeldatei ohne Eintragen in wdbmeta</input><br />
-      <input type="radio" name="task" id="fi" checked="checked">Einzeldatei mit Eintragen in wdbmeta</input><br />
+      <input type="radio" name="task" id="do">Verzeichnis ohne Eintragen in wdbmeta</input><br/>
+      <input type="radio" name="task" id="dm">Verzeichnis mit Eintragen in wdbmeta</input><br/>
+      <input type="radio" name="task" id="fo">Datei(en) ohne Eintragen in wdbmeta</input><br/>
+      <input type="radio" name="task" id="fi" checked="checked">Datei(en) mit Eintragen in wdbmeta</input><br/>
     </fieldset>
     <fieldset id="selectTarget">
       <label>Collection: </label>
@@ -18,7 +18,7 @@
     </fieldset>
     <fieldset id="selectInputDir">
       <label>Datei auswählen: </label>
-      <input type="file" id="picker" name="fileList"/>
+      <input type="file" id="picker" name="fileList" multiple="multiple" />
     </fieldset>
     <input type="submit" disabled="disabled"/>
   </form>

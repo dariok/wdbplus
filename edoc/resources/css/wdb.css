@@ -204,6 +204,7 @@ a {
 button[aria-label] {
   border: none;
   background-color: white;
+  display: contents;
   padding: 0;
   font-size: 1rem;
   font-family: 'mufi';

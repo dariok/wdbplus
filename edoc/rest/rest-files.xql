@@ -413,7 +413,7 @@ function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as x
         <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
       </http:response>
     </rest:response>,
-    $status[2]
+    $status[position() gt 1]
   )
 };
 

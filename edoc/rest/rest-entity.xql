@@ -221,25 +221,24 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$id}/{$q}.xml")
+    %rest:path("/edoc/entities/list/collection/{$id}/{$type}.xml")
     %rest:query-param("start", "{$start}", 1)
     %rest:query-param("p", "{$p}")
-function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
+function wdbRe:listCollectionEntities ( $id as xs:string*, $type as xs:string*, $start as xs:int*, $p as xs:string* ) as element()+ {
   let $coll := wdb:getEdPath($id, true())
-  let $query := xmldb:decode($q)
+    , $params := parse-json($p)
   
-  let $params := parse-json($p)
+  let $r := if ( exists($params?type) ) then
+        collection($coll)//tei:rs[(starts-with(@ref, $type) and @type = $params("type"))
+            or starts-with(@ref, $params?type || ':' || $type)]
+      else collection($coll)//tei:rs[@type = $type]
   
-  let $r := if ($p != "" and $params("type") != "")
-    then collection($coll)//tei:rs[(starts-with(@ref, $query) and @type = $params("type"))
-    or starts-with(@ref, $params?type || ':' || $query)]
-    else collection($coll)//tei:rs[starts-with(@ref, $query)]
+  let $max := count($r)
+  
   let $res := for $f in $r
-    group by $ref := $f/@ref
-    order by $ref
-    return
-      <result ref="{$ref}" count="{count($f)}" />
-  let $max := count($res)
+        group by $ref := $f/@ref
+        order by $ref
+        return $ref
   
   return (
     <rest:response>
@@ -248,9 +247,11 @@ function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $sta
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" p="{$p}">{
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$type}" p="{$p}">{
       for $f in subsequence($res, $start, 25)
-      return $f
+        let $count := $coll//tei:rs[@ref = $f]
+        return
+          <result ref="{$f}" count="{count($count)}" />
     }</results>
   )
 };
