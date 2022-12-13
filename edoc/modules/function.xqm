@@ -140,8 +140,14 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
       {
         for $h in $node/* return
           if ( $h/*[@data-template] )
-            then for $c in $h/* return try { templates:apply($c, $wdbfp:lookup, $newModel) } catch * { util:log("error", $err:description) }
-            else templates:apply($h, $wdbfp:lookup, $newModel)
+            then for $c in $h/* return
+              try { 
+                (templates:apply($c, $wdbfp:lookup, $newModel), console:log($c))
+              } catch * {
+                util:log("error", $err:description)
+              }
+            else 
+              (templates:apply($h, $wdbfp:lookup, $newModel), console:log($h))
       }
     </html>
 };
