@@ -3,6 +3,7 @@
  * https://github.com/dariok/wdbplus
  */
 /* jshint browser: true */
+/* globals Cookies */
 "use strict";
 
 const wdb = (function() {
@@ -11,6 +12,9 @@ const wdb = (function() {
   for (let m of document.getElementsByTagName("meta")) {
     meta[m.name] = m.content;
   }
+
+  // will be used to store headers
+  let restHeaderVal = { };
   
   // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
   /* TODO https://github.com/dariok/wdbplus/issues/429
@@ -24,15 +28,24 @@ const wdb = (function() {
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
   let getUniqueId = function () {
-    return 'wdb' + ('000' + internalUniqueId++).substr(-4);
+    return 'wdb' + ('000' + internalUniqueId++).substring(-4);
+  };
+
+  function setAuthorizationHeader () {
+    let cred = Cookies.get("wdbplus");
+    if ( typeof cred === "undefined" || cred.length === 0 ) {
+      delete restHeaderVal.Authorization;
+    } else {
+      restHeaderVal.Authorization = "Basic " + cred;
+    } 
   };
 
   /* Login and logout */
-  let login = function (event, reload) {
+  let login = function ( event, reload ) {
     event.preventDefault();
   
-    let username = $('#user').val(),
-        password = $('#password').val();
+    let username = $('#user').val()
+      , password = $('#password').val();
     wdb.report("info", "login request");
     Cookies.remove('wdbplus');
     
@@ -56,7 +69,7 @@ const wdb = (function() {
           if ( reload ) {
              location.reload();
           }
-        } catch (e) {
+        } catch ( e ) {
           wdb.report("error", "error logging in", e);
         }
       },
@@ -95,15 +108,6 @@ const wdb = (function() {
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
   // function to set REST headers
-  let restHeaderVal = { };
-  let setAuthorizationHeader = function () {
-    let cred = Cookies.get("wdbplus");
-    if ( typeof cred == "undefined" || cred.length == 0 ) {
-      delete restHeaderVal.Authorization;
-    } else {
-      restHeaderVal.Authorization = "Basic " + cred;
-    } 
-  };
   setAuthorizationHeader();
 
   return {
@@ -369,8 +373,7 @@ const wdbDocument = {
   // generic laoding function
   loadContent: function ( url, target, me ) {
     if ($('#' + target).css('display') == 'none') {
-      $.ajax(
-        {
+      $.ajax({
           url: url,
           headers: wdb.restHeaders,
           dataType: 'html',
@@ -382,8 +385,7 @@ const wdbDocument = {
           error: function (xhr, status, error) {
             wdb.report("error", "Error loading " + url + " : " + status, error);
           }
-        }
-      );
+      });
     } else {
       $('#' + target).slideToggle();
       if (me.length > 0) {
