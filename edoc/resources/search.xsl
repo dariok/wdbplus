@@ -79,7 +79,7 @@
       <a href="view.html?id={@id}">
         <xsl:value-of select="tei:titleStmt/tei:title[1]"/>
       </a>
-      <a href="javascript:void(0);" onclick="wdbDocument.loadContent('{$rest}search/file/{@id}.html?q={ancestor::results/@q}', '{@id}', this)"> →</a>
+      <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}" title="Show results">→</button>
       <div id="{@id}" class="results" style="display: none;"/>
     </li>
   </xsl:template>
@@ -95,7 +95,7 @@
         <xsl:value-of select="@fragment"/>
       </a>
       <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
-      <a href="javascript:void(0);" onclick="$('#{parent::results/@id}{@fragment}').toggle();"> →</a>
+      <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}" title="Show results">→</button>
       <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
         <xsl:apply-templates select="*"/>
       </div>

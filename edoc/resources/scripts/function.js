@@ -372,24 +372,29 @@ const wdbDocument = {
 
   // generic laoding function
   loadContent: function ( url, target, me ) {
-    if ($('#' + target).css('display') == 'none') {
-      $.ajax({
+    if ( url.length > 0 && $('#' + target).children().length == 0 ) {
+      $.ajax(
+        {
           url: url,
           headers: wdb.restHeaders,
           dataType: 'html',
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
+              $(me).html('↑').attr('title', 'Hide results');
           },
           error: function (xhr, status, error) {
             wdb.report("error", "Error loading " + url + " : " + status, error);
           }
-      });
+        }
+      );
+    } else if ( $('#' + target).css('display') == 'none' ) {
+      $('#' + target).slideToggle();
+      $(me).html('↑').attr('title', 'Hide results');
     } else {
       $('#' + target).slideToggle();
-      if (me.length > 0) {
-        $(me).html($(me).html().replace('↑', '→'));
+      if ( me !== undefined ) {
+        $(me).html('→').attr('title', 'Show results');
       }
     }
   },
