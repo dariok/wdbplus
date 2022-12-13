@@ -369,7 +369,16 @@ declare
   %output:method("json")
 function wdbRc:getStructureJson ( $id ) {
   let $collection-uri := wdb:getEdPath($id, true())
-  return map { $collection-uri: xmldb:get-child-collections($collection-uri) }
+  
+  return (
+    <rest:response>
+      <http:response>
+        <http:header name="Content-Type" value="application/json" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    map { $collection-uri: xmldb:get-child-collections($collection-uri) }
+  )
 };
 
 (: navigation :)

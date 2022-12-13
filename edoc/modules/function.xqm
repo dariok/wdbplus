@@ -34,14 +34,17 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
           } catch * {
             normalize-space($p)
           }
+        , $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
       
       return map {
-        "pathToEd":  $path,
-        "p":         $pp,
-        "job":       $q,
-        "id":        $id,
-        "ed":        $ed,
-        "auth":      sm:id()/sm:id
+        "requestUrl": request:get-uri(),
+        "pathToEd":   $path,
+        "p":          $pp,
+        "job":        $q,
+        "id":         $id,
+        "functions":  $functions?functions,
+        "ed":         $ed,
+        "auth":       sm:id()/sm:id
       }
     else if ( request:exists() and request:get-uri() => ends-with('/toc.html') ) then
       map {
@@ -61,12 +64,13 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
               normalize-space($p)
             }
       let $proFile := wdb:findProjectXQM($pathToEd)
-      let $projectFunctions := 
-            if ( $proFile != "" )
-              then load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $proFile })
-              else map { }
-        , $instanceFunctions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $wdb:data || "/instance.xqm" })
-        , $mergedFunctions := map:merge(($instanceFunctions?functions, $projectFunctions?functions))
+        , $mainProject := substring-before($proFile, "project.xqm")
+        , $resource := $mainProject || "resources/"
+      
+      let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
+        , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+            return $function/@name || '#' || count($function/argument)
       
       return map {
         "p":                $pp,
@@ -74,11 +78,12 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "q":                $q,
         "ed":               $ed,
         "auth":             sm:id()/sm:id,
-        "functions":        $mergedFunctions,
+        "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
         "infoFileLoc":      $infoFileLoc,
+        "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
         "title":            doc($infoFileLoc)//meta:title[1]/text(),
         "projectFile":      $proFile,
-        "projectResources": $pathToEd || "/resources/",
+        "projectResources": $resource,
         "requestUrl":       if ( request:exists() ) then request:get-url() else ""
       }
     else
@@ -130,7 +135,9 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
   let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
 
   (: TODO: use a function to get the actual content language :)
+
   return if ( count($newModel) = 1 ) then
+  return
     <html lang="de">
       {
         for $h in $node/* return
@@ -210,22 +217,22 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
   return
     (: 1a. :)
     if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
-      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdb:lookup, $model)
+      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdbfp:lookup, $model)
     (: 1b. :)
     else if ( wdb:findProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1) ) then
       (wdb:getProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1))($model)
     (: 2a. :)
     else if ( doc-available($model?projectResources || "functionHeader.html") ) then
-      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdb:lookup, $model)
+      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdbfp:lookup, $model)
     (: 2b. :)
     else if ( wdb:findProjectFunction($model, 'wdbPF:getFunctionHeader', 1) ) then
       (wdb:getProjectFunction($model, 'wdbPF:getFunctionHeader', 1))($model)
     (: 3a. :)
     else if ( doc-available($wdb:data || '/resources/' || $name || 'Header.html') ) then
-      templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdb:lookup, $model)
+      templates:apply(doc($wdb:data || '/resources/' || $name || 'Header.html'), $wdbfp:lookup, $model)
     (: 4a. :)
     else if ( doc-available($wdb:data || "/resources/functionHeader.html") ) then
-      templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdb:lookup, $model)
+      templates:apply(doc($wdb:data|| "/resources/functionHeader.html"), $wdbfp:lookup, $model)
     (: 5. :)
     else
       <header>
@@ -282,16 +289,19 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
       let $ins := if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-          then <script src="data/resources/function.js" />
+          then <script src="{$wdb:edocBaseURL}/data/resources/function.js" />
           else ()
-      return ($ins, $gen, $pro, $add)
+      let $spec := if ( util:binary-doc-available($wdb:data || "/resources/" || $name || ".js") )
+        then <link rel="stylesheet" type="text/css" href="{$wdb:edocBaseURL}/data/resources/{$name}.js" />
+        else ()
+      return ($ins, $gen, $pro, $add, $spec)
     default return <meta name="specFile" value="{$name}" />
 };
 
 (: get the footer for function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
 declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
   if (doc-available($model("projectResources") || 'functionFooter.html')) then 
-    templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbst:lookup, $model)
+    templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbfp:lookup, $model)
   else if (wdb:findProjectFunction($model, 'wdbPF:getFunctionFooter', 1)) then
     (wdb:getProjectFunction($model, 'wdbPF:getFunctionFooter', 1))($model)
   else if ( doc-available($wdb:data || "/resources/mainFooter.html") ) then

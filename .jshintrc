@@ -6,7 +6,8 @@
   "esversion": 11,
   "globals": {
     "$": false,
-    "console": false
+    "console": false,
+    "Cookies": false
    },
   "latedef": true,
   "maxcomplexity": 5,

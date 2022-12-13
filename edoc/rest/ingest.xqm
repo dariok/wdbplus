@@ -271,9 +271,9 @@ declare function wdbRMi:store($collection as xs:string, $resource-name as xs:str
       let $path := xmldb:store($collection, $resource-name, $contents, $mime-type)
       let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
       let $ch := (
+        sm:chmod($path, $mode),
         sm:chown($path, "wdb"),
         sm:chgrp($path, "wdbusers"),
-        sm:chmod($path, $mode),
         console:log("storing " || $mime-type || " to " || $path)
       )
       return (

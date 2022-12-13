@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@types/jquery": "^3.5.10"
+  },
+  "dependencies": {
+    "jshint": "^2.13.5"
+  }
+}
