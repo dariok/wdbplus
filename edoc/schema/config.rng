@@ -39,6 +39,20 @@
         <text/>
       </element>
       <optional>
+        <element name="headers">
+          <oneOrMore>
+            <element name="header">
+              <attribute name="name">
+                <data type="NCName" />
+              </attribute>
+              <attribute name="value">
+                <data type="string" />
+              </attribute>
+            </element>
+          </oneOrMore>
+        </element>
+      </optional>
+      <optional>
         <element name="origins" >
           <oneOrMore>
             <element name="origin">
