@@ -159,6 +159,20 @@ const wdb = (function() {
 })();
 Object.freeze(wdb);
 
+let annotationsCount = 0;
+function addAnnotation ( targetElement, content ) {
+  // create element for annotations
+  if ( $(targetElement).children(".annotations").length === 0 ) {
+    /*$(targetElement).append('<ul class="annotations" role="complementary"><dt>Annotationen an dieser Stelle:</dt></ul>');*/
+    $('<ul class="annotations" role="complementary" id="ann' + annotationsCount + '" '
+        + 'onmouseover="annotationMouseIn(event)" onmouseout="annotationMouseOut(event)" '
+        + 'onmousemove="annotationMouseIn(event)"><dt>Annotationen an dieser Stelle:</dt></ul>').insertAfter(targetElement);
+    $(targetElement).attr("aria-describedby", "ann" + annotationsCount);
+  }
+  $("#ann" + annotationsCount).append(content);
+  annotationsCount++;
+}
+
 /* functions for manipulating the HTML document */
 const wdbDocument = {
   // get the common ancestor of 2 elements
@@ -603,45 +617,26 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
             });
         }
     }
-}
-
-var annotationsCount = 0;
-function addAnnotation ( targetElement, content ) {
-  // create element for annotations
-  if ( $(targetElement).children(".annotations").length === 0 ) {
-    /*$(targetElement).append('<ul class="annotations" role="complementary"><dt>Annotationen an dieser Stelle:</dt></ul>');*/
-    $('<ul class="annotations" role="complementary" id="ann' + annotationsCount + '" '
-        + 'onmouseover="annotationMouseIn(event)" onmouseout="annotationMouseOut(event)" '
-        + 'onmousemove="annotationMouseIn(event)"><dt>Annotationen an dieser Stelle:</dt></ul>').insertAfter(targetElement);
-    $(targetElement).attr("aria-describedby", "ann" + annotationsCount);
-  }
-  $("#ann" + annotationsCount).append(content);
-  annotationsCount++;
-}
+  },
 /* END highlighting */
 
 /** Navigation **/
-function toggleNavigation() {
-    if ($('nav').css('display') == 'none')
-    $('#showNavLink').text('Navigation ausblenden'); else $('#showNavLink').text('Navigation einblenden');
-    
-    if ($('nav').text() === '') {
-        $('nav').text('lädt...');
-        id = $('meta[name="ed"]').attr('content');
-        res = $. get (rest + 'collection/' + id + '/nav.html', '',
-        function (data) {
-            $('nav').html($(data)).prepend($('<h2>Navigation</h2>'));
-        },
-        'html');
-    }
-    $('nav').slideToggle();
-}
-
-function load (url, target, me) {
-    if ($('#' + target).css('display') == 'none') {
-      res = $.ajax(url,
-        {
-          dataType: "html",
+// group navigation related methods
+  nav: {
+    // load navigation if necessary and toggle visibility
+    toggleNavigation: function() {
+      if ($("nav").css("display") == "none") {
+        $("#showNavLink").text("Navigation ausblenden");
+      } else {
+        $("#showNavLink").text("Navigation einblenden");
+      }
+      
+      if ($("nav").text() === "") {
+        $("nav").text("lädt...");
+        let edition = wdb.meta.ed;
+        
+        $.ajax({
+          url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
           success: function (data) {
             $("nav").replaceWith($(data));
           },
