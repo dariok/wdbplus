@@ -239,6 +239,8 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
     </rest:response>
   } catch * {
     (
+        util:log("error", $err:code),
+        util:log("error", $err:description),
       <rest:response>
         <http:response status="{substring($err:code, 9)}">
           <http:header name="Content-Type" value="text/plain" />
@@ -258,7 +260,7 @@ declare
     %rest:path("/edoc/collection")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getCollections ($mt as xs:string*) {
-  local:getGeneral ("data", $mt,
+  wdbRc:getGeneral ("data", $mt,
     'for $s in $meta//meta:struct[@file] return
       <collection id="{$s/@file}" label="{$s/@label}" />'
   )
@@ -281,18 +283,6 @@ function wdbRc:getCollectionsXML () {
 
 (: get a full list of a collection (= subcolls and resources entered into wdbmeta.xml) :)
 declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$id}")
-    %rest:header-param("Accept", "{$mt}")
-function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
-  local:getGeneral ($id, $mt,
-    '(
-      for $s in $meta//meta:struct[@file] return
-        <collection id="{$s/@file}" label="{$s/@label}" />,
-      for $s in $meta//meta:view return
-        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
-};
-declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}.xml")
 function wdbRc:getCollectionXML ($id) {
@@ -305,6 +295,18 @@ declare
 function wdbRc:getCollectionJSON ($id) {
   wdbRc:getCollection($id, "application/json")
 };
+declare
+    %rest:GET
+    %rest:path("/edoc/collection/{$id}")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
+  wdbRc:getGeneral ($id, $mt,
+    '(
+      for $s in $meta//meta:struct[@file] return
+        <collection id="{$s/@file}" label="{$s/@label}" />,
+      for $s in $meta//meta:view return
+        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
+};
 (: END list a collection :)
 
 (: list resources within a collection (= those entered into wdbmeta.xml) :)
@@ -313,7 +315,7 @@ declare
     %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  local:getGeneral ($id, $mt,
+  wdbRc:getGeneral ($id, $mt,
     'for $s in $meta//meta:view return
       <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />'
   )
@@ -340,7 +342,7 @@ declare
   %rest:path("/edoc/collection/{$id}/collections")
   %rest:header-param("Accept", "{$mt}")
 function wdbRc:getSubcoll ( $id as xs:string, $mt as xs:string* ) {
-local:getGeneral ($id, $mt,
+wdbRc:getGeneral ($id, $mt,
   'for $s in $meta//meta:struct[@file] return
     <collection id="{$s/@file}" label="{$s/@label}" />'
 )
@@ -396,11 +398,11 @@ function wdbRc:getCollectionNavXML ($id as xs:string) {
     )}</struct>
   
   return if ($struct/meta:import)
-    then local:imported($struct/meta:import, $content)
+    then wdbRc:imported($struct/meta:import, $content)
     else $content
 };
 
-declare function local:imported ( $import, $child ) {
+declare function wdbRc:imported ( $import, $child ) {
   let $uri := base-uri($import)
   let $path := substring-before($uri, "wdbmeta.xml") || $import/@path
   let $meta := doc($path)
@@ -415,7 +417,7 @@ declare function local:imported ( $import, $child ) {
       )}</struct>
   
   return if ($content/meta:import)
-    then local:imported ( $content/meta:import, $struct)
+    then wdbRc:imported ( $content/meta:import, $struct)
     else $struct
 };
 
@@ -475,9 +477,8 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
   )
 };
 
-declare
-  %private
-function local:getGeneral ($id, $mt, $content) {
+declare function wdbRc:getGeneral ($id, $mt, $content) {
+    let $wdbRc:acceptable := ("application/json", "application/xml")
   let $content := if ($mt != $wdbRc:acceptable)
   then
     try {
