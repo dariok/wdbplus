@@ -217,7 +217,11 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     , $requestedModifiedParsed := parse-ietf-date($requestedModified)
   
   (: TODO: use a function to get the actual content language :)
-  return  if ( count($newModel) = 1 and ($requestedModifiedParsed lt $modifiedWithoutMillisecs or empty($requestedModified)) ) then
+  return  if ( count($newModel) = 1
+      and (
+        $requestedModifiedParsed lt $modifiedWithoutMillisecs
+        or empty($requestedModified)
+      ) ) then
     (
       response:set-header("Last-Modified", $last-modified),
       <html lang="de">
@@ -228,18 +232,12 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
                 templates:apply($c, $wdb:lookup, $newModel)
               } catch * {
                   util:log("error", $err:description)
-                , console:log($err:description)
-                , console:log($newModel)
-                , console:log($c)
               }
             else
               try {
                 templates:apply($h, $wdb:lookup, $newModel)
               } catch * {
                   util:log("error", $err:description)
-                , console:log($err:description)
-                , console:log($newModel)
-                , console:log($h)
               }
         }
       </html>
@@ -471,7 +469,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
         { wdb:getLeftFooter($node, $model) }
       </main>
-    } catch * { (console:log(
+    } catch * { (util:log("error",
       <report>
         <file>{$file}</file>
         <xslt>{$xslt}</xslt>
