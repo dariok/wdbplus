@@ -51,17 +51,6 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
         with <other xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('other', '')}</other>
       return local:roleForm($metaFile)
     
-    case 'lsUpdate' return
-      let $import := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/admin/update"), "wdbAU", xs:anyURI("update.xqm"))
-      let $fn := function-lookup(xs:QName("wdbau:lsUpdates"), 0)
-      return $fn
-    
-    case 'doUpdate' return
-      let $import := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/admin/update"), "wdbAU", xs:anyURI("update.xqm"))
-      let $fn := function-lookup(xs:QName("wdbAU:update"), 1)
-      return (<h1>Updating...</h1>,
-        $fn(request:get-parameter('rev', '')))
-    
     default return
       <div>
         <h1>666</h1>
