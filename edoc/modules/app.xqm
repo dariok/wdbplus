@@ -263,81 +263,81 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     wdb:populateModel($id, $view, $model, "")
 };
 declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
-try {
-  let $pTF := wdb:getFilePath($id)
-  let $pathToFile := if ( sm:has-access($pTF, "r") )
-    then $pTF
-    else error(xs:QName("wdbErr:wdb0004"))
-  
-  let $pathToEd := wdb:getEdPath($id, true())
-  let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-  
-  (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-  let $infoFileLoc := wdb:getMetaFile($pathToEd)
-  
-  let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-    then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
-    else string(doc($infoFileLoc)/mets:mets/@OBJID)
-  
-  let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-    then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-    else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-  
-  let $xslt := if (doc-available($xsl))
-    then $xsl
-    else if (doc-available($pathToEd || '/' || $xsl))
-    then $pathToEd || '/' || $xsl
-    else ""
-  
-  let $title := normalize-space((doc($pathToFile)//tei:title)[1])
-  
-  let $proFile := wdb:findProjectXQM($pathToEd)
-    , $mainProject := substring-before($proFile, "project.xqm")
-    , $resource := $mainProject || "resources/"
-  
-  let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
-        return $function/@name || '#' || count($function/argument)
-    , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
-        return $function/@name || '#' || count($function/argument)
+  try {
+    let $pTF := wdb:getFilePath($id)
+    let $pathToFile := if ( sm:has-access($pTF, "r") )
+      then $pTF
+      else error(xs:QName("wdbErr:wdb0004"))
+    
+    let $pathToEd := wdb:getEdPath($id, true())
+    let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
+    
+    (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+    let $infoFileLoc := wdb:getMetaFile($pathToEd)
+    
+    let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+      then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
+      else string(doc($infoFileLoc)/mets:mets/@OBJID)
+    
+    let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+      then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+      else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+    
+    let $xslt := if (doc-available($xsl))
+      then $xsl
+      else if (doc-available($pathToEd || '/' || $xsl))
+      then $pathToEd || '/' || $xsl
+      else ""
+    
+    let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+    
+    let $proFile := wdb:findProjectXQM($pathToEd)
+      , $mainProject := substring-before($proFile, "project.xqm")
+      , $resource := $mainProject || "resources/"
+    
+    let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+          return $function/@name || '#' || count($function/argument)
+      , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+          return $function/@name || '#' || count($function/argument)
 
-  let $header := if ( request:exists() )
-        then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
-        else ()
-    , $requestUrl := if ( request:exists() )
-        then request:get-url()
-        else ()
-  
-  (: TODO read global parameters from config.xml and store as a map :)
-  let $map := map {
-    "ed":               $ed,
-    "fileLoc":          $pathToFile,
-    "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
-    "header":           $header,
-    "id":               $id,
-    "infoFileLoc":      $infoFileLoc,
-    "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
-    "p":                $p,
-    "pathToEd":         $pathToEd,
-    "projectFile":      $proFile,
-    "projectResources": $resource,
-    "requestUrl":       $requestUrl,
-    "title":            $title,
-    "view":             $view,
-    "xslt":             $xslt
+    let $header := if ( request:exists() )
+          then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+          else ()
+      , $requestUrl := if ( request:exists() )
+          then request:get-url()
+          else ()
+    
+    (: TODO read global parameters from config.xml and store as a map :)
+    let $map := map {
+      "ed":               $ed,
+      "fileLoc":          $pathToFile,
+      "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
+      "header":           $header,
+      "id":               $id,
+      "infoFileLoc":      $infoFileLoc,
+      "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
+      "p":                $p,
+      "pathToEd":         $pathToEd,
+      "projectFile":      $proFile,
+      "projectResources": $resource,
+      "requestUrl":       $requestUrl,
+      "title":            $title,
+      "view":             $view,
+      "xslt":             $xslt
+    }
+    
+    return $map
+  } catch * {
+    wdbErr:error(map {
+      "code":     $err:code,
+      "pathToEd": $wdb:data,
+      "ed":       $wdb:data,
+      "model":    $model,
+      "value":    $err:value,
+      "desc":     $err:description,
+      "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
+    })
   }
-  
-  return $map
-} catch * {
-  wdbErr:error(map {
-    "code":     $err:code,
-    "pathToEd": $wdb:data,
-    "ed":       $wdb:data,
-    "model":    $model,
-    "value":    $err:value,
-    "desc":     $err:description,
-    "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
-  })
-}
 };
 
 (: ~

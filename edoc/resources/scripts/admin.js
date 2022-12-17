@@ -269,10 +269,11 @@ let uploadManager = (function() {
 
 $(function() {
   let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
-  
-  if (wdb.parameters.ed !== undefined && filename == "directoryForm.html") {
-    let delim = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
-    let url = wdb.meta.rest + delim + "collection/" + wdb.parameters.ed + "/structure.json";
+
+  // admin.xqm will set wdb.meta.ed to the empty string if wdbErr:wdb0200 (no project) is caught
+  if ( filename === "directoryForm.html" && wdb.meta.ed !== "" ) {
+    let delim = wdb.meta.rest.substr(wdb.meta.rest.length - 1) === '/' ? "" : "/"
+      , url = wdb.meta.rest + delim + "collection/" + wdb.meta.ed + "/structure.json";
     $.ajax({
       method: "get",
       url: url,
@@ -282,9 +283,9 @@ $(function() {
         wdbAdmin.getPaths(data[key]);
         $("input[type='submit']").prop("disabled", false);
       },
-      error: function (response) {
-        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
-            response, $('aside'));
+      error: function ( response ) {
+        wdb.report("error", "When trying to create upload form for project " + wdb.parameters.ed + ": ",
+          response.responseText, $('aside'));
       }
     });
     $('#selectTarget').show();
@@ -294,5 +295,13 @@ $(function() {
     
     // ingestAction() is called by the fieldset’s change handler
     $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
+  } else {
+    $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.ed + "</td></tr>");
+    $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
+    $("input[type='submit']").prop("disabled", true);
+    $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.ed + ' gefunden</h1>');
+    wdb.report("error", wdb.parameters.ed + " nicht gefunden",
+      "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+      $('aside'));
   }
 });

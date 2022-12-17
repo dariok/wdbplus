@@ -21,29 +21,39 @@ declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 declare
     %templates:default("ed", "")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
-  let $pathToEd := if ($ed = "") then
-    $wdb:data
-  else try {
-    wdb:getEdPath($ed, true())
-  } catch * {()}
-  
-  (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-  let $infoFileLoc := wdb:getMetaFile($pathToEd)
-  
-  let $title :=
-    (
-      normalize-space((doc($infoFileLoc)//meta:title)[1]),
-      normalize-space((doc($infoFileLoc)//mods:title)[1])
-    )[1]
-  
-  return map {
-    "ed":          $ed,
-    "infoFileLoc": $infoFileLoc,
-    "page":        substring-after(request:get-uri(), "admin/"),
-    "pathToEd":    $pathToEd,
-    "title":       $title,
-    "auth":        sm:id()/sm:id
+  try {
+    let $pathToEd := if ( $ed = "" ) then
+      $wdb:data
+    else 
+      wdb:getEdPath($ed, true())
+    
+    (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+    let $infoFileLoc := wdb:getMetaFile($pathToEd)
+    
+    let $title :=
+      (
+        normalize-space((doc($infoFileLoc)//meta:title)[1]),
+        normalize-space((doc($infoFileLoc)//mods:title)[1])
+      )[1]
+    
+    return map {
+      "ed":          if ( $pathToEd = $wdb:data ) then "data" else $ed,
+      "infoFileLoc": $infoFileLoc,
+      "page":        substring-after(request:get-uri(), "admin/"),
+      "pathToEd":    $pathToEd,
+      "title":       $title,
+      "auth":        sm:id()/sm:id
+    }
+  } catch * {
+    util:log("error", "No collection found for project ID " || $ed),
+    map {
+      "ed": ""
+    }
   }
+};
+
+declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as element(meta) {
+  <meta name="ed" content="{ $model?ed }" />
 };
 
 declare function wdbAdmin:heading ($node as node(), $model as map(*)) {
