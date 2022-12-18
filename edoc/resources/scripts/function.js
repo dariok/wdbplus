@@ -126,10 +126,12 @@ const wdb = (function() {
 
       if ( reportType == "error" ) {
         console.error(...report);
+        console.trace();
         symbol = "✕";
       } else if ( reportType == "warn" ) {
         symbol = "❗";
         console.warn(...report);
+        console.trace();
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
         console.info(...report);
