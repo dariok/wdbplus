@@ -295,7 +295,7 @@ $(function() {
     
     // ingestAction() is called by the fieldset’s change handler
     $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
-  } else {
+  } else if ( filename === "directoryForm.html" ) {
     $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.ed + "</td></tr>");
     $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
     $("input[type='submit']").prop("disabled", true);
