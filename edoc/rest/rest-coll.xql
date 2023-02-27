@@ -3,7 +3,6 @@ xquery version "3.1";
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
 import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
@@ -488,7 +487,7 @@ function local:getGeneral ($id, $mt, $content) {
     </rest:response>,
     if ($content[1] = 200)
       then if ($mt = "application/json")
-          then json:xml-to-json($content[2])
+          then xml-to-json($content[2])
           else $content[2]
       else $content[2]
   )
