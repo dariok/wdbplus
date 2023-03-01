@@ -70,6 +70,7 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
 declare
     %rest:GET
     %rest:path("/edoc/search/collection/{$id}.html")
+    %rest:produces("text/html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
@@ -92,10 +93,13 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
     let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
     let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
     
-    let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0))
-      then wdb:eval("wdbPF:getSearchXSLT()")
-      else if (doc-available($coll || '/resources/search.xsl'))
-      then xs:anyURI($coll || '/resources/search.xsl')
+    let $xsl :=
+      if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then
+        wdb:eval("wdbPF:getSearchXSLT()")
+      else if ( doc-available($coll || '/resources/search.xsl') ) then
+        xs:anyURI($coll || '/resources/search.xsl')
+      else if ( doc-available($wdb:data || '/resources/search.xsl') ) then
+        xs:anyURI($wdb:data || '/resources/search.xsl')
       else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
     
     let $params := 
@@ -149,7 +153,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     (: querying for tei:w only will return no context :)
     let $res := $file//tei:p[ft:query(., $query)]
           | $file//tei:ab[ft:query(., $query)]
-          | $file//tei:table[ft:query(., $query)]
+          | $file//tei:cell[ft:query(., $query)]
           | $file//tei:item[ft:query(., $query)]
           | $file//tei:head[ft:query(., $query)]
           | $file//tei:l[ft:query(., $query)]
@@ -167,6 +171,7 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
 declare
     %rest:GET
     %rest:path("/edoc/search/file/{$id}.html")
+    %rest:produces("text/html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
@@ -189,11 +194,14 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
     let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
     
-    let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0))
-        then wdb:eval("wdbPF:getSearchXSLT()")
-        else if (doc-available($coll || '/resources/search.xsl'))
-        then xs:anyURI($coll || '/resources/search.xsl')
-        else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+    let $xsl :=
+      if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then
+        wdb:eval("wdbPF:getSearchXSLT()")
+      else if ( doc-available($coll || '/resources/search.xsl') ) then
+        xs:anyURI($coll || '/resources/search.xsl')
+      else if ( doc-available($wdb:data || '/resources/search.xsl') ) then
+        xs:anyURI($wdb:data || '/resources/search.xsl')
+      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
       
     let $params := <parameters>
       <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />

@@ -1,12 +1,15 @@
 /* wdbPlus: basic element layout – used by all pages
  * created: 2019-03-07
- * creator: DK - Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
- * sources: https://github.com/dariok/wdbplus */
-
-/* changes
- * 2019-06-06 Move to a grid-based layout
- * 2019-09-13 use CSS custom properties to make responsive styling easier
- * 2021-02-01 some additions for release 1.5
+ * creator: DK Dario Kampkaspar <dario.kampkaspar@oeaw.ac.at>
+ *          DK Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
+ * sources: https://github.com/dariok/wdbplus 
+ *
+ * changes:
+ * 2019-06-06 DK: Move to a grid-based layout
+ * 2019-09-13 DK: use CSS custom properties to make responsive styling easier
+ * 2020-08-14 DK: styling for annotation dialogue
+ * 2021-02-01 DK: some additions for release 1.5
+ * 2021-12-04 DK: move styles for body > footer, body > header here from view.css
  */
 
 /* declare a global custom property to determine the width of the browser window
@@ -44,23 +47,26 @@ body {
   grid-template-areas: 'header header'
                        'left right'
                        'bottom bottom';
-  grid-template-rows: max-content;
+  grid-template-rows: min-content auto min-content;
 }
 
-a{
-  overflow-wrap: anywhere;
-  color: var(--wdb-link-colour);
-  text-decoration: none;
-}
-
-/* Content of the header */
+/* main header */
 body > header {
   background-color: white;
-  
-  grid-area: header;
-  
+  border-bottom: 0.5px solid lightgrey;
   display: grid;
+  grid-area: header;
   grid-template-areas: 'hl hc hr';
+  padding: 0 0.5%;
+}
+
+/* main footer */
+body > footer {
+  background-color: var(--wdb-function-bg);
+  display: block;
+  flex: 1 1 auto;
+  grid-area: bottom;
+  padding: 1em;
 }
 
 /* right/left and centre, respectively, of the header section
@@ -112,13 +118,10 @@ body > header h2 {
 /* parts of the header which act as dropdown menus, e.g. navigation */
 .menuItem {
   background-color: white;
-  
   border: 0.1px solid;
   padding: .5em;
-  
   position: absolute;
   top: 5em;
-  
   z-index: 99;
 }
 
@@ -194,14 +197,39 @@ nav button {
     font-size: 1rem;
 }
 
+a {
+  overflow-wrap: anywhere;
+  color: var(--wdb-link-colour);
+  text-decoration: none;
+}
+
 button[aria-label] {
   border: none;
   background-color: white;
+  display: contents;
   padding: 0;
   font-size: 1rem;
   font-family: 'mufi';
   cursor: pointer;
   color: var(--wdb-link-colour);
+}
+
+/* Annotation dialogue */
+#annotationDialog h2 {
+  color: initial;
+}
+#annotationDialog div:last-child span {
+  margin-top: 10px;
+}
+#annoAuth {
+  float: left;
+}
+#annoInfo {
+  display: inline-block;
+  width: 80%;
+  float: right;
+  text-align: right;
+  padding-right: 2px;
 }
 
 @media screen and (max-width: 768px) {

@@ -57,10 +57,10 @@
           <oneOrMore>
             <element name="header">
               <attribute name="name">
-                <text />
+                <data type="NCName" />
               </attribute>
               <attribute name="value">
-                <text />
+                <data type="string" />
               </attribute>
             </element>
           </oneOrMore>

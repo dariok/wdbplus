@@ -579,7 +579,7 @@
           <xsl:with-param name="type" select="@type"/>
         </xsl:apply-templates>
       </span> 
-      <p>
+      <p class="content">
         <xsl:apply-templates />
       </p>
     </div>

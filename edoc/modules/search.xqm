@@ -73,9 +73,9 @@ declare function wdbSearch:search($node as node(), $model as map(*)) {
         $auth := request:get-cookie-value("wdbplus")
     let $request-headers := (
         <http:header name="cache-control" value="no-cache" />,
-        if ( $auth = "" )
-          then ()
-          else <http:header name="authorization" value="Basic {$auth}" />
+        if ( exists($auth) )
+          then <http:header name="authorization" value="Basic {$auth}" />
+          else ()
       )
     
     return try {
@@ -105,11 +105,11 @@ declare function local:selectEd ($model) {(
       let $label := $md//meta:struct[@file = $id]/@label
       return
         <option value="{$id}">
-          {if ($id = $model?id) then attribute selected {"selected"} else ()}
+          {if ($id = $model?mainEd) then attribute selected {"selected"} else ()}
           {normalize-space($label)}
         </option>
     return (
-      <option value="{$md/meta:projectMD/@xml:id}">global</option>,
+      if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),
       $opts
     )
   }</select>,

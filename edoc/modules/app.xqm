@@ -11,12 +11,12 @@ xquery version "3.1";
 
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
-import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
-import module namespace xConf     = "http://exist-db.org/xquery/apps/config"     at "config.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
+import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "/db/apps/edoc/data/instance.xqm";
+import module namespace xConf     = "http://exist-db.org/xquery/apps/config"         at "config.xqm";
+import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
@@ -24,20 +24,19 @@ declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace wdbPF  = "https://github.com/dariok/wdbplus/projectFiles";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
- : the base of this instance within the db
- :)
-declare variable $wdb:edocBaseDB := $xConf:app-root;
-
-(:~
  : load the config file
  : See https://github.com/dariok/wdbplus/wiki/Global-Configuration
  :)
-declare variable $wdb:configFile := doc($wdb:edocBaseDB || '/config.xml');
+declare variable $wdb:configFile := doc('../config.xml');
+
+(:~
+ : the base of this instance within the db
+ :)
+declare variable $wdb:edocBaseDB := $wdb:configFile => base-uri() => substring-before('/config.xml');
 
 (:~
  : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
@@ -202,11 +201,53 @@ declare function wdb:getServerApp() as xs:string {
  : Templating function; called from layout.html. Entry point for content pages
  :)
 declare
-    %templates:wrap
     %templates:default("view", "")
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
-  wdb:populateModel($id, $view, $model, $p)
+  let $newModel := wdb:populateModel($id, $view, $model, $p)
+
+  let $pathParts := tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+    , $collection := string-join($pathParts[not(position() = last())], '/')
+    , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
+    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
+    , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+    
+  let $requestedModified := request:get-attribute("if-modified")
+    , $requestedModifiedParsed := parse-ietf-date($requestedModified)
+  
+  (: TODO: use a function to get the actual content language :)
+  return  if ( count($newModel) = 1
+      and (
+        $requestedModifiedParsed lt $modifiedWithoutMillisecs
+        or empty($requestedModified)
+      ) ) then
+    (
+      response:set-header("Last-Modified", $last-modified),
+      <html lang="de">
+        {
+          for $h in $node/* return
+            if ( $h/*[@data-template] ) then
+              for $c in $h/* return try { 
+                templates:apply($c, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+              }
+            else
+              try {
+                templates:apply($h, $wdb:lookup, $newModel)
+              } catch * {
+                  util:log("error", $err:description)
+              }
+        }
+      </html>
+    )
+  else if ( $requestedModifiedParsed gt $modifiedWithoutMillisecs ) then
+    response:set-status-code(304)
+  else
+    <html>
+      { $newModel } 
+    </html>
 };
 
 (:~
@@ -218,75 +259,92 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
  : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
-declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
+declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
     wdb:populateModel($id, $view, $model, "")
 };
-declare function wdb:populateModel( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
-try {
-  let $pTF := wdb:getFilePath($id)
-  let $pathToFile := if (sm:has-access($pTF, "r"))
-    then $pTF
-    else error(xs:QName("wdbErr:wdb0004"))
-  
-  let $pathToEd := wdb:getEdPath($id, true())
-  let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-  
-  (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
-  let $infoFileLoc := wdb:getMetaFile($pathToEd)
-  
-  let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-    then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
-    else string(doc($infoFileLoc)/mets:mets/@OBJID)
-  
-  let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-    then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-    else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
-  
-  let $xslt := if (doc-available($xsl))
-    then $xsl
-    else if (doc-available($pathToEd || '/' || $xsl))
-    then $pathToEd || '/' || $xsl
-    else ""
-  
-  let $title := normalize-space((doc($pathToFile)//tei:title)[1])
-  
-  let $proFile := wdb:findProjectXQM($pathToEd)
-  let $resource := substring-before($proFile, "project.xqm") || "resources/"
-  
-  (: TODO read global parameters from config.xml and store as a map :)
-  let $map := map {
-    "ed":               $ed,
-    "fileLoc":          $pathToFile,
-    "id":               $id,
-    "infoFileLoc":      $infoFileLoc,
-    "p":                $p,
-    "pathToEd":         $pathToEd,
-    "projectFile":      $proFile,
-    "projectResources": $resource,
-    "title":            $title,
-    "view":             $view,
-    "xslt":             $xslt
+declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
+  try {
+    let $pTF := wdb:getFilePath($id)
+    let $pathToFile := if ( sm:has-access($pTF, "r") )
+      then $pTF
+      else error(xs:QName("wdbErr:wdb0004"))
+    
+    let $pathToEd := wdb:getEdPath($id, true())
+    let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
+    
+    (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+    let $infoFileLoc := wdb:getMetaFile($pathToEd)
+    
+    let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+      then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
+      else string(doc($infoFileLoc)/mets:mets/@OBJID)
+    
+    let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
+      then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+      else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+    
+    let $xslt := if (doc-available($xsl))
+      then $xsl
+      else if (doc-available($pathToEd || '/' || $xsl))
+      then $pathToEd || '/' || $xsl
+      else ""
+    
+    let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+    
+    let $proFile := wdb:findProjectXQM($pathToEd)
+      , $mainProject := substring-before($proFile, "project.xqm")
+      , $resource := $mainProject || "resources/"
+    
+    let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+          return $function/@name || '#' || count($function/argument)
+      , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
+          return $function/@name || '#' || count($function/argument)
+
+    let $header := if ( request:exists() )
+          then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
+          else ()
+      , $requestUrl := if ( request:exists() )
+          then request:get-url()
+          else ()
+    
+    (: TODO read global parameters from config.xml and store as a map :)
+    let $map := map {
+      "ed":               $ed,
+      "fileLoc":          $pathToFile,
+      "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
+      "header":           $header,
+      "id":               $id,
+      "infoFileLoc":      $infoFileLoc,
+      "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
+      "p":                $p,
+      "pathToEd":         $pathToEd,
+      "projectFile":      $proFile,
+      "projectResources": $resource,
+      "requestUrl":       $requestUrl,
+      "title":            $title,
+      "view":             $view,
+      "xslt":             $xslt
+    }
+    
+    return $map
+  } catch * {
+    wdbErr:error(map {
+      "code":     $err:code,
+      "pathToEd": $wdb:data,
+      "ed":       $wdb:data,
+      "model":    $model,
+      "value":    $err:value,
+      "desc":     $err:description,
+      "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
+    })
   }
-  
-  return $map
-} catch * {
-  wdbErr:error(map {
-    "code":     $err:code,
-    "pathToEd": $wdb:data,
-    "ed":       $wdb:data,
-    "model":    $model,
-    "value":    $err:value,
-    "desc":     $err:description,
-    "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
-  })
-}
 };
 
 (: ~
  : Create the head for HTML files served via the templating system
  : @created 2018-02-02 DK
  :)
-declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() {
+declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -295,39 +353,36 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() 
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{ $model("title") } – { normalize-space($wdb:configFile//config:short) }</title>
-    <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
+
     {
-      if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
-        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
-        else ()
+      if ( wdb:findProjectFunction($model, "wdbPF:overrideCssJs", 1) ) then
+        (wdb:getProjectFunction($model, "wdbPF:overrideCssJs", 1))($model)
+      else (
+        <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
+        if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
+          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
+          else (),
+        <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
+        if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
+          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
+          else (),
+        if ( $model?annotation = true() )
+          then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
+          else (),
+        wdb:getProjectFiles($node, $model, 'css'),
+        wdb:getBlob($node, $model, 'jquery'),
+        if ( $model?annotation = true() )
+          then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+          else (),
+        <script src="$shared/scripts/js.cookie.js"></script>,
+        <script src="$shared/scripts/legal.js"></script>,
+        <script src="$shared/scripts/function.js"></script>,
+        if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
+          then <script src="$shared/../data/resources/function.js"></script>
+          else (),
+        wdb:getProjectFiles($node, $model, 'js')
+      )
     }
-    <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
-    {
-      if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
-        then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
-        else ()
-    }
-    {
-      if ( $model?annotation = true() )
-        then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
-        else ()
-    }
-    { wdb:getProjectFiles($node, $model, 'css') }
-    { wdb:getBlob($node, $model, 'jquery') }
-    {
-      if ( $model?annotation = true() )
-        then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-        else ()
-    }
-    <script src="$shared/scripts/js.cookie.js"></script>
-    <script src="$shared/scripts/legal.js"></script>
-    <script src="$shared/scripts/function.js"></script>
-    {
-      if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-        then <script src="$shared/../data/resources/function.js"></script>
-        else ()
-    }
-    { wdb:getProjectFiles($node, $model, 'js') }
   </head>
 };
 
@@ -336,36 +391,36 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() 
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
-    if ( wdb:findProjectFunction($model, 'getHeader', 1) ) then (
-      util:eval("wdbPF:getHeader($model)", false(), (xs:QName('map'), $model))
-    )
+    if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
+      (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
       <div class="headerSide" role="navigation">{
-        if ( wdb:findProjectFunction($model, 'getHeaderLeft', 1) ) then
-          util:eval("wdbPF:getHeaderLeft($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerLeft.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerLeft.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerLeft.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerLeft.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>,
       <div class="headerCentre">{
-        if ( wdb:findProjectFunction($model, 'getHeaderCentre', 1) ) then
-          util:eval("wdbPF:getHeaderCentre($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerCentre.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerCentre.html"),  $wdb:lookup, $model)/*
-        else <h1>{$model("title")}</h1>
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerCentre.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerCentre.html"), $wdb:lookup, $model)/*
+        else
+          <h1>{$model("title")}</h1>
       }</div>,
       <div class="headerMenu" role="navigation">{(
-        if ( wdb:findProjectFunction($model, 'getHeaderMenu', 1) ) then
-          util:eval("wdbPF:getHeaderMenu($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerMenu.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerMenu.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerMenu.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerMenu.html"), $wdb:lookup, $model)/*
         else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
       )}</div>,
       <div class="headerSide" role="navigation">{
-        if ( wdb:findProjectFunction($model, 'getHeaderRight', 1) ) then
-          util:eval("wdbPF:getHeaderRight($model)", false(), (xs:QName('map'), $model))
-        else if ( doc-available($wdb:data || "/resources/headerRight.html") )
-        then templates:apply(doc($wdb:data || "/resources/headerRight.html"),  $wdb:lookup, $model)/*
+        if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
+          (wdb:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
+        else if ( doc-available($wdb:data || "/resources/headerRight.html") ) then
+          templates:apply(doc($wdb:data || "/resources/headerRight.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>
     )
@@ -415,7 +470,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
         { wdb:getLeftFooter($node, $model) }
       </main>
-    } catch * { (console:log(
+    } catch * { (util:log("error",
       <report>
         <file>{$file}</file>
         <xslt>{$xslt}</xslt>
@@ -434,32 +489,28 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
 
 declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
   if ( doc-available($wdb:data || "/resources/mainFooter.html") )
-  then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+    then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
+    (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
 };
 
-declare function wdb:getLeftFooter($node as node(), $model as map(*)) {
-  let $projectAvailable := wdb:findProjectXQM($model?pathToEd)
-  let $functionsAvailable := if ($projectAvailable)
-    then util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($projectAvailable))
-    else false()
-  
-  return if (doc-available($model?projectResources || "/footer.html"))
-  then templates:apply(doc($model?projectResources || "/footer.html"),  $wdb:lookup, $model)
-  else if (wdb:findProjectFunction($model, "getProjectFooter", 1))
-  then wdb:eval("wdbPF:getProjectFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:edocBaseDB || "/resources/footer.html"))
-  then doc($wdb:edocBaseDB || "/resources/footer.html")
+declare function wdb:getLeftFooter($node as node(), $model as map(*)) as element()? {
+  if (doc-available($model?projectResources || "/footer.html")) then
+    templates:apply(doc($model?projectResources || "/footer.html"), $wdb:lookup, $model)
+  else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then
+    (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
+  else if (doc-available($wdb:edocBaseDB || "/resources/footer.html")) then
+    templates:apply(doc($wdb:edocBaseDB || "/resources/footer.html"), $wdb:lookup, $model)
   else ()
 };
-declare function wdb:getRightFooter($node as node(), $model as map(*)) {
-  if (doc-available($model?projectResources || "/projectRightFooter.html"))
-  then doc($model?projectResources || "/projectRightFooter.html")
-  else if (wdb:findProjectFunction($model, "getProjectRightFooter", 1))
-  then wdb:eval("wdbPF:getProjectRightFooter($model)", false(), (xs:QName("model"), $model))
-  else if (doc-available($wdb:data || "/resources/rightFooter.html"))
-  then doc($wdb:data || "/resources/rightFooter.html")
+declare function wdb:getRightFooter($node as node(), $model as map(*)) as element()? {
+  if (doc-available($model?projectResources || "/projectRightFooter.html")) then
+    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $wdb:lookup, $model)
+  else if (wdb:findProjectFunction($model, "wdbPF:getProjectRightFooter", 1)) then
+    (wdb:getProjectFunction($model, "wdbPF:getProjectRightFooter", 1))($model)
+  else if (doc-available($wdb:data || "/resources/rightFooter.html")) then
+    templates:apply(doc($wdb:data || "/resources/rightFooter.html"), $wdb:lookup, $model)
   else ()
 };
 
@@ -585,55 +636,55 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
  : @created 2018-02-02 DK
  :)
 declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type as xs:string ) as node()* {
-  let $files := if (wdb:findProjectFunction($model, 'getProjectFiles', 1))
-  then util:eval("wdbPF:getProjectFiles($model)", false(), (xs:QName('map'), $model)) 
-  else
-    (: no specific function available, so we assume standards
-     : this requires some eXistology: binary-doc-available does not return false, if the file does not exist,
-     : but rather throws an error... :)
-    let $css := $model?pathToEd || "/scripts/project.css",
-        $js := $model?pathToEd || "/scripts/project.js"
-	
-    return
-    (
-      try {
-        if (util:binary-doc-available($css))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
-        else ()
-      } catch * { () },
-      try {
-        if (util:binary-doc-available($js))
-        then <script src="{wdb:getUrl($js)}" />
-        else ()
-      } catch * { () }
-    )
+  let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
+      (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
+    else
+      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
+        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      
+      return (
+        if ( $css != "" )
+          then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($css)}" />
+          else (),
+        if ( $js != "" )
+          then <script src="{wdb:getUrl($js)}" />
+          else ()
+      )
   
   return if ($type = 'css')
     then $files[self::*:link]
     else $files[self::*:script]
 };
+
 (:~ 
- : Look up $function in the given project's project.xqm if it exists
- : This involves registering the module: if the function is available, it can
- : immediately be used by the calling script if this lookup is within the caller's scope
- : The scope is the project as given in $model("pathToEd")
+ : Check whether the function given in $name with arity $arity has been loaded into $model?functions
  : 
  : @param $model a map of parameters that conforms to the global structure
- : @param $name the (local) name of the function to be looked for
+ : @param $name the FQName of the function to be looked for
  : @param $arity the arity (i.e. number of arguments) of said function
- : @return true() if project.xqm exists for the project and contains a function
- : with the given parameters; else() otherwise.
+ : @return true() if the signature was found in 1) project, 2) instance specifics, false() otherwise
  :)
-declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, $arity as xs:integer) as xs:boolean {
-  let $location := wdb:findProjectXQM($model("pathToEd"))
-  let $functionName := if (starts-with($name, 'wdbPF:')) then $name else 'wdbPF:' || $name
-  
-  return if ($location instance of xs:boolean and $location = false())
-  then false()
-  else
-    let $module := util:import-module(xs:anyURI("https://github.com/dariok/wdbplus/projectFiles"), 'wdbPF',
-        xs:anyURI($location))
-    return system:function-available(xs:QName($functionName), $arity)
+declare function wdb:findProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as xs:boolean {
+  if ( exists($model?functions) and $model?functions instance of map(*) ) then
+    ( $model?functions?project = $name || '#' || $arity )
+    or ( $model?functions?instance = $name || '#' || $arity )
+  else false()
+};
+
+(:~ 
+ : Return the function with the given name and arity if it exists in the global model
+ : 
+ : @param $model a map of parameters that conforms to the global structure
+ : @param $name the FQName of the function to be looked for
+ : @param $arity the arity (i.e. number of arguments) of said function
+ : @return a function item representing the function if it was found, the empty sequence otherwise
+ :)
+declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
+  if ( $model?functions?project = $name || "#" || $arity ) then
+    ((load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map{ "location-hints": $model?projectFile} ))?functions)(xs:QName($name))($arity)
+  else if ( $model?functions?instance = $name || "#" || $arity ) then
+    function-lookup(xs:QName($name), $arity)
+  else ()
 };
 
 (:~
@@ -643,12 +694,30 @@ declare function wdb:findProjectFunction ($model as map(*), $name as xs:string, 
  : @param $project a string representation of the path to the project
  : @returns the path to a project.xqm if one was found; false() otherwise
  :)
-declare function wdb:findProjectXQM ($project as xs:string) {
-  if (util:binary-doc-available($project || "/project.xqm"))
-  then $project || "/project.xqm"
-  else if (substring-after($project, $wdb:data) = '')
-  then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0020'), "cannae find project.xqm anywhere")
-  else wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+declare function wdb:findProjectXQM ( $project as xs:string ) {
+  if ( util:binary-doc-available($project || "/project.xqm") ) then
+    $project || "/project.xqm"
+  else if (substring-after($project, $wdb:data) = '') then
+    $wdb:data || "/instance.xqm"
+  else
+    wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
+};
+
+(:~
+ : Generic finder for files in the project hierarchy (bottom up)
+ : it is assumed that this is a binary file
+ : 
+ : @param $pathToEd path to the project to search from)
+ : @param $fileName name of the file to search
+ : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
+ :)
+declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
+    xs:anyURI($pathToEd || "/" || $fileName)
+  else if ( substring-after($pathToEd, $wdb:data) = '' ) then
+    xs:anyURI("")
+  else
+    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
@@ -678,7 +747,7 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id or mets:mets/@OBJID
  : @return The path to the project 
  :)
-declare function wdb:getProjectPathFromId ($ed as xs:string) {
+declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
   let $md := (
     collection($wdb:data)/id($ed)[self::meta:projectMD],
     collection($wdb:data)/mets:mets[@OBJID = $ed]
@@ -695,6 +764,15 @@ declare function wdb:getMetaFile($pathToEd) {
     else if (doc-available($pathToEd || '/mets.xml'))
     then $pathToEd || '/mets.xml'
     else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
+};
+
+(:~
+ : Get the meta data file by project ID
+ : 
+ : @param $ed The project ID to be evaluated
+ :)
+declare function wdb:getMetaElementFromEd ( $ed as xs:string ) as element() {
+  collection($wdb:data)/id($ed)[self::meta:projectMD or self::mets:mets]
 };
 (: END GENERAL HELPER FUNCTIONS :)
 
@@ -780,13 +858,14 @@ declare variable $wdb:lookup := function($functionName as xs:string, $arity as x
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $boundary ) {
-  array {
+declare function wdb:parseMultipart ( $data, $header ) {
+  let $boundary := $header => substring-after('boundary=') => translate('"', '')
+  return map:merge(
     for $m in tokenize($data, "--" || $boundary) return
       if (string-length($m) lt 6)
       then ()
       else
-        let $parts := tokenize($m, "\n\r")
+        let $parts := (tokenize($m, "(^\s*$){2}", "m"))[normalize-space() != ""]
         let $header := map:merge( 
           for $line in tokenize($parts[1], "\n") return
             if (normalize-space($line) eq "")
@@ -797,32 +876,66 @@ declare function wdb:parseMultipart ( $data, $boundary ) {
                 then map:merge( 
                   for $entry in tokenize($val, '; ') return
                     if (contains($entry, '='))
-                    then map:entry ( substring-before($entry, '='), substring-after($entry, '=') )
+                    then map:entry ( substring-before($entry, '='), translate(substring-after($entry, '='), '"', '') )
                     else map:entry ( "text", $entry )
                 )
                 else $val
               return map:entry(substring-before($line, ': '), $value)
         )
         
-        return map { "header" : $header, "body" : $parts[2] }
-  }
+        (: empty lines in the body will also cause splitting; hence, recombine everything except the header :)
+        return map:entry(($header?Content-Disposition?name, 'name')[1],
+            map { "header" : $header, "body" : string-join($parts[position() > 1], '\n') }
+        )
+  )
 };
 
-declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace as xs:anyURI?) {
-  switch ($extension)
-    case "css" return "text/css"
-    case "js" return "application/javascript"
-    case "xql"
-    case "xqm" return "application/xquery"
-    case "html" return "text/html"
-    case "gif" return "image/gif"
-    case "png" return "image/png"
-    case "json" return "application/json"
-    case "zip" return "application/zip"
-    case "xml" return
-      if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
-    case "xsl" return "application/xslt+xml"
-    default return "application/octet-stream"
+(:~
+ : Get a MIME type from an extension and an optional XML namespace
+ :
+ : @param $extension (string): the file extension
+ : @param $namespace (string) optional: a namespace URI for more detailed MIME types of XML files
+ : @return (string): the MIME type
+ :)
+declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace as xs:anyURI? ) as xs:string {
+  switch ( $extension )
+    case 'css'
+      return
+        'text/css'
+    case 'js'
+      return
+        'application/javascript'
+    case 'xql'
+    case 'xqm'
+      return
+          'application/xquery'
+    case 'html'
+      return
+        'text/html'
+    case 'gif'
+      return
+        'image/gif'
+    case 'png'
+      return
+        'image/png'
+    case 'json'
+      return
+        'application/json'
+    case 'zip'
+      return
+        'application/zip'
+    case 'xml'
+      return
+        if ( $namespace = 'http://www.tei-c.org/ns/1.0' ) then
+          'application/tei+xml'
+        else
+          'application/xml'
+    case 'xsl'
+      return
+        'application/xslt+xml'
+    default
+      return
+        'application/octet-stream'
 };
 
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {

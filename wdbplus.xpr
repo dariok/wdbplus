@@ -1,10 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project version="22.0">
     <meta>
         <filters directoryPatterns="" filePatterns="\Qwdbplus.xpr\E" positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized xml:space="preserve">
+            <serialized version="22.0" xml:space="preserve">
                 <serializableOrderedMap>
+                    <entry>
+                        <String>scenario.associations</String>
+                        <scenarioAssociation-array>
+                            <scenarioAssociation>
+                                <field name="url">
+                                    <String>edoc/doc/javascript.ditamap</String>
+                                </field>
+                                <field name="scenarioIds">
+                                    <list>
+                                        <String>6/dita/ditamap-lw.framework/Lightweight DITA - Map/DITA Map WebHelp Responsive</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioTypes">
+                                    <list>
+                                        <String>DITAMAP</String>
+                                    </list>
+                                </field>
+                                <field name="scenarioStorageLocations">
+                                    <list>
+                                        <Byte>2</Byte>
+                                    </list>
+                                </field>
+                            </scenarioAssociation>
+                        </scenarioAssociation-array>
+                    </entry>
                     <entry>
                         <String>validation.scenario.associations</String>
                         <scenarioAssociation-array>
@@ -346,6 +371,9 @@
                                             <field name="validationSchema">
                                                 <null/>
                                             </field>
+                                            <field name="validationAdvancedSettings">
+                                                <null/>
+                                            </field>
                                         </validationUnit>
                                     </list>
                                 </field>
@@ -402,6 +430,9 @@
                                                     </field>
                                                 </validationUnitSchema>
                                             </field>
+                                            <field name="validationAdvancedSettings">
+                                                <null/>
+                                            </field>
                                         </validationUnit>
                                     </list>
                                 </field>
@@ -422,5 +453,6 @@
         <folder path="../wdbmeta/"/>
         <folder path="../wdbplus.wiki/"/>
         <folder path="."/>
+        <folder path="../../../../media/p5/home/dario/git/wdbmeta/"/>
     </projectTree>
 </project>

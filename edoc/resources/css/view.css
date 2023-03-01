@@ -4,12 +4,10 @@
  *          DK Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  * sources: https://www.github.com/dariok/wdbplus
  *
- * changes: 2021-04-02 DK: - adjust to new outline model
+ * changes: 2021-02-01 DK: - semantic HTML inside main for release 1.5
+ *          2021-04-02 DK: - adjust to new outline model
  *                         - include styles for footnotes / critical apparatus
- */
-
-/* changes
- * 2021-02-01 semantic HTML inside main for release 1.5
+ *          2021-12-04 DK: - move all styles for body > header, body > footer to wdb.css
  */
 
 body {
@@ -22,7 +20,6 @@ body {
     grid-template-columns: none;
     grid-template-areas: 'header'
                          'left';
-    grid-template-rows: max-content;
   }
   aside {
     display: none;
@@ -30,10 +27,6 @@ body {
 }
 
 /* Main content below header */
-body > header{
-  padding: 0 0.5%;
-  border-bottom: 0.5px solid lightgrey;
-}
 main {
   grid-area: left;
   display: flex;
@@ -41,13 +34,18 @@ main {
   
   resize: horizontal;
   overflow-y: auto;
-  
-  padding: 0.25em;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
 #marginaliaContainer {
   margin-right: 0.25em;
+  width: calc(20% - 2em);
+  display: none;
+  position: relative;
+}
+
+.marginText {
+  position: absolute;
 }
 
 /* the main text */
@@ -61,10 +59,6 @@ main > section {
 #content_container {
   grid-area: main;
 }
-#marginalia_container {
-  grid-area: margin;
-  margin-right: 5%;
-}
 #footnote_container {
   grid-area: annotations;
 }
@@ -74,20 +68,6 @@ main > section {
   main > section {
     width: 100%;
   }
-}
-
-/* main footer, e.g. set by instance specifics */
-body > footer {
-  grid-area: bottom;
-  display: block;
-  flex: 1 1 auto;
-  
-  padding: 1em;
-  
-  background-color: var(--wdb-function-bg);
-}
-footer span {
-  display: block;
 }
 
 /* Show/hide bar */
@@ -112,6 +92,10 @@ body > aside {
   grid-area: right;
   
   overflow: initial;
+}
+
+#ann {
+  position: absolute;
 }
 
 #fac {
@@ -176,6 +160,13 @@ div.footnote {
 }
 .floating {
   border: 1px solid lightgrey;
+  display: flex;
+}
+.floating .fnNumber {
+  color: black;
+  font-size: 1em;
+  padding-right: .5em;
+  white-space: nowrap;
 }
 
 /* footnote links */
@@ -183,4 +174,11 @@ button[aria-label].footnoteNumber {
   vertical-align: super;
   font-size: 0.75rem;
   line-height: 0;
+}
+
+/* Spans acting as buttons to display entity information */
+.entity {
+  color: #098AB2;
+  padding: 0;
+  cursor: pointer;
 }

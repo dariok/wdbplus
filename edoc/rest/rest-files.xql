@@ -5,7 +5,8 @@ module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json    = "http://www.json.org";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -51,6 +52,15 @@ declare
       )
 };
 
+(: Evaluate preflight requests before PUTing a file :)
+declare
+  %rest:OPTIONS
+  %rest:path("/edoc/resource/{$id}")
+  %rest:header-param("origin", "{$origin}", "")
+function wdbRf:storeFilePreflight ( $id as xs:string, $origin as xs:string* ) as element(rest:response) {
+  wdbRCo:evaluatePreflight($origin, "PUT")
+};
+
 (: upload a single file with known ID (i.e. one that is already present)
    - if the ID is not found, return an error
    - replace the file and update its meta:file
@@ -68,50 +78,81 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
       </http:response>
     </rest:response>
   else
-    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file]
-    let $errNumID := (count($fileEntry) > 1)
-    let $errNoID := count($fileEntry) = 0
+    (: get entries from metaFile :)
+    let $fileEntry := (collection($wdb:data)/id($id))[self::meta:file],
+        $errNumID := (count($fileEntry) > 1),
+        $errNoID := count($fileEntry) = 0
     
-    let $parsed := wdb:parseMultipart($data, substring-after($header, 'boundary='))
-    let $path := normalize-space($parsed?2?body)
-    let $pathEntry := collection($wdb:data)//meta:file[@path = $path]
-    let $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
+    (: parse data an try to get the intended path :)
+    let $parsed := wdb:parseMultipart($data, $header)
+      , $path := normalize-space($parsed?filename?body)
+      , $pathEntry := collection($wdb:data)//meta:file[@path = $path]
+      , $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
     
     let $fullPath := substring-before(base-uri($fileEntry), "wdbmeta.xml") || $path
     let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
     let $user := sm:id()//sm:real/sm:username
     
     let $resourceName := xstring:substring-after-last($fullPath, '/')
-    let $contentType := $parsed?1?header?Content-Type
-    let $contents := $parsed?1?body
+    let $contentType := $parsed?file?header?Content-Type
+    
+    let $prepped := wdbRMi:replaceWs($parsed?file?body),
+        $contents := if ($contentType = ("text/xml", "application/xml") and not($prepped instance of element() or $prepped instance of document-node()))
+          then parse-xml($prepped)
+          else $prepped
+    
     let $errWrongID := $contents instance of node() and not($contents//tei:TEI/@xml:id = $id)
     
-    return if ($errNonMatch or $errNumID or $errNoAccess or $errNoID)
-    then
+    return if ( $errNonMatch or $errNumID or $errNoAccess or $errNoID ) then
       let $reason := (
-        if ($errNoID) then "no file found with ID " || $id else (),
-        if ($errNumID) then "illegal number of file entries: " || count($fileEntry) || " for ID " || $id else (),
-        if ($errNonMatch) then "path " || $path || " is already in use for ID " || $pathEntry[1]/@xml:id else (),
-        if ($errNoAccess) then "user " || $user || " has no access to resource " || $fullPath else ()
+          if ($errNoID) then
+            "no file found with ID " || $id
+          else
+            ()
+        , if ($errNumID) then
+            "illegal number of file entries: " || count($fileEntry)
+              || " for ID " || $id
+          else
+            ()
+        , if ($errNonMatch) then
+            "path " || $path || " is already in use for ID "
+              || $pathEntry[1]/@xml:id
+          else
+            ()
+        , if ($errNoAccess) then
+            "user " || $user || " has no access to resource " || $fullPath
+          else
+            ()
       )
-      let $status := if ($errNoID) then 404 else if ($errNoAccess) then 403 else 500
+      
+      let $status :=
+            if ( $errNoID ) then
+              404
+            else if ( $errNoAccess ) then
+              403
+            else
+              500
+
       return (
-        <rest:response>
-          <http:response status="{$status}">
-            <http:header name="Content-Type" value="text/plain" />
-            <http:header name="Access-Control-Allow-Origin" value="*"/>
-          </http:response>
-        </rest:response>,
-        $reason
+          <rest:response>
+            <http:response status="{$status}">
+              <http:header name="Content-Type" value="text/plain" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>
+        , $reason
       )
+
     else
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
       let $collectionPath := xstring:substring-before-last($fullPath, '/')
       
-      let $store := wdbRi:store($collectionPath, $resourceName, $contents, $contentType),
-          $meta := if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") )
-            then wdbRi:enterMetaXML($store[2])
-            else wdbRi:enterMeta($store[2])
+      let $store := wdbRMi:store($collectionPath, $resourceName, $contents, $contentType),
+          $meta := 
+            if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") ) then
+              wdbRMi:enterMetaXML($store[2])
+            else
+              wdbRMi:enterMeta($store[2])
     return if ($store[1]//http:response/@status = "200"
         and $meta[1]//http:response/@status = "200")
     then
@@ -138,59 +179,64 @@ declare
 function wdbRf:getResource ($id as xs:string) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
-  let $files := (collection($wdb:data)//id($id)[self::meta:file])
-  let $f := $files[1]
-  let $path := substring-before(base-uri($f), 'wdbmeta.xml') || $f/@path
-  
-  let $readable := sm:has-access($path, "r")
-  let $doc := if (not($readable)) then ()
-    else if (doc-available($path))
-    then doc($path)
-    else if (util:binary-doc-available($path))
-    then util:binary-doc($path)
+  let $files := collection($wdb:data)//id($id)[self::meta:file]
+    , $collectionPath := wdb:getEdPath($id, true())
+    , $f := $files[1]
+    , $path := $collectionPath || '/' || $f/@path
+    , $readable := sm:has-access($path, "r")
+
+  let $doc := if ( not($readable) ) then
+      ()
+    else if ( doc-available($path) ) then
+      doc($path)
+    else if ( util:binary-doc-available($path) ) then
+      util:binary-doc($path)
     else ()
   
-  let $mtype := if (count($doc) = 1)
+  let $mtype := if ( count($doc) = 1 )
     then xmldb:get-mime-type($path)
     else ()
-  let $type := if ($mtype = 'application/xml' and $doc//tei:TEI)
+  let $type := if ( $mtype = 'application/xml' and $doc//tei:TEI )
     then "application/tei+xml"
     else $mtype
   
-  let $method := switch ($type)
-    case "text/xml"
-    case "application/xml"
-    case "application/xsl+xml"
-    case "application/tei+xml"
-      return "xml"
-    default return "binary"
+  let $method := if ( contains($type, 'xml') ) then
+      "xml"
+    else if ( contains($type, 'html') ) then
+      "html"
+    else
+      "binary"
   
-  let $respCode := if (count($files) = 0)
-  then 404
-  else if (not($readable))
-  then 401
-  else if (count($files) = 1 and count($doc) = 1)
-  then 200
-  else 500
+  let $respCode := if ( count($files) = 0 ) then
+      404
+    else if ( not($readable) ) then
+      401
+    else if ( count($doc) = 1 ) then
+      200
+    else
+      500
   
   return (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="{$method}"/>
       </output:serialization-parameters>
-      <http:response status="{$respCode}">{
-        if (string-length($type) = 0) then () else
-          <http:header name="Content-Type" value="{$type}" />
-        }{
-        if ($respCode = 401) then
-          <http:header name="WWW-Authenticate" value="Basic"/>
-          else ()
-        }{
-        if ($respCode = 200)
-          then <http:header name="rest-status" value="REST:SUCCESS" />
-          else <http:header name="rest-status" value="REST:ERROR" />
+      <http:response status="{$respCode}">
+        {
+          if ( string-length($type) = 0 )
+            then ()
+            else <http:header name="Content-Type" value="{$type}" />
+          ,
+          if ( $respCode = 401 )
+            then <http:header name="WWW-Authenticate" value="Basic"/>
+            else ()
+          ,
+          if (  $respCode = 200 )
+            then <http:header name="rest-status" value="REST:SUCCESS" />
+            else <http:header name="rest-status" value="REST:ERROR" />
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
       </http:response>
     </rest:response>,
     if ($respCode = 200)
@@ -367,7 +413,7 @@ function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as x
         <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
       </http:response>
     </rest:response>,
-    $status[2]
+    $status[position() gt 1]
   )
 };
 

@@ -11,8 +11,8 @@ declare function wdba:getAuth ( $node as node(), $model as map(*) ) as element(d
     <div id="auth" role="dialog" aria-roledescription="login dialog">
       <button type="button" onclick="javascript:$('#login').toggle();" title="click to log in" aria-label="opens a login form">Login: </button>
       <form enctype="multipart/form-data" id="login" style="display: none;" aria-label="login form">
-        <input type="text" id="user"/>
-        <input type="password" id="password"/>
+        <input type="text" id="user" aria-label="user name" placeholder="User" />
+        <input type="password" id="password" aria-label="password" placeholder="Password" />
         <input type="submit"/>
         <input type="hidden" name="query" value="{$model?job}"/>
         <input type="hidden" name="ed" value="{$model?ed}"/>

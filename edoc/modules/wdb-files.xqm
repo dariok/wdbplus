@@ -13,10 +13,10 @@ xquery version "3.1";
 module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
 import module namespace functx = "http://www.functx.com"                    at "/db/system/repo/functx-1.0.1/functx/functx.xq";
-import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace mets   = "http://www.loc.gov/METS/";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (:~
@@ -32,7 +32,7 @@ declare namespace xlink  = "http://www.w3.org/1999/xlink";
  :)
  declare function wdbFiles:getFilePaths ( $collection, $id ) as attribute()* {
   (
-    collection($collection)//meta:file[@xml:id = $id]/@path,
+    collection($collection)//id($id)[self::meta:file]/@path,
     collection($collection)//mets:file[@ID = $id]/mets:FLocat/@xlink:href
   )
 };

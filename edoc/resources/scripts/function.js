@@ -3,6 +3,8 @@
  * https://github.com/dariok/wdbplus
  */
 /* jshint browser: true */
+/* globals Cookies */
+"use strict";
 
 const wdb = (function() {
   // all meta elements
@@ -10,6 +12,9 @@ const wdb = (function() {
   for (let m of document.getElementsByTagName("meta")) {
     meta[m.name] = m.content;
   }
+
+  // will be used to store headers
+  let restHeaderVal = { };
   
   // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
   /* TODO https://github.com/dariok/wdbplus/issues/429
@@ -23,15 +28,24 @@ const wdb = (function() {
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
   let getUniqueId = function () {
-    return 'wdb' + ('000' + internalUniqueId++).substr(-4);
+    return 'wdb' + ('000' + internalUniqueId++).substring(-4);
+  };
+
+  function setAuthorizationHeader () {
+    let cred = Cookies.get("wdbplus");
+    if ( typeof cred === "undefined" || cred.length === 0 ) {
+      delete restHeaderVal.Authorization;
+    } else {
+      restHeaderVal.Authorization = "Basic " + cred;
+    } 
   };
 
   /* Login and logout */
-  let login = function (event, reload) {
+  let login = function ( event, reload ) {
     event.preventDefault();
   
-    let username = $('#user').val(),
-        password = $('#password').val();
+    let username = $('#user').val()
+      , password = $('#password').val();
     wdb.report("info", "login request");
     Cookies.remove('wdbplus');
     
@@ -53,9 +67,9 @@ const wdb = (function() {
           });
           wdb.report("info", "logged in");
           if ( reload ) {
-             location.reload()
+             location.reload();
           }
-        } catch (e) {
+        } catch ( e ) {
           wdb.report("error", "error logging in", e);
         }
       },
@@ -94,13 +108,6 @@ const wdb = (function() {
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
   // function to set REST headers
-  let restHeaderVal = { };
-  let setAuthorizationHeader = function () {
-    let cred = Cookies.get("wdbplus");
-    if (typeof cred == "undefined" || cred.length == 0)
-      restHeaderVal.Authorization = "";
-      else restHeaderVal.Authorization = "Basic " + cred;
-  };
   setAuthorizationHeader();
 
   return {
@@ -119,10 +126,12 @@ const wdb = (function() {
 
       if ( reportType == "error" ) {
         console.error(...report);
+        console.trace();
         symbol = "✕";
       } else if ( reportType == "warn" ) {
         symbol = "❗";
         console.warn(...report);
+        console.trace();
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
         console.info(...report);
@@ -136,20 +145,45 @@ const wdb = (function() {
       if ( targetElement ) {
         $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
-    }
+    },
+
+    /* taken from https://github.com/30-seconds/30-seconds-of-code/blob/master/snippets/URLJoin.md */
+    URLJoin: ( ...args ) =>
+      args
+        .join('/')
+        .replace(/[\/]+/g, '/')
+        .replace(/^(.+):\//, '$1://')
+        .replace(/^file:/, 'file:/')
+        .replace(/\/(\?|&|#[^!])/g, '$1')
+        .replace(/\?/g, '&')
+        .replace('&', '?')
   };
 })();
 Object.freeze(wdb);
+
+let annotationsCount = 0;
+function addAnnotation ( targetElement, content ) {
+  // create element for annotations
+  if ( $(targetElement).children(".annotations").length === 0 ) {
+    /*$(targetElement).append('<ul class="annotations" role="complementary"><dt>Annotationen an dieser Stelle:</dt></ul>');*/
+    $('<ul class="annotations" role="complementary" id="ann' + annotationsCount + '" '
+        + 'onmouseover="annotationMouseIn(event)" onmouseout="annotationMouseOut(event)" '
+        + 'onmousemove="annotationMouseIn(event)"><dt>Annotationen an dieser Stelle:</dt></ul>').insertAfter(targetElement);
+    $(targetElement).attr("aria-describedby", "ann" + annotationsCount);
+  }
+  $("#ann" + annotationsCount).append(content);
+  annotationsCount++;
+}
 
 /* functions for manipulating the HTML document */
 const wdbDocument = {
   // get the common ancestor of 2 elements
   commonAncestor: function ( element1, element2 ) {
-    let parent1 = element1.parents().add(element1).get(),
-        parent2 = element2.parents().add(element2).get();
+    let parent1 = element1.parents().add(element1).get()
+      , parent2 = element2.parents().add(element2).get();
     
-    for (let i = 0; i < parent1.length; i++) {
-      if (parent1[i] != parent2[i]) return parent1[i - 1];
+    for ( let i = 0; i < parent1.length; i++ ) {
+      if ( parent1[i] != parent2[i] ) return parent1[i - 1];
     }
   },
 
@@ -164,27 +198,33 @@ const wdbDocument = {
     // minus fixed header height
     $('html, body').animate({scrollTop: scrollto}, 0);
       
-    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0].dataset.image;
+    let pb = $('#' + from).parents().has('.pagebreak').first().find('.pagebreak')[0];
     wdbUser.displayImage(pb);
   },
 
+  /**
+   * load the image for the page containing a target element or the first page if no target is given
+   * @returns {void} - executes wdbUser.displayImage()
+   */
   loadTargetImage: function () {
-    let target = $(':target');
-    if (target.length > 0) {
-      if (target.attr('class') == 'pagebreak') {
-        let url = target.dataset.ref;
-        wdb.report("info", "trying to load image: " + url);
-        wdbUser.displayImage(url);
-      } else {
-        let pagebreak = target.parents().has('.pagebreak').first();
-        wdbUser.displayImage(pagebreak.find('.pagebreak')[0].dataset.ref);
-      }
+    if ( window.location.hash.length > 1 ) {
+      /* JS does not know about the concept of preceding::pb, so we have to use some other means to find the immediately
+         preceding pagebreak – 2022-08-01 DK */
+      let all = $('*')
+        , targetElement = $(window.location.hash)
+        , indexOfTarget = all.index(targetElement);
+      
+      let prevAll = all.filter(function(index){ return index < indexOfTarget && $(this).hasClass('pagebreak'); });
+      
+      wdbUser.displayImage(prevAll.last()[0]);
+    } else {
+      wdbUser.displayImage($('.pagebreak')[0]);
     }
   },
 
   /* postioning of marginalia */
   positionMarginalia: function () {
-    let mRefs = $("a.mref"),
+    let mRefs = $("a.marginaliaAnchor"),
         marginalia = $('#marginaliaContainer *');
 
     // Show margin container only if any are to be shown
@@ -198,9 +238,8 @@ const wdbDocument = {
       
       mRefs.each(this.marginaliaPositioningCallback);
       // need to set width by JS as CSS :has() is still not there…
-      $('#marginaliaContainer').css('width', 'calc(25% - 0.25em)');
-      $('main > section').css('width', 'calc(75% - 0.25em)');
-      $('#marginalia_container').children('span').css('visibility', 'visible');
+      $('#content').css('width', 'calc(75% - 2em)');
+      $('#marginaliaContainer').children('span').css('visibility', 'visible');
       
       if (tar !== '' && tar !== 'undefined') {
         window.location.hash = tar;
@@ -211,23 +250,22 @@ const wdbDocument = {
   /* actual positioning */
   marginaliaPositioningCallback: function (index, element) {
     let referenceElementID = $(element).attr('id'),
-        referenceElementTop = $('#' + referenceElementID).position().top,
+        referenceElementTop = $(element).position().top,
         marginNote = $("#margin-" + referenceElementID),
         previousMarginNote = marginNote.prev(),
         targetTop;
     
     if (previousMarginNote.length == 0) {
-      targetTop = referenceElementTop - $('header').height();
+      targetTop = referenceElementTop;
     } else {
       let previousNoteHeight = $(previousMarginNote).height(),
           previousNoteTop = $(previousMarginNote).position().top,
-          headerHeight = $('header').height(),
           minimumTargetTop = previousNoteHeight + previousNoteTop;
   
-      if (Math.floor(referenceElementTop - headerHeight) < minimumTargetTop) {
+      if ( Math.floor(referenceElementTop) < minimumTargetTop ) {
         targetTop = previousNoteTop + previousNoteHeight;
       } else {
-        targetTop = referenceElementTop - headerHeight;
+        targetTop = referenceElementTop;
       }
     }
     
@@ -237,21 +275,26 @@ const wdbDocument = {
     marginNote.css('top', targetTop + "px");
   },
 
-  marginaliaTimer: {},
-
   /* load an element by ID and display it to the right */
   showInfoRight: function ( elementID ) {
-    this.showDataRight($('#' + elementID).html());
+    this.showDataRight($('#' + elementID));
   },
   
   /* show data passed in #ann; assumes that data are wrapped in .content */
-  showDataRight: function ( data ) {
+  showDataRight: function ( data, replace ) {
     let insertID = wdb.getUniqueId(),
-        insertContent = $('<div id="' + insertID + '" class="infoContainer right">' +
-          $(data).find('.content') +
-          '<button onclick="wdbDocument.clear(\'' + insertID + '\')" title="Diesen Eintrag schließen">[x]</button>' +
-          '<button onclick="wdbDocument.clear();" title="Alle Informationen rechts schließen">[X]</button></div>');
+        insertContent = '<div id="' + insertID + '" class="infoContainer right">'
+          + $(data).find('.content').html()
+          + '<div class="controls">'
+          + '<button data-clear="' + insertID + '" title="Diesen Eintrag schließen">[x]</button>'
+          + '<button title="Alle Informationen rechts schließen">[X]</button>'
+          + '</div></div>';
+    
+    if ( replace === true ) {
       $('#ann').html(insertContent);
+    } else {
+      $('#ann').append(insertContent);
+    }
   },
 
   /* toggle facsimile div visibility */
@@ -266,6 +309,80 @@ const wdbDocument = {
     }
   },
 
+  /*
+  function wdbTooltipMouseIn ( event ) {
+  let tPos, lPos, fWidth,
+      maxWidth = 500,
+      annotationElement,
+      target = event.target;
+  
+  if (target.classList.contains("annotations")) {
+    annotationElement = $(target);
+  } else if ($(target).children(".annotations").length > 0) {
+    annotationElement = target.children(".annotations");
+  } else {
+    let annotationID;
+    if (target.hasAttribute("aria-describedby")) {
+      annotationID = target.attributes["aria-describedby"].value;
+    } else if (target.parentNode.hasAttribute("aria-describedby")) {
+      annotationID = target.parentNode.attributes["aria-describedby"].value;
+    }
+    annotationElement = $('#' + annotationID);
+  }
+  
+  $(annotationElement).clearQueue();
+  
+  if (annotationElement.innerWidth() > maxWidth)
+    fWidth = maxWidth;
+  else fWidth = annotationElement.innerWidth();
+  
+  if ((fWidth + $(target).offset().left + 20) > window.innerWidth) {								// position the info window
+    lPos = window.innerWidth - fWidth - 20 - (window.innerWidth - $(window).width());
+    tPos = $(target).position().top + 5;
+    annotationElement.offset({ left: lPos, top: tPos});
+    annotationElement.css('top', tPos);
+  } else {
+    lPos = $(target).position().left;
+    tPos = $(target).position().top + 5;
+    annotationElement.css('left', lPos).css('top', tPos);
+  }
+  
+  annotationElement.css('max-width' , maxWidth);
+  annotationElement.css('white-space', 'normal');								   // allow word wrapping to fit into max width
+  annotationElement.outerWidth(fWidth);
+  annotationElement.show();
+}
+function wdbTooltipMouseOut ( event ) {
+let annotationElement,
+target = event.target;
+
+if (target.classList.contains("annotations")) {
+annotationElement = $(target);
+} else if ($(target).children(".annotations").length > 0) {
+annotationElement = $(target).children(".annotations");
+} else {
+let annotationID;
+if (target.hasAttribute("aria-describedby")) {
+annotationID = target.attributes["aria-describedby"].value;
+} else if (target.parentNode.hasAttribute("aria-describedby")) {
+annotationID = target.parentNode.attributes["aria-describedby"].value;
+}
+annotationElement = $('#' + annotationID);
+}
+
+$(annotationElement).delay(1000).fadeOut(500);
+}
+function annotationMouseIn ( event ) {
+let target = event.target;
+$(target).closest(".annotations").stop(true);
+}
+function annotationMouseOut ( event ) {
+let target = event.target;
+$(target).closest(".annotations").stop(true);
+$(target).closest(".annotations").delay(1000).fadeOut(500);
+}
+  */
+
   // show content in an advanced mouseover 
   showInfoFloating: function ( pointerElement, elementID ) {
     let content = $('#' + elementID).html();
@@ -276,48 +393,53 @@ const wdbDocument = {
     const maxWidth = 400,
           distance = 20;
     let insertID = wdb.getUniqueId(),
-        insert = $('<div id="' + insertID + '" class="infoContainer floating"/>').append(data);
-    $('#ann').html(insert);
+        insert = $('<div id="' + insertID + '" class="infoContainer floating"/>')
+          .append(data)
+          .css('display', 'inline');
+    $('#ann').html(insert[0]);
+    pointerElement.dataset.float = insertID;
 
-    let $inserted = $('#' + insertID);
-    $inserted.hover(
-      function () {
+    let inserted = $('#' + insertID);
+    inserted.on('mouseenter', ( ) => {
         // mousein
-        $(this).stop()
+        $(inserted).stop()
           .css("opacity", "1");
-      },
-      function () {
+      }).on('mouseleave', ( ) => {
         // mouseout
-        $(this).fadeOut(
+        $(inserted).fadeOut(
           2000,
           function () {
-            $(this).remove();
+            $(inserted).remove();
           }
         );
       }
     );
 
     // position the info box close to the pointing element
-    let targetTop,
+    let insertedWidth = inserted.innerWidth() ?? 0,
+        mainWidth = $('main').innerWidth() ?? 0,
+        pointer = $(pointerElement),
+        pointerOffsetLeft = pointer.offset().left ?? 0,
         targetLeft,
-        $pointer = $(pointerElement),
-        targetWidth = Math.min(maxWidth, $inserted.innerWidth);
+        targetTop,
+        targetWidth = Math.min(maxWidth, insertedWidth + 2);  // insertedWidth + 2px for border
     
     // set the left coordinate for the info box. The right end must not leave the visible ares
-    if ((targetWidth + $pointer.offset().left + distance) > $(window).width()) {								// position the info window
-      targetLeft = $(window).width() - targetWidth - distance;
-      targetTop = $pointer.position().top + distance;
+    if ( (targetWidth + pointerOffsetLeft + distance) > mainWidth ) {
+      targetLeft = mainWidth - targetWidth - distance;
     } else {
-      targetLeft = $pointer.position().left + distance;
-      targetTop = $pointer.position().top + distance;
+      targetLeft = pointer.offset().left + distance;
     }
-    $inserted.offset({ left: targetLeft, top: targetTop})
+    inserted.offset({
+        left: targetLeft,
+        top: 1.5 * pointer.height() + pointer.offset().top
+      })
       .css('max-width' , maxWidth)
-      .outerWidth(targetWidth);
+      .css('display', 'flex');
   },
   
   mouseOut: function (pointerElement) {
-    let id = '#wdb' + $(pointerElement).attr('href').substring(1);
+    let id = '#' + pointerElement.dataset.float;
     $(id).fadeOut(
       2000,
       function () {
@@ -340,7 +462,7 @@ const wdbDocument = {
 
   // generic laoding function
   loadContent: function ( url, target, me ) {
-    if ($('#' + target).css('display') == 'none') {
+    if ( url.length > 0 && $('#' + target).children().length == 0 ) {
       $.ajax(
         {
           url: url,
@@ -349,17 +471,20 @@ const wdbDocument = {
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
               $('#' + target).slideToggle();
-              $(me).html($(me).html().replace('→', '↑'));
+              $(me).html('↑').attr('title', 'Hide results');
           },
           error: function (xhr, status, error) {
             wdb.report("error", "Error loading " + url + " : " + status, error);
           }
         }
       );
+    } else if ( $('#' + target).css('display') == 'none' ) {
+      $('#' + target).slideToggle();
+      $(me).html('↑').attr('title', 'Hide results');
     } else {
       $('#' + target).slideToggle();
-      if (me.length > 0) {
-        $(me).html($(me).html().replace('↑', '→'));
+      if ( me !== undefined ) {
+        $(me).html('→').attr('title', 'Show results');
       }
     }
   },
@@ -395,135 +520,110 @@ const wdbDocument = {
     if (startMarker.is(endMarker)) {
       // just one element selected
       startMarker.css("background-color", color);
-      if (alt !== "undefined") {
-        startMarker.attr('title', alt);
-      }
+      if (alt != '') addAnnotation (startMarker, alt);
     } else if (startMarker.parent().is(endMarker.parent())) {
-      // both elements have the same parent
-      // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
-      startMarker.parent().contents().filter(function () {
-        return this.nodeType === 3;
-      }).wrap("<span></span>");
-          
-      // Colour and info for the start marker
-      $(startMarker).css("background-color", color);
-      if (alt !== "undefined") {
-        startMarker.attr("title", alt);
-      }
-          
-      // Colour and info for the siblings until the end marker
-      let sib = $(startMarker).nextUntil(endMarker);
-      sib.css("background-color", color);
-      if (alt !== "undefined") {
-        startMarker.attr("title", alt);
-      }
-          
-      // Colour and info for the end marker
-      $(endMarker).css("background-color", color);
-      if (alt !== "undefined") {
-        startMarker.attr("title", alt);
-      }
-      //DONE
-    } else {
-      // check further down the ancestry
-      let cA = $(this.commonAncestor(startMarker, endMarker));
-      
-      // Step 1: highlight all »startMarker/following-sibling::node()«
-      // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
-      startMarker.parent().contents().filter(function () {
-        return this.nodeType === 3;
-      }).wrap("<span></span>");
-      
-      // 1b: Colour its later siblings if they dont have the end point marker
-      let done = false;
-      
-      startMarker.nextAll().addBack().each(function () {
-        if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) {
-          return;
-        } else {
-          $(this).css("background-color", color);
-          if (alt !== "undefined") {
-            startMarker.attr("title", alt);
-          }
-        }
-      });
-      
-      // Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
-      // 2a: Get startMarker's parents up to the common ancestor
-      let parentsList = startMarker.parentsUntil(cA);
-      
-      if (parentsList.has(endMarker).length === 0) {
-        // go through each of these and access later siblings
-        let has_returned = false;
+        // both elements have the same parent
+        // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
+        startMarker.parent().contents().filter(function () {
+            return this.nodeType === 3;
+        }).wrap("<span></span>");
         
-        parentsList.each(function () {
-          $(this).nextAll().each(function () {
-            if (has_returned) {
-              return;
-            }
-            
-            // we need to handle the endMarker's parent differently
-            if ($(this).has(endMarker).length > 0) {
-              has_returned = true;
-              return;
-            } else {
-              $(this).css("background-color", color);
-              if (alt !== "undefined") {
-                startMarker.attr("title", alt);
-              }
-            }
-          });
-        });
-      }
-      
-      // Step 3: as step 1
-      // 3a: Wrap alls of endMarker's siblings in a span
-      endMarker.parent().contents().filter(function () {
-        return this.nodeType === 3;
-      }).wrap("<span></span>");
-      
-      //3b: Colour its earlier siblings if they dont have start marker
-      $(endMarker.prevAll().addBack(). get ().reverse()).each(function () {
-        if ($(this).has(startMarker).length > 0 || $(this).is(startMarker) || $(this).nextAll().has(startMarker).length > 0) {
-          return;
-        } else {
-          $(this).css("background-color", color);
-          if (alt !== "undefined") {
-            startMarker.attr("title", alt);
-          }
-        }
-      });
-      
-      // Step 4: colour all ancestors to the common ancestor
-      // Get parents up until common ancestor
-      let parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
-      
-      if (parentsListEnd.has(startMarker).length === 0) {
-        // Go through each of these and access earlier siblings
+        // Colour and info for the start marker
+        $(startMarker).css("background-color", color);
+        if (alt != '') addAnnotation (startMarker, alt);
+        
+        // Colour and info for the siblings until the end marker
+        sib = $(startMarker).nextUntil(endMarker);
+        sib.css("background-color", color);
+        if (alt != '') addAnnotation (sib, alt);
+        
+        // Colour and info for the end marker
+        $(endMarker).css("background-color", color);
+        if (alt != '') addAnnotation (endMarker, alt);
+        //DONE
+    } else {
+        // check further down the ancestry
+        cA = $(commonAncestor(startMarker, endMarker));
+        console.log(cA);
+        
+        // Step 1: highlight all »startMarker/following-sibling::node()«
+        // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
+        startMarker.parent().contents().filter(function () {
+            return this.nodeType === 3;
+        }).wrap("<span></span>");
+        
+        // 1b: Colour its later siblings if they dont have the end point marker
         done = false;
-      
-        parentsListEnd.each(function () {
-          $(this).prevAll().each(function () {
-            if (done) {
-              return;
+        startMarker.nextAll().addBack().each(function () {
+            if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return; else {
+                $(this).css("background-color", color);
+                if (alt != '') addAnnotation (this, alt);
             }
-            
-            if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
-              done = true;
-              return;
-            } else {
-              $(this).css("background-color", color);
-              if (alt !== "undefined") {
-                startMarker.attr("title", alt);
-              }
-            }
-          });
         });
-      }
+        
+        // Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
+        // 2a: Get startMarker's parents up to the common ancestor
+        parentsList = startMarker.parentsUntil(cA);
+        
+        if (parentsList.has(endMarker).length === 0) {
+            // go through each of these and access later siblings
+            has_returned = false;
+            parentsList.each(function () {
+                $(this).nextAll().each(function () {
+                    if (has_returned) return;
+                    
+                    // we need to handle the endMarker's parent differently
+                    if ($(this).has(endMarker).length > 0) {
+                        has_returned = true;
+                        return;
+                    } else {
+                        $(this).css("background-color", color);
+                        if (alt != '') addAnnotation (this, alt);
+                    }
+                });
+            });
+        };
+        
+        // Step 3: as step 1
+        // 3a: Wrap alls of endMarker's siblings in a span
+        endMarker.parent().contents().filter(function () {
+            return this.nodeType === 3;
+        }).wrap("<span></span>");
+        
+        //3b: Colour its earlier siblings if they dont have start marker
+        $(endMarker.prevAll().addBack(). get ().reverse()).each(function () {
+            if ($(this).has(startMarker).length > 0 || $(this).is(startMarker) || $(this).nextAll().has(startMarker).length > 0) return; else {
+                $(this).css("background-color", color);
+                if (alt != '') addAnnotation (this, alt);
+            }
+        });
+        
+        // Step 4: colour all ancestors to the common ancestor
+        // Get parents up until common ancestor
+        var parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
+        if (parentsListEnd.has(startMarker).length === 0) {
+            // Go through each of these and access earlier siblings
+            done = false;
+            parentsListEnd.each(function () {
+                $(this).prevAll().each(function () {
+                    if (done) return;
+                    
+                    if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
+                        done = true;
+                        return;
+                    } else {
+                        $(this).css("background-color", color);
+                        if (alt != '') $(this).attr('title', alt);
+                    }
+                });
+            });
+        }
     }
   },
+/* END highlighting */
 
-  // group navigation related methods
+/** Navigation **/
+// group navigation related methods
   nav: {
     // load navigation if necessary and toggle visibility
     toggleNavigation: function() {
@@ -538,7 +638,7 @@ const wdbDocument = {
         let edition = wdb.meta.ed;
         
         $.ajax({
-          url: wdb.meta.rest + "collection/" + edition + "/nav.html",
+          url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
           success: function (data) {
             $("nav").replaceWith($(data));
           },
@@ -550,9 +650,9 @@ const wdbDocument = {
 
     /* toggle TOC level visibility */
     switchnav: function ( id, anchorElement ) {	
-      $(id).children('ul').children().toggle();
+      $('#' + id).toggle();
       
-      if (anchorElement.length() > 0 && $(anchorElement).html() == '→') {
+      if (anchorElement !== undefined && anchorElement.length() > 0 && $(anchorElement).html() == '→') {
         $(anchorElement).html('↑');
       } else {
         $(anchorElement).html('→');
@@ -560,14 +660,15 @@ const wdbDocument = {
     },
 
     /* load navigation of an imported project */
-    loadNavigation: function ( ed ) {
+    loadNavigation: function ( event ) {
+      let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
         url: wdb.meta.rest + "collection/" + ed + "/nav.html",
         success:  ( data ) => {
-          let replacement = $(data).find('#' + ed);
+          let replacement = $(data).find('#' + ed).prev().addBack();
           if ( replacement.length > 0 ) {
-            $('#' + ed).replaceWith(replacement);
+            $(event.currentTarget).replaceWith(replacement);
           }
         },
         error: ( xhr, status, error ) => {
@@ -577,9 +678,12 @@ const wdbDocument = {
     }
   },
   
-  // display an image in the right div
+  /**
+   * display an image in the right div – does not use an viewer but inserts an iframe
+   * @param {string} url - the URL from which to load the image
+   * @returns {void}
+   */
   displayImageRight: function ( url ) {
-    // default: load an html that contains an image into an iframe
     if (window.innerWidth > 768) {
       $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
       $('#facsimile').attr('src', url).css('display', 'block');
@@ -651,9 +755,22 @@ const wdbUser = {
       //wdbDocument.mouseOut(event.target);
   },
 
-  /* display an image in the right div */
-  displayImage: function ( url ) {
+  /**
+   * What to do to display an image
+   * Default behaviour: wdbDocument.displayImageRight(url); the URL to use is taken from the element passed: either
+   * html:a/@href or html:button/@data-image.
+   * May be overwritten by instance or project specifics
+   * @param {HTMLElement} element - The element to evaluate
+   * @return {void} - (void)
+   */
+  displayImage: function ( element ) {
     // default: show image in an iframe
+    let url;
+    if ( element.attributes.hasOwnProperty('href') ) {
+      url = element.getAttribute('href');
+    } else if ( element.dataset.hasOwnProperty('image') ) {
+      url = element.dataset['image'];
+    }
     wdbDocument.displayImageRight(url);
     
     // example: show image in viewer
@@ -665,7 +782,10 @@ const wdbUser = {
           pos = pbs.index(element);
       viewer.goToPage(pos);
     */
-  }
+  },
+
+  /* a timer for marginalia positioning; needs to be reset upon resize */
+  marginaliaTimer: {},
 };
 
 /***
@@ -686,18 +806,14 @@ $( () => {
   }
 
   // load image for target page (or first page if no fragment requested)
-  if($('.pagebreak').length > 0) {
-    if (window.location.hash != "") {
-      wdbDocument.loadTargetImage();
-    } else {
-      wdbUser.displayImage($('.pagebreak a').first());
-    }
+  if ( $('.pagebreak').length > 0 ) {
+    wdbDocument.loadTargetImage();
   }
 
   // load image when clicking on a page number
-  $('.pagebreak').click((event) => {
+  $('body').on('click', '.pagebreak', ( event ) => {
     event.preventDefault();
-    wdbUser.displayImage($('.pagebreak').first()[0].dataset.image);
+    wdbUser.displayImage(event.target);
   });
 
   $('#login').on('submit', (event) => {
@@ -713,16 +829,36 @@ $( () => {
     wdbDocument.nav.toggleNavigation();
   });
 
+  // toggle navigation level visibility
+  $('body').on('click', '.wdbNav.level', ( event ) => {
+    wdbDocument.nav.switchnav(event.currentTarget.dataset.lvl);
+  });
+
+  // load a navigation level 
+  $('body').on('click', '.wdbNav.load', ( event ) => {
+    wdbDocument.nav.loadNavigation(event);
+  });
+
   // toggle width button solely for iOS Safari
   $('#wdbShowHide').on('click', () =>{
     wdbDocument.changeMainWidth();
   });
 
   // register hover handler for footnote link buttons
-  $('.footnoteNumber').hover(wdbUser.footnoteMouseIn, wdbUser.footnoteMouseOut);
+  $('body').on('mouseenter', '.footnoteNumber', wdbUser.footnoteMouseIn)
+           .on('mouseleave', '.footnoteNumber', wdbUser.footnoteMouseOut);
+  
+  // handler to close one or all footnotes
+  $('body').on('click', '.controls button', ( event ) => {
+    if ( event.target.dataset.clear !== undefined ) {
+      wdbDocument.clear(event.target.dataset.clear);
+    } else {
+      wdbDocument.clear();
+    }
+  });
   
   // register click handler for entity information
-  $('.entity').click(wdbUser.showEntityData);
+  $('body').on('click', '.entity', wdbUser.showEntityData);
 });
 /* END DOM ready functions */
 
@@ -736,8 +872,8 @@ $(window).bind('hashchange', function () {
 
 /* set/reset timer for marginalia positioning and invoke actual function */
 $(window).on('load resize', function () {
-  clearTimeout(wdbDocument.marginaliaTimer);
-  wdbDocument.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
+  clearTimeout(wdbUser.marginaliaTimer);
+  wdbUser.marginaliaTimer = setTimeout( () => { wdbDocument.positionMarginalia(); }, 500);
 });
 
 /* preparations to show some loading animation while doing AJAX requests */

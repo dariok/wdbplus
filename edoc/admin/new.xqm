@@ -41,7 +41,8 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
           <collectionName>{$pColl}</collectionName>
         </data>
       
-      let $create := wdbRc:createSubcollectionXml ($collectionData, 'data')
+      let $targetCollection := if ( $model?ed eq '' ) then 'data' else $model?ed
+        , $create := wdbRc:createSubcollectionXml ($collectionData, $targetCollection)
       
       return if ( ($create)[1]//http:response/@status = '201')
       then

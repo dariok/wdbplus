@@ -2,14 +2,13 @@ xquery version "3.1";
 
 module namespace wdbRa = "https://github.com/dariok/wdbplus/RestAnnotations";
 
-declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
-
 import module namespace util     = "http://exist-db.org/xquery/util"         at "java:org.exist.xquery.functions.util.UtilModule";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"  at "/db/apps/edoc/modules/annotations.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace console  = "http://exist-db.org/xquery/console";
 
+declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 declare namespace http    = "http://expath.org/ns/http-client";
 declare namespace output  = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest    = "http://exquery.org/ns/restxq";
@@ -31,20 +30,30 @@ function wdbRa:getFileAnno ($fileID as xs:string) {
   let $username := xs:string(sm:id()//sm:real/sm:username)
   let $fileURI := xs:anyURI(wdb:getFilePath($fileID))
   
-  let $public := wdbanno:getAnnoFile($fileURI, "")
-  let $private := wdbanno:getAnnoFile($fileURI, $username)
+  let $public := wdbanno:getAnnoFile($fileURI, "")//anno:entry
+  let $private := wdbanno:getAnnoFile($fileURI, $username)//anno:entry
+  let $numEntries := count($public) + count($private)
   
-  return (
+  return if ($numEntries = 0)
+  then
+    <rest:response>
+      <http:response status="204">
+        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>
+  else (
     <rest:response>
       <http:response status="200">
         <http:header name="rest-status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <anno:anno>
-      <anno:entry><anno:collection>{$public}</anno:collection><anno:user>{$username}</anno:user></anno:entry>
-      {for $entry in ($public//anno:entry, $private//anno:entry)
-        return $entry
+    <anno:anno collection="{$fileURI}" file="{$fileID}" user="{$username}" entries="{$numEntries}">
+      {
+        $public,
+        for $entry in $private return
+          <entry private="private">{$entry/*}</entry>
       }
     </anno:anno>
   )
@@ -59,59 +68,60 @@ declare
   %rest:consumes("application/json")
 function wdbRa:insertAnno ($fileID as xs:string, $body as item()) {
   let $data := parse-json(util:base64-decode($body))
-  (: TODO update these checks like in changeWords! :)
-  (: check for minimum data before continuing :)
-return if (not($data('from') or $data('text')))
-  then (
-    <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:ERR" />
-      </http:response>
-    </rest:response>,
-    "Missing content in message body: at least start and text must be supplied"
-  )
-  else
-    let $username := xs:string(sm:id()//sm:real/sm:username)
-    
-    (: check whether the user may write :)
-    return if ($username = 'guest')
-    then
-        (<rest:response>
-            <http:response status="200">
-                <http:header name="rest-status" value="REST:ERR" />
-            </http:response>
-        </rest:response>,
-        "User guest is not allowed to create annotations")
-    else
-    let $ann := 
-        <entry xmlns="https://github.com/dariok/wdbplus/annotations">
-            <id>{util:uuid()}</id>
-            <file>{$fileID}</file>
-            <range from="{$data('from')}" to="{$data('to')}" />
-            <cat>{$data('text')}</cat>
-            <user>{$username}</user>
-        </entry>
-    let $file := $wdb:data/id($fileID)[not(namespace-uri() = "https://github.com/dariok/wdbplus/wdbmeta")]
-    
-    return if (count($file) = 0)
-        then
-    (<rest:response>
-        <http:response status="200">
-            <http:header name="rest-status" value="REST:ERR" />
+  let $check := wdbRa:check($fileID, $data, "w", ("from", "to", "text"))
+  
+  return if ($check[1] != 200)
+    then (
+      <rest:response>
+        <http:response status="{$check[1]}">
+          <http:header name="X-Rest-Status" value="{$check[2]}" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+          <http:header name="Content-Type" value="text/plain" />
         </http:response>
-    </rest:response>,
-    "no file found for ID " || $fileID)
-        else 
-          let $annoFile := wdbanno:getAnnoFile(base-uri($file), $username)
-          return (
-            <rest:response>
-              <http:response status="200">
-                <http:header name="rest-status" value="REST:SUCCESS" />
-                <http:header name="Access-Control-Allow-Origin" value="*"/>
-              </http:response>
-            </rest:response>,
-            update insert $ann into $annoFile/anno:anno
-          )
+      </rest:response>,
+      for $err in $check
+        return $err || "&#x0A;"
+    )
+    else
+      let $username := xs:string(sm:id()//sm:real/sm:username)
+      let $ann := 
+        <entry xmlns="https://github.com/dariok/wdbplus/annotations">
+          <id>{util:uuid()}</id>
+          <file>{$fileID}</file>
+          <range from="{$data('from')}" to="{$data('to')}" />
+          <cat>{$data('text')}</cat>
+          <user>{$username}</user>
+        </entry>
+      
+      let $annoFile := if ($data?public)
+        then wdbanno:getAnnoFile(xs:anyURI($check[2]), "")
+        else wdbanno:getAnnoFile(xs:anyURI($check[2]), $username)
+      
+      return (
+        <rest:response>
+          <http:response status="200">
+            <http:header name="rest-status" value="REST:SUCCESS" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+          </http:response>
+        </rest:response>,
+        (
+          update insert $ann into $annoFile/anno:anno,
+          $ann
+        )
+      )
+};
+
+(:~
+  : delete a full text annotation
+  :)
+declare
+  %rest:DELETE
+  %rest:path("/edoc/anno/{$id}")
+function wdbRa:deleteFTA ( $id as xs:string) {
+  let $annoCollection := $wdb:edocBaseDB || "/annotations"
+  let $target := collection($annoCollection)//anno:entry[anno:id = $id]
+  
+  return update delete $target
 };
 
 (:~
@@ -153,7 +163,7 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
     let $value := $data?type || ':' || $data?identity
     
     let $change := try {
-    if ($common/self::tei:rs)
+      if ($common/self::tei:rs)
       then (: change identification :)
         update value $common/@ref with $value
       else (: create a new identification :)
@@ -169,7 +179,9 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
           let $A := util:node-by-id($file, $ancs?A)
           let $B := util:node-by-id($file, $ancs?B)
           return if ($A is $B)
-            then $A
+            then if ($A/parent::*[self::tei:rs])
+              then update value $A/parent::tei:rs/@ref with $value
+              else $A
             else ($A, $A/following-sibling::* intersect $B/preceding-sibling::*, $B)
         
         let $replacement :=
@@ -177,7 +189,7 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
             $sequence
           }</rs>
           
-        return (
+        return ( 
           update replace $sequence[1] with $replacement,
           update delete $sequence[position() gt 1]
         )
@@ -196,6 +208,63 @@ function wdbRa:markEntity ($fileID as xs:string, $body as item()) {
     )
 };
 
+(:~
+ : remove entity by type and containted token (by ID)
+ :)
+declare
+  %rest:DELETE
+  %rest:path("/edoc/anno/entity/{$fileID}/{$type}/{$tokenID}")
+function wdbRa:deleteEntity ( $fileID as xs:string, $type as xs:string, $tokenID as xs:string) {
+  let $check := wdbRa:check ($fileID, map { "from": $tokenID }, "w", "from")
+  
+  return if ($check[1] != 200)
+    then
+      (
+        <rest:response>
+          <http:response status="{$check[1]}">
+            <http:header name="X-Rest-Status" value="{$check[2]}" />
+            <http:header name="Access-Control-Allow-Origin" value="*"/>
+            <http:header name="Content-Type" value="text/plain" />
+          </http:response>
+        </rest:response>,
+        for $err in $check
+          return $err || "&#x0A;"
+      )
+    else
+      let $token := doc($check[2])/id($tokenID)
+      let $longType := switch ($type)
+          case "per" return "person"
+          case "pla" return "place"
+          case "org" return "organization"
+          case "evt" return "event"
+          case "bib" return "bibl"
+          default return "unknown"
+      let $entity := $token/ancestor::tei:rs[@type = $longType][1]
+      let $content := $entity/node()
+      
+      return if (count($entity) = 0)
+        then (
+          <rest:response>
+            <http:response status="400">
+              <http:header name="X-Rest-Status" value="ERR:entity not found" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          "400&#x0A;no entity of type " || $type || " was found as ancestor of " || $tokenID
+        )
+        else (
+          <rest:response>
+            <http:response status="205">
+              <http:header name="X-Rest-Status" value="delete operation successful" />
+              <http:header name="Access-Control-Allow-Origin" value="*"/>
+            </http:response>
+          </rest:response>,
+          (: must be done as 2 steps as replace can only replace one node by exactly one other :)
+          update insert $content following $entity,
+          update delete $entity
+        )
+};
+
 declare
   %rest:POST("{$body}")
   %rest:path("/edoc/anno/word/{$fileID}")
@@ -204,24 +273,24 @@ declare
   %output:method("json")
 function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
   let $data := parse-json(util:base64-decode($body))
-  let $filePath := wdb:getFilePath(xs:anyURI($fileID))
-  let $doc := doc($filePath)
-  
-  (: check the job :)
-  let $checkJob := if ($data("job") = ("edit"))
-    then ()
-    else <error>Unknown job description</error>
-  
-  return if ($checkData | $checkWrite | $checkID | $checkJob)
-    then (
-      <rest:response>
-        <http:response status="500">
-          <http:header name="rest-status" value="REST:ERR" />
-        </http:response>
-      </rest:response>,
-      string-join(($checkData, $checkWrite, $checkID, $checkJob), ' – ')
-    )
-    else (
+    let $check := wdbRa:check($fileID, $data, "w", ("from", "job", "text"))
+  (: TODO check for correct value of job, else 400 :)
+  return if ($check[1] != 200)
+  then (
+    <rest:response>
+      <http:response status="{$check[1]}">
+        <http:header name="X-Rest-Status" value="{$check[2]}" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Content-Type" value="text/plain" />
+      </http:response>
+    </rest:response>,
+    for $err in $check
+      return $err || "&#x0A;"
+  )
+  else
+    let $file := doc($check[2])
+    let $token := $file/id($data?from)
+    return (
       <rest:response>
         <http:response status="200">
           <http:header name="rest-status" value="REST:SUCCESS" />
@@ -250,7 +319,7 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
               }</w>
             return update replace $token with $repl
           else update value $token with $data("text")
-        return $doc/id($data("id"))
+        return $doc/id($data?from)
       default return ""
     )
 };
@@ -305,6 +374,7 @@ declare %private function wdbRa:checkToken ($doc, $id) {
       then ()
       else "Wrong number of items for ID " || $id || ": " || count($token)
 };
+
 
 (: ~
  : returns the node IDs of the first common ancestor and the sibling ancestor

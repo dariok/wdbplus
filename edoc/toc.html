@@ -1,16 +1,5 @@
 <body xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/widepage.html" data-template-at="container">
-  <header>
-    <div class="headerSide">
-      <div data-template="wdba:getAuth" />
-    </div>
-		<div class="headerCentre">
-			<h1><span data-template="wdbs:getInstanceName"/></h1>
-		</div>
-		<div class="headerSide">
-			<p />
-		</div>
-		<hr/>
-  </header>
+  <header data-template="wdbfp:getHeader" />
   <main>
     <h2>Projekte im <span data-template="wdbs:getInstanceShort"/></h2>
     <table data-template="wdbs:getEd"/>
