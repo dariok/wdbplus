@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="22.0">
+<project>
     <meta>
         <filters directoryPatterns="" filePatterns="\Qwdbplus.xpr\E" positiveFilePatterns="" showHiddenFiles="false"/>
         <options>
-            <serialized version="22.0" xml:space="preserve">
+            <serialized xml:space="preserve">
                 <serializableOrderedMap>
                     <entry>
                         <String>scenario.associations</String>
@@ -453,6 +453,5 @@
         <folder path="../wdbmeta/"/>
         <folder path="../wdbplus.wiki/"/>
         <folder path="."/>
-        <folder path="../../../../media/p5/home/dario/git/wdbmeta/"/>
     </projectTree>
 </project>
