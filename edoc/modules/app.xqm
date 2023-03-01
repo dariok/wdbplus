@@ -353,6 +353,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
     <meta name="path" content="{$model('fileLoc')}"/>
     <meta name="rest" content="{$wdb:restURL}" />
     <title>{ $model("title") } – { normalize-space($wdb:configFile//config:short) }</title>
+
     {
       if ( wdb:findProjectFunction($model, "wdbPF:overrideCssJs", 1) ) then
         (wdb:getProjectFunction($model, "wdbPF:overrideCssJs", 1))($model)
@@ -369,7 +370,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
           then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
           else (),
         wdb:getProjectFiles($node, $model, 'css'),
-        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>,
+        wdb:getBlob($node, $model, 'jquery'),
         if ( $model?annotation = true() )
           then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
           else (),
@@ -935,5 +936,9 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
     default
       return
         'application/octet-stream'
+};
+
+declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
+  <script src="{$wdb:configFile//config:source[@name = $name]/@path}"></script>
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)

@@ -9,26 +9,40 @@
         <element name="short">
           <data type="NCName"/>
         </element>
-        <element name="logo">
-          <data type="anyURI"/>
-        </element>
+        <optional>
+          <element name="logo">
+            <data type="anyURI"/>
+          </element>
+        </optional>
       </element>
       <element name="role">
         <element name="type">
           <data type="NCName"/>
         </element>
-        <element name="peer">
-          <data type="anyURI"/>
-        </element>
+        <oneOrMore>
+          <element name="peer">
+            <optional>
+              <attribute name="xml:id">
+                <data type="ID" />
+              </attribute>
+              <attribute name="type">
+                <data type="token" />
+              </attribute>
+            </optional>
+            <data type="anyURI"/>
+          </element>
+        </oneOrMore>
       </element>
-      <element name="params">
-        <element name="param">
-          <attribute name="name">
-            <data type="NCName"/>
-          </attribute>
-          <data type="anyURI"/>
+      <optional>
+        <element name="params">
+          <element name="param">
+            <attribute name="name">
+              <data type="NCName"/>
+            </attribute>
+            <data type="anyURI"/>
+          </element>
         </element>
-      </element>
+      </optional>
       <element name="server">
         <data type="anyURI"/>
       </element>
@@ -53,7 +67,7 @@
         </element>
       </optional>
       <optional>
-        <element name="origins" >
+        <element name="origins">
           <oneOrMore>
             <element name="origin">
               <text />
@@ -61,6 +75,18 @@
           </oneOrMore>
         </element>
       </optional>
+      <element name="externalSources">
+        <oneOrMore>
+          <element name="source">
+            <attribute name="name">
+              <text />
+            </attribute>
+            <attribute name="path">
+              <data type="anyURI" />
+            </attribute>
+          </element>
+        </oneOrMore>
+      </element>
     </element>
   </start>
 </grammar>

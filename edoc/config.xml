@@ -36,12 +36,6 @@
 
    <!-- standard HTTP reponse headers for HTML files -->
    <headers>
-      <header name="Content-Security-Policy" value="default-src https:;
-         connect-src 'self' https://exist.ulb.tu-darmstadt.de;
-         frame-src 'self' http://exist2.ulb.tu-darmstadt.de:8080;
-         img-src 'self' https: *.ulb.tu-darmstadt.de;
-         script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM=' *.jquery.com *.ulb.tu-darmstadt.de;
-         style-src 'self' 'unsafe-inline' *.ulb.tu-darmstadt.de;"/>
       <header name="Permissions-Policy" value="geolocation=(self), fullscreen=(self)"/>
       <header name="Referrer-Policy" value="no-referrer-when-downgrade"/>
       <header name="X-Content-Type-Options" value="nosniff"/>
@@ -54,4 +48,9 @@
    <origins>
       <origin>http://localhost:8080</origin>
    </origins>
+
+   <!-- Sources for some Blobs -->
+   <externalSources>
+      <source name="jquery" path="$shared/jquery-3.6.3.min.js" />
+   </externalSources>
 </config>
