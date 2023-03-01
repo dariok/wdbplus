@@ -41,7 +41,6 @@ declare function wdbErr:error ($data as map (*)) {
       <title>ERROR</title>
       <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
       <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
-      <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
       <script src="resources/scripts/function.js"/>
     </head>,
     <body>

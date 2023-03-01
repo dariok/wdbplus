@@ -115,7 +115,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     }
     <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css"/>
     { wdbfp:get('css', $model?pathToEd, $model) }
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" />
+    { wdb:getBlob($node, $model, 'jquery') }
     <script src="./$shared/scripts/js.cookie.js"/>
     <script src="./$shared/scripts/legal.js"/>
     <script src="./$shared/scripts/function.js"/>

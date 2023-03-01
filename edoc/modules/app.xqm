@@ -313,7 +313,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element() 
         else ()
     }
     { wdb:getProjectFiles($node, $model, 'css') }
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    { wdb:getBlob($node, $model, 'jquery') }
     {
       if ( $model?annotation = true() )
         then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -823,5 +823,9 @@ declare function wdb:getContentTypeFromExt($extension as xs:string, $namespace a
       if ($namespace = "http://www.tei-c.org/ns/1.0") then "application/tei+xml" else "application/xml"
     case "xsl" return "application/xslt+xml"
     default return "application/octet-stream"
+};
+
+declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
+  <script src="{$wdb:configFile//config:source[@name = $name]/@path}"></script>
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)

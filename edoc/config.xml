@@ -35,7 +35,6 @@
   <data>/db/apps/edoc/data</data>
 
   <externalSources>
-    <source name="jQuery" path="$shared/jquery-3.6.3.min.js" />
-    <source name="Junicode" path="$shared/Junicode.woff" />
+    <source name="jquery" path="$shared/jquery-3.6.3.min.js" />
   </externalSources>
 </config>
