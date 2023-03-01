@@ -33,4 +33,9 @@
   <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
      default: /db/apps/edoc/data -->
   <data>/db/apps/edoc/data</data>
+
+  <externalSources>
+    <source name="jQuery" path="$shared/jquery-3.6.3.min.js" />
+    <source name="Junicode" path="$shared/Junicode.woff" />
+  </externalSources>
 </config>
