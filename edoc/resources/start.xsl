@@ -90,13 +90,13 @@
     </xsl:template>
     
     <xsl:template match="meta:coverImages">
-        <div class="images">
+        <div class="slideContainer">
             <xsl:apply-templates />
         </div>
     </xsl:template>
     
     <xsl:template match="meta:image">
-        <img src="{@href}" />
+        <img class="slideImage" src="{@href}" />
     </xsl:template>
     
     <xsl:template match="meta:metaData">
