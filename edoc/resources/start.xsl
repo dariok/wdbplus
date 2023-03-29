@@ -15,7 +15,7 @@
     </xsl:template>
     
     <xsl:template match="meta:titleData">
-        <xsl:variable name="involvements" as="element(p)+">
+        <xsl:variable name="involvements" as="element(p)*">
             <xsl:for-each-group select="meta:involvement/meta:*" group-by="@role">
                 <p data-role="{current-grouping-key()}">
                     <span>
