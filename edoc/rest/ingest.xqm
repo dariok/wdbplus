@@ -275,7 +275,8 @@ declare function wdbRMi:store($collection as xs:string, $resource-name as xs:str
           <http:response status="500" />
         </rest:response>,
         "error storing " || $mime-type || " to " || $collection || '/' || $resource-name || ":
-" || $err:code || ": " || $err:description
+" || $err:code || ": " || $err:description,
+        util:log("error", "error storing " || $path || ": " || $err:description)
       )
     }
     
