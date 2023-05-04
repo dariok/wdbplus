@@ -197,6 +197,30 @@
           <xsl:value-of select="text()[preceding-sibling::tei:pb]"/>
         </button>
       </xsl:when>
+      <xsl:when test="tei:lb">
+        <button>
+          <xsl:sequence select="$att"></xsl:sequence>
+          <xsl:apply-templates select="tei:lb/preceding-sibling::node()"/>
+        </button>
+        <xsl:apply-templates select="tei:lb"/>
+         <button>
+          <xsl:sequence select="$att"></xsl:sequence>
+          <xsl:apply-templates select="tei:lb/following-sibling::node()"/>
+         </button> 
+      </xsl:when>
+      <xsl:when test="tei:w/tei:lb">
+      <button >
+        <xsl:sequence select="$att"></xsl:sequence>
+        <xsl:apply-templates select="tei:w/preceding-sibling::node()"/>
+        <xsl:apply-templates select="tei:w/tei:lb/preceding-sibling::node()"/>
+      </button>
+      <xsl:apply-templates select="tei:w/tei:lb"/>
+      <button>
+        <xsl:sequence select="$att"></xsl:sequence>
+        <xsl:apply-templates select="tei:w/tei:lb/following-sibling::node()"/>
+        <xsl:apply-templates select="tei:w/following-sibling::node()"/>
+      </button>
+      </xsl:when>
       
       <!-- margin note -->
       <xsl:when test="tei:note[@place]">
