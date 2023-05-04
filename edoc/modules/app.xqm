@@ -467,6 +467,8 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   return
     try {
       <main>
+        (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
+        (: TODO: consider removing this entirely and instead load content of main via AJAX :)
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
         { wdb:getLeftFooter($node, $model) }
       </main>

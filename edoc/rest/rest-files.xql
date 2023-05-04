@@ -429,6 +429,9 @@ declare function wdbRf:getContent($id as xs:string, $process as element(), $view
     else (500, "Invalid command type " || $type)
 };
 
+(: TODO: move this functions to a more generic location (e.g. common.xq) as is should also be used from app.xqm :)
+(: TODO: use parameter list as defined in app.xqm :)
+(: TODO: inject additional parameters? :)
 declare function wdbRf:processXSL( $id as xs:string, $process as element(), $model as map(*) ) as item()* {
   let $content := try {
     let $attr :=
