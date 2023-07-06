@@ -84,23 +84,28 @@
     </li>
   </xsl:template>
   
-  <xsl:template match="result">
-    <xsl:variable name="ids" select="descendant::*:match/ancestor::*[@xml:id][1]/@xml:id"/>
-    <xsl:variable name="i" select="string-join($ids, ',')"/>
-    <li>
-      <a href="view.html?id={
-          parent::results/@id}{
-          if ( string-length($i) gt 0 ) then '&amp;i= || $i' else ''}{
-          if ( string-length(@fragment) gt 0 ) then '#' || @fragment else ''}">
-        <xsl:value-of select="@fragment"/>
-      </a>
-      <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
-      <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}" title="Show results">→</button>
-      <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
-        <xsl:apply-templates select="*"/>
-      </div>
-    </li>
-  </xsl:template>
+   <xsl:template match="result">
+      <xsl:variable name="ids" select="descendant::*:match/ancestor::*[@xml:id][1]/@xml:id"/>
+      <xsl:variable name="i" select="string-join($ids, ',')"/>
+      <li>
+         <a>
+            <xsl:attribute name="href">
+               <xsl:text>view.html?id=</xsl:text>
+               <xsl:value-of select="/results/@id"/>
+               <xsl:text>&amp;q=</xsl:text>
+               <xsl:value-of select="/results/@q" />
+               <xsl:text>#</xsl:text>
+               <xsl:value-of select="@fragment"/>
+            </xsl:attribute>
+            <xsl:value-of select="@fragment"/>
+         </a>
+         <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
+         <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}" title="Show results">→</button>
+         <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
+            <xsl:apply-templates select="*"/>
+         </div>
+      </li>
+   </xsl:template>
   
   <xsl:template match="match | *:p">
     <p>

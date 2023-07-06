@@ -620,6 +620,31 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         }
     }
   },
+
+  // highlight a word (or words) from a search result
+  highlightSearch: function ( term, color ) {
+    let lTerm = term.toLocaleLowerCase()
+      , texts = $("main *")
+        .filter( function ( index ) {
+            let lCaseText = this.textContent.toLocaleLowerCase();
+            return this.nodeName.toLocaleLowerCase() !== "span" && lCaseText.indexOf(lTerm) > -1
+          });
+         
+      texts.each( ( index, element ) => {
+        $(element.childNodes).each ( ( childIndex, childNode ) => {
+          let termIndex = childNode.textContent.toLocaleLowerCase().indexOf(lTerm);
+          if ( childNode.nodeType === Node.TEXT_NODE && termIndex > -1 ) {
+            let nodeTerm = childNode.textContent.substr(termIndex, lTerm.length)
+              , newText = childNode.textContent
+                  .replace(nodeTerm, '<span style="background-color: ' + color + ';">' + nodeTerm + '</span>');
+            
+            $(childNode).replaceWith(newText);
+          }
+        })
+      });
+
+      $(window.location.hash)[0].scrollIntoView();
+  },
 /* END highlighting */
 
 /** Navigation **/
@@ -803,6 +828,11 @@ $( () => {
     for (let ids of wdb.parameters.i.split(',')) {
       $('#' + ids).css('background-color', 'lightblue');
     }
+  }
+
+  // if a search word is present, highlight it
+  if ( wdb.parameters.hasOwnProperty('q') ) {
+    wdbDocument.highlightSearch(wdb.parameters.q, 'yellow');
   }
 
   // load image for target page (or first page if no fragment requested)

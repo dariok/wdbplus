@@ -162,7 +162,14 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
     return
       <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
         for $h in subsequence($res, $start, 25) return
-          <result fragment="{($h/ancestor-or-self::*[@xml:id])[last()]/@xml:id}">{
+          let $id := if ( exists($h/@xml:id) )
+            then $h/@xml:id
+            else
+              let $element := local-name($h)
+                , $n := count($h/preceding::*[local-name() = $element]) + 1
+              return $element || $n
+          return
+            <result fragment="{$id}">{
               kwic:summarize($h, <config width="40" />, $wdbRs:callback)
           }</result>
       }</results>
