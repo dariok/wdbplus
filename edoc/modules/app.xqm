@@ -221,6 +221,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
       and (
         $requestedModifiedParsed lt $modifiedWithoutMillisecs
         or empty($requestedModified)
+        or $requestedModified = ''
       ) ) then
     (
       response:set-header("Last-Modified", $last-modified),
@@ -242,11 +243,16 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
         }
       </html>
     )
-  else if ( $requestedModifiedParsed gt $modifiedWithoutMillisecs ) then
+  else if ( $requestedModifiedParsed ge $modifiedWithoutMillisecs ) then
     response:set-status-code(304)
   else
     <html>
-      { $newModel } 
+      <body>
+        <div>
+          <p>An unknown error has occurred</p>
+        </div>
+      </body>
+      { util:log("error", $newModel) } 
     </html>
 };
 
@@ -279,9 +285,13 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
       then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
       else string(doc($infoFileLoc)/mets:mets/@OBJID)
     
-    let $xsl := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-      then wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-      else wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+    let $xsl := if ( contains($pTF, 'wdbmeta.xml') ) then
+        (: TODO get path to XSL via function (use what’s in rest-files.xql) :)
+        xs:anyURI($wdb:data || '/resources/nav.xsl')
+      else if ( ends-with($infoFileLoc, 'wdbmeta.xml') ) then
+        wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+      else
+        wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
     
     let $xslt := if (doc-available($xsl))
       then $xsl
@@ -464,11 +474,11 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   (: do not stop transformation on ambiguous rule match and similar warnings :)
   let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
   
+  (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
+  (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   return
     try {
       <main>
-        (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
-        (: TODO: consider removing this entirely and instead load content of main via AJAX :)
         { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
         { wdb:getLeftFooter($node, $model) }
       </main>
@@ -530,17 +540,21 @@ declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) )
  :
  : @param $id as xs:string: the file ID
  : @return xs:string the full URI to the file within the database
+ : @throws wdbErr:wdb0000
+ : @throws wdbErr:wdb0001
  :)
-declare function wdb:getFilePath($id as xs:string) as xs:string {
+declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
   let $files := wdbFiles:getFilePaths($wdb:data, $id)
   
   (: do not just return a random URI but add some checks for better error messages:
    : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
-  let $pathToFile := if (count($files) = 0)
-      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
-    else if (count($files) > 1)
-      then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'), "multiple files with ID " || $id || " in " || $wdb:data)
-    else (: (count($files) = 1) :)
+  let $pathToFile := if ( count($files) = 0 ) then
+      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
+    else if ( count($files) > 1 ) then
+      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'), "multiple files with ID " || $id || " in " || $wdb:data)
+    else if ( local-name($files[1]) = 'id' ) then
+      base-uri($files[1]) || '#' || $id
+    else
       xstring:substring-before-last(base-uri($files[1]), '/') || '/' || $files[1]
   
   return $pathToFile
@@ -555,7 +569,7 @@ declare function wdb:getFilePath($id as xs:string) as xs:string {
  : @returns the path (relative) to the app root
  :)
 declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := (collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD or self::mets:mets],
+  let $file := (collection($wdb:data)/id($id)[self::meta:* or self::mets:mets],
                 collection($wdb:data)//mets:file[@ID = $id])[1]
   
   let $edPath := if (count($file) = 1)
@@ -796,16 +810,15 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
       )[1]
   
   let $sel := for $c in $process/meta:command
-    return if ( $c/@refs )
-      then
+    return if ( $c/@refs ) then
         (: if a list of IDREFS is given, this command matches if $id is part of that list :)
         let $map := tokenize($c/@refs, ' ')
         return if ( $map = $id ) then $c else ()
       else if ( $c/@regex and matches($id, $c/@regex) )
         (: if a regex is given and $id matches that regex, the command matches :)
-      then $c
+        then $c
       else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
-      then $c
+        then $c
       else if ( not($c/@refs or $c/@regex or $c/@group) )
         (: if no selection method is given, the command is considered the default :)
         then $c
