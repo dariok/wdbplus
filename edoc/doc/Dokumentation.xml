@@ -1,0 +1,128 @@
+<!--<?xml-model href="../../../customization/schema_quellentexte/religionsfrieden-quellentexte.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?<?xml-model href=""http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>--><TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="pa000008-0129">
+   
+   
+    <teiHeader>      
+        <fileDesc>         
+           <titleStmt>
+              <title level="s">Documentation of wdbplus</title>
+               
+              
+                 
+           </titleStmt>         
+           <editionStmt>
+        
+           </editionStmt>         
+           <publicationStmt>
+              <date when="2023-08-07" type="issued">2023</date>
+              <availability>
+                 <licence target="https://creativecommons.org/licenses/by/4.0/">
+                    <p xml:lang="en">This file is licensed under the terms of the Creative Commons License CC-BY 4.0 (Attribution 4.0 International)</p>
+                 </licence>
+              </availability>
+           </publicationStmt>        
+           <sourceDesc>
+              <msDesc>
+                 <msIdentifier>
+                 </msIdentifier>
+                 <msContents>
+                    <msItem>
+                       <title/>
+                       <respStmt>
+                          <resp/>
+                          <persName/>
+                       </respStmt>
+                       <biblStruct>
+                       </biblStruct>
+                    </msItem>
+                 </msContents>
+                 <history>
+                    <origin>
+                       <date/>
+                       <placeName/>
+                    </origin>
+                 </history>
+              </msDesc>    
+           </sourceDesc>
+        </fileDesc>      
+        <encodingDesc>         
+           <projectDesc>
+              <p><ref></ref></p>
+           </projectDesc>
+           <classDecl>
+              <taxonomy xml:id="marcrelator">
+                 <bibl><idno type="URI">http://id.loc.gov/vocabulary/relators/</idno> MARC Code List for Relators </bibl>
+              </taxonomy>
+           </classDecl>         
+        </encodingDesc>      
+        <profileDesc>         
+           <langUsage>
+           </langUsage>         
+        </profileDesc>      
+        
+     </teiHeader>
+     <text>
+        <body>
+            <div>
+                <head>Generic functions</head>
+                <p>In wdbplus we provide different generic functions. To date, these are a way to produce a generic home page</p>
+            </div>
+            <div>
+                <head>Generic home page</head>
+                <p>If a project does not want to provide a special starting page for the digital edition, users can create a generic starting page if they provide the following data in wdbmeta in the element titleData:
+                    <list>
+                        <item>title type='main'</item>
+                        <item>titel type='short'</item>
+                        <item>involvement</item>
+                        <item>date</item>
+                        <item>coverImages</item>
+                    </list>
+                These items can contain one or several entries.
+                </p>
+                <div>
+                    <head>The title elements</head>
+                    <p>Both title elements contain some form of a title, either the official one, or a shorthand for it.</p>
+                </div>
+                <div>
+                    <head>The involvement-element</head>
+                    <p>The involvement element can contain references to one or multiple involved people or organisations.<!-- alles was hier steht braucht eine role nach marc-relator --></p>
+                </div>
+                <div>
+                    <head>The date-element</head>
+                    <p>This element will always be a date in iso-format - for example: 1485-01-01 
+                    </p>
+                </div>
+                <div>
+                    <head>the coverImages-element</head>
+                    <p>This contains the path to one or several images on the some page. If it's more than one, they will be shown as a carousell.</p>
+                </div>
+                <div>
+                    <head>Where to find the function</head>
+                    <p>the files can be found in
+                        <list>
+                            <item>/edoc/modules/start.xqm</item>
+                            <item>/edoc/resources/start.xsl</item>
+                        </list>
+                        <div>
+                            <head>The start.xqm</head>
+                            <p>The start.xqm contains two functions: getStartLeft and getStart. The getStartLeft deals with the content displayed in the aside-element, which is, by default, displayed on the left side of the home page.
+                                The standard for getStartLeft is the content (struct in wdbmeta) of the project. The getStart deals with the main, which is by default the right part of the site. 
+                            </p>
+                        </div>
+                        <div>
+                            <head>The start.xsl</head>
+                            <p>This contains the xslt for the generic starting page.</p>
+                        </div>
+                     <!-- muss nach oben :-) -->   If you want to change it on a project-level: link to project/resource/startLeft.html and startRight.html; if you want to change it globally, you can override the default behaviour by changing edoc/data/instance.xqm
+                    </p>
+                </div>
+                <div>
+                    <head>Instance specifics</head>
+                    <p>Everything that exists globally, i.e. in the collection "edoc" can be overwritten for the specific instance that you are running.
+                            in edoc/data/insta.xqm you can define specific behaviour for these functions, etc.
+                    </p>
+                </div>
+            </div>
+        </body>
+
+     </text>
+  </TEI>
