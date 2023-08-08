@@ -569,14 +569,15 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
  : @returns the path (relative) to the app root
  :)
 declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := (collection($wdb:data)/id($id)[self::meta:* or self::mets:mets],
+  let $file := (collection($wdb:data)/id($id)[local-name() = ('file', 'projectMD', 'struct', 'mets')],
                 collection($wdb:data)//mets:file[@ID = $id])[1]
   
-  let $edPath := if (count($file) = 1)
-    then xstring:substring-before-last(base-uri($file), '/')
-    else if (count($file) > 1)
-    then fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
+  let $edPath := if ( count($file) = 1 ) then
+      xstring:substring-before-last(base-uri($file), '/')
+    else if ( count($file) > 1 ) then
+      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
+    else
+      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
   
   return if ($absolute) then replace($edPath, '//', '/') else substring-after($edPath, $wdb:edocBaseDB)
 };
