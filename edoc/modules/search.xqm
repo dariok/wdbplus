@@ -5,18 +5,17 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace console = "http://exist-db.org/xquery/console";
 import module namespace http    = "http://expath.org/ns/http-client";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
 
-declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
+declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {(
   <div>
     <h1>Volltextsuche</h1>
     <form action="search.html">
-      {local:selectEd($model)}
+      { local:selectEd($model) }
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
       <input type="hidden" name="p">
-        {attribute value {'{"job": "fts"}'}}
+        { attribute value {'{"job": "fts"}'} }
       </input>
       <input type="submit" />
     </form>
@@ -26,8 +25,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
   <div>
     <h1>Registersuche</h1>
     <form action="search.html">
-      {local:selectEd($model)}
-      {local:listEnt("search")}
+      { local:selectEd($model) }
+      { local:listEnt("search") }
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
       <input type="submit" />
     </form>
@@ -36,8 +35,8 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
   <div>
     <h1>Registerliste</h1>
     <form action="search.html">
-      {local:selectEd($model)}
-      {local:listEnt("entries")}
+      { local:selectEd($model) }
+      { local:listEnt("entries") }
       <select name="q">{
         for $c in (1 to 26)
           let $b := codepoints-to-string($c + 64)
@@ -49,19 +48,19 @@ declare function wdbSearch:getLeft($node as node(), $model as map(*)) {(
 )
 };
 
-declare function wdbSearch:search($node as node(), $model as map(*)) {
-  let $start := if ($model("p") instance of map(*) and map:contains($model("p"), "start"))
+declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
+  let $start := if ( $model?p instance of map(*) and map:contains($model?p, "start"))
     then '&amp;start=' || $model?p?start
     else ''
   
-  let $job := if ($model("p") instance of map(*))
+  let $job := if ( $model?p instance of map(*) )
     then $model?p?job
     else "err"
   
-  return if ($job != "err") then
+  return if ( $job != "err" ) then
     let $p := $model?p
-    let $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
-    let $json := "{" || string-join($c, ', ') || "}"
+      , $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
+      , $json := "{" || string-join($c, ', ') || "}"
     
     let $ln := switch ($job)
       case "fts"      return $wdb:restURL || "search/collection/" || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
@@ -105,8 +104,8 @@ declare function local:selectEd ($model) {(
       let $label := $md//meta:struct[@file = $id]/@label
       return
         <option value="{$id}">
-          {if ($id = $model?mainEd) then attribute selected {"selected"} else ()}
-          {normalize-space($label)}
+          { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
+          { normalize-space($label) }
         </option>
     return (
       if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),

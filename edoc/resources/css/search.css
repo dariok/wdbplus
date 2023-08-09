@@ -1,15 +1,29 @@
+aside {
+  padding: 0 1em;
+}
+
+main {
+  padding: 0 1em;
+}
+
+button {
+  background: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
 .match {
-    background-color: #FFEF19;
+  background-color: #FFEF19;
 }
 
 .search .file {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 .search ul {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .fts-match {
-   background-color: yellow;
+  background-color: yellow;
 }

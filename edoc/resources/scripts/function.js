@@ -680,6 +680,8 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
                   .replace(nodeTerm, '<span style="background-color: ' + color + ';">' + nodeTerm + '</span>');
             
             $(childNode).replaceWith(newText);
+          } else if ( childNode.nodeType === Node.ELEMENT_NODE && childNode.localName == 'span' && termIndex > -1 ) {
+            $(childNode).attr('style', $(childNode).attr('style') + '; background-color: ' + color + ';');
           }
         })
       });
