@@ -213,7 +213,10 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
     , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
     
-  let $requestedModified := request:get-attribute("if-modified")
+  let $requestedModified := (
+        request:get-attribute("if-modified"),
+        request:get-header("If-Modified-Since")
+      )[1]
     , $requestedModifiedParsed := parse-ietf-date($requestedModified)
   
   (: TODO: use a function to get the actual content language :)
