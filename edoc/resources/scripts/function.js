@@ -694,26 +694,26 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
 // group navigation related methods
   nav: {
     // load navigation if necessary and toggle visibility
-    toggleNavigation: function() {
-      if ($("nav").css("display") == "none") {
+    toggleNavigation: function( target) {
+      if ($("header nav").css("display") == "none") {
         $("#showNavLink").text("Navigation ausblenden");
       } else {
         $("#showNavLink").text("Navigation einblenden");
       }
       
-      if ($("nav").text() === "") {
-        $("nav").text("lädt...");
+      if ($("header nav").text() === "") {
+        $("header nav").text("lädt...");
         let edition = wdb.meta.ed;
         
         $.ajax({
           url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
           success: function (data) {
-            $("nav").replaceWith($(data));
+            $("header nav").replaceWith($(data));
           },
           data: "html"
         });
       }
-      $("nav").slideToggle();
+      $("header nav").slideToggle();
     },
 
     /* toggle TOC level visibility */
