@@ -208,7 +208,8 @@ const wdbDocument = {
    */
   loadTargetImage: function () {
     if ( window.location.hash.length > 1 ) {
-      /* JS does not know about the concept of preceding::pb, so we have to use some other means to find the immediately
+      /* TODO: since support is > 94%, use document.evaluate with an XPath to do this
+         JS does not know about the concept of preceding::pb, so we have to use some other means to find the immediately
          preceding pagebreak – 2022-08-01 DK */
       let all = $('*')
         , targetElement = $(window.location.hash)
@@ -422,19 +423,31 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         pointerOffsetLeft = pointer.offset().left ?? 0,
         targetLeft,
         targetTop,
-        targetWidth = Math.min(maxWidth, insertedWidth + 2);  // insertedWidth + 2px for border
+        targetWidth = Math.min(maxWidth, insertedWidth + 2); // insertedWidth + 2px for border
     
-    // set the left coordinate for the info box. The right end must not leave the visible ares
+    // set the left coordinate for the info box. The right end must not leave the visible area
     if ( (targetWidth + pointerOffsetLeft + distance) > mainWidth ) {
       targetLeft = mainWidth - targetWidth - distance;
     } else {
       targetLeft = pointer.offset().left + distance;
     }
+    
+    /* set the top coordiante for the info box. Its lower end must not cover the footer or leave the visible area
+       first, we need to set the width of the box so we get its resulting height */
+    inserted.css('max-width' , maxWidth);
+    /* next, get its height and the height of the footer and the inner height of the browser window;
+     * use the top of the pointer element as start for vertical placement of the box; as there is no reliable way to get
+     * the text’s baseline or the superscript-baseline, we use 1.5 * the pointer’s height
+     * 2022-09-22 DK */
+    let visibleHeight = window.innerHeight
+      , footerHeight = $('body > footer').outerHeight()
+      , ownHeight = inserted.height()
+      , pointerRelTop = 1.5 * pointer.height() + pointer.offset().top;
+    
     inserted.offset({
         left: targetLeft,
         top: 1.5 * pointer.height() + pointer.offset().top
       })
-      .css('max-width' , maxWidth)
       .css('display', 'flex');
   },
   
@@ -512,6 +525,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     this.highlightAll (startMarker, endMarker);
   },
 
+   /* TODO use the Range API to make this easier and more comprehensible */
   // highlight a range of elements between a start and an end marker, using a given color and an alternative text
   highlightElements: function (startMarker, endMarker, color, alt) {
     // set defaults
@@ -520,7 +534,9 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     if (startMarker.is(endMarker)) {
       // just one element selected
       startMarker.css("background-color", color);
-      if (alt != '') addAnnotation (startMarker, alt);
+      if (alt !== "undefined") {
+        startMarker.attr('title', alt);
+      }
     } else if (startMarker.parent().is(endMarker.parent())) {
         // both elements have the same parent
         // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -530,21 +546,26 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         
         // Colour and info for the start marker
         $(startMarker).css("background-color", color);
-        if (alt != '') addAnnotation (startMarker, alt);
+        if (alt !== "undefined") {
+ startMarker.attr("title", alt);
+        }
         
-        // Colour and info for the siblings until the end marker
-        sib = $(startMarker).nextUntil(endMarker);
+      // Colour and info for the siblings until the end marker
+        let sib = $(startMarker).nextUntil(endMarker);
         sib.css("background-color", color);
-        if (alt != '') addAnnotation (sib, alt);
+        if (alt !== "undefined") {
+ startMarker.attr("title", alt);
+        }
         
-        // Colour and info for the end marker
+      // Colour and info for the end marker
         $(endMarker).css("background-color", color);
-        if (alt != '') addAnnotation (endMarker, alt);
-        //DONE
+        if (alt !== "undefined") {
+ startMarker.attr("title", alt);
+        }
+      //DONE
     } else {
         // check further down the ancestry
-        cA = $(commonAncestor(startMarker, endMarker));
-        console.log(cA);
+        let cA = $(this.commonAncestor(startMarker, endMarker));
         
         // Step 1: highlight all »startMarker/following-sibling::node()«
         // 1a: Wrap all of its (text node) siblings in a span: text-nodes cannot be accessed via jQuery »in the middle«
@@ -553,36 +574,46 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         }).wrap("<span></span>");
         
         // 1b: Colour its later siblings if they dont have the end point marker
-        done = false;
-        startMarker.nextAll().addBack().each(function () {
-            if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) return; else {
+        let done = false;
+        
+      startMarker.nextAll().addBack().each(function () {
+            if ($(this).has(endMarker).length > 0 || $(this).is(endMarker)) {
+          return;
+ } else {
                 $(this).css("background-color", color);
-                if (alt != '') addAnnotation (this, alt);
+                if (alt !== "undefined") {
+ startMarker.attr("title", alt);
             }
-        });
+        }
+      });
         
         // Step 2: highlight »(startMarker/parent::*/parent::* intersect endMarker/parent::*/parent::*)//*)«
         // 2a: Get startMarker's parents up to the common ancestor
-        parentsList = startMarker.parentsUntil(cA);
+        let parentsList = startMarker.parentsUntil(cA);
         
         if (parentsList.has(endMarker).length === 0) {
             // go through each of these and access later siblings
-            has_returned = false;
-            parentsList.each(function () {
+            let has_returned = false;
+            
+        parentsList.each(function () {
                 $(this).nextAll().each(function () {
-                    if (has_returned) return;
+                    if (has_returned) {
+              return;
+                    }
                     
-                    // we need to handle the endMarker's parent differently
+            // we need to handle the endMarker's parent differently
                     if ($(this).has(endMarker).length > 0) {
                         has_returned = true;
                         return;
                     } else {
                         $(this).css("background-color", color);
-                        if (alt != '') addAnnotation (this, alt);
+                        if (alt !== "undefined") {
+ startMarker.attr("title", alt);
                     }
-                });
+                }
             });
-        };
+          });
+        }
         
         // Step 3: as step 1
         // 3a: Wrap alls of endMarker's siblings in a span
@@ -592,33 +623,70 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         
         //3b: Colour its earlier siblings if they dont have start marker
         $(endMarker.prevAll().addBack(). get ().reverse()).each(function () {
-            if ($(this).has(startMarker).length > 0 || $(this).is(startMarker) || $(this).nextAll().has(startMarker).length > 0) return; else {
+            if ($(this).has(startMarker).length > 0 || $(this).is(startMarker) || $(this).nextAll().has(startMarker).length > 0) {
+          return;
+ } else {
                 $(this).css("background-color", color);
-                if (alt != '') addAnnotation (this, alt);
+                if (alt !== "undefined") {
+ startMarker.attr("title", alt);
             }
-        });
+        }
+      });
         
         // Step 4: colour all ancestors to the common ancestor
         // Get parents up until common ancestor
-        var parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
-        if (parentsListEnd.has(startMarker).length === 0) {
+        let parentsListEnd = endMarker.parentsUntil(cA.children().has(endMarker));
+        
+      if (parentsListEnd.has(startMarker).length === 0) {
             // Go through each of these and access earlier siblings
             done = false;
-            parentsListEnd.each(function () {
+            
+        parentsListEnd.each(function () {
                 $(this).prevAll().each(function () {
-                    if (done) return;
+                    if (done) {
+              return;
+                    }
                     
-                    if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
+            if ($(this).has(startMarker).length > 0 || $(this).is(startMarker)) {
                         done = true;
                         return;
                     } else {
                         $(this).css("background-color", color);
-                        if (alt != '') $(this).attr('title', alt);
+                        if (alt !== "undefined") {
+                startMarker.attr("title", alt);
                     }
-                });
+                }
             });
+          });
         }
     }
+  },
+
+  // highlight a word (or words) from a search result
+  highlightSearch: function ( term, color ) {
+    let lTerm = term.toLocaleLowerCase()
+      , texts = $("main *")
+        .filter( function ( index ) {
+            let lCaseText = this.textContent.toLocaleLowerCase();
+            return this.nodeName.toLocaleLowerCase() !== "span" && lCaseText.indexOf(lTerm) > -1
+          });
+         
+      texts.each( ( index, element ) => {
+        $(element.childNodes).each ( ( childIndex, childNode ) => {
+          let termIndex = childNode.textContent.toLocaleLowerCase().indexOf(lTerm);
+          if ( childNode.nodeType === Node.TEXT_NODE && termIndex > -1 ) {
+            let nodeTerm = childNode.textContent.substr(termIndex, lTerm.length)
+              , newText = childNode.textContent
+                  .replace(nodeTerm, '<span style="background-color: ' + color + ';">' + nodeTerm + '</span>');
+            
+            $(childNode).replaceWith(newText);
+          } else if ( childNode.nodeType === Node.ELEMENT_NODE && childNode.localName == 'span' && termIndex > -1 ) {
+            $(childNode).attr('style', $(childNode).attr('style') + '; background-color: ' + color + ';');
+          }
+        })
+      });
+      
+      $(window.location.hash)[0].scrollIntoView();
   },
 /* END highlighting */
 
@@ -626,26 +694,26 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
 // group navigation related methods
   nav: {
     // load navigation if necessary and toggle visibility
-    toggleNavigation: function() {
-      if ($("nav").css("display") == "none") {
+    toggleNavigation: function( target) {
+      if ($("header nav").css("display") == "none") {
         $("#showNavLink").text("Navigation ausblenden");
       } else {
         $("#showNavLink").text("Navigation einblenden");
       }
       
-      if ($("nav").text() === "") {
-        $("nav").text("lädt...");
+      if ($("header nav").text() === "") {
+        $("header nav").text("lädt...");
         let edition = wdb.meta.ed;
         
         $.ajax({
           url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
           success: function (data) {
-            $("nav").replaceWith($(data));
+            $("header nav").replaceWith($(data));
           },
           data: "html"
         });
       }
-      $("nav").slideToggle();
+      $("header nav").slideToggle();
     },
 
     /* toggle TOC level visibility */
@@ -803,6 +871,11 @@ $( () => {
     for (let ids of wdb.parameters.i.split(',')) {
       $('#' + ids).css('background-color', 'lightblue');
     }
+  }
+
+  // if a search word is present, highlight it
+  if ( wdb.meta.wdbTemplate !== 'templates/function.html' && wdb.parameters.hasOwnProperty('q') ) {
+    wdbDocument.highlightSearch(wdb.parameters.q, 'yellow');
   }
 
   // load image for target page (or first page if no fragment requested)

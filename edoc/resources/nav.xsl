@@ -9,6 +9,21 @@
    
    <xsl:param name="id"/>
    
+   <!-- set when called as a view, i.e. to create a landing page from a struct -->
+   <xsl:param name="xml" />
+   <xsl:variable name="structID" select="substring-after($xml, '#')" />
+   
+   <xsl:template match="/">
+      <xsl:choose>
+         <xsl:when test="contains($xml, '#')">
+            <xsl:apply-templates select="id($structID)" mode="lp" />
+         </xsl:when>
+         <xsl:otherwise>
+            <xsl:apply-templates />
+         </xsl:otherwise>
+      </xsl:choose>
+   </xsl:template>
+   
    <xsl:template match="meta:struct[not(parent::*)]">
       <nav>
          <ul>
@@ -100,4 +115,15 @@
    </xsl:template>
    
    <xsl:template match="*:user"/>
+   
+   <xsl:template match="meta:struct" mode="lp">
+      <div>
+         <h2>
+            <xsl:apply-templates select="@label, meta:label" />
+         </h2>
+         <ul>
+            <xsl:apply-templates select="meta:view" />
+         </ul>
+      </div>
+   </xsl:template>
 </xsl:stylesheet>

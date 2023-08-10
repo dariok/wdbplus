@@ -130,11 +130,23 @@
       <xsl:apply-templates />
     </xsl:element>
   </xsl:template>
-  <xsl:template match="tei:p">
-    <p>
-      <xsl:apply-templates />
-    </p>
-  </xsl:template>
+
+   <xsl:template match="tei:p">
+      <p>
+         <xsl:attribute name="id">
+            <xsl:choose>
+               <xsl:when test="@xml:id">
+                  <xsl:value-of select="@xml:id"/>
+               </xsl:when>
+               <xsl:otherwise>
+                   <xsl:text>p</xsl:text>
+                   <xsl:number level="any"/>
+               </xsl:otherwise>
+            </xsl:choose>
+         </xsl:attribute>
+         <xsl:apply-templates />
+      </p>
+   </xsl:template>
   
   <!-- get ID info from tei:rs/@ref; we assume three main types: 1) '#'{identifier}; 2) {type}':'{identifier};
        3) resolvable URL -->

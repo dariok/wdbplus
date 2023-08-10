@@ -163,7 +163,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="wdb-template" content="templates/{$templateFile}.html"/>
+    <meta name="wdbTemplate" content="templates/{$templateFile}.html"/>
     <meta name="id" content="{$model("id")}" />
     <meta name="ed" content="{$model("ed")}" />
     <meta name="rest" content="{$wdb:restURL}" />

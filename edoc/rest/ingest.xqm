@@ -267,30 +267,46 @@ declare function wdbRMi:store($collection as xs:string, $resource-name as xs:str
         $reason
       )
   else
-    try {
-      let $path := xmldb:store($collection, $resource-name, $contents, $mime-type)
-      let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
-      let $ch := (
-        sm:chmod($path, $mode),
-        sm:chown($path, "wdb"),
-        sm:chgrp($path, "wdbusers"),
-        console:log("storing " || $mime-type || " to " || $path)
-      )
-      return (
-        <rest:response>
-          <http:response status="200" />
-        </rest:response>,
-        $path
-      )
+    let $path := try {
+      xmldb:store($collection, $resource-name, $contents, $mime-type)
     } catch * {
       ( 
         <rest:response>
           <http:response status="500" />
         </rest:response>,
         "error storing " || $mime-type || " to " || $collection || '/' || $resource-name || ":
-" || $err:code || ": " || $err:description
+" || $err:code || ": " || $err:description,
+        util:log("error", "error storing " || $path || ": " || $err:description)
       )
     }
+    
+    return if ( count($path) gt 1 ) then
+      $path
+    else
+      try {
+        let $mode := if (ends-with($resource-name, 'xql')) then "rwxrwxr-x" else "rw-rw-r--"
+          , $ch := (
+            sm:chmod($path, $mode),
+            sm:chown($path, "wdb"),
+            sm:chgrp($path, "wdbusers"),
+            util:log("info", "storing " || $mime-type || " to " || $path)
+          )
+
+        return (
+          <rest:response>
+            <http:response status="200" />
+          </rest:response>,
+          $path
+        )
+      } catch * {
+        ( 
+          <rest:response>
+            <http:response status="200" />
+          </rest:response>,
+          $path,
+          util:log("info", "when storing " || $path || ": unable to change permissions")
+        )
+      }
 };
 
 declare function wdbRMi:createCollection ($coll as xs:string) {
