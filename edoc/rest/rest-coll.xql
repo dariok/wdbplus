@@ -282,6 +282,18 @@ function wdbRc:getCollectionsXML () {
 
 (: get a full list of a collection (= subcolls and resources entered into wdbmeta.xml) :)
 declare
+    %rest:GET
+    %rest:path("/edoc/collection/{$id}")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
+  wdbRc:getGeneral ($id, $mt,
+    '(
+      for $s in $meta//meta:struct[@file] return
+        <collection id="{$s/@file}" label="{$s/@label}" />,
+      for $s in $meta//meta:view return
+        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
+};
+declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}.xml")
 function wdbRc:getCollectionXML ($id) {
@@ -294,19 +306,29 @@ declare
 function wdbRc:getCollectionJSON ($id) {
   wdbRc:getCollection($id, "application/json")
 };
-declare
-    %rest:GET
-    %rest:path("/edoc/collection/{$id}")
-    %rest:header-param("Accept", "{$mt}")
-function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
-  wdbRc:getGeneral ($id, $mt,
-    '(
-      for $s in $meta//meta:struct[@file] return
-        <collection id="{$s/@file}" label="{$s/@label}" />,
-      for $s in $meta//meta:view return
-        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
-};
 (: END list a collection :)
+
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/full/{$id}.zip")
+  %output:method("binary")
+function wdb:getResourcesZip ($id as xs:string) {
+  let $meta := collection($wdb:data)/id($id)[self::meta:projectMD]
+  let $base := substring-before(base-uri($meta), 'wdbmeta')
+  
+  return if ($meta = "")
+  then <rest:response>
+    <http:response status="404"/>
+      </rest:response>
+  else (
+    <rest:response>
+      <http:response status="200">
+        <http:header name="Content-Type" value="application/zip" />
+      </http:response>
+    </rest:response>,
+    compression:zip(xs:anyURI($base), true())
+  )
+};
 
 (: list resources within a collection (= those entered into wdbmeta.xml) :)
 declare
@@ -511,7 +533,7 @@ declare function wdbRc:getGeneral ($id, $mt, $content) {
       <http:response status="{$content[1]}">
         <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
         {
-          if ($content[1] != 200)
+          if ( $content[1] != 200 )
           then
             <http:header name="REST-Status" value="{$content[2]}" />
           else ()
@@ -519,7 +541,7 @@ declare function wdbRc:getGeneral ($id, $mt, $content) {
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    if ($content[1] = 200)
+    if ( $content[1] = 200 )
       then if ($mt = "application/json")
           then xml-to-json($content[2])
           else $content[2]

@@ -30,6 +30,14 @@ let $config := map {
     $templates:CONFIG_APP_ROOT:      $config:app-root,
     $templates:CONFIG_STOP_ON_ERROR: true()
 }
+
+let $model := map:merge((
+    map{'auth': _utl:to-json-map(<json type="object" objects="id real effective groups">{sm:id()}</json>)?id},
+    _utl:create-param-map('request-parameters', request:get-parameter-names(), function($param-name) {request:get-parameter($param-name, ())}),
+    _utl:create-param-map('request-headers', request:get-header-names(), request:get-header#1),
+    _utl:create-param-map('request-attributes', request:attribute-names(), request:get-attribute#1)
+    ))
+
 (:
  : We have to provide a lookup function to templates:apply to help it
  : find functions in the imported application modules. The templates
