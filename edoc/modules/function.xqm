@@ -9,6 +9,7 @@ import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"  
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"        at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "/db/apps/edoc/modules/start.xqm";
 import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
