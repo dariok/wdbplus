@@ -958,6 +958,10 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
 };
 
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
-  <script src="{$wdb:configFile//config:source[@name = $name]/@path}"></script>
+  let $path := $wdb:configFile//config:source[@name = $name]/@path
+  
+  return if ( ends-with($path, 'js') )
+    then <script src="{ $path }"></script>
+    else <link rel="stylesheet" type="text/css" href="{ $path }" />
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)
