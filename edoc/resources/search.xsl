@@ -78,6 +78,8 @@
     <li>
       <a href="view.html?id={@id}">
         <xsl:value-of select="tei:titleStmt/tei:title[1]"/>
+          <xsl:text>&amp;q=</xsl:text>
+          <xsl:value-of select="/results/@q"/>
       </a>
       <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}" title="Show results">→</button>
       <div id="{@id}" class="results" style="display: none;"/>
