@@ -667,13 +667,13 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     let lTerm = term.toLocaleLowerCase()
       , texts = $("main *")
         .filter( function ( index ) {
-            let lCaseText = this.textContent.toLocaleLowerCase();
+            let lCaseText = this.textContent.toLocaleLowerCase().replaceAll('-', '');
             return this.nodeName.toLocaleLowerCase() !== "span" && lCaseText.indexOf(lTerm) > -1
           });
          
       texts.each( ( index, element ) => {
         $(element.childNodes).each ( ( childIndex, childNode ) => {
-          let termIndex = childNode.textContent.toLocaleLowerCase().indexOf(lTerm);
+          let termIndex = childNode.textContent.toLocaleLowerCase().replaceAll('-', '').indexOf(lTerm);
           if ( childNode.nodeType === Node.TEXT_NODE && termIndex > -1 ) {
             let nodeTerm = childNode.textContent.substr(termIndex, lTerm.length)
               , newText = childNode.textContent
