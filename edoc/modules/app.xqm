@@ -454,6 +454,13 @@ declare function wdb:pageTitle($node as node(), $model as map(*)) {
 };
 
 (:~
+ : generic function to wrap some info from the model in an HTML element via templating
+ :)
+declare function wdb:wrapText ( $node as node(), $model as map(*), $key as xs:string ) {
+  element { node-name($node) } { $model($key) }
+};
+
+(:~
  : return the body
  :)
 declare function wdb:getContent($node as node(), $model as map(*)) {
