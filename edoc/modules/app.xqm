@@ -379,14 +379,10 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
         if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
           then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
           else (),
-        if ( $model?annotation = true() )
-          then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
-          else (),
+        wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
         wdb:getBlob($node, $model, 'jquery'),
-        if ( $model?annotation = true() )
-          then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-          else (),
+        wdb:getBlob($node, $model, 'jquery-ui-js'),
         <script src="$shared/scripts/js.cookie.js"></script>,
         <script src="$shared/scripts/legal.js"></script>,
         <script src="$shared/scripts/function.js"></script>,
