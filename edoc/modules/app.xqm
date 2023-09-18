@@ -397,10 +397,22 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
 
 (:~
  : return the header - if there is a project specific function, use it
+ :
+ : order of evaluation:
+ : 1. {$projectResources}/header.html – this must contain one html:header, the
+ :    contents of which will be sent through the templating system
+ : 2. instance or project specific wdbPF:getHeader#1
+ : 3. evaluation of all 4 constituents of the header in a row
+ :    a) wdbPF:getHeaderLeft#1 or {$wdb:data}/resources/headerLeft.html or empty html:p
+ :    b) wdbPF:getHeaderCentre#1 or {$wdb:data}/resources/headerCentre.html or html:h1
+ :    c) wdbPF:getHeaderMenu#1 or {$wdb:data}/resources/headerMenu.html or html:button
+ :    d) wdbPF:getHeaderRight#1 or {$wdb:data}/resources/headerRight.html or empty html:p
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
-    if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
+    if ( doc-available($model?projectResources || '/header.html') )
+      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $wdb:lookup, $model)
+    else if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
       <div class="headerSide" role="navigation">{
@@ -498,9 +510,19 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     }
 };
 
+(:~
+ : return the global (i.e., full width) footer
+ :
+ : order of evaluation:
+ : 1. {$wdb:data}/resources/mainFooter.html
+ : 2. {$projectResources}/mainFooter.html
+ : 3. wdbPF:getMainFooter#1
+ :)
 declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
   if ( doc-available($wdb:data || "/resources/mainFooter.html") )
     then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else if ( doc-available($model?projectResources || '/mainFooter.html') ) 
+    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $wdb:lookup, $model)
   else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
     (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
