@@ -6,7 +6,7 @@ $(() => {
     
     if ( q !== undefined && p.job == 'fts' ) {
       wdbDocument.loadContent(wdb.meta.rest + 'search/file/' + id + '.html?q=' + q, id, event.target);
-    } else if ( q !== undefined && p.job == 'search' ) {
+    } else if ( q !== undefined && ( p.job == 'search' || p.job == 'entries' ) ) {
       let url;
       
       if ( $(event.target).parents('ul').length == 1 ) {
