@@ -8,6 +8,7 @@ import module namespace util         = "http://exist-db.org/xquery/util";
 import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"        at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
+import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"      at "/db/apps/edoc/modules/entity.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
@@ -52,6 +53,13 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "auth":      sm:id()/sm:id,
         "title":     $wdb:configFile//*:name || " – Table of Contents",
         "pathToEd":  $wdb:data
+      }
+    else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
+      map {
+        "ed": $ed,
+        "id": $id,
+        "pathToEd": wdb:getEdPath($ed, true()),
+        "reg": $q
       }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
@@ -143,13 +151,18 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         for $h in $node/* return
           if ( $h/*[@data-template] )
             then for $c in $h/* return
-              try { 
+              try {
                 templates:apply($c, $wdbfp:lookup, $newModel)
               } catch * {
+                util:log("info", $newModel),
                 util:log("error", $err:description)
               }
-            else 
+            else try {
               templates:apply($h, $wdbfp:lookup, $newModel)
+            } catch * {
+              util:log("info", $newModel),
+              util:log("error", $err:description)
+            }
       }
     </html>
 };
@@ -253,8 +266,8 @@ declare
   %private
 function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
   let $file := xstring:substring-after-last(request:get-uri(), '/')
-    , $name := substring-before($file, '.html')
-    , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  , $name := substring-before($file, '.html')
+  , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
   return switch($type)
     case "css" return
@@ -312,6 +325,6 @@ declare variable $wdbfp:lookup := function($functionName as xs:string, $arity as
     try {
         function-lookup(xs:QName($functionName), $arity)
     } catch * {
-        ()
+        util:log("error", "Error looking up function " || $functionName || '#' || $arity)
     }
 };
