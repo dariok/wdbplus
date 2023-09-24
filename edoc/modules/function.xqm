@@ -55,12 +55,17 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "pathToEd":  $wdb:data
       }
     else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
-      map {
-        "ed": $ed,
-        "id": $id,
-        "pathToEd": wdb:getEdPath($ed, true()),
-        "reg": $q
-      }
+      let $regFile := switch ( $q )
+        case "per"
+          return collection(wdb:getEdPath($ed, true()))//*:listPerson
+        case "org"
+          return collection(wdb:getEdPath($ed, true()))//*:listOrg
+        default
+          return ""
+              
+      let $entryEd := $regFile/id($id)
+      (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
+      return map { "entry": $entryEd, "id": $id, "ed": $ed }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )

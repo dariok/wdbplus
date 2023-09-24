@@ -8,23 +8,6 @@ import module namespace console = "http://exist-db.org/xquery/console";
 
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
-(: $id    ID-String of the entity to be displayed – must be globally unique
-   $ed    ID of the project from which specific information shall be drawn
-   $reg   a file containing a project specific tei:list*, if such information is requested :)
-declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:string, $ed as xs:string?, $reg as xs:string?, $xsl as xs:string?) as map(*) {
-  (: TODO check calls; entry ID and project ID should be the only necessary parameters :)
-  (: TODO support project specific views :)
-  
-  let $edPath := wdb:getEdPath($ed)
-  let $regFile := $edPath || '/' || $reg
-  let $testPath := $wdb:data || '/' || $ed || '/' || $reg
-  let $entryEd := doc($wdb:data || '/' || $ed || '/' || $reg)/id($id)
-  (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
-  
-  (: let $t := console:dump("default", ("edPath", "regFile", "testPath", "entryEd")) :)
-  return map { "entry": $entryEd, "id": $id, "ed": $ed }
-};
-
 (: create the heading for the HTML snippet; 2016-08-17 DK :)
 declare function wdbe:getEntityName($node as node(), $model as map(*)) {
   let $entryEd := $model("entry")
