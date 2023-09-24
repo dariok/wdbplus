@@ -60,17 +60,6 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
         return
           <result id="{$id}">{
             normalize-space($r)
-            (:switch ($type)
-              case "per" return
-                let $name := $r/tei:surname
-                let $fo := if ($r/tei:forename) then ", " || $r/tei:forename else ()
-                let $nl := if ($r/tei:nameLink) then " " || $r/tei:nameLink else ()
-                let $da := if($r/parent::*/tei:birth or $r/parent::*/tei:death)
-                  then " (" || $r/parent::*/tei:birth || "–" || $r/parent::*/tei:death || ")"
-                  else ()
-                return concat($name, $fo, $nl, $da)
-              case "pla" return normalize-space($r)
-              default return "":)
           }</result>
     }</results>)
 };
@@ -220,37 +209,34 @@ function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as
 };
 
 declare
-    %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$id}/{$q}.xml")
-    %rest:query-param("start", "{$start}", 1)
-    %rest:query-param("p", "{$p}")
-function wdbRe:listCollectionEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
-  let $coll := wdb:getEdPath($id, true())
-    , $query := xmldb:decode($q) => lower-case()
-    , $params := parse-json($p)
+  %rest:GET
+  %rest:path("/edoc/entities/{$ed}/{$type}/byId")
+  %rest:query-param("q", "{$externalId}", "")
+function wdbRe:entityById ( $ed as xs:string*, $type as xs:string*, $externalId as xs:string* ) {
+  let $coll := try { wdb:getEdPath($ed, true()) } catch * { "" }
+    , $query := xmldb:decode($externalId)
   
-  let $res := switch ( $params?type )
-      case "bib"
-         return collection($coll)//tei:title[ft:query(., $query)][ancestor::tei:listBibl]
-      case "per"
-         return collection($coll)//tei:persName[ft:query(., $query)][ancestor::tei:listPerson]
-      case "pla"
-         return collection($coll)//tei:placeName[ft:query(., $query)][ancestor::tei:listPlace]
-      case "org"
-         return collection($coll)//tei:orgName[ft:query(., $query)][ancestor::tei:listOrg]
-      case "evt"
-         return collection($coll)//tei:event[ft:query(., $query)][ancestor::tei:listEvent]
-      default
-         return ()
+  let $res := switch ( $type )
+    case "bib"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listBibl]
+    case "per"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listPerson]
+    case "pla"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listPlace]
+    case "org"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listOrg]
+    case "evt"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listEvent]
+    default return ()
   
-   return (
+  return (
     <rest:response>
       <http:response status="200">
         <http:header name="X-Rest-Status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results q="{$query}" type="{ $params?type }" collection="{$coll}" n="{count($res)}">{
+    <results q="{ $query }" type="{ $type }" collection="{ $ed }" n="{ count($res) }">{
       for $r in $res
         let $id := $r/ancestor::*[@xml:id][1]/@xml:id
         return

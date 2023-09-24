@@ -10,6 +10,7 @@
       <text qname="tei:placeName"/>
       <text qname="tei:orgName"/>
       <text qname="tei:title"/>
+      <text qname="tei:idno" />
       
       <!-- main text -->
       <!-- tei:text for fast first step, cf. rest-search.xql: /edoc/search/collection/{$id}.xml -->
