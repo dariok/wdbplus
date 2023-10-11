@@ -667,18 +667,18 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     }
   },
 
-  // highlight a word (or words) from a search result
+   // highlight a word (or words) from a search result
   highlightSearch: function ( term, color ) {
     let lTerm = term.toLocaleLowerCase()
-      , texts = $("main *")
+      , texts = $("section *")
         .filter( function ( index ) {
-            let lCaseText = this.textContent.toLocaleLowerCase();
+            let lCaseText = this.textContent.toLocaleLowerCase().replaceAll('-', '');
             return this.nodeName.toLocaleLowerCase() !== "span" && lCaseText.indexOf(lTerm) > -1
           });
          
       texts.each( ( index, element ) => {
         $(element.childNodes).each ( ( childIndex, childNode ) => {
-          let termIndex = childNode.textContent.toLocaleLowerCase().indexOf(lTerm);
+          let termIndex = childNode.textContent.toLocaleLowerCase().replaceAll('-', '').indexOf(lTerm);
           if ( childNode.nodeType === Node.TEXT_NODE && termIndex > -1 ) {
             let nodeTerm = childNode.textContent.substr(termIndex, lTerm.length)
               , newText = childNode.textContent
