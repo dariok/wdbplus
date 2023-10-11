@@ -397,7 +397,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         insert = $('<div id="' + insertID + '" class="infoContainer floating"/>')
           .append(data)
           .css('display', 'inline');
-    $('#ann').html(insert[0]);
+    $('main').append(insert[0]);
     pointerElement.dataset.float = insertID;
 
     let inserted = $('#' + insertID);
