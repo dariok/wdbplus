@@ -461,6 +461,11 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     );
   },
 
+  showInfoTab: function ( data ) {
+    $('#ann').prepend($('.content', data));
+    $('#wdbRight').tabs('option', 'active', 1);
+  },
+  
   // retrieve info by url
   showAnnotation: async function ( url, callback ) {
     $.ajax({
