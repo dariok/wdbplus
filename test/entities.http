@@ -17,3 +17,12 @@ GET https://exist.ulb.tu-darmstadt.de/1/r/edoc/entities/file/pd001908-0085/per/n
 ###
 
 GET https://exist.ulb.tu-darmstadt.de/1/r/edoc/entities/list/collection/pd000090/B.xml?p={"type":"per"}
+
+###
+
+https://exist.ulb.tu-darmstadt.de/1/r/edoc/entities/pd000090/org/byId?q=https%3A%2F%2Finvenio.bundesarchiv.de%2Finvenio%2Fdirektlink%2Fb7ae0ceb-e0d8-4308-a25c-3ad08adfc99e
+
+###
+
+GET https://tueditions.ulb.tu-darmstadt.de/v/pd000090/per/np000012
+
