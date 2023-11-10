@@ -53,7 +53,32 @@ declare function wdbe:getEntityBody($node as node(), $model as map(*)) {
 declare function wdbe:transform($node, $model as map(*)) as item()* {
   typeswitch ($node)
     case text() return $node
-    case element(tei:person) return <table class="noborder">{wdbe:passthrough($node, $model)}</table>
+    case element(tei:person) return
+      <table id="{ generate-id($node) }">
+         <tr>
+            <td>
+               <span class="controls">
+                  <button data-clear="{ generate-id($node) }" title="Diesen Eintrag schließen">[x]</button>
+                  <button title="Alle Informationen rechts schließen">[X]</button>
+               </span>
+            </td>
+            <td><b>Person</b></td>
+         </tr>
+         {wdbe:passthrough($node, $model)}
+      </table>
+    case element(tei:org) return
+      <table id="{ generate-id($node) }">
+         <tr>
+            <td>
+               <span class="controls">
+                  <button data-clear="{ generate-id($node) }" title="Diesen Eintrag schließen">[x]</button>
+                  <button title="Alle Informationen rechts schließen">[X]</button>
+               </span>
+            </td>
+            <td><b>Organisation / Körperschaft</b></td>
+         </tr>
+         {wdbe:passthrough($node, $model)}
+      </table>
     case element(tei:persName) return wdbe:persName($node, $model)
     case element(tei:birth) return wdbe:bd($node, $model)
     case element(tei:death) return wdbe:bd($node, $model)
@@ -78,6 +103,12 @@ declare function wdbe:transform($node, $model as map(*)) as item()* {
         else wdbe:placeName($node)
     case element(tei:place) return <table class="noborder">{wdbe:passthrough($node, $model)}</table>
     case element(tei:idno) return wdbe:idno($node)
+    case element(tei:occupation) return
+      <tr>
+        <td>{ if ( $node/@type ) then "Titel" else "Beruf" }</td>
+        <td>{ normalize-space($node) }</td>
+      </tr>
+    case element(tei:orgName) return wdbe:persName($node, $model)
     
 (:    default return wdbe:passthrough($node):)
     (:default return concat("def: ", name($node)):)
@@ -92,7 +123,10 @@ declare function wdbe:passthrough($nodes as node()*, $model) as item()* {
 
 (: die folgenden neu 2016-08-16 DK :)
 declare function wdbe:persName($node, $model) {
-  for $name in $node/* return wdbe:names($name)
+  <tr>
+    <td>Name</td>
+    <td>{ normalize-space($node) }</td>
+  </tr>
 };
 
 declare function wdbe:names($node) {

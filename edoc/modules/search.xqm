@@ -66,10 +66,12 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
       case "fts"      return $wdb:restURL || "search/collection/" || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
       case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
       case "list"     return $wdb:restURL || "entities/collection/" || $model?ed || "/" || $model?p?type || "/" || $model?p?id || ".html?p=" || encode-for-uri($json)
-      case "entries"  return $wdb:restURL || "entities/list/collection/" || $model?ed || "/" || $model?q || ".html?p=" || encode-for-uri($json)
+      case "entries"
+         return $wdb:restURL || 'entities/scan/' || $model?p?type || '/' || $model?ed || '.html?q=' || lower-case($model?q) || '&amp;p=' || encode-for-uri($json)
       default return ""
     let $url := xs:anyURI($ln || $start),
         $auth := request:get-cookie-value("wdbplus")
+    
     let $request-headers := (
         <http:header name="cache-control" value="no-cache" />,
         if ( exists($auth) )
