@@ -2,11 +2,10 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
-import module namespace console  = "http://exist-db.org/xquery/console";
-import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
-import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
+import module namespace sm      = "http://exist-db.org/xquery/securitymanager";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace wdbs    = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -248,7 +247,7 @@ declare function local:getFileStat($model, $file) {
             let $remoteMetaFile := try {
                doc($remoteMetaFilePath)
             } catch * {
-              console:log("Peer meta file not found: " || $remoteMetaFilePath ||
+              util:log("error", "Peer meta file not found: " || $remoteMetaFilePath ||
                 'e: ' ||  $err:code || ': ' || $err:description || ' @ ' || $err:line-number ||':'||$err:column-number || '
                 c: ' || $err:value || ' in ' || $err:module || '
                 a: ' || $err:additional)
