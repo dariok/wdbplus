@@ -2,12 +2,9 @@ xquery version "3.0";
 
 module namespace wdbPN = "https://github.com/dariok/wdbplus/ProjectNew";
 
-import module namespace console = "http://exist-db.org/xquery/console";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"             at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRc   = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
-import module namespace wdbs    = "https://github.com/dariok/wdbplus/stats"           at "/db/apps/edoc/modules/stats.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"            at "/db/apps/edoc/include/xstring/string-pack.xql";
-import module namespace sm      = "http://exist-db.org/xquery/securitymanager";
+import module namespace wdb   = "https://github.com/dariok/wdbplus/wdb"             at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
+import module namespace sm    = "http://exist-db.org/xquery/securitymanager";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
