@@ -574,6 +574,18 @@
       <xsl:apply-templates />
     </dt>
   </xsl:template>
+
+  <!-- images -->
+  <xsl:template match="tei:figure">
+    <span class="image">
+      <br/>
+      <img src="{tei:graphic/@url}" alt="{normalize-space((tei:ab, tei:caption)[1])}"/>
+      <br/>
+      <span class="caption">
+        <xsl:apply-templates select="tei:ab, tei:caption"/>
+      </span>
+    </span>
+  </xsl:template>
   
   <!-- pointers to footnotes -->
   <xsl:template match="tei:*" mode="fnLink">

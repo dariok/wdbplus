@@ -8,7 +8,9 @@ import module namespace util         = "http://exist-db.org/xquery/util";
 import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"        at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
+import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"      at "/db/apps/edoc/modules/entity.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "/db/apps/edoc/modules/start.xqm";
 import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
@@ -52,6 +54,18 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "title":     $wdb:configFile//*:name || " – Table of Contents",
         "pathToEd":  $wdb:data
       }
+    else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
+      let $regFile := switch ( $q )
+        case "per"
+          return collection(wdb:getEdPath($ed, true()))//*:listPerson
+        case "org"
+          return collection(wdb:getEdPath($ed, true()))//*:listOrg
+        default
+          return ""
+              
+      let $entryEd := $regFile/id($id)
+      (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
+      return map { "entry": $entryEd, "id": $id, "ed": $ed }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
@@ -142,13 +156,18 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
         for $h in $node/* return
           if ( $h/*[@data-template] )
             then for $c in $h/* return
-              try { 
+              try {
                 templates:apply($c, $wdbfp:lookup, $newModel)
               } catch * {
+                util:log("info", $newModel),
                 util:log("error", $err:description)
               }
-            else 
+            else try {
               templates:apply($h, $wdbfp:lookup, $newModel)
+            } catch * {
+              util:log("info", $newModel),
+              util:log("error", $err:description)
+            }
       }
     </html>
 };
@@ -205,9 +224,9 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
  : @return element(html:header)
  :)
 declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as element(header) {
-  let $file := xstring:substring-after-last(request:get-url(), '/'),
-      $name := substring-before($file, '.html'),
-      $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  let $file := xstring:substring-after-last(request:get-uri(), '/')
+    , $name := substring-before($file, '.html')
+    , $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
   return
     (: 1a. :)
@@ -251,9 +270,9 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
 declare
   %private
 function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
-  let $file := xstring:substring-after-last(request:get-url(), '/')
-  let $name := substring-before($file, '.html')
-  let $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  let $file := xstring:substring-after-last(request:get-uri(), '/')
+  , $name := substring-before($file, '.html')
+  , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
   return switch($type)
     case "css" return
@@ -311,6 +330,6 @@ declare variable $wdbfp:lookup := function($functionName as xs:string, $arity as
     try {
         function-lookup(xs:QName($functionName), $arity)
     } catch * {
-        ()
+        util:log("error", "Error looking up function " || $functionName || '#' || $arity)
     }
 };

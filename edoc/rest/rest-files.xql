@@ -354,7 +354,7 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
       for $process in $f/ancestor::meta:projectMD//meta:process[@target] return
         <view>
           {$process/@*}
-          /edoc/resource/view/{$id}.{string($process/@target)}{if($process/@view) then "?view=" || string($process/@view) else ()}
+          { '/edoc/resource/view/' || $id || '.' || string($process/@target) }{ if( $process/@view ) then "?view=" || string($process/@view) else () }
         </view>
     }</views>
   

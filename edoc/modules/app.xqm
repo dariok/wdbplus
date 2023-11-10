@@ -379,14 +379,10 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
         if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
           then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
           else (),
-        if ( $model?annotation = true() )
-          then <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" />
-          else (),
+        wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
         wdb:getBlob($node, $model, 'jquery'),
-        if ( $model?annotation = true() )
-          then <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-          else (),
+        wdb:getBlob($node, $model, 'jquery-ui-js'),
         <script src="$shared/scripts/js.cookie.js"></script>,
         <script src="$shared/scripts/legal.js"></script>,
         <script src="$shared/scripts/function.js"></script>,
@@ -401,10 +397,22 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
 
 (:~
  : return the header - if there is a project specific function, use it
+ :
+ : order of evaluation:
+ : 1. {$projectResources}/header.html – this must contain one html:header, the
+ :    contents of which will be sent through the templating system
+ : 2. instance or project specific wdbPF:getHeader#1
+ : 3. evaluation of all 4 constituents of the header in a row
+ :    a) wdbPF:getHeaderLeft#1 or {$wdb:data}/resources/headerLeft.html or empty html:p
+ :    b) wdbPF:getHeaderCentre#1 or {$wdb:data}/resources/headerCentre.html or html:h1
+ :    c) wdbPF:getHeaderMenu#1 or {$wdb:data}/resources/headerMenu.html or html:button
+ :    d) wdbPF:getHeaderRight#1 or {$wdb:data}/resources/headerRight.html or empty html:p
  :)
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
-    if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
+    if ( doc-available($model?projectResources || '/header.html') )
+      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $wdb:lookup, $model)
+    else if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
       <div class="headerSide" role="navigation">{
@@ -443,6 +451,13 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
 	let $ti := $model("title")
 	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
+};
+
+(:~
+ : generic function to wrap some info from the model in an HTML element via templating
+ :)
+declare function wdb:wrapText ( $node as node(), $model as map(*), $key as xs:string ) {
+  element { node-name($node) } { $model($key) }
 };
 
 (:~
@@ -502,9 +517,19 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
     }
 };
 
+(:~
+ : return the global (i.e., full width) footer
+ :
+ : order of evaluation:
+ : 1. {$wdb:data}/resources/mainFooter.html
+ : 2. {$projectResources}/mainFooter.html
+ : 3. wdbPF:getMainFooter#1
+ :)
 declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
   if ( doc-available($wdb:data || "/resources/mainFooter.html") )
     then templates:apply(doc($wdb:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+  else if ( doc-available($model?projectResources || '/mainFooter.html') ) 
+    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $wdb:lookup, $model)
   else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
     (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
@@ -958,6 +983,10 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
 };
 
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
-  <script src="{$wdb:configFile//config:source[@name = $name]/@path}"></script>
+  let $path := $wdb:configFile//config:source[@name = $name]/@path
+  
+  return if ( ends-with($path, 'js') )
+    then <script src="{ $path }"></script>
+    else <link rel="stylesheet" type="text/css" href="{ $path }" />
 };
 (: END HELPERS FOR REST AND HTTP REQUESTS :)

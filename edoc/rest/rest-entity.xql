@@ -2,7 +2,6 @@ xquery version "3.1";
 
 module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities";
 
-import module namespace console ="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -60,17 +59,7 @@ function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:str
         let $id := $r/ancestor::*[@xml:id][1]/@xml:id
         return
           <result id="{$id}">{
-            switch ($type)
-              case "per" return
-                let $name := $r/tei:surname
-                let $fo := if ($r/tei:forename) then ", " || $r/tei:forename else ()
-                let $nl := if ($r/tei:nameLink) then " " || $r/tei:nameLink else ()
-                let $da := if($r/parent::*/tei:birth or $r/parent::*/tei:death)
-                  then " (" || $r/parent::*/tei:birth || "–" || $r/parent::*/tei:death || ")"
-                  else ()
-                return concat($name, $fo, $nl, $da)
-              case "pla" return normalize-space($r)
-              default return ""
+            normalize-space($r)
           }</result>
     }</results>)
 };
@@ -85,10 +74,10 @@ function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($coll || '/resources/entity.xsl'))
-    then xs:anyURI($coll || '/resources/entity.xsl')
+    else if (doc-available($wdb:data || '/resources/entity.xsl'))
+    then xs:anyURI($wdb:data || '/resources/entity.xsl')
     else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
-    
+  
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
     <param name="rest" value="{$wdb:restURL}" />
@@ -144,8 +133,8 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:stri
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($coll || '/resources/entity.xsl'))
-    then xs:anyURI($coll || '/resources/entity.xsl')
+    else if (doc-available($wdb:data || '/resources/entity.xsl'))
+    then xs:anyURI($wdb:data || '/resources/entity.xsl')
     else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
     
   let $params := <parameters>
@@ -166,13 +155,13 @@ function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:stri
 
 declare
     %rest:GET
-    %rest:path("/edoc/entities/file/{$id}/{$ref}.xml")
+    %rest:path("/edoc/entities/file/{$id}/{$type}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
-function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
+function wdbRe:fileEntity ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
   let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
   let $query := lower-case(xmldb:decode($ref))
   
-  let $res := $file//tei:rs[@ref=$query or @ref = '#'||$query]
+  let $res := $file//tei:rs[@ref=$query or @ref='#' || $query or @ref = $type || ':' || $ref]
   let $max := count($res)
   
   return (
@@ -192,16 +181,16 @@ function wdbRe:fileEntity ($id as xs:string*, $ref as xs:string*, $start as xs:i
 };
 declare
     %rest:GET
-    %rest:path("/edoc/entities/file/{$id}/{$ref}.html")
+    %rest:path("/edoc/entities/file/{$id}/{$type}/{$ref}.html")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as xs:int*) {
+function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
   let $coll := wdb:getEdPath($id, true())
   
   let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
     then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($coll || '/resources/entity.xsl'))
-    then xs:anyURI($coll || '/resources/entity.xsl')
+    else if (doc-available($wdb:data || '/resources/entity.xsl'))
+    then xs:anyURI($wdb:data || '/resources/entity.xsl')
     else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
     
   let $params := <parameters>
@@ -215,115 +204,44 @@ function wdbRe:fileEntityHtml ($id as xs:string*, $ref as xs:string*, $start as 
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    transform:transform(wdbRe:fileEntity($id, $ref, $start), doc($xsl), $params)
+    transform:transform(wdbRe:fileEntity($id, $ref, $start, $type), doc($xsl), $params)
   )
 };
 
 declare
-    %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$id}/{$type}.xml")
-    %rest:query-param("start", "{$start}", 1)
-    %rest:query-param("p", "{$p}")
-function wdbRe:listCollectionEntities ( $id as xs:string*, $type as xs:string*, $start as xs:int*, $p as xs:string* ) as element()+ {
-  let $coll := wdb:getEdPath($id, true())
-    , $params := parse-json($p)
+  %rest:GET
+  %rest:path("/edoc/entities/{$ed}/{$type}/byId")
+  %rest:query-param("q", "{$externalId}", "")
+function wdbRe:entityById ( $ed as xs:string*, $type as xs:string*, $externalId as xs:string* ) {
+  let $coll := try { wdb:getEdPath($ed, true()) } catch * { "" }
+    , $query := xmldb:decode($externalId)
   
-  let $r := if ( exists($params?type) ) then
-        collection($coll)//tei:rs[(starts-with(@ref, $type) and @type = $params("type"))
-            or starts-with(@ref, $params?type || ':' || $type)]
-      else collection($coll)//tei:rs[@type = $type]
-  
-  let $max := count($r)
-  
-  let $res := for $f in $r
-        group by $ref := $f/@ref
-        order by $ref
-        return $ref
+  let $res := switch ( $type )
+    case "bib"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listBibl]
+    case "per"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listPerson]
+    case "pla"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listPlace]
+    case "org"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listOrg]
+    case "evt"
+      return collection($coll)//tei:idno[. = $query][ancestor::tei:listEvent]
+    default return ()
   
   return (
     <rest:response>
       <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
+        <http:header name="X-Rest-Status" value="REST:SUCCESS" />
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$type}" p="{$p}">{
-      for $f in subsequence($res, $start, 25)
-        let $count := $coll//tei:rs[@ref = $f]
+    <results q="{ $query }" type="{ $type }" collection="{ $ed }" n="{ count($res) }">{
+      for $r in $res
+        let $id := $r/ancestor::*[@xml:id][1]/@xml:id
         return
-          <result ref="{$f}" count="{count($count)}" />
-    }</results>
-  )
-};
-
-declare
-    %rest:GET
-    %rest:path("/edoc/entities/list/collection/{$collection}/{$q}.html")
-    %rest:query-param("start", "{$start}", 1)
-    %rest:query-param("p", "{$p}")
-function wdbRe:listCollectionEntitiesHtml ($collection as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
-  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
-  
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
-    then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($coll || '/resources/entity.xsl'))
-    then xs:anyURI($coll || '/resources/entity.xsl')
-    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
-    
-  let $params := <parameters>
-    <param name="title" value="{$md//meta:title[1]}" />
-    <param name="rest" value="{$wdb:restURL}" />
-  </parameters>
-  
-  return (
-    <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    transform:transform(wdbRe:listCollectionEntities ($collection, $q, $start, $p), doc($xsl), $params)
-  )
-};
-
-declare
-    %rest:GET
-    %rest:path("/edoc/entities/list/file/{$id}/{$q}.xml")
-    %rest:query-param("start", "{$start}", 1)
-    %rest:query-param("p", "{$p}")
-function wdbRe:listFileEntities ($id as xs:string*, $q as xs:string*, $start as xs:int*, $p as xs:string*) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-  let $query := lower-case(xmldb:decode($q))
-  
-  let $params := parse-json($p)
-  
-  let $r := if ($p != "" and $params("type") != "")
-    then $file//tei:rs[starts-with(@ref, $query) and @type = $params("type")]
-    else $file//tei:rs[starts-with(@ref, $query)]
-  let $res := for $f in $r
-    group by $ref := $f/@ref
-    return
-      <result ref="{$ref}">
-        {for $i in $f
-          group by $id := $i/ancestor::tei:*[@xml:id][1]/@xml:id
-          return <fragment id="{$id}" />
-        }
-      </result>
-  let $max := count($res)
-  
-  return (
-    <rest:response>
-      <http:response status="200">
-        <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" q="{$q}">{
-      for $h in subsequence($res, $start, 25) return
-        <result ref="{$h/@ref}" count="{count($h/*)}">
-          {$h/*}
-        </result>
-    }</results>
-  )
+          <result id="{$id}">{
+            normalize-space($r)
+          }</result>
+    }</results>)
 };
