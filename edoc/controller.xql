@@ -3,9 +3,8 @@
  :
  : author: Dario Kampkaspar <dario.kampkaspar@ulb.tu-darmstadt.de>
  :)
-xquery version "3.0";
+xquery version "3.1";
 
-import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace config  = "http://exist-db.org/xquery/apps/config"     at "/db/apps/eXide/modules/config.xqm";
 import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
@@ -35,16 +34,16 @@ declare function local:query-execution-allowed() {
   or sm:is-dba((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
 };
 
-let $cookiePath := substring-before(request:get-uri(), $exist:path),
-    $duration := xs:dayTimeDuration("P2D")
+let $cookiePath := substring-before(request:get-uri(), $exist:path)
+  , $duration := xs:dayTimeDuration("P2D")
 
 return
-if ($exist:resource eq '' or $exist:resource eq 'index.html') then
+if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/global/index.html"/>
     </dispatch>
 (: login :)
-else if ($exist:resource = 'login') then
+else if ( $exist:resource = 'login' ) then
   (
     login:set-user("wd", $cookiePath, $duration, false()),
     try {
@@ -61,27 +60,27 @@ else if ($exist:resource = 'login') then
       <status>{$err:description}</status>
     }
   )
-(: Konfigurationsseiten :)
-else if (ends-with($exist:resource, ".html") and contains($exist:path, '/admin/')) then
+(: admin pages :)
+else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    {login:set-user("wd", $cookiePath, $duration, false())}
+    { login:set-user("wd", $cookiePath, $duration, false()) }
     <view>
       <set-header name="Cache-Control" value="no-cache"/>
       <forward url="{$exist:controller}/admin/view.xql">
-				{login:set-user("wd", $cookiePath, $duration, false())}
-			</forward>
+        { login:set-user("wd", $cookiePath, $duration, false()) }
+      </forward>
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
       <forward url="{$exist:controller}/admin/view.xql"/>
     </error-handler>
   </dispatch>
-(: generelle HTML :)
-else if (ends-with($exist:resource, ".html")) then
+(: other HTML :)
+else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/modules/view.xql">
-				{login:set-user("wd", $cookiePath, $duration, false())}
+				{ login:set-user("wd", $cookiePath, $duration, false()) }
 			</forward>
     </view>
     <error-handler>
@@ -89,15 +88,15 @@ else if (ends-with($exist:resource, ".html")) then
       <forward url="{$exist:controller}/modules/view.xql"/>
     </error-handler>
   </dispatch>
-else if (contains($exist:path, "/$shared/")) then
+else if ( contains($exist:path, "/$shared/") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
       <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
     </forward>
   </dispatch>
-else if (ends-with($exist:path, ".xql")) then
+else if ( ends-with($exist:path, ".xql") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    {login:set-user("wd", $cookiePath, $duration, false())}
+    { login:set-user("wd", $cookiePath, $duration, false()) }
     <set-header name="Cache-Control" value="no-cache"/>
     <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
   </dispatch>
