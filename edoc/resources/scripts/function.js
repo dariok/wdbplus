@@ -667,7 +667,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     }
   },
 
-  // highlight a word (or words) from a search result
+   // highlight a word (or words) from a search result
   highlightSearch: function ( term, color ) {
     let lTerm = term.toLocaleLowerCase()
       , texts = $("section *")
