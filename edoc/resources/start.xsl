@@ -44,6 +44,7 @@
          <xsl:apply-templates select="//meta:projectID"/>
          <xsl:sequence select="$involvements[1]"/>
          <xsl:apply-templates select="meta:coverImages"/>
+         <xsl:apply-templates select="meta:projectDesc"/>
          <xsl:sequence select="$involvements[position() gt 1]"/>
       </div>
    </xsl:template>
@@ -116,5 +117,23 @@
       <a href="{@href}">
          <xsl:apply-templates/>
       </a>
+   </xsl:template>
+   
+   <xsl:template match="meta:projectDesc">
+      <div class="description">
+         <xsl:apply-templates/>
+      </div>
+   </xsl:template>
+   
+   <xsl:template match="meta:*">
+      <xsl:element name="{local-name()}">
+         <xsl:apply-templates select="@*, node()"/>
+      </xsl:element>
+   </xsl:template>
+   
+   <xsl:template match="@* | node()">
+      <xsl:copy>
+         <xsl:apply-templates select="@*, node()"/>
+      </xsl:copy>
    </xsl:template>
 </xsl:stylesheet>
