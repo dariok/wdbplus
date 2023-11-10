@@ -373,11 +373,11 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
       else (
         <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
         if ( util:binary-doc-available($wdb:data || "/resources/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/wdb.css" />
+          then <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
         if ( util:binary-doc-available($wdb:data || "/resources/view.css") )
-          then <link rel="stylesheet" type="text/css" href="$shared/../data/resources/view.css" />
+          then <link rel="stylesheet" type="text/css" href="data/resources/view.css" />
           else (),
         wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
@@ -387,7 +387,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
         <script src="$shared/scripts/legal.js"></script>,
         <script src="$shared/scripts/function.js"></script>,
         if ( util:binary-doc-available($wdb:data || "/resources/function.js") )
-          then <script src="$shared/../data/resources/function.js"></script>
+          then <script src="data/resources/function.js"></script>
           else (),
         wdb:getProjectFiles($node, $model, 'js')
       )
