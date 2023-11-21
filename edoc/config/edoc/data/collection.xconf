@@ -56,7 +56,6 @@
       <ignore qname="tei:pb"/>
       <ignore qname="tei:fw"/>
       <ignore qname="tei:lb"/>
-      <ignore qname="tei:pb" /> 
       <ignore qname="tei:pc"/>
     </lucene>
     <range>
