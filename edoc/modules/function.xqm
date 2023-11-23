@@ -160,13 +160,15 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
                 templates:apply($c, $wdbfp:lookup, $newModel)
               } catch * {
                 util:log("info", $newModel),
-                util:log("error", $err:description)
+                util:log("error", $err:description),
+                error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
               }
             else try {
               templates:apply($h, $wdbfp:lookup, $newModel)
             } catch * {
               util:log("info", $newModel),
-              util:log("error", $err:description)
+              util:log("error", $err:description),
+              error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
             }
       }
     </html>
