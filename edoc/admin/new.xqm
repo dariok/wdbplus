@@ -102,7 +102,7 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
             <dd>wdbmeta.xml:</dd>
             <dt>{$metaFile}</dt>
             <dd>Admin</dd>
-            <dt><a href="{$wdb:edocBaseURL}/admin/directoryForm.html?ed={$pID}">Upload</a></dt>
+            <dt><a href="directoryForm.html?ed={$pID}">Upload</a></dt>
           </dl>
       else $create
 };
