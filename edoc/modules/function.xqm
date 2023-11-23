@@ -15,7 +15,7 @@ import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs" 
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "/db/apps/edoc/modules/start.xqm";
 import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
-declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)
@@ -326,7 +326,7 @@ declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
 };
 
 (: we need a lookup function for the templating system to work :)
-declare variable $wdbfp:lookup := function($functionName as xs:string, $arity as xs:int) {
+declare variable $wdbfp:lookup := function( $functionName as xs:string, $arity as xs:integer ) {
     try {
         function-lookup(xs:QName($functionName), $arity)
     } catch * {
