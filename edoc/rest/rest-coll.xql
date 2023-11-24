@@ -500,24 +500,23 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
 
 declare function wdbRc:getGeneral ($id, $mt, $content) {
   let $wdbRc:acceptable := ("application/json", "application/xml")
-  
-  let $content := if ($mt != $wdbRc:acceptable)
-  then
+
+  let $content := if ( $mt = $wdbRc:acceptable ) then
     try {
       let $path := wdb:getProjectPathFromId($id)
         , $meta := doc(wdb:getMetaFile($path))
       
-      return if ($meta/*[self::meta:projectMD])
-      then
+      return if ( $meta/*[self::meta:projectMD] ) then
         let $eval := wdb:eval ( $content, false(), (xs:QName("meta"), $meta))
-        return if (count($eval) gt 0)
-        then (
+        
+        return if ( count($eval) gt 0 ) then (
           200,
           <collection id="{$id}">{
             $eval
           }</collection>
         )
-        else ( 204, "" )
+        else
+          ( 204, "" )
       else
         ( 400, "no a wdbmeta project" )
     }
@@ -527,25 +526,25 @@ declare function wdbRc:getGeneral ($id, $mt, $content) {
     catch * {
       ( 400, "" )
     }
-  else (406, string-join($wdbRc:acceptable, '&#x0A;'))
+  else
+    ( 406, string-join($wdbRc:acceptable, '&#x0A;') )
   
   return (
     <rest:response>
       <http:response status="{$content[1]}">
-        <http:header name="Content-Type" value="{if ($content[1] = 200) then $mt else 'text/plain'}" />
+        <http:header name="Content-Type" value="{ if ($content[1] = 200 ) then $mt else 'text/plain'}" />
         {
-          if ( $content[1] != 200 )
-          then
+          if ( $content[1] != 200 ) then
             <http:header name="REST-Status" value="{$content[2]}" />
           else ()
         }
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
+        <http:header name="Access-Control-Allow-Origin" value="*" />
       </http:response>
     </rest:response>,
     if ( $content[1] = 200 )
-      then if ($mt = "application/json")
-          then serialize($content[2]/resources, map { "method": "json" })
-          else $content[2]
+      then if ( $mt = "application/json" )
+        then serialize($content[2], map { "method": "json" })
+        else $content[2]
       else $content[2]
   )
 };
