@@ -101,10 +101,10 @@
   <xsl:template match="tei:text">
     <!-- TODO check usage of removed id="wdbContent" and rewrite these occurrences -->
     <article>
-      <xsl:if test="//tei:note[contains(@place = 'margin'])">
+      <xsl:if test="//tei:note[contains(@place, 'margin')]">
         <section aria-label="contains marginalia of an original text or side notes of a digital text"
           id="marginalia_container">
-          <xsl:apply-templates select="descendant::tei:note[contains(@place = 'margin')]" mode="margin" />
+          <xsl:apply-templates select="descendant::tei:note[contains(@place, 'margin')]" mode="margin" />
         </section>
       </xsl:if>
       
