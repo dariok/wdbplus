@@ -238,10 +238,10 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
     </rest:response>
   } catch * {
     (
-        util:log("error", $err:code),
-        util:log("error", $err:description),
+      util:log("error", $err:code),
+      util:log("error", $err:description),
       <rest:response>
-        <http:response status="{substring($err:code, 9)}">
+        <http:response status="{substring(local-name-from-QName($err:code), 2)}">
           <http:header name="Content-Type" value="text/plain" />
           <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
