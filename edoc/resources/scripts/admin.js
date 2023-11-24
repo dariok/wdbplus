@@ -67,15 +67,15 @@ const wdbAdmin = {
     // try to determine whether a file with that ID already exists in the target collection
     /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
      * a 409 will be returned upon POST or PUT */
-    let collectionContent,
-        delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
+    let collectionContent = {}
+      , delimiter = (wdb.meta.rest.substr(wdb.meta.rest.length - 1)) == '/' ? "" : "/";
     
     await $.ajax({
       method: "get",
       dataType: "json",
       url: wdb.meta.rest + delimiter + "collection/" + wdb.parameters.ed,
       success: function ( data, textStatus, jqXHR ) {
-        if (jqXHR.status == 204) {
+        if ( jqXHR.status == 204 ) {
           collectionContent = { resources: [] };
         } else {
           collectionContent = data;
@@ -89,11 +89,11 @@ const wdbAdmin = {
   
     let contents = {};
     if ( Array.isArray(collectionContent.resources) ) {
-      for (let content of collectionContent.resources) {
-        contents[content["@id"]] = content["@label"];
+      for ( let content of collectionContent.resources ) {
+        contents[content.id] = content.label;
       }
-    } else if ( collectionContent.resources.hasOwnProperty("@id") ) {
-      contents[collectionContent.resources["@id"]] = collectionContent.resources["@label"];
+    } else if ( collectionContent.resources.hasOwnProperty("id") ) {
+      contents[collectionContent.resources.id] = collectionContent.resources.label;
     }
   
     wdbAdmin.uploadFiles(contents);

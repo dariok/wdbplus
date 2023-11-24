@@ -499,12 +499,13 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
 };
 
 declare function wdbRc:getGeneral ($id, $mt, $content) {
-    let $wdbRc:acceptable := ("application/json", "application/xml")
+  let $wdbRc:acceptable := ("application/json", "application/xml")
+  
   let $content := if ($mt != $wdbRc:acceptable)
   then
     try {
       let $path := wdb:getProjectPathFromId($id)
-      let $meta := doc(wdb:getMetaFile($path))
+        , $meta := doc(wdb:getMetaFile($path))
       
       return if ($meta/*[self::meta:projectMD])
       then
@@ -543,7 +544,7 @@ declare function wdbRc:getGeneral ($id, $mt, $content) {
     </rest:response>,
     if ( $content[1] = 200 )
       then if ($mt = "application/json")
-          then xml-to-json($content[2])
+          then serialize($content[2]/resources, map { "method": "json" })
           else $content[2]
       else $content[2]
   )
