@@ -1,7 +1,5 @@
-<projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://github.com/dariok/wdbplus/wdbmeta ../include/wdbmeta/wdbmeta.xsd"
-    xml:id="">
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta">
     <projectID></projectID>
     <titleData>
         <title></title>
@@ -24,8 +22,8 @@
         </legal>
     </metaData>
     <files></files>
-    <process target="">
-        <command type=""></command>
+    <process target="html">
+        <command type="xsl">xsl/tei-transcript.xsl</command>
     </process>
     <struct></struct>
 </projectMD>

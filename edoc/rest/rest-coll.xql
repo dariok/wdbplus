@@ -2,20 +2,156 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace compression = "http://exist-db.org/xquery/compression" at "java:org.exist.xquery.modules.compression.CompressionModule";
-import module namespace console     = "http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace json        = "http://www.json.org";
-import module namespace wdbRi       = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace wdb         = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
-import module namespace xstring     = "https://github.com/dariok/XStringUtils" at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbfp   = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
+import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"    at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest"   at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"          at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
+declare variable $wdbRc:acceptable := ("application/json", "application/xml");
+
+(: create a (sub-)collection :)
+declare
+  %rest:POST("{$data}")
+  %rest:path("/edoc/collection/{$collectionID}/subcollection")
+  %rest:consumes("application/json")
+function wdbRc:createSubcollectionJson ( $data as xs:string*, $collectionID as xs:string ) {
+  let $map := parse-json(util:base64-decode($data))
+  return wdbRc:createSubcollection($map, $collectionID)
+};
+
+declare
+  %rest:POST("{$data}")
+  %rest:path("/edoc/collection/{$collectionID}/subcollection")
+  %rest:consumes("application/xml")
+function wdbRc:createSubcollectionXml ( $data as element()*, $collectionID as xs:string ) {
+  let $map := map:merge(for $e in $data/* return map { $e/local-name(): $e/string() })
+  return wdbRc:createSubcollection($map, $collectionID)
+};
+
+declare
+  %private
+function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as xs:string ) {
+  if (map:size($collectionData) eq 0) then
+    (
+      <rest:response>
+        <http:response status="400">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "no configuration data submitted"
+    )
+  else if (not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys($collectionData)))) then
+    (
+      <rest:response>
+        <http:response status="400">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "missing data; needed information: collectionName, id, name"
+    )
+  else if (not (collection($wdb:data)/id($collectionID)[self::meta:projectMD])) then
+    (
+      <rest:response>
+        <http:response status="404">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "no project with ID " || $collectionID || " or project not using wdbmeta.xml"
+    )
+  else
+    let $collection := wdb:getEdPath($collectionID, true())
+    
+    let $parentMeta := doc($collection || "/wdbmeta.xml")
+    let $errUser := not(sm:has-access(base-uri($parentMeta), "w"))
+    
+    let $errCollectionPresent := try {
+        wdb:getEdPath($collectionData?id)
+      } catch * {
+        false()
+      }
+    
+    return if ($errUser)
+    then (
+      <rest:response>
+        <http:response status="403">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      "user " || sm:id()//sm:real/sm:username || " does not have access to collection " || $collection
+    )
+    else if ($errCollectionPresent instance of xs:string) then (
+      <rest:response>
+        <http:response status="409" />
+      </rest:response>,
+      "collection " || $collectionData?id || " already created at " || $errCollectionPresent
+    )
+    else 
+      let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
+      
+      let $co := xmldb:copy-resource($wdb:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
+      let $newMetaPath := $subCollection || "/wdbmeta.xml"
+      
+      let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
+      let $metaPermissions := sm:get-permissions(xs:anyURI($collection || "/wdbmeta.xml"))
+      
+      let $setSubcollPermissions := (
+        sm:chown(xs:anyURI($subCollection), $collectionPermissions//@owner || ":" || $collectionPermissions//@group),
+        sm:chmod(xs:anyURI($subCollection), $collectionPermissions//@mode)
+      )
+      let $setMetaPermissions := (
+        sm:chown(xs:anyURI($newMetaPath), $metaPermissions//@owner || ":" || $metaPermissions//@group),
+        sm:chmod(xs:anyURI($newMetaPath), $metaPermissions//@mode)
+      )
+      
+      let $meta := doc ($newMetaPath)
+      
+      let $insID := update insert attribute xml:id { $collectionData?id } into $meta/meta:projectMD
+      let $insTitle := update replace $meta//meta:title[1] with <title xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        type="main">{ $collectionData?name }</title>
+      let $insParent := update insert <import xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        path="../wdbmeta.xml" /> into $meta/meta:projectMD/meta:struct
+      
+      let $insPtr := update insert <ptr xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        path="{$collectionData?collectionName}/wdbmeta.xml" xml:id="{$collectionData?id}"
+        /> into $parentMeta//meta:files
+      let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+        file="{$collectionData?id}" label="{$collectionData?name}"
+        /> into $parentMeta/meta:projectMD/meta:struct
+      
+      return (
+        <rest:response>
+          <http:response status="201">
+            <http:header name="x-rest-status" value="{$subCollection}" />
+            <http:header name="Content-Type" value="text/plain" />
+          </http:response>
+        </rest:response>,
+        $subCollection
+      )
+};
+
 (: create a resource in a collection :)
+(: Evaluate preflight requests before PUTing a file :)
+declare
+  %rest:OPTIONS
+  %rest:path("/edoc/collection/{$collection}")
+  %rest:header-param("origin", "{$origin}", "")
+function wdbRc:createFilePreflight ($collection as xs:string, $origin as xs:string*) as element(rest:response) {
+  wdbRCo:evaluatePreflight($origin, "POST")
+};
+
 (: create a single file for which no entry has been created in wdbmeta.
    - if a file with the same ID, MIME type and path is found, update it (if these are not a match, return 409)
    - if no target collection is given, return 500
@@ -24,110 +160,64 @@ declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collection}")
+  %rest:consumes("multipart/form-data")
   %rest:header-param("Content-Type", "{$header}")
 function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $header as xs:string*) {
-  let $user := sm:id()//sm:real/sm:username/string()
-  
-  return if ($user = "guest")
-  then
-    <rest:response>
-      <http:response status="401">
-        <http:header name="WWW-Authenticate" value="Basic"/>
-      </http:response>
-    </rest:response>
-  else if (not($data) or string-length($data) = 0)
-  then (
-    <rest:response>
-      <http:response status="400">
-        <http:header name="Content-Type" value="text/plain" />
-      </http:response>
-    </rest:response>,
-    "no data provided"
-  )
-  else
-    let $parsed := wdb:parseMultipart($data, $header)
-    let $path := normalize-space($parsed?filename?body)
-    let $errNoPath := if (string-length($path) = 0)
-      then "no filename provided in form data"
+  try {
+    let $user := sm:id()//sm:real/sm:username/string()
+    let $err :=
+      if ($user = "guest")
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h401"))
+      else if (not($data) or string-length($data) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no data provided")
       else ()
     
-    let $contentType := $parsed?file?header?Content-Type
-    let $errNoContentType := if (string-length($contentType) = 0)
-      then "no Content Type declared for file"
+    let $parsed      := wdb:parseMultipart($data, $header),
+        $path        := normalize-space($parsed?filename?body),
+        $contentType := $parsed?file?header?Content-Type
+    let $err :=
+      if (string-length($path) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no filename provided in form data")
+      else if (string-length($contentType) = 0)
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no Content Type declared for file")
       else ()
       
-    return if ($errNoPath or $errNoContentType)
-    then (
-      <rest:response>
-        <http:response status="400">
-          <http:header name="Content-Type" value="text/plain" />
-        </http:response>
-      </rest:response>,
-      string-join(($errNoPath, $errNoContentType), "; ")
-    )
-    else
-      let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
-      let $errNoCollection := if (not($collectionFile))
-        then "collection " || $collection || " not found"
+    let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+    let $err := if (not($collectionFile))
+      then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
+      else ()
+      
+    let $collectionPath := replace($wdb:edocBaseDB  || '/' ||  wdb:getEdPath($collection), "//", "/")
+    let $err := if (not(sm:has-access(xs:anyURI($collectionPath), "w")))
+      then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
+      else ()
+    
+    let $resourceName := xstring:substring-after-last($path, '/'),
+        $targetPath   := $collectionPath || '/' || xstring:substring-before-last($path, '/')
+    
+    (: make sure we really have an ID in the file :)
+    let $prepped := wdbRMi:replaceWs($parsed?file?body),
+        $contents := if ($contentType = ("text/xml", "application/xml") and not($prepped instance of element() or $prepped instance of document-node()))
+          then parse-xml($prepped)
+          else $prepped,
+        $id := if ($contents instance of document-node())
+          then $contents/*[1]/@xml:id
+          else ()
+    let $err := if ($contents instance of document-node() and not($id))
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no ID found in XML file")
+      else if (collection($wdb:data)/id($id))
+        then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h409"), "a file with the ID " || $id || " is already present")
         else ()
+    
+      (: store $prepped, not $contents as parse-xml() adds prefixes :)
+      let $store := wdbRMi:store($targetPath, $resourceName, $prepped, $contentType),
+          $meta := if ( $contentType = ("text/xml", "application/xml", "application/xslt+xml") )
+            then wdbRMi:enterMetaXML($store[2])
+            else wdbRMi:enterMeta($store[2])
       
-      let $collectionPath := if (not($errNoCollection))
-        then replace($wdb:edocBaseDB  || '/' ||  wdb:getEdPath($collection), "//", "/")
-        else ()
-      
-      let $resourceName := xstring:substring-after-last($path, '/')
-      let $targetPath := $parsed?targetCollection?body
-      
-      let $errNoAccess := if (not($errNoCollection)
-          and not(sm:has-access(xs:anyURI($targetPath), "w")))
-        then "user " || $user || " has no access to write to collection " || $targetPath
-        else ()
-      
-      (: all this to make sure we really have an ID in the file :)
-      let $prepped := wdbRi:replaceWs($parsed?file?body)
-      let $contents := if ((contains($contentType, "text/xml") or contains($contentType, "application/xml"))
-          and not($prepped instance of element() or $prepped instance of document-node()))
-        then parse-xml($prepped)
-        else $prepped
-      
-      let $id := if ($contents instance of document-node())
-        then $contents/*[1]/@xml:id
-        else ()
-      let $errNoID := if ($contents instance of document-node() and not($id))
-        then "no ID found in XML file"
-        else ()
-      
-      let $errPresent := if (collection($wdb:data)/id($id))
-        then "a file with the ID " || $id || " is already present"
-        else ()
-      
-      let $status :=
-        if ($errNoCollection) then 404
-        else if ($errNoAccess) then 403
-        else if ($errNoID) then 400
-        else if ($errPresent) then 409
-        else 200
-      
-      return if ($status != 200) then
-        ( 
-          <rest:response>
-            <http:response status="{$status}">
-              <http:header name="Content-Type" value="text/plain" />
-              <http:header name="Access-Control-Allow-Origin" value="*"/>
-            </http:response>
-          </rest:response>,
-          string-join(($errNoCollection, $errNoAccess, $errNoID, $errPresent), "\n")
-        )
-      else
-        (: store $prepped, not $contents as parse-xml() adds prefixes :)
-        let $store := wdbRi:store($targetPath, $resourceName, $prepped, $contentType)
-        let $meta := if (substring-after($resourceName, '.') = ("xml", "xsl"))
-          then wdbRi:enterMetaXML($store[2])
-          else wdbRi:enterMeta($store[2])
-        return if ($store[1]//http:response/@status = "200"
-            and $meta[1]//http:response/@status = "200")
+      return if ($store[1]//http:response/@status = "200" and $meta[1]//http:response/@status = "200")
         then
-          (
+          ( 
             <rest:response>
               <http:response status="201">
                 <http:header name="Content-Type" value="text/plain" />
@@ -140,34 +230,39 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         else if ($store[1]//http:response/@status != "200")
         then $store
         else $meta
+  } catch wdbErr:h401 {
+    <rest:response>
+      <http:response status="401">
+        <http:header name="WWW-Authenticate" value="Basic"/>
+      </http:response>
+    </rest:response>
+  } catch * {
+    (
+      util:log("error", $err:code),
+      util:log("error", $err:description),
+      <rest:response>
+        <http:response status="{substring(local-name-from-QName($err:code), 2)}">
+          <http:header name="Content-Type" value="text/plain" />
+          <http:header name="Access-Control-Allow-Origin" value="*"/>
+        </http:response>
+      </rest:response>,
+      $err:description,
+      $err:value,
+      $err:line-number || ":" || $err:column-number
+    )
+  }
 };
 
 (: list all collections :)
-declare function local:getCollections() {
-  <collections base="{$wdb:data}/">{
-    for $p in collection($wdb:data)//meta:projectMD
-      let $path := substring-before(substring-after(base-uri($p), $wdb:data || '/'), 'wdbmeta.xml')
-      order by $path
-      return <collection id="{$p/@xml:id}" path="{$path}" title="{$p//meta:title[1]}"/>
-  }</collections>
-};
 declare
     %rest:GET
     %rest:path("/edoc/collection")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getCollections ($mt as xs:string*) {
-  if ($mt = "application/json")
-  then (
-    <rest:response>
-      <http:response status="200" message="OK">
-        <http:header name="Content-Type" value="application/json; charset=UTF-8" />
-        <http:header name="rest-status" value="REST:SUCCESS" />
-        <http:header name="Access-Control-Allow-Origin" value="*"/>
-      </http:response>
-    </rest:response>,
-    json:xml-to-json(local:getCollections())
+  wdbRc:getGeneral ("data", $mt,
+    'for $s in $meta//meta:struct[@file] return
+      <collection id="{$s/@file}" label="{$s/@label}" />'
   )
-  else local:getCollections()
 };
 declare
     %rest:GET
@@ -183,6 +278,35 @@ declare
 function wdbRc:getCollectionsXML () {
   wdbRc:getCollections("application/xml")
 };
+(: END list all collections :)
+
+(: get a full list of a collection (= subcolls and resources entered into wdbmeta.xml) :)
+declare
+    %rest:GET
+    %rest:path("/edoc/collection/{$id}")
+    %rest:header-param("Accept", "{$mt}")
+function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
+  wdbRc:getGeneral ($id, $mt,
+    '(
+      for $s in $meta//meta:struct[@file] return
+        <collection id="{$s/@file}" label="{$s/@label}" />,
+      for $s in $meta//meta:view return
+        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}.xml")
+function wdbRc:getCollectionXML ($id) {
+  wdbRc:getCollection($id, "application/xml")
+};
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}.json")
+  %rest:produces("application/json")
+function wdbRc:getCollectionJSON ($id) {
+  wdbRc:getCollection($id, "application/json")
+};
+(: END list a collection :)
 
 declare
   %rest:GET
@@ -206,36 +330,18 @@ function wdb:getResourcesZip ($id as xs:string) {
   )
 };
 
-(: resources within a collection :)
+(: list resources within a collection (= those entered into wdbmeta.xml) :)
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$id}")
+    %rest:path("/edoc/collection/{$id}/resources")
     %rest:header-param("Accept", "{$mt}")
 function wdbRc:getResources ($id as xs:string, $mt as xs:string*) {
-  let $md := collection($wdb:data)//meta:projectMD[@xml:id = $id]
-  
-  return if (count($md)  != 1)
-  then
-    <rest:response>
-      <http:response status="500">
-        <http:header name="REST-Status" value="REST:404 – ID not found" />
-      </http:response>
-    </rest:response>
-  else
-    let $content := local:listCollection($md)
-    return
-    switch ($mt)
-    case "application/json" return
-      (<rest:response>
-        <http:response status="200" message="OK">
-          <http:header name="Content-Type" value="application/json; charset=UTF-8" />
-          <http:header name="REST-Status" value="REST:SUCCESS" />
-          <http:header name="Access-Control-Allow-Origin" value="*"/>
-        </http:response>
-      </rest:response>,
-      json:xml-to-json($content))
-    default return $content
+  wdbRc:getGeneral ($id, $mt,
+    'for $s in $meta//meta:view return
+      <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />'
+  )
 };
+
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/resources.xml")
@@ -249,57 +355,53 @@ declare
 function wdbRc:getResourcesJSON ($id) {
   wdbRc:getResources($id, "application/json")
 };
-declare function local:listCollection ($md as element()) {
-  let $collection := substring-before(base-uri($md), '/wdbmeta.xml')
-  return
-  <collection id="{$md/@xml:id}" path="{$collection}" title="{$md//meta:title[1]}">{
-    for $coll in xmldb:get-child-collections($collection)
-      let $mfile := $collection || '/' || $coll || '/wdbmeta.xml'
-      order by $coll
-      return if (doc-available($mfile))
-      then <collection id="{doc($mfile)/meta:projectMD/@xml:id}" />
-      else <collection name="{$coll}">{
-        local:listResources($md, $coll)
-      }</collection>,
-    local:listResources($md, "")
-  }</collection>
-};
-declare function local:listResources ($mfile, $subcollection) {
-  for $file in $mfile//meta:file[starts-with(@path, $subcollection)]
-    order by $file/@path
-    return <resource id="{$file/@xml:id}" path="{$file/@path}" />
-};
+(: END list resources within a collection :)
 
+(: list subcollections of a collection (= those entered into wdbmeta.xml) :)
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/collections")
+  %rest:header-param("Accept", "{$mt}")
+function wdbRc:getSubcoll ( $id as xs:string, $mt as xs:string* ) {
+wdbRc:getGeneral ($id, $mt,
+  'for $s in $meta//meta:struct[@file] return
+    <collection id="{$s/@file}" label="{$s/@label}" />'
+)
+};
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.json")
   %output:method("json")
-  function wdbRc:getSubcollJson ($id) {
-    wdbRc:getSubcollXML($id)
+function wdbRc:getSubcollJson ($id) {
+  wdbRc:getSubcoll($id, "application/json")
 };
+
 declare
   %rest:GET
   %rest:path("/edoc/collection/{$id}/collections.xml")
-  function wdbRc:getSubcollXML ($id) {
-    let $md := collection($wdb:data)/id($id)[descendant::meta:*]
-    let $path := xstring:substring-before-last(base-uri($md), '/')
-    return
-    <collection id="$id" path="{$path}">{
-      for $s in xmldb:get-child-collections($path)
-        return try {
-          local:childCollections($path, $s)
-        } catch * {
-          console:log($s || " not readable")
-        }
-    }</collection>
+function wdbRc:getSubcollXML ($id) {
+  wdbRc:getSubcoll($id, "application/xml")
 };
-declare function local:childCollections($path, $s) {
-  let $p := $path || '/' || $s
-  return
-  <collection path="{$p}">{
-    for $sc in xmldb:get-child-collections($p)
-      return local:childCollections($p, $sc)
-  }</collection>
+(: END list subcollections :)
+
+(: get a full list of subcollections in the database (includes those not in
+ : wdbmeta.xml – used e.g. to specify a subcollection when uploading :)
+declare
+  %rest:GET
+  %rest:path("/edoc/collection/{$id}/structure.json")
+  %output:method("json")
+function wdbRc:getStructureJson ( $id ) {
+  let $collection-uri := wdb:getEdPath($id, true())
+  
+  return (
+    <rest:response>
+      <http:response>
+        <http:header name="Content-Type" value="application/json" />
+        <http:header name="Access-Control-Allow-Origin" value="*"/>
+      </http:response>
+    </rest:response>,
+    map { $collection-uri: xmldb:get-child-collections($collection-uri) }
+  )
 };
 
 (: navigation :)
@@ -308,83 +410,141 @@ declare
     %rest:path("/edoc/collection/{$id}/nav.xml")
 function wdbRc:getCollectionNavXML ($id as xs:string) {
   let $md := collection($wdb:data)/id($id)[self::meta:projectMD]
+  let $uri := base-uri($md)
+  let $struct := $md/meta:struct
   
-  let $st := local:pM(doc(local:findImporter(base-uri($md))))
-  return if (count($st) = 1)
-    then $st
-    else <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" file="{$id}">{$st}</struct>
+  let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$id}">{(
+      $struct/@*,
+      $struct/*
+    )}</struct>
+  
+  return if ($struct/meta:import)
+    then wdbRc:imported($struct/meta:import, $content)
+    else $content
 };
 
+declare function wdbRc:imported ( $import, $child ) {
+  let $uri := base-uri($import)
+  let $path := substring-before($uri, "wdbmeta.xml") || $import/@path
+  let $meta := doc($path)
+  
+  let $content := $meta/meta:projectMD/meta:struct
+  let $struct := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$meta/meta:projectMD/@xml:id}">{(
+        $content/@*,
+        for $st in $content/* return
+          if ($st/@file = $child/@ed)
+            then $child
+            else $st
+      )}</struct>
+  
+  return if ($content/meta:import)
+    then wdbRc:imported ( $content/meta:import, $struct)
+    else $struct
+};
+
+(:~
+ : Return the navigation for a given project as HTML
+ : Tries to load a project specific function, project specific XSLT, instance specific XSLT or uses the WDB+ default
+ :
+ : @param $ed The project’s ID
+ : @return HTML (should be a html:nav element)
+ :)
+declare function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
+    wdbRc:getCollectionNavHTML ( $ed, () )
+};
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$id}/nav.html")
-function wdbRc:getCollectionNavHTML ($id as xs:string) {
-  let $pathToEd := wdb:getProjectPathFromId($id)
-  let $mf := wdb:getMetaFile($pathToEd)
+    %rest:path("/edoc/collection/{$ed}/nav.html")
+function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)? ) {
+  let $model := if ( exists($externalModel) ) then $externalModel else wdbfp:populateModel("", $ed, "", "")
+    , $params :=
+        <parameters>
+          <param name="id" value="{$ed}"/>
+        </parameters>
+    , $attributes :=
+        <attributes>
+          <attr name="http://saxon.sf.net/feature/expandAttributeDefaults" value="off" />
+        </attributes>
   
   let $html := try {
-    if(ends-with($mf, 'wdbmeta.xml'))
+    if( ends-with($model?infoFileLoc, 'wdbmeta.xml') )
       then
-        let $xsl := if (wdb:findProjectFunction(map {"pathToEd": $pathToEd}, "getNavXSLT", 0))
-          then wdb:eval("wdbPF:getNavXSLT()")
-          else if (doc-available($pathToEd || '/nav.xsl'))
-          then xs:anyURI($pathToEd || '/nav.xsl')
-          else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
-        let $struct := wdbRc:getCollectionNavXML($id)
-        return transform:transform($struct, doc($xsl), ())
+        let $struct := wdbRc:getCollectionNavXML($ed)
+          , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
+              then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
+              else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
+              then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
+              else if ( doc-available($wdb:data || '/resources/nav.xsl') )
+              then xs:anyURI($wdb:data || '/resources/nav.xsl')
+              else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+        
+        return transform:transform($struct, doc($xsl), $params, $attributes, ())
       else
-        transform:transform(doc($mf), doc($pathToEd || '/mets.xsl'), ())
+        transform:transform(doc($model?infoFileLoc), doc($model?pathToEd || '/mets.xsl'), $params)
   } catch * {
-    <p>Error transforming meta data file {$mf} to navigation using
-      {$pathToEd || '/mets.xsl'}:<br/>{$err:description}</p>
+    <p>Error transforming meta data file {$model?infoFileLoc} to navigation HTML:<br/>{$err:description}</p>
   }
   
-  let $status := if ($html[self::*:p]) then '500' else '200'
+  let $status := if ( $html[self::*:p] ) then '500' else '200'
   
   return (
     <rest:response>
       <http:response status="{$status}">
         <http:header name="Access-Control-Allow-Origin" value="*" />
         <http:header name="Content-Type" value="text/html" />
-        <http:header name="REST-Status" value="REST:SUCCESS" />
       </http:response>
     </rest:response>,
     $html
   )
 };
 
-declare function local:findImporter($path) {
-  let $f := doc($path)
-  
-  return if ($f//meta:import)
-  then
-    let $base := substring-before($path, "wdbmeta.xml")
-    return local:findImporter($base || $f//meta:import/@path)
-  else $path
-};
+declare function wdbRc:getGeneral ($id, $mt, $content) {
+  let $wdbRc:acceptable := ("application/json", "application/xml")
 
-declare function local:pM($meta) {
-  let $uri := base-uri($meta)
+  let $content := if ( $mt = $wdbRc:acceptable ) then
+    try {
+      let $path := wdb:getProjectPathFromId($id)
+        , $meta := doc(wdb:getMetaFile($path))
+      
+      return if ( $meta/*[self::meta:projectMD] ) then
+        let $eval := wdb:eval ( $content, false(), (xs:QName("meta"), $meta))
+        
+        return if ( count($eval) gt 0 ) then (
+          200,
+          <collection id="{$id}">{
+            $eval
+          }</collection>
+        )
+        else
+          ( 204, "" )
+      else
+        ( 400, "no a wdbmeta project" )
+    }
+    catch *:wdb0200 {
+      ( 404, "no collection with ID " || $id )
+    }
+    catch * {
+      ( 400, "" )
+    }
+  else
+    ( 406, string-join($wdbRc:acceptable, '&#x0A;') )
   
-  return for $s in $meta/meta:projectMD/meta:struct/*
-    order by $s/@order
-    let $f := $meta//meta:files/*[@xml:id = $s/@file]
-    return if ($f[self::meta:ptr])
-    then
-      let $base := substring-before($uri, 'wdbmeta.xml')
-      return
-        <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-          {$s/@*}
-          {local:pM(doc($base || $f/@path))}
-        </struct>
-    else if ($s[self::meta:struct]/meta:view) then
-      <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-          {$s/@*}
-          {
-            for $v in $s/* return
-              if ($v[@private = 'true'] and not(sm:has-access($uri, 'w'))) then ()
-              else $v
-          }
-        </struct>
-    else $s
+  return (
+    <rest:response>
+      <http:response status="{$content[1]}">
+        <http:header name="Content-Type" value="{ if ($content[1] = 200 ) then $mt else 'text/plain'}" />
+        {
+          if ( $content[1] != 200 ) then
+            <http:header name="REST-Status" value="{$content[2]}" />
+          else ()
+        }
+        <http:header name="Access-Control-Allow-Origin" value="*" />
+      </http:response>
+    </rest:response>,
+    if ( $content[1] = 200 )
+      then if ( $mt = "application/json" )
+        then serialize($content[2], map { "method": "json" })
+        else $content[2]
+      else $content[2]
+  )
 };

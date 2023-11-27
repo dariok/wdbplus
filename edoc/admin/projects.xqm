@@ -2,14 +2,14 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
-import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
-import module namespace console  = "http://exist-db.org/xquery/console";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
-import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
+import module namespace sm      = "http://exist-db.org/xquery/securitymanager";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace wdbs    = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
@@ -19,20 +19,19 @@ declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
 };
 
 declare function wdbPL:body ( $node as node(), $model as map(*) ) {
-  let $ed := xstring:substring-before-if-ends(request:get-parameter('ed', ''), '/')
   let $file := request:get-parameter('file', '')
   let $job := request:get-parameter('job', '')
-  
   let $user := sm:id()
   
   return
     if (not($user//sm:group = 'dba'))
       then <p>Diese Seite ist nur für Administratoren zugänglich!</p>
     else if ($job != '') then
-      let $edition := wdb:getEdFromPath($file, false())
-      let $metaPath := $wdb:edocBaseDB || '/' || $edition || '/wdbmeta.xml'
+      let $editionID := $model?id
+      let $metaPath := $model?infoFileLoc
       let $metaFile := doc($metaPath)
-      let $relativePath := substring-after($file, $edition||'/')
+      
+      let $relativePath := substring-after($file, $model?pathToEd || '/')
       let $subColl := xstring:substring-before-last($file, '/')
       let $resource := xstring:substring-after-last($file, '/')
       let $fileEntry := $metaFile//meta:file[@path = $relativePath]
@@ -44,35 +43,35 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
             date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"
             xml:id="{$xml/tei:TEI/@xml:id}" />
           let $up1 := update insert $ins into $metaFile//meta:files
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model , $file)
         
         case 'uuid' return
           let $ins := attribute uuid {util:uuid($xml)}
           let $up1 := if ($fileEntry/@uuid)
             then update replace $fileEntry/@uuid with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'pid' return
           let $ins := attribute pid { string($xml//tei:publicationStmt/tei:idno[@type = 'URI']) }
           let $up1 := if ($fileEntry/@pid)
             then update replace $fileEntry/@pid with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'date' return
           let $ins := attribute date {xmldb:last-modified($subColl, $resource)}
           let $up1 := if ($fileEntry/@date)
             then update replace $fileEntry/@date with $ins
             else update insert $ins into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'id' return
           let $ins := attribute xml:id {normalize-space($xml/tei:TEI/@xml:id)}
           let $upd1 := if ($fileEntry/@xml:id)
             then update replace $fileEntry/@xml:id with $ins
             else update insert $ins/@xml:id into $fileEntry
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         case 'private' return
           let $id := normalize-space($xml/tei:TEI/@xml:id)
@@ -82,50 +81,31 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
             else if ($view/@private = 'false')
               then update value $view/@private with 'true'
               else update insert attribute private {'true'} into $view
-          return local:getFileStat($edition, $file)
+          return local:getFileStat($model, $file)
         
         default return
           <div id="data"><div><h3>Strange Error</h3></div></div>
-          
-    else if ($ed = '' and $file = '') then
-      <div id="content">
-        <h3>Liste der Projekte</h3>
-        {wdbs:projectList(true(), '')}
-      </div>
-    else if ($ed != '' and $file = '') then
-      local:getFiles($ed)
+    (: no job given :)
+    else if ( ($model?ed = 'data' or $model?ed = '') and $file = '' ) then (
+      <h3>Liste der Projekte</h3>,
+      wdbs:projectList(true(), '')
+    )
+    else if ($model?ed != 'data' and $model?ed != ''and $file = '') then
+      local:getFiles($model)
     else
-      local:getFileStat($ed, $file)
+      local:getFileStat($model, $file)
 };
 
-declare function wdbPL:head ($node as node(), $model as map(*)) {
-  let $ed := request:get-parameter('ed', '')
-  let $title := if (ends-with(request:get-uri(), 'admin.html'))
-    then "Admin-Seite"
-    else if (ends-with(request:get-uri(), 'global.html'))
-    then "Globale Einstellungen"
-    else if ($ed = '')
-    then "Projekte"
-    else "Projekt " || $ed
+declare function local:getFiles($model) {
+  let $infoFile := doc($model?infoFileLoc)
+  let $filesInEd := (
+    $infoFile//meta:file,
+    $infoFile//mets:file
+  )
   
-  let $opts := if (request:get-parameter('job', '') != '')
-    then <span class="dispOpts"><a href="global.html">globale Optionen</a></span>
-    else ()
-    
-  return (<h1>{$title}</h1>,
-    $opts)
-};
-
-declare function local:getFiles($edoc as xs:string) {
-  let $ed := collection($wdb:edocBaseDB || '/' || $edoc)//tei:TEI
   return 
     <div id="content">
-      <h1>Insgesamt {count($ed)} EE</h1>
-      {
-        if (not(doc-available($wdb:edocBaseDB || '/' || $edoc || '/wdbmeta.xml')))
-          then <p>keine <code>wdbmeta.xml</code> vorhanden!</p>
-          else ()
-      }
+      <h1>Insgesamt {count($filesInEd)} Texte</h1>
       <table class="noborder">
         <tbody>
           <tr>
@@ -135,18 +115,42 @@ declare function local:getFiles($edoc as xs:string) {
             <th>Status</th>
           </tr>
           {
-            for $doc in $ed
-              let $docUri := base-uri($doc)
+            for $doc in $filesInEd
+              let $info := if ($doc[self::meta:file])
+                then
+                  let $id := $doc/@xml:id
+                  let $view := $infoFile//meta:view[@file = $id]
+                  return (
+                    $id,
+                    if ($view/@order castable as xs:int)
+                      then number($infoFile//meta:view[@file = $id]/@order)
+                      else "",
+                    $model?pathToEd || "/" || $doc/@path,
+                    $view/@label
+                  )
+                else
+                  let $id := $doc/@ID
+                  let $struct := $infoFile//mets:fptr[@FILEID = $id]/parent::tei:div
+                  return (
+                    $id,
+                    if ($struct/@ORDERLABEL castable as xs:int)
+                      then number($struct/@ORDERLABEL)
+                      else string($struct/@ORDERLABEL),
+                    $model?pathToEd || "/" || $doc/mets:FLocat/@*:href,
+                    $struct/@LABEL
+                  )
+              
+              order by $info[3]
               return
                 <tr>
-                  <td>{$doc/@n}</td>
-                  <td>{$docUri}</td>
+                  <td>{$info[2]}</td>
+                  <td>{$info[3]}</td>
                   <td>
-                    <a href="../view.html?id={$doc/@xml:id}">
-                      {substring(string-join($doc//tei:titleStmt/*, ' - '), 1, 100)}
+                    <a href="../view.html?id={$info[1]}">
+                      {substring($info[4], 1, 100)}
                     </a>
                   </td>
-                  <td><a href="javascript:show('{$edoc}', '{$docUri}')">anzeigen</a></td>
+                  <td><a href="javascript:show('{$model?ed}', '{$info[1]}')">anzeigen</a></td>
                 </tr>
           }
         </tbody>
@@ -154,18 +158,15 @@ declare function local:getFiles($edoc as xs:string) {
     </div>
 };
 
-declare function local:getFileStat($ed, $file) {
-  let $doc := doc($file)
-  let $subColl := xstring:substring-before-last($file, '/')
-  let $resource := xstring:substring-after-last($file, '/')
-  let $metaPath := $wdb:edocBaseDB || '/' || $ed || '/wdbmeta.xml'
-  let $metaFile := doc($metaPath)
-  let $relativePath := substring-after($file, $ed||'/')
-  let $entry := $metaFile//meta:file[@path = $relativePath]
+declare function local:getFileStat($model, $file) {
+  let $filePath := wdb:getFilePath($file)
+  let $doc := doc($filePath)
+  let $metaFile := doc($model?infoFileLoc)
+  let $entry := $metaFile/id($file)
   let $uuid := util:uuid($doc)
-  let $pid := $doc//tei:titleStmt/tei:idno[@type = 'URI']
-  let $date := xmldb:last-modified($subColl, $resource)
-  let $id := normalize-space($doc/tei:TEI/@xml:id)
+  let $pid := $entry/@pid
+  let $date := xmldb:last-modified(xstring:substring-before-last($filePath, "/"),
+      xstring:substring-after-last($filePath, "/"))
   
   return
     <div id="data">
@@ -192,11 +193,11 @@ declare function local:getFileStat($ed, $file) {
             </tr>
             <tr>
               <td>Metadaten-Datei</td>
-              <td>{$metaPath}</td>
+              <td>{$model?infoFileLoc}</td>
             </tr>
             <tr>
               <td>relativer Pfad zur Datei</td>
-              <td>{$relativePath}</td>
+              <td>{string($entry/@path)}</td>
             </tr>
             <tr>
               <td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
@@ -230,8 +231,8 @@ declare function local:getFileStat($ed, $file) {
                 </tr>,
                 <tr>
                   <td><code>@xml:id</code> in wdbMeta</td>
-                  {if ($entry/@xml:id = $id)
-                    then <td>OK: {$id}</td>
+                  {if ($entry/@xml:id = $doc/tei:TEI/@xml:id)
+                    then <td>OK: {$entry/@xml:id/string()}</td>
                     else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$file}')">ID aktualisieren</a></td>
                   }
                 </tr>
@@ -242,15 +243,16 @@ declare function local:getFileStat($ed, $file) {
         </table>
         {
           if ($wdb:role = 'workbench') then
+            let $remoteMetaFilePath := $wdb:peer || '/' || substring-after($model?pathToEd, $wdb:data) || '/wdbmeta.xml'
             let $remoteMetaFile := try {
-               doc($wdb:peer || '/' || $ed || '/wdbmeta.xml')
+               doc($remoteMetaFilePath)
             } catch * {
-              console:log("Peer meta file not found: " || $wdb:peer || '/' || $ed || '/wdbmeta.xml --' ||
+              util:log("error", "Peer meta file not found: " || $remoteMetaFilePath ||
                 'e: ' ||  $err:code || ': ' || $err:description || ' @ ' || $err:line-number ||':'||$err:column-number || '
                 c: ' || $err:value || ' in ' || $err:module || '
                 a: ' || $err:additional)
             }
-            let $remoteEntry := $remoteMetaFile//meta:file[@path = $relativePath]
+            let $remoteEntry := $remoteMetaFile//meta:file[@xml:id = $file]
             
             return (
               <h3>Peer Info</h3>,
@@ -285,8 +287,8 @@ declare function local:getFileStat($ed, $file) {
                       </tr>,
                       <tr>
                         <td><code>@xml:id</code> in wdbMeta</td>
-                        {if ($remoteEntry/@xml:id = $id)
-                          then <td>OK: {$id}</td>
+                        {if ($remoteEntry/@xml:id = $file)
+                          then <td>OK: {$file}</td>
                           else <td>Diff: {normalize-space($remoteEntry/@xml:id)}</td>
                         }
                       </tr>
@@ -300,9 +302,9 @@ declare function local:getFileStat($ed, $file) {
         }
         {
           if ($wdb:role = 'standalone') then
-            let $status := if ($metaFile//meta:view[@file = $id])
+            let $status := if ($metaFile//meta:view[@file = $file])
               then
-                let $view := ($metaFile//meta:view[@file = $id])[1]
+                let $view := ($metaFile//meta:view[@file = $file])[1]
                 return if ($view/@private = true())
                   then 'intern'
                   else 'sichtbar'

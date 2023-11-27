@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">
+<reference id="wdb_object">
+    <title>WDB object</title>
+    <shortdesc>Members of the central wdb object, defined in <codeph>function.js</codeph>.</shortdesc>
+    <refbody>
+        <section>
+            <p>The wdb object is the central object containing important JS functions and values.
+            It is an immutable const.</p>
+        </section>
+        <properties>
+            <property>
+                <proptype>meta</proptype>
+                <propdesc>all key/value pairs defined in html:meta</propdesc>
+            </property>
+            <property>
+                <proptype>params</proptype>
+                <propdesc>query parameters</propdesc>
+            </property>
+            <property>
+                <proptype>restHeaders</proptype>
+                <propdesc>headers for rest requests</propdesc>
+            </property>
+            <property>
+                <proptype>setRestHeaders()</proptype>
+                <propdesc>function to set authorization header for rest requests</propdesc>
+            </property>
+            <property>
+                <proptype>getUniqueId()</proptype>
+                <propdesc>function to return an id (d + incremental int)</propdesc>
+            </property>
+            <property>
+                <proptype>login()</proptype>
+                <propdesc>login function</propdesc>
+            </property>
+            <property>
+                <proptype>logout()</proptype>
+                <propdesc>logout function</propdesc>
+            </property>
+        </properties>
+    </refbody>
+</reference>

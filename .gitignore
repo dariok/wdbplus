@@ -10,3 +10,11 @@ build
 # Python-related directories or files
 __pycache__/
 .pydevproject
+
+# internal
+edoc/resources/xsl/xspec/
+.existdb.json
+
+# node-reladted stuff
+node_modules/
+

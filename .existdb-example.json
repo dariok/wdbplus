@@ -1,0 +1,34 @@
+{
+  "servers": {
+      "localhost": {
+        "server": "http://localhost:8080/exist",
+        "user": "admin",
+        "password": "",
+        "root": "/db/apps/"
+      }
+  },
+  "sync": {
+      "server": "localhost",
+      "ignore": [
+          ".existdb.json",
+          ".git/**",
+          ".gitignore",
+          "node_modules/**",
+          "test/**",
+          "*.json",
+          "README.md",
+          "wdbplus.code-workspace",
+          "wdbplus.xpr",
+          "build/**",
+          "doc/**",
+          "docker/**",
+          "python/**",
+          ".gitmodules",
+          ".project",
+          ".pydevproject",
+          "build.xml",
+          "install.xql",
+          "LICENSE"
+      ]
+  }
+}

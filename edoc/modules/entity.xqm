@@ -15,9 +15,13 @@ declare function wdbe:getEntity($node as node(), $model as map(*), $id as xs:str
   (: TODO check calls; entry ID and project ID should be the only necessary parameters :)
   (: TODO support project specific views :)
   
+  let $edPath := wdb:getEdPath($ed)
+  let $regFile := $edPath || '/' || $reg
+  let $testPath := $wdb:data || '/' || $ed || '/' || $reg
   let $entryEd := doc($wdb:data || '/' || $ed || '/' || $reg)/id($id)
   (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
   
+  (: let $t := console:dump("default", ("edPath", "regFile", "testPath", "entryEd")) :)
   return map { "entry": $entryEd, "id": $id, "ed": $ed }
 };
 
@@ -33,7 +37,7 @@ declare function wdbe:getEntityName($node as node(), $model as map(*)) {
     case element(tei:bibl)
       return wdbe:shortTitle($entryEd, $model)
     case element(tei:place)
-      return wdbe:shortPlace($entryEd)
+      return normalize-space($entryEd/tei:placeName)
     default
       return name($entryEd[1])
   }</h1>
@@ -49,7 +53,32 @@ declare function wdbe:getEntityBody($node as node(), $model as map(*)) {
 declare function wdbe:transform($node, $model as map(*)) as item()* {
   typeswitch ($node)
     case text() return $node
-    case element(tei:person) return <table class="noborder">{wdbe:passthrough($node, $model)}</table>
+    case element(tei:person) return
+      <table id="{ generate-id($node) }">
+         <tr>
+            <td>
+               <span class="controls">
+                  <button data-clear="{ generate-id($node) }" title="Diesen Eintrag schließen">[x]</button>
+                  <button title="Alle Informationen rechts schließen">[X]</button>
+               </span>
+            </td>
+            <td><b>Person</b></td>
+         </tr>
+         {wdbe:passthrough($node, $model)}
+      </table>
+    case element(tei:org) return
+      <table id="{ generate-id($node) }">
+         <tr>
+            <td>
+               <span class="controls">
+                  <button data-clear="{ generate-id($node) }" title="Diesen Eintrag schließen">[x]</button>
+                  <button title="Alle Informationen rechts schließen">[X]</button>
+               </span>
+            </td>
+            <td><b>Organisation / Körperschaft</b></td>
+         </tr>
+         {wdbe:passthrough($node, $model)}
+      </table>
     case element(tei:persName) return wdbe:persName($node, $model)
     case element(tei:birth) return wdbe:bd($node, $model)
     case element(tei:death) return wdbe:bd($node, $model)
@@ -74,6 +103,12 @@ declare function wdbe:transform($node, $model as map(*)) as item()* {
         else wdbe:placeName($node)
     case element(tei:place) return <table class="noborder">{wdbe:passthrough($node, $model)}</table>
     case element(tei:idno) return wdbe:idno($node)
+    case element(tei:occupation) return
+      <tr>
+        <td>{ if ( $node/@type ) then "Titel" else "Beruf" }</td>
+        <td>{ normalize-space($node) }</td>
+      </tr>
+    case element(tei:orgName) return wdbe:persName($node, $model)
     
 (:    default return wdbe:passthrough($node):)
     (:default return concat("def: ", name($node)):)
@@ -88,7 +123,10 @@ declare function wdbe:passthrough($nodes as node()*, $model) as item()* {
 
 (: die folgenden neu 2016-08-16 DK :)
 declare function wdbe:persName($node, $model) {
-  for $name in $node/* return wdbe:names($name)
+  <tr>
+    <td>Name</td>
+    <td>{ normalize-space($node) }</td>
+  </tr>
 };
 
 declare function wdbe:names($node) {

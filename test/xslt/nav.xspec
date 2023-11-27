@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:description stylesheet="../../edoc/resources/nav.xsl"
+   xmlns:x="http://www.jenitennison.com/xslt/xspec"
+   xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta">
+   
+   <x:scenario label="T1: labels">
+      <x:scenario label="T1.1">
+         <x:context>
+            <meta:view label="Inhalt" />
+         </x:context>
+         <x:expect label="text unaltered">
+            <li>
+               <a href="...">Inhalt</a>
+            </li>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T1.2">
+         <x:context>
+            <view file="pa000016-0006" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <label style="font-size: 1pt">Flacius, Dass die Buße allein aus dem Gesetz zu predigen sei (1559)</label>
+            </view>
+         </x:context>
+         <x:expect label="span with styled content">
+            <li>
+               <a href="view.html?id=pa000016-0006">
+                  <span style="font-size: 1pt"
+                     >Flacius, Dass die Buße allein aus dem Gesetz zu predigen sei (1559)</span>
+               </a>
+            </li>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T1.3">
+         <x:context>
+            <view file="pa000016-0006" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <label style="font-size: 1pt"><b>Flacius</b>, <i>Dass die Buße allein aus dem Gesetz zu predigen sei</i> <u>(1559)</u></label>
+            </view>
+         </x:context>
+         <x:expect label="html elements for i, b, u">
+            <li><a href="view.html?id=pa000016-0006">
+               <span style="font-size: 1pt"><b>Flacius</b>, <i>Dass die Buße allein aus dem Gesetz zu predigen sei</i> <u>(1559)</u></span>
+            </a></li>
+         </x:expect>
+      </x:scenario>
+   </x:scenario>
+   
+   <x:scenario label="T2: struct">
+      <x:scenario label="T2.1">
+         <x:context>
+            <struct label="1. Abschied der Eisenacher Synode (1556)"
+               xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <view file="pa000016-0001" label="Einleitung"/>
+            </struct>
+         </x:context>
+         <x:expect label=".">
+            <nav>
+               <ul>
+                  <li>
+                     <a href="view.html?id=pa000016-0001">Einleitung</a>
+                  </li>
+               </ul>
+            </nav>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T2.2">
+         <x:context>
+            <struct label="1. Abschied der Eisenacher Synode (1556)"
+               xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <view file="pa000016-0003" label="Abschied der Eisenacher Synode (1556)" order="2" />
+               <view file="pa000016-0001" label="Einleitung" order="01" />
+            </struct>
+         </x:context>
+         <x:expect label=".">
+            <nav>
+               <ul>
+                  <li>
+                     <a href="view.html?id=pa000016-0001">Einleitung</a>
+                  </li>
+                  <li>
+                     <a href="view.html?id=pa000016-0003">Abschied der Eisenacher Synode (1556)</a>
+                  </li>
+               </ul>
+            </nav>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T2.3">
+         <x:context>
+            <struct ed="pa000016" label="Controversia et Confessio, Bd. 4"
+               xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+               <import path="../wdbmeta.xml"/>
+               <view file="pa000016-0066" label="Inhalt"/>
+               <view file="pa000016-0067" label="Vorwort"/>
+               <view file="pa000016-0002" label="Historische Einleitung"/>
+               <struct label="1. Abschied der Eisenacher Synode (1556)">
+                  <view file="pa000016-0001" label="Einleitung"/>
+                  <view file="pa000016-0003" label="Abschied der Eisenacher Synode (1556)"/>
+                  <view file="pa000016-0004" label="Titeltext Eisenacher Synode 1556"/>
+               </struct>
+            </struct>
+         </x:context>
+         <x:expect label="nested lists">
+            <nav>
+               <ul>
+                  <li><a href="view.html?id=pa000016-0066">Inhalt</a></li>
+                  <li><a href="view.html?id=pa000016-0067">Vorwort</a></li>
+                  <li><a href="view.html?id=pa000016-0002">Historische Einleitung</a></li>
+                  <li>
+                     <button class="wdbNav level" data-lvl="pa000016-d46e6"
+                        title="Navigationsebene einblenden">1. Abschied der Eisenacher Synode (1556)</button>
+                     <ul id="pa000016-d46e6" style="display: none;">
+                        <li><a href="view.html?id=pa000016-0001">Einleitung</a></li>
+                        <li><a href="view.html?id=pa000016-0003">Abschied der Eisenacher Synode (1556)</a></li>
+                        <li><a href="view.html?id=pa000016-0004">Titeltext Eisenacher Synode 1556</a></li>
+                     </ul>
+                  </li>
+               </ul>
+            </nav>
+         </x:expect>
+      </x:scenario>
+      <x:scenario label="T2.4">
+         <x:context>
+            <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="pa000002">
+               <ptr path="../wdbmeta.xml"/>
+               <struct file="pa000007" label="Controversia et Confessio, Bd. 1"/>
+            </struct>
+         </x:context>
+         <x:expect label="button to get nav by AJAX">
+            <nav>
+               <ul>
+                  <li>
+                     <button title="..." class="wdbNav load" data-ed="pa000007">Controversia et Confessio, Bd. 1</button>
+                  </li>
+               </ul>
+            </nav>
+         </x:expect>
+      </x:scenario>
+   </x:scenario>
+</x:description>
