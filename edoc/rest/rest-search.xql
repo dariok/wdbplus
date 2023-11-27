@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
-(: import module namespace console = "http://exist-db.org/xquery/console"    at "java:org.exist.console.xquery.ConsoleModule"; :)
-import module namespace kwic    = "http://exist-db.org/xquery/kwic";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "/db/apps/edoc/modules/app.xqm";
+import module namespace kwic   = "http://exist-db.org/xquery/kwic";
+import module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
+import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"        at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -75,7 +75,7 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
 function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  if (0 = (count($q), string-length($q))) then (
+  if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="text" />
@@ -91,16 +91,8 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
   )
   else 
     let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-    let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
-    
-    let $xsl :=
-      if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then
-        wdb:eval("wdbPF:getSearchXSLT()")
-      else if ( doc-available($coll || '/resources/search.xsl') ) then
-        xs:anyURI($coll || '/resources/search.xsl')
-      else if ( doc-available($wdb:data || '/resources/search.xsl') ) then
-        xs:anyURI($wdb:data || '/resources/search.xsl')
-      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+      , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+      , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
     
     let $params := 
       <parameters>
@@ -109,7 +101,8 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
       </parameters>
     
     let $searchResult := wdbRs:collectionText($id, $q, $start)
-    return if (count($searchResult) gt 0) then (
+    
+    return if ( count($searchResult) gt 0 ) then (
       <rest:response>
         <http:response status="200">
           <http:header name="rest-status" value="REST:SUCCESS" />
@@ -199,16 +192,8 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
   )
   else
     let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-    let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
-    
-    let $xsl :=
-      if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then
-        wdb:eval("wdbPF:getSearchXSLT()")
-      else if ( doc-available($coll || '/resources/search.xsl') ) then
-        xs:anyURI($coll || '/resources/search.xsl')
-      else if ( doc-available($wdb:data || '/resources/search.xsl') ) then
-        xs:anyURI($wdb:data || '/resources/search.xsl')
-      else xs:anyURI($wdb:edocBaseDB || '/resources/search.xsl')
+      , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+      , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
       
     let $params := <parameters>
       <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />

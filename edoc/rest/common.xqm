@@ -6,6 +6,9 @@ declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 
+(: To avoid circular dependencies, app.xqm is not imported; all relevant variables must be read from config.xml, or
+ : handed to the functions :)
+
 (:~
  : check whether all values in $standard are present in $input
  :
@@ -47,4 +50,23 @@ declare function wdbRCo:evaluatePreflight ( $originHeader as xs:string, $method 
     <rest:response>
       <http:response status="403" />
     </rest:response>
+};
+
+(:~
+ : Get a project specific / instance specific / global XSLT by name
+ :
+ : @param $coll Path to the Project
+ : @param $name file name of the XSLT
+ :)
+declare function wdbRCo:getXSLT ( $coll as xs:string, $name ) as xs:anyURI {
+  (: for now, we ignore this possibility – havin an XSLT in the project collection should hopefully suffice; if it is
+     indeed needed, we must move that function here so we do not have to import app.xqm :)
+  (: if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then
+      wdb:eval("wdbPF:getSearchXSLT()")
+    else :)
+  if ( doc-available($coll || '/resources/' || $name) ) then
+    xs:anyURI($coll || '/resources/' || $name)
+  else if ( doc-available(doc("../config.xml")//config:data || '/resources/' || $name) ) then
+    xs:anyURI(doc("../config.xml")//config:data || '/resources/' || $name)
+  else xs:anyURI(doc("../config.xml")//config:data || '/../resources/' || $name)
 };

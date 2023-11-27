@@ -2,7 +2,8 @@ xquery version "3.1";
 
 module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities";
 
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
+import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"        at "../modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -70,13 +71,8 @@ declare
     %output:method("html")
 function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
-  
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd": $coll}, "getSearchXSLT", 0))
-    then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($wdb:data || '/resources/entity.xsl'))
-    then xs:anyURI($wdb:data || '/resources/entity.xsl')
-    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
+    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
   
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
@@ -112,7 +108,7 @@ function wdbRe:collectionEntity ($collection as xs:string*, $type as xs:string*,
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$collection}" ref="{$ref}">{
+    <results count="{$max}" from="{$start}" id="{$collection}" q="{$ref}">{
       for $f in subsequence($res, $start, 25)
       group by $file := $f/@xml:id
       return
@@ -129,13 +125,8 @@ declare
     %output:method("html")
 function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-  let $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
-  
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
-    then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($wdb:data || '/resources/entity.xsl'))
-    then xs:anyURI($wdb:data || '/resources/entity.xsl')
-    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
+    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
@@ -171,7 +162,7 @@ function wdbRe:fileEntity ( $id as xs:string*, $ref as xs:string*, $start as xs:
         <http:header name="Access-Control-Allow-Origin" value="*"/>
       </http:response>
     </rest:response>,
-    <results count="{$max}" from="{$start}" id="{$id}" ref="{$ref}">{
+    <results count="{$max}" from="{$start}" id="{$id}" q="{$ref}">{
       for $h in subsequence($res, $start, 25)
       group by $a := ($h/ancestor-or-self::*[@xml:id])[last()]
       return
@@ -186,12 +177,7 @@ declare
     %output:method("html")
 function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
   let $coll := wdb:getEdPath($id, true())
-  
-  let $xsl := if (wdb:findProjectFunction(map { "pathToEd" : $coll}, "getSearchXSLT", 0))
-    then wdb:eval("wdbPF:getEntityXSLT()")
-    else if (doc-available($wdb:data || '/resources/entity.xsl'))
-    then xs:anyURI($wdb:data || '/resources/entity.xsl')
-    else xs:anyURI($wdb:edocBaseDB || '/resources/entity.xsl')
+    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
     
   let $params := <parameters>
     <param name="rest" value="{$wdb:restURL}" />
