@@ -682,7 +682,7 @@
        <xsl:if test="contains(@xml:lang, '-')">
           <xsl:attribute name="class" select="substring-after(@xml:lang, '-')" />
        </xsl:if>
-       <xsl:apply-templates select="@xml:lang, node()" />
+       <xsl:apply-templates select="@xml:lang, @style, node()" />
     </span>
   </xsl:template>
   
