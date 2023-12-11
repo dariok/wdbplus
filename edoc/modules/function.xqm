@@ -181,6 +181,13 @@ declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:str
   }
 };
 
+declare function wdbfp:evalForAttribute ( $node as node(), $model as map(*), $attribute as xs:string, $expression as xs:string ) {
+  element { local-name($node) } {
+    attribute { $attribute } { util:eval($expression) },
+    $node/node()
+  }
+};
+
 declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFile as xs:string* ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
