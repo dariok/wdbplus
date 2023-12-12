@@ -407,13 +407,13 @@ function wdbRc:getStructureJson ( $id ) {
 (: navigation :)
 declare
     %rest:GET
-    %rest:path("/edoc/collection/{$id}/nav.xml")
-function wdbRc:getCollectionNavXML ($id as xs:string) {
-  let $md := collection($wdb:data)/id($id)[self::meta:projectMD]
-  let $uri := base-uri($md)
-  let $struct := $md/meta:struct
+    %rest:path("/edoc/collection/{$ed}/nav.xml")
+function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
+  let $md := collection($wdb:data)/id($ed)[self::meta:projectMD]
+    , $uri := base-uri($md)
+    , $struct := $md/meta:struct
   
-  let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$id}">{(
+  let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$ed}">{(
       $struct/@*,
       $struct/*
     )}</struct>
