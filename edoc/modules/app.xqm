@@ -53,7 +53,7 @@ declare variable $wdb:data :=
       where contains($path, '.xml')
       order by string-length($path)
       return $path
-    
+
     return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
 ;
 
@@ -206,7 +206,9 @@ declare
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
   let $newModel := wdb:populateModel($id, $view, $model, $p)
 
-  let $pathParts := tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+  let $pathParts := if ( $newModel instance of map(*) )
+        then tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+        else wdbErr:error(map{"code": "wdbErr:0815", "newModel": $newModel})
     , $collection := string-join($pathParts[not(position() = last())], '/')
     , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
     , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
@@ -497,7 +499,7 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
   return
     try {
       <main>
-        { transform:transform(doc($file), doc($xslt), $params, $attr, "expand-xincludes=no") }
+        { transform:transform(doc($file), doc($xslt), $params, $attr, "") }
         { wdb:getLeftFooter($node, $model) }
       </main>
     } catch * { (util:log("error",

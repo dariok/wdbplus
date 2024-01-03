@@ -12,6 +12,11 @@ installations use wdb+’s native wdbmeta system as this is what the admin funct
 If you require METS support, please open an issue and provide an example of your METS files. We will then try to create
 import and export functions.
 
+Release 24Q1 introduced changes to the transformation: previously, XIncludes were not expanded before the XSLT was
+applied to a file. This has now been dropped meaning that XIncludes will always be expanded. This is most likely the
+expected behaviour. If you want to ignore XInclude, you can add this as a global setting in eXist: in
+`${eXist-dir}/etc/conf.xml` set `serializer/@enable-xinclude` to `no`.
+
 ## Installation
 You need a working instance of eXist (4.0 or later). It is recommended that you use the default software selection 
 during installation. The default memory settings usually work very well but you can, of course, always give eXist a
