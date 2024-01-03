@@ -4,6 +4,14 @@ An extensible framework for digital Editions for the [eXist XML database](https:
 
 This framework still lacks a good name. If you have an idea, please let me know!
 
+## Incompatible changes
+
+Release 24Q1 dropped support for METS-based projects. As METS files can have a number of very different ways of encoding
+information, especially when it comes to behaviours, native support is hard to achieve. At the same time, most
+installations use wdb+’s native wdbmeta system as this is what the admin functions work with.
+If you require METS support, please open an issue and provide an example of your METS files. We will then try to create
+import and export functions.
+
 ## Installation
 You need a working instance of eXist (4.0 or later). It is recommended that you use the default software selection 
 during installation. The default memory settings usually work very well but you can, of course, always give eXist a
@@ -12,37 +20,9 @@ little more RAM.
 1. Clone this repo including its submodules (xstring, wdbmeta) 
 1. `cd edoc`
 1. run `ant`
-1. install the `.xar` file created in `edoc/build/` using eXist's dashboard
+1. install the `.xar` file created in `edoc/build/` using eXist's dashboard or (https://github.com/eXist-db/xst)[XST]
 
 The app will be installed into `/db/apps/edoc`.
-
-### eXgit
-Additionally, it is possible to use [eXgit](https://github.com/dariok/exgit) to clone the current version directly into a running eXist instance.
-
-1. Install eXgit as stated in the repo.
-1. create a user `wdb` and a group `wdbusers` for the framework and log in under that name –– CAVEAT: this user, at least for the duration of the installation, **needs to be** in the **dba** group!
-1. create the target collection (default would be `/db/apps/edoc`) as this user
-1. open eXide from eXist's Dashboard
-1. paste:
-    ```
-    xquery version "3.1";
-    
-    import module namespace exgit="http://exist-db.org/xquery/exgit" at "java:org.exist.xquery.modules.exgit.Exgit";
-    
-    let $whereToClone := "/home/user/git/wdbplus"
-    let $targetCollection := "/db/apps/edoc"
-    
-    let $cl := exgit:clone("https://github.com/dariok/wdbplus", $whereToClone)
-    let $ie := exgit:import($whereToClone || "/edoc", $targetCollection)
-    let $ic := exgit:import($whereToClone || "/edoc/config", "/db/system/config/db/apps")
-    ```
-1. replace the value of `$whereToClone` with the full target directory on your file system where the app shall be cloned into
-1. if you do not want to install into `/db/apps/edoc`, change the value of `$targetCollection` to the full DB path
-1. run the script
-1. open `post-install.xql` in your target collection
-1. if you did not install into `/db/apps/edoc`, change `$targetCollection` accordingly
-1. run `post-install.xql` to set rights and index configuration
-
 
 ### manual installation
 1. clone this repo including its submodules
@@ -55,7 +35,14 @@ Set the name for the instance and other settings in `edoc/config.xml` or using t
 
 ## Creating and uploading projects
 While many different ways of putting data into the application are possible, the standard way is to have one collection
-under data for each project. It is possible to create an initial setup using `admin/admin.html`. The following describes a manual installation and assumes that you work with a standard setup, i.e. have installed the app
+under data for each project.
+
+### Using admin functions
+It is possible to create an initial setup using `admin/admin.html`. After creating a project, you can immediately start
+uploading files using the upload form. wdb+ will take care of creating meta data entries.
+
+### Manual approach
+The following describes a manual installation and assumes that you work with a standard setup, i.e. have installed the app
 into `/db/apps/edoc` and want to put your projects into `/db/apps/edoc/data/yourproject`.
 
 1. create `wdbmeta.xml` in `/db/apps/edoc/data/yourproject`, either by copying, pasting and editing the example below or by using
@@ -102,6 +89,7 @@ See the Wiki for details!
   * Repertotium frühneuzeitlicher Rechtsquellen
   * Protokolle der Sitzungen der Gesamtakadmie
 * Akademie der Wissenschaften, Heidelberg
-    * Theologenbriefwechsel
+  * Theologenbriefwechsel
+* ULB Darmstadt
 
 If you use wdbplus for your editions, please drop me a message so I can add you to this list.
