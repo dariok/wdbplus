@@ -21,10 +21,8 @@ import module namespace xstring   = "https://github.com/dariok/XStringUtils"    
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace main   = "https://github.com/dariok/wdbplus";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace xlink  = "http://www.w3.org/1999/xlink";
 
 (: ALL-PURPOSE VARIABLES :)
 (:~
@@ -283,20 +281,16 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     let $pathToEd := wdb:getEdPath($id, true())
     let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
     
-    (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+    (: The meta data are taken from wdbmeta.xml :)
     let $infoFileLoc := wdb:getMetaFile($pathToEd)
     
-    let $ed := if (ends-with($infoFileLoc, 'wdbmeta.xml'))
-      then string(doc($infoFileLoc)/meta:projectMD/@xml:id)
-      else string(doc($infoFileLoc)/mets:mets/@OBJID)
+    let $ed := string(doc($infoFileLoc)/meta:projectMD/@xml:id)
     
-    let $xsl := if ( contains($pTF, 'wdbmeta.xml') ) then
+    let $xsl := if ( contains($pTF, 'wdbmeta.xml') )
+      then
         (: TODO get path to XSL via function (use what’s in rest-files.xql) :)
         xs:anyURI($wdb:data || '/resources/nav.xsl')
-      else if ( ends-with($infoFileLoc, 'wdbmeta.xml') ) then
-        wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-      else
-        wdb:getXslFromMets($infoFileLoc, $id, $pathToEdRel)
+      else wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
     
     let $xslt := if (doc-available($xsl))
       then $xsl
@@ -599,8 +593,7 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
  : @returns the path (relative) to the app root
  :)
 declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := (collection($wdb:data)/id($id)[local-name() = ('file', 'projectMD', 'struct', 'mets')],
-                collection($wdb:data)//mets:file[@ID = $id])[1]
+  let $file := collection($wdb:data)/id($id)[local-name() = ('file', 'projectMD', 'struct')]
   
   let $edPath := if ( count($file) = 1 ) then
       xstring:substring-before-last(base-uri($file), '/')
@@ -642,11 +635,8 @@ declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
  : @return the ID of the project
  :)
 declare function wdb:getEdFromFileId ($id as xs:string) as xs:string {
-  let $file := (collection($wdb:data)/id($id)[self::meta:file],
-                collection($wdb:data)//mets:file[@ID = $id])[1]
-  return if ($file[self::meta:file])
-    then $file/ancestor::meta:projectMD/@xml:id
-    else $file/ancestor::mets:mets/@OBJID
+  let $file := collection($wdb:data)/id($id)[self::meta:file]
+  return $file/ancestor::meta:projectMD/@xml:id
 };
 
 (: ~
@@ -669,12 +659,10 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
     wdbErr:error(map{"code": "wdbErr:wdb2001", "additional": <additional><path>{$path}</path></additional>})
   else for $p in $pa
     order by string-length($p) descending
-    let $p1 := $p || '/wdbmeta.xml'
-    let $p2 := $p || '/mets.xml'
     
-    return if (doc-available($p1) or doc-available($p2)) then $p else ()
+    return if ( doc-available($p || '/wdbmeta.xml') ) then $p else ()
   
-  return if ($absolute)
+  return if ( $absolute )
     then $path[1]
     else substring-after($path[1], $wdb:edocBaseDB||'/')
 };
@@ -791,14 +779,12 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
 (:~
  : Return the full path to the project collection by trying to find the meta file by the project ID
  :
- : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id or mets:mets/@OBJID
+ : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id
  : @return The path to the project 
  :)
 declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
-  let $md := (
-    collection($wdb:data)/id($ed)[self::meta:projectMD],
-    collection($wdb:data)/mets:mets[@OBJID = $ed]
-  )
+  let $md := collection($wdb:data)/id($ed)[self::meta:projectMD]
+
   return xstring:substring-before-last(base-uri(($md)[1]), '/')
 };
 
@@ -806,10 +792,8 @@ declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
  : Get the meta data file from the ed path
  :)
 declare function wdb:getMetaFile($pathToEd) {
-  if (doc-available($pathToEd||'/wdbmeta.xml'))
+  if ( doc-available($pathToEd||'/wdbmeta.xml') )
     then $pathToEd || '/wdbmeta.xml'
-    else if (doc-available($pathToEd || '/mets.xml'))
-    then $pathToEd || '/mets.xml'
     else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
 };
 
@@ -819,7 +803,7 @@ declare function wdb:getMetaFile($pathToEd) {
  : @param $ed The project ID to be evaluated
  :)
 declare function wdb:getMetaElementFromEd ( $ed as xs:string ) as element() {
-  collection($wdb:data)/id($ed)[self::meta:projectMD or self::mets:mets]
+  collection($wdb:data)/id($ed)[self::meta:projectMD]
 };
 (: END GENERAL HELPER FUNCTIONS :)
 
@@ -857,40 +841,6 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return ($sel)[1]/text()
-};
-declare function wdb:getXslFromMets ($metsLoc, $id, $ed) {
-  let $mets := doc($metsLoc)
-  let $structs := $mets//mets:div[mets:fptr[@FILEID=$id]]/ancestor-or-self::mets:div/@ID
-  
-  let $be := for $s in $structs
-    return $mets//mets:behavior[matches(@STRUCTID, concat('(^| )', $s, '( |$)'))]
-  let $behavior := for $b in $be
-    order by local:val($b, $structs, 'HTML')
-    return $b
-  let $trans := $behavior[last()]/mets:mechanism/@xlink:href
-  
-  return concat($wdb:edocBaseDB, '/', $ed, '/', $trans)
-};
-(: Try to find the most specific mets:behavior
- : $test: mets:behavior to be tested
- : $seqStruct: sequence of mets:div/@ID (ordered by specificity, ascending)
- : $type: return type
- : returns: a weighted value for the behavior's “rank” :)
-declare function local:val($test, $seqStruct, $type) {
-  let $vIDt := for $s at $i in $seqStruct
-    return if (matches($test/@STRUCTID, concat('(^| )', $s, '( |$)')))
-      then math:exp10($i)
-      else 0
-  let $vID := fn:max($vIDt)
-  let $vS := if ($test[@BTYPE = $type])
-    then 5
-    else if ($test[@LABEL = $type])
-    then 3
-    else if ($test[@ID = $type])
-    then 1
-    else 0
-  
-  return $vS + $vID
 };
 
 (: we need a lookup function for the templating system to work :)

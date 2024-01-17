@@ -9,7 +9,6 @@ import module namespace xstring = "https://github.com/dariok/XStringUtils"   at 
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
@@ -98,10 +97,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
 
 declare function local:getFiles($model) {
   let $infoFile := doc($model?infoFileLoc)
-  let $filesInEd := (
-    $infoFile//meta:file,
-    $infoFile//mets:file
-  )
+    , $filesInEd := $infoFile//meta:file
   
   return 
     <div id="content">
@@ -116,7 +112,7 @@ declare function local:getFiles($model) {
           </tr>
           {
             for $doc in $filesInEd
-              let $info := if ($doc[self::meta:file])
+              let $info := if ( $doc[self::meta:file] )
                 then
                   let $id := $doc/@xml:id
                   let $view := $infoFile//meta:view[@file = $id]
@@ -128,17 +124,7 @@ declare function local:getFiles($model) {
                     $model?pathToEd || "/" || $doc/@path,
                     $view/@label
                   )
-                else
-                  let $id := $doc/@ID
-                  let $struct := $infoFile//mets:fptr[@FILEID = $id]/parent::tei:div
-                  return (
-                    $id,
-                    if ($struct/@ORDERLABEL castable as xs:int)
-                      then number($struct/@ORDERLABEL)
-                      else string($struct/@ORDERLABEL),
-                    $model?pathToEd || "/" || $doc/mets:FLocat/@*:href,
-                    $struct/@LABEL
-                  )
+                else ()
               
               order by $info[3]
               return

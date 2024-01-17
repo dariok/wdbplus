@@ -379,23 +379,19 @@ declare
     %rest:query-param("view", "{$view}", "")
 function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*)  {
   let $model := wdb:populateModel($id, $view, map {})
-  
-  (: This mechanism can only be used with wdbmeta. A METS-only project will return an error :)
-  let $wdbmeta := if (ends-with($model?infoFileLoc, "wdbmeta.xml"))
-      then doc($model?infoFileLoc)
-      else ()
+    , $wdbmeta := doc($model?infoFileLoc)
   
   (: by definition in wdbmeta.rng and in analogy to the behaviour of view.html: $type maps to process/@target,
      $view is used as a parameter. If there is only one process for $type, $view will be handed over as a parameter;
      if there are multiple processes for $type, $view will be used to select via process/@view. If the are multiple
      processes but none with the given $view, this is an error :)
   let $processes := $wdbmeta//meta:process[@target = $type]
-  let $process := if (count($processes) = 1)
-    then ($processes[1])
-    else ($processes[@view = $view])
+  let $process := if ( count($processes) = 1 )
+    then $processes[1]
+    else $processes[@view = $view]
   
-  let $status := if ($wdbmeta = ())
-      then (500, "no wdbmeta found for " || $id || " (project with mets.xml?)")
+  let $status := if ( $wdbmeta = () )
+      then (500, "no wdbmeta found for " || $id || "!")
       else if (not($processes))
       then (404, "no process found for target type " || $type)
       else if (not($process))

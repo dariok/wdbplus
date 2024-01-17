@@ -8,10 +8,10 @@ This is part of eXist's templating system and has been used in several locations
 
 | parameter | contents |
 |--|--|
-| `ed` | the ID of the Collection (= `@xml:id` of `meta:projectMD` or `mets:mets`) |
+| `ed` | the ID of the Collection (= `@xml:id` of `meta:projectMD`) |
 | `fileLoc` | full path to the current Resource |
 | `id` | a file's ID (e.g. file to be displayed) |
-| `infoFileLoc` | full path to `wdbmeta.xml` or `mets.xml` |
+| `infoFileLoc` | full path to `wdbmeta.xml` |
 | `pathToEd` | the full DB-Path to the Collection (= `substring-before($infoFileLoc, '/wdbmeta.xml')`) |
 | `projectFile` | path to Project’s `project.xqm`|
 | `projectResources` | path to Project’s resource folder (= `substring-before($projectFile, 'project.xqm') || 'resources'`)|

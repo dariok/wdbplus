@@ -5,8 +5,8 @@ This documentation will cover the most important parts and how the file is evalu
 
 Evey project should have a `wdbmeta.xml` file. This is also true about the main data collection.
 `wdbmeta.xml` is intended to replace `mets.xml` with a less verbose format while maintaining its functionality as a table of contents for a project.
-While it is possible to solely rely on a `mets.xml`, the app is designed with `wdbmeta.xml` in mind.
-Especially when it comes to rules for processing files, `wdbmeta.xml` is a lot easier to work with than a `mets.xml`.
+Since v 3.0, `wdbmeta.xml` is the only format available as METS support has been dropped. If METS are required, the way
+to achieve this is via an XSLT-based import and export of the METS data into `wdbmeta.xml`.
 
 The files main element in `projectMD` in the namespace `https://github.com/dariok/wdbplus/wdbmeta`.
 

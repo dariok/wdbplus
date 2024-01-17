@@ -10,7 +10,6 @@ _Template:_ `page2.html`
 
 ### index.html
 Serves as the main point of entry by displaying an inventory of all projects currently present in the instance. It is assumed, that every project uses a `wdbmeta.xml` and that every `wdbmeta.xml` describes a project. Thus, subprojects are recognized.
-Projects that solely rely on a `mets.xml` will be recognized and displayed, too. Subporjects for a METS-project are not supported, though.
 
 _Template:_ `page2.html`
 

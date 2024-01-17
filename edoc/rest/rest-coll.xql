@@ -11,7 +11,6 @@ import module namespace xstring = "https://github.com/dariok/XStringUtils"      
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets   = "http://www.loc.gov/METS/";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
@@ -467,20 +466,16 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
         </attributes>
   
   let $html := try {
-    if( ends-with($model?infoFileLoc, 'wdbmeta.xml') )
-      then
-        let $struct := wdbRc:getCollectionNavXML($ed)
-          , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
-              then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
-              else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
-              then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
-              else if ( doc-available($wdb:data || '/resources/nav.xsl') )
-              then xs:anyURI($wdb:data || '/resources/nav.xsl')
-              else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
-        
-        return transform:transform($struct, doc($xsl), $params, $attributes, ())
-      else
-        transform:transform(doc($model?infoFileLoc), doc($model?pathToEd || '/mets.xsl'), $params)
+    let $struct := wdbRc:getCollectionNavXML($ed)
+      , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
+          then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
+          else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
+          then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
+          else if ( doc-available($wdb:data || '/resources/nav.xsl') )
+          then xs:anyURI($wdb:data || '/resources/nav.xsl')
+          else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+    
+    return transform:transform($struct, doc($xsl), $params, $attributes, ())
   } catch * {
     <p>Error transforming meta data file {$model?infoFileLoc} to navigation HTML:<br/>{$err:description}</p>
   }
