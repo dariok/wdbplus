@@ -51,10 +51,6 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {(
 };
 
 declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
-  let $start := if ( $model?p instance of map(*) and map:contains($model?p, "start"))
-    then '&amp;start=' || $model?p?start
-    else 1
-  
   let $job := if ( $model?p instance of map(*) )
     then $model?p?job
     else "err"
@@ -68,50 +64,16 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
       response:set-header("Cache-Control", "no-cache"),
       switch ( $job )
         case "fts"
-          return wdbRs:collectionHtml($model?ed, $model?q, $start)
+          return wdbRs:collectionHtml($model?ed, $model?q, $model?p?start)
         case "search"
           return wdbRe:scanHtml($model?ed, $model?p?type, $model?q)
         case "list"
-          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $start)
+          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $model?p?start)
         case "entries"
           return wdbRe:scanHtml($model?ed, $model?p?type, lower-case($model?q))
         default
           return response:set-status-code(400)
     )
-
-    (:
-    let $ln := switch ($job)
-      case "fts"      return $wdb:restURL || "search/collection/" || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
-      case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
-      case "entries"  return $wdb:restURL || 'entities/scan/' || $model?p?type || '/' || $model?ed || '.html?q=' || lower-case($model?q) || '&amp;p=' || encode-for-uri($json)
-      case "list"     return $wdb:restURL || "entities/collection/" || $model?ed || "/" || $model?p?type || "/" || $model?p?id || ".html?p=" || encode-for-uri($json)
-      default return ""
-    let $url := xs:anyURI($ln || $start),
-        $auth := request:get-cookie-value("wdbplus")
-    
-    let $request-headers := (
-        <http:header name="cache-control" value="no-cache" />,
-        if ( exists($auth) )
-          then <http:header name="authorization" value="Basic {$auth}" />
-          else ()
-      )
-    
-    return try {
-      http:send-request(
-        <http:request href="{$url}" method="GET">
-          {$request-headers}
-        </http:request>)//(*:div)[1]
-    } catch * {
-      <div>
-        <a href="{$url}">klick</a>
-        <ul>
-          <li>{$err:code}</li>
-          <li>{$err:description}</li>
-          <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
-          <li>{$err:additional}</li>
-        </ul>
-      </div>
-    } :)
   else <div />
 };
 
