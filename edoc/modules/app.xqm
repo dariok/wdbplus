@@ -202,61 +202,65 @@ declare
     %templates:default("view", "")
     %templates:default("p", "")
 function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string) as item()* {
-  let $newModel := wdb:populateModel($id, $view, $model, $p)
-
-  let $pathParts := if ( $newModel instance of map(*) )
-        then tokenize(replace($newModel?fileLoc, '//', '/'), '/')
-        else wdbErr:error(map{"code": "wdbErr:0815", "newModel": $newModel})
-    , $collection := string-join($pathParts[not(position() = last())], '/')
-    , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
-    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
-    , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
-    , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+  try {
+    let $newModel := wdb:populateModel($id, $view, $model, $p)
     
-  let $requestedModified := (
-        request:get-attribute("if-modified"),
-        request:get-header("If-Modified-Since")
-      )[1]
-    , $requestedModifiedParsed := parse-ietf-date($requestedModified)
-  
-  (: TODO: use a function to get the actual content language :)
-  return  if ( count($newModel) = 1
-      and (
-        $requestedModifiedParsed lt $modifiedWithoutMillisecs
-        or empty($requestedModified)
-        or $requestedModified = ''
-      ) ) then
-    (
-      response:set-header("Last-Modified", $last-modified),
-      <html lang="de">
-        {
-          for $h in $node/* return
-            if ( $h/*[@data-template] ) then
-              for $c in $h/* return try { 
-                templates:apply($c, $wdb:lookup, $newModel)
-              } catch * {
+    let $pathParts := if ( $newModel instance of map(*) and exists($newModel?fileLoc) )
+          then tokenize(replace($newModel?fileLoc, '//', '/'), '/')
+          else error(xs:QName("wdbErr:err0815"), "no file: " || $newModel?fileLoc, map{"newModel": $newModel})
+      , $collection := string-join($pathParts[not(position() = last())], '/')
+      , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
+      , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+      , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
+      , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+    
+    let $requestedModified := (
+          request:get-attribute("if-modified"),
+          request:get-header("If-Modified-Since")
+        )[1]
+      , $requestedModifiedParsed := parse-ietf-date($requestedModified)
+     
+    (: TODO: use a function to get the actual content language :)
+    return  if ( count($newModel) = 1 and (
+          $requestedModifiedParsed lt $modifiedWithoutMillisecs
+          or empty($requestedModified)
+          or $requestedModified = ''
+        ) )
+      then (
+        response:set-header("Last-Modified", $last-modified),
+        <html lang="de">
+          {
+            for $h in $node/* return
+              if ( $h/*[@data-template] ) then
+                for $c in $h/* return try { 
+                  templates:apply($c, $wdb:lookup, $newModel)
+                } catch * {
                   util:log("error", $err:description)
-              }
-            else
-              try {
-                templates:apply($h, $wdb:lookup, $newModel)
-              } catch * {
+                }
+              else
+                try {
+                  templates:apply($h, $wdb:lookup, $newModel)
+                } catch * {
                   util:log("error", $err:description)
-              }
-        }
-      </html>
-    )
-  else if ( $requestedModifiedParsed ge $modifiedWithoutMillisecs ) then
-    response:set-status-code(304)
-  else
-    <html>
-      <body>
-        <div>
-          <p>An unknown error has occurred</p>
-        </div>
-      </body>
-      { util:log("error", $newModel) } 
-    </html>
+                }
+          }
+        </html>
+      )
+      else if ( $requestedModifiedParsed ge $modifiedWithoutMillisecs ) then
+        response:set-status-code(304)
+      else
+        <html>
+          <body>
+            <div>
+              <p>An unknown error has occurred</p>
+            </div>
+          </body>
+          { util:log("error", $newModel) } 
+        </html>
+    } catch * {
+      util:log("error", $err:code),
+      wdbErr:error(map { "code": $err:code, "model": $model, "err:value": $err:value, "location": $err:module || '@' || $err:line-number || ':' || $err:column-number })
+    }
 };
 
 (:~
@@ -272,9 +276,10 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     wdb:populateModel($id, $view, $model, "")
 };
 declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
-  try {
     let $pTF := wdb:getFilePath($id)
-    let $pathToFile := if ( sm:has-access($pTF, "r") )
+    let $pathToFile := if ( not(doc-available($pTF)) )
+      then error(xs:QName("wdbErr:wdb0404"), "file not found: " || $pTF, map { "code": "wdb0404", "id": $id, "pathToFile": $pTF })
+      else if ( sm:has-access($pTF, "r") )
       then $pTF
       else error(xs:QName("wdbErr:wdb0004"))
     
@@ -336,17 +341,6 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     }
     
     return $map
-  } catch * {
-    wdbErr:error(map {
-      "code":     $err:code,
-      "pathToEd": $wdb:data,
-      "ed":       $wdb:data,
-      "model":    $model,
-      "value":    $err:value,
-      "desc":     $err:description,
-      "location": $err:module || '@' || $err:line-number ||':'||$err:column-number
-    })
-  }
 };
 
 (: ~

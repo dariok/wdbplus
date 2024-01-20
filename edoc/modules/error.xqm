@@ -23,6 +23,8 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdb0004" return "The requested file is not readable by the current user."
     case "wdbErr:wdb0200"
     case "wdb0200" return "Project not found."
+    case "wdbErr:wdb0404"
+      return "file not found for path " || $data("err:value")?pathToFile
     case "wdbErr:wdb1001"
     case "wdb1001" return "An error occurred while applying the transformation."
     case "wdbErr:wdb2001" return "Module not found."
@@ -33,7 +35,8 @@ declare function wdbErr:error ($data as map (*)) {
     default return "An unknown error has occurred: " || $data("code")
 
   return (
-    console:log($error),
+    util:log("error", $error),
+    util:log("info", $data),
     response:set-status-code(418),
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
