@@ -17,7 +17,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {(
       { local:selectEd($model) }
       <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
       <input type="hidden" name="p">
-        { attribute value {'{"job": "fts"}'} }
+        { attribute value {'{"job": "fts", "start": "1"}'} }
       </input>
       <input type="submit" />
     </form>
