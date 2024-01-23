@@ -34,7 +34,7 @@
       <text qname="tei:l"/>
       
       <!-- index w for fast queries for single words if text is tokenized -->
-      <text qname="tei:w"/>
+      <!--<text qname="tei:w"/>-->
       
       <!-- lists are not indexed, only the main entry head -->
       <ignore qname="tei:listPerson"/>
