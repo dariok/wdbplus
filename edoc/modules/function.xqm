@@ -64,7 +64,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         case "pla"
           return collection(wdb:getEdPath($ed, true()))//*:listPlace[ancestor::*:text]
         default
-          return ""
+          return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
               
       let $entryEd := $regFile/id($id)
         , $pathToEd := if ( $ed = "" )
@@ -127,19 +127,24 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         return map:merge(($map, $mmap))
       else $map (: if it is an element, this usually means that populateModel has returned an error :)
   } catch * {
-    wdbErr:error(map {
-      "code":        "wdbErr:wdb3001",
-      "id":          $id,
-      "ed":          $ed,
-      "p":           $p,
-      "q":           $q,
-      "wdb:data":    $wdb:data,
-      "errC":        $err:code,
-      "errA":        $err:additional,
-      "errM":        $err:description,
-      "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
-    })
-  }  
+    error(
+      xs:QName("wdbErr:wdb3001"),
+      "error creating map in function.xqm",
+      map {
+        "code":        "wdbErr:wdb3001",
+        "id":          $id,
+        "ed":          $ed,
+        "p":           $p,
+        "q":           $q,
+        "wdb:data":    $wdb:data,
+        "errC":        $err:code,
+        "errA":        $err:additional,
+        "errM":        $err:description,
+        "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number,
+        "request":     request:get-url()
+      }
+    )
+  }
 };
 
 (:~
@@ -164,16 +169,28 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
               try {
                 templates:apply($c, $wdbfp:lookup, $newModel)
               } catch * {
-                util:log("info", $newModel),
-                util:log("error", $err:description),
-                error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
+                util:log("error", "error when applying templates in function.xqm: " || $err:description),
+                wdbErr:error(map{
+                  "code": $err:code,
+                  "model": $newModel,
+                  "err:value": $err:value,
+                  "err:description": $err:description,
+                  "err:additional": $err:additional,
+                  "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+                })
               }
             else try {
               templates:apply($h, $wdbfp:lookup, $newModel)
             } catch * {
-              util:log("info", $newModel),
-              util:log("error", $err:description),
-              error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
+              util:log("error", "error when applying templates in function.xqm: " || $err:description),
+              wdbErr:error(map{
+                "code": $err:code,
+                "model": $newModel,
+                "err:value": $err:value,
+                "err:description": $err:description,
+                "err:additional": $err:additional,
+                "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+              })
             }
       }
     </html>

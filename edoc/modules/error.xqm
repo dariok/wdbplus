@@ -12,7 +12,8 @@ import module namespace functx    = "http://www.functx.com"                     
 declare function wdbErr:error ($data as map (*)) {
   let $error := switch (xs:string($data("code")))
     case "wdbErr:wdb0000"
-    case "wdb0000" return "No file could be found for the ID supplied in the request."
+    case "wdb0000"
+      return "No file could be found for the ID supplied in the request: " || $data("err:value")?id
     case "wdbErr:wdb0001"
     case "wdb0001" return "Multiple files were found for the ID supplied. Unable to determine which one to display."
     case "wdbErr:wdb0002"

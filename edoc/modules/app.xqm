@@ -208,6 +208,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     let $pathParts := if ( $newModel instance of map(*) and exists($newModel?fileLoc) )
           then tokenize(replace($newModel?fileLoc, '//', '/'), '/')
           else error(xs:QName("wdbErr:err0815"), "no file: " || $newModel?fileLoc, map{"newModel": $newModel})
+    
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
     else
@@ -579,9 +580,17 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
   (: do not just return a random URI but add some checks for better error messages:
    : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
   let $pathToFile := if ( count($files) = 0 ) then
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0000'), "no file with ID " || $id || " in " || $wdb:data)
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb0000'),
+        "no file with ID " || $id || " in " || $wdb:data,
+        map { "id": $id, "request": request:get-url() }
+      )
     else if ( count($files) > 1 ) then
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'), "multiple files with ID " || $id || " in " || $wdb:data)
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb0001'),
+        "multiple files with ID " || $id || " in " || $wdb:data,
+        map { "id": $id, "request": request:get-url() }
+      )
     else if ( local-name($files[1]) = 'id' ) then
       base-uri($files[1]) || '#' || $id
     else
