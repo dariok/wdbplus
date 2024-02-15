@@ -53,6 +53,26 @@ declare function wdbRCo:evaluatePreflight ( $originHeader as xs:string, $method 
 };
 
 (:~
+ : Return a short answer to HTTP HEAD request with Last-Modified header
+ :)
+declare function wdbRCo:head ( $filePath as xs:string ) as element(rest:response) {
+  let $pathParts := tokenize(replace($filePath, '//', '/'), '/')
+    , $collection := string-join($pathParts[not(position() = last())], '/')
+    , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
+    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+  
+  return
+  <rest:response>
+      <http:response status="204">
+        <http:header name="Access-Control-Allow-Origin" value="*" />
+        <http:header name="Access-Control-Allow-Headers" value="authorization" />
+        <http:header name="Last-Modified" value="{$last-modified}" />
+      </http:response>
+    </rest:response>
+};
+
+(:~
  : Get a project specific / instance specific / global XSLT by name
  :
  : @param $coll Path to the Project

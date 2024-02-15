@@ -61,6 +61,13 @@ function wdbRf:storeFilePreflight ( $id as xs:string, $origin as xs:string* ) as
   wdbRCo:evaluatePreflight($origin, "PUT")
 };
 
+declare
+  %rest:HEAD
+  %rest:path("/edoc/resource/{$id}")
+function wdbRf:fileHead ( $id as xs:string ) as element(rest:response) {
+  wdbRCo:head(wdb:getFilePath($id))
+};
+
 (: upload a single file with known ID (i.e. one that is already present)
    - if the ID is not found, return an error
    - replace the file and update its meta:file
