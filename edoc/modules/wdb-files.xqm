@@ -53,6 +53,21 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
 };
 
 (:~
+: return a map with the path to a file split into its parent collection (which may be different from the
+: project collection) and its file name
+:
+: @param $id as xs:string: the ID of the file (which should be unique)
+: @return map(string, string) with "collectionPath", "fileName"
+:)
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
+  (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
+   : if there are multiple files, this will throw an error :)
+  for $file in collection("/db")/id($id)[not(self::meta:file or self::meta:struct)]
+    let $path := base-uri($file)
+    return map{ "collectionPath": functx:substring-before-last($path, '/') , "fileName": functx:substring-after-last($path, '/') }
+};
+
+(:~
  : Check whether the current user has the right to access the file with the given mode
  : 
  : @param $collection: the collection in which to search for the ID
@@ -80,7 +95,6 @@ declare function wdbFiles:hasAccess ( $collection as xs:string, $id as xs:string
  : @return xs:dateTime
  :)
 declare function wdbFiles:getModificationDate ( $collectionPath as xs:string, $id as xs:string ) as xs:dateTime {
-  let $t := util:log("info", $collectionPath || ' – ' || $id || ' – ' || wdbFiles:getFilePaths($collectionPath, $id) )
   let $absolutePath := wdbFiles:getFilePaths($collectionPath, $id) => wdbFiles:getAbsolutePath()
     , $dateTime := xmldb:last-modified(functx:substring-before-last($absolutePath, '/'), functx:substring-after-last($absolutePath, '/'))
     , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
