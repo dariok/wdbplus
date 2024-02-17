@@ -2,12 +2,13 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace console = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace json    = "http://www.json.org";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace console  = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
+import module namespace json     = "http://www.json.org";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -183,7 +184,8 @@ declare
     %rest:GET
     %output:indent("no")
     %rest:path("/edoc/resource/{$id}")
-function wdbRf:getResource ($id as xs:string) {
+    %rest:header-param("If-Modified-Since", "{$modified}")
+function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
   let $files := collection($wdb:data)//id($id)[self::meta:file]
@@ -218,6 +220,8 @@ function wdbRf:getResource ($id as xs:string) {
       404
     else if ( not($readable) ) then
       401
+    else if ( count($doc) = 1 and $modified != "" ) then
+      wdbFiles:evaluateIfModifiedSince($collectionPath, $id, $modified)
     else if ( count($doc) = 1 ) then
       200
     else
@@ -244,6 +248,7 @@ function wdbRf:getResource ($id as xs:string) {
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
         <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
+        <http:header name="Last-Modified" value="{ wdbFiles:getModificationDate($collectionPath, $id) => wdbFiles:ietfDate() }" />
       </http:response>
     </rest:response>,
     if ($respCode = 200)
@@ -480,7 +485,7 @@ declare function wdbRf:processXQuery($id as xs:string, $process as element(), $m
 declare
     %private
   function wdbRf:image ($fileID as xs:string, $image as xs:string, $map as map(*)) {
-  let $retrFile := wdbRf:getResource($fileID)
+  let $retrFile := wdbRf:getResource($fileID, "")
   let $errorFile := if ($retrFile//http:response/@status != 200)
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()
@@ -564,7 +569,7 @@ declare
     %rest:path("/edoc/resource/iiif/{$id}/images")
     %output:method("json")
 function wdbRf:getImages($id as xs:string) {
-  let $retrFile := wdbRf:getResource($id)
+  let $retrFile := wdbRf:getResource($id, "")
   let $errorFile := if ($retrFile//http:response/@status != 200)
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()
@@ -591,7 +596,7 @@ declare
     %rest:path("/edoc/resource/iiif/{$id}/{$image}.json")
     %output:method("json")
 function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
-  let $retrFile := wdbRf:getResource($id)
+  let $retrFile := wdbRf:getResource($id, "")
   let $errorFile := if ($retrFile//http:response/@status != 200)
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()
@@ -624,7 +629,7 @@ declare
     %rest:path("/edoc/resource/iiif/{$id}/manifest.json")
     %output:method("json")
 function wdbRf:getFileManifest ($id as xs:string) {
-  let $retrFile := wdbRf:getResource($id)
+  let $retrFile := wdbRf:getResource($id, "")
   let $errorFile := if ($retrFile//http:response/@status != 200)
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()

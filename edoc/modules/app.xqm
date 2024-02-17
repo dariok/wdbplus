@@ -212,24 +212,18 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
     else
-      let $collection := string-join($pathParts[not(position() = last())], '/')
-        , $dateTime := xmldb:last-modified($collection, $pathParts[last()])
-        , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
-        , $modifiedWithoutMillisecs := xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
-        , $last-modified := format-dateTime($adjusted, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
+      let $last-modified := wdbFiles:getModificationDate($newModel?pathToEd, $id) => wdbFiles:ietfDate()
       
       let $requestedModified := (
             request:get-attribute("if-modified"),
             request:get-header("If-Modified-Since")
           )[1]
-        , $requestedModifiedParsed := parse-ietf-date($requestedModified)
+      let $isModified := if ( $requestedModified != '' )
+            then wdbFiles:evaluateIfModifiedSince($newModel?pathToEd, $id, $requestedModified)
+            else 200
       
       (: TODO: use a function to get the actual content language :)
-      return  if ( count($newModel) = 1 and (
-            $requestedModifiedParsed lt $modifiedWithoutMillisecs
-            or empty($requestedModified)
-            or $requestedModified = ''
-          ) )
+      return  if ( count($newModel) = 1 and $isModified = 200 )
         then (
           response:set-header("Last-Modified", $last-modified),
           <html lang="de">
@@ -250,7 +244,7 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
             }
           </html>
         )
-        else if ( $requestedModifiedParsed ge $modifiedWithoutMillisecs ) then
+        else if ( $isModified = 304 ) then
           response:set-status-code(304)
         else
           <html>

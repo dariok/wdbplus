@@ -65,8 +65,6 @@ declare function wdbRCo:head ( $filePath as xs:string ) as element(rest:response
   return
   <rest:response>
       <http:response status="204">
-        <http:header name="Access-Control-Allow-Origin" value="*" />
-        <http:header name="Access-Control-Allow-Headers" value="authorization" />
         <http:header name="Last-Modified" value="{$last-modified}" />
       </http:response>
     </rest:response>

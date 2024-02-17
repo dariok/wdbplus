@@ -44,10 +44,10 @@ declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
  : @return xs:anyURI
  :)
 declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
-  let $base :=functx:substring-before-last(base-uri($path), '/')
-  let $val := string($path)
+  let $base := functx:substring-before-last(base-uri($path), '/')
+    , $val := string($path)
   
-  return if (starts-with($val, $base))
+  return if ( starts-with($val, $base) )
     then xs:anyURI($val)
     else xs:anyURI($base || '/' || $val)
 };
@@ -70,4 +70,42 @@ declare function wdbFiles:hasAccess ( $collection as xs:string, $id as xs:string
     let $path := wdbFiles:getAbsolutePath($file[1])
     return if (sm:has-access($path, $mode)) then $path else false()
   else error(xs:QName("wdbErr:wdb0001"))
+};
+
+(:~
+ : Return the modification date adjusted to GMT, without milliseconds
+ :
+ : @param $collectionPath xs:string path to the base collection
+ : @param $id xs:string ID of the file
+ : @return xs:dateTime
+ :)
+declare function wdbFiles:getModificationDate ( $collectionPath as xs:string, $id as xs:string ) as xs:dateTime {
+  let $t := util:log("info", $collectionPath || ' – ' || $id || ' – ' || wdbFiles:getFilePaths($collectionPath, $id) )
+  let $absolutePath := wdbFiles:getFilePaths($collectionPath, $id) => wdbFiles:getAbsolutePath()
+    , $dateTime := xmldb:last-modified(functx:substring-before-last($absolutePath, '/'), functx:substring-after-last($absolutePath, '/'))
+    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    
+  return xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
+};
+
+(:~
+ : evaluate If-Modified-Since and return either 200 or 304
+ :)
+declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string, $id as xs:string, $requestedModified as xs:string+ ) as xs:double {
+  let $modifiedWithoutMillisecs := wdbFiles:getModificationDate($collectionPath, $id)
+    , $requestedModifiedParsed := parse-ietf-date(string-join($requestedModified))
+  
+  return if ( $requestedModifiedParsed lt $modifiedWithoutMillisecs )
+    then 200
+    else 304
+};
+
+(:~
+ : format da given datetime as IETF date
+ :
+ : @param gmtDateTime an xs:dataTime adjust to GMT
+ : @returns xs:string formated as an IETF date
+ :)
+declare function wdbFiles:ietfDate ( $gmtDateTime as xs:dateTime ) as xs:string {
+  format-dateTime($gmtDateTime, "[FNn,3-3], [D00] [MNn,3-3] [Y] [H01]:[m]:[s] GMT")
 };
