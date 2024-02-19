@@ -236,7 +236,7 @@
       <xsl:when test="tei:choice">
       <button>
 	<xsl:sequence select="$att"></xsl:sequence>
-        <xsl:value-of select="tei:reg"></xsl:value-of>
+        <xsl:apply-templates/>
       </button>
       </xsl:when>
       
