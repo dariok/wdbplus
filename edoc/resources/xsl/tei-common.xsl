@@ -233,6 +233,12 @@
         <xsl:apply-templates select="tei:w/following-sibling::node()"/>
       </button>
       </xsl:when>
+      <xsl:when test="tei:choice">
+      <button>
+	<xsl:sequence select="$att"></xsl:sequence>
+        <xsl:value-of select="tei:reg"></xsl:value-of>
+      </button>
+      </xsl:when>
       
       <!-- margin note -->
       <xsl:when test="tei:note[@place]">
