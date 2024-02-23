@@ -10,44 +10,47 @@ import module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities"
 import module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
 import module namespace wdb   = "https://github.com/dariok/wdbplus/wdb"          at "app.xqm";
 
-declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {(
-  <div>
-    <h1>Volltextsuche</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
-      <input type="hidden" name="p">
-        { attribute value {'{"job": "fts", "start": "1"}'} }
-      </input>
-      <input type="submit" />
-    </form>
-    <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
-  </div>,
-  <hr />,
-  <div>
-    <h1>Registersuche</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      { local:listEnt("search") }
-      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
-      <input type="submit" />
-    </form>
-  </div>,
-  <hr />,
-  <div>
-    <h1>Registerliste</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      { local:listEnt("entries") }
-      <select name="q">{
-        for $c in (1 to 26)
-          let $b := codepoints-to-string($c + 64)
-          return <option value="{$b}">{$b}</option>
-      }</select>
-      <input type="submit" />
-    </form>
-  </div>
-)
+declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
+  let $options := local:selectEd($model)
+  
+  return (
+    <div>
+      <h1>Volltextsuche</h1>
+      <form action="search.html">
+        { $options }
+        <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+        <input type="hidden" name="p">
+          { attribute value {'{"job": "fts", "start": "1"}'} }
+        </input>
+        <input type="submit" />
+      </form>
+      <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
+    </div>,
+    <hr />,
+    <div>
+      <h1>Registersuche</h1>
+      <form action="search.html">
+        { $options }
+        { local:listEnt("search") }
+        <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+        <input type="submit" />
+      </form>
+    </div>,
+    <hr />,
+    <div>
+      <h1>Registerliste</h1>
+      <form action="search.html">
+        { $options }
+        { local:listEnt("entries") }
+        <select name="q">{
+          for $c in (1 to 26)
+            let $b := codepoints-to-string($c + 64)
+            return <option value="{$b}">{$b}</option>
+        }</select>
+        <input type="submit" />
+      </form>
+    </div>
+  )
 };
 
 declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
@@ -82,11 +85,11 @@ declare function local:selectEd ($model) {(
     let $md := doc($wdb:data || '/wdbmeta.xml')
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id
-      let $label := $md//meta:struct[@file = $id]/@label
+      
       return
         <option value="{$id}">
           { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
-          { normalize-space($label) }
+          { normalize-space($md//meta:struct[@file = $id]/@label) }
         </option>
     return (
       if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),
