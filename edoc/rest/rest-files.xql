@@ -221,7 +221,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
     else if ( not($readable) ) then
       401
     else if ( count($doc) = 1 and $modified != "" ) then
-      wdbFiles:evaluateIfModifiedSince($collectionPath, $id, $modified)
+      wdbFiles:evaluateIfModifiedSince($id, $modified)
     else if ( count($doc) = 1 ) then
       200
     else
@@ -248,7 +248,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
         <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
-        <http:header name="Last-Modified" value="{ wdbFiles:getModificationDate($collectionPath, $id) => wdbFiles:ietfDate() }" />
+        <http:header name="Last-Modified" value="{ wdbFiles:getModificationDate($id) => wdbFiles:ietfDate() }" />
       </http:response>
     </rest:response>,
     if ($respCode = 200)

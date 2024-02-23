@@ -212,14 +212,14 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
     else
-      let $last-modified := wdbFiles:getModificationDate($newModel?pathToEd, $id) => wdbFiles:ietfDate()
+      let $last-modified := wdbFiles:getModificationDate($id) => wdbFiles:ietfDate()
       
       let $requestedModified := (
             request:get-attribute("if-modified"),
             request:get-header("If-Modified-Since")
           )[1]
       let $isModified := if ( $requestedModified != '' )
-            then wdbFiles:evaluateIfModifiedSince($newModel?pathToEd, $id, $requestedModified)
+            then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
             else 200
       
       (: TODO: use a function to get the actual content language :)

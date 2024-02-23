@@ -2,12 +2,13 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbfp   = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
-import module namespace wdbRCo  = "https://github.com/dariok/wdbplus/RestCommon"    at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi  = "https://github.com/dariok/wdbplus/RestMIngest"   at "/db/apps/edoc/rest/ingest.xqm";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"          at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace wdbfp    = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"    at "/db/apps/edoc/rest/common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest"   at "/db/apps/edoc/rest/ingest.xqm";
+import module namespace xstring  = "https://github.com/dariok/XStringUtils"          at "/db/apps/edoc/include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -449,48 +450,65 @@ declare function wdbRc:imported ( $import, $child ) {
  : @return HTML (should be a html:nav element)
  :)
 declare function wdbRc:getCollectionNavHTML ( $ed as xs:string ) {
-    wdbRc:getCollectionNavHTML ( $ed, () )
+    wdbRc:getCollectionNavHTML ( $ed, (), '' )
 };
 declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.html")
-function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)? ) {
+    %rest:header-param("If-Modified-Since", "{$modified}")
+function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)?, $modified as xs:string* ) {
   let $model := if ( exists($externalModel) ) then $externalModel else wdbfp:populateModel("", $ed, "", "")
-    , $params :=
-        <parameters>
-          <param name="id" value="{$ed}"/>
-        </parameters>
-    , $attributes :=
-        <attributes>
-          <attr name="http://saxon.sf.net/feature/expandAttributeDefaults" value="off" />
-        </attributes>
-  
-  let $html := try {
-    let $struct := wdbRc:getCollectionNavXML($ed)
-      , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
-          then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
-          else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
-          then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
-          else if ( doc-available($wdb:data || '/resources/nav.xsl') )
-          then xs:anyURI($wdb:data || '/resources/nav.xsl')
-          else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
-    
-    return transform:transform($struct, doc($xsl), $params, $attributes, ())
-  } catch * {
-    <p>Error transforming meta data file {$model?infoFileLoc} to navigation HTML:<br/>{$err:description}</p>
-  }
-  
-  let $status := if ( $html[self::*:p] ) then '500' else '200'
-  
-  return (
+
+  return if ( $modified != '' and wdbFiles:evaluateIfModifiedSince($model?pathToEd, 'wdbmeta.xml', $modified) = 304 )
+  then
     <rest:response>
-      <http:response status="{$status}">
-        <http:header name="Access-Control-Allow-Origin" value="*" />
-        <http:header name="Content-Type" value="text/html" />
-      </http:response>
-    </rest:response>,
-    $html
-  )
+      <http:response status="304" />
+    </rest:response>
+  else
+    let $params :=
+          <parameters>
+            <param name="id" value="{$ed}"/>
+          </parameters>
+      , $attributes :=
+          <attributes>
+            <attr name="http://saxon.sf.net/feature/expandAttributeDefaults" value="off" />
+          </attributes>
+      , $modified := wdbFiles:getModificationDate($model?pathToEd, 'wdbmeta.xml') => wdbFiles:ietfDate()
+    
+    let $html := try {
+      let $struct := wdbRc:getCollectionNavXML($ed)
+        , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
+            then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
+            else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
+            then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
+            else if ( doc-available($wdb:data || '/resources/nav.xsl') )
+            then xs:anyURI($wdb:data || '/resources/nav.xsl')
+            else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+      
+      return transform:transform($struct, doc($xsl), $params, $attributes, ())
+    } catch * {
+      <p>Error transforming meta data file {$model?infoFileLoc} to navigation HTML:<br/>{$err:description}</p>
+    }
+    
+    let $status := if ( $html[self::*:p] ) then '500' else '200'
+      , $headers := if ( $html[self::*:p] )
+          then
+            <http:header name="Cache-Control" value="no-store" />
+          else (
+            <http:header name="Cache-Control" value="no-cache" />,
+            <http:header name="Last-Modified" value="{$modified}" />
+          )
+    
+    return (
+      <rest:response>
+        <http:response status="{$status}">
+          <http:header name="Access-Control-Allow-Origin" value="*" />
+          <http:header name="Content-Type" value="text/html" />
+          { $headers }
+        </http:response>
+      </rest:response>,
+      $html
+    )
 };
 
 declare function wdbRc:getGeneral ($id, $mt, $content) {

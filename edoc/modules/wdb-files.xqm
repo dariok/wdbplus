@@ -94,19 +94,37 @@ declare function wdbFiles:hasAccess ( $collection as xs:string, $id as xs:string
  : @param $id xs:string ID of the file
  : @return xs:dateTime
  :)
-declare function wdbFiles:getModificationDate ( $collectionPath as xs:string, $id as xs:string ) as xs:dateTime {
-  let $absolutePath := wdbFiles:getFilePaths($collectionPath, $id) => wdbFiles:getAbsolutePath()
-    , $dateTime := xmldb:last-modified(functx:substring-before-last($absolutePath, '/'), functx:substring-after-last($absolutePath, '/'))
+declare function wdbFiles:getModificationDate ( $id as xs:string ) as xs:dateTime {
+  let $path := wdbFiles:getFullPath($id)
+  
+  return wdbFiles:getModificationDate($path?collectionPath, $path?fileName)
+};
+
+(:~
+ : Return the modification date adjusted to GMT, without milliseconds
+ :
+ : @param $collectionPath xs:string path to the base collection
+ : @param $fileName xs:string the name of the file
+ : @return xs:dateTime
+ :)
+declare function wdbFiles:getModificationDate ( $collectionPath as xs:string, $fileName as xs:string ) as xs:dateTime {
+  let $dateTime := xmldb:last-modified($collectionPath, $fileName)
     , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
     
   return xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
 };
 
+declare function wdbFiles:evaluateIfModifiedSince ( $id as xs:string, $requestedModified as xs:string+ ) as xs:double {
+  let $path := wdbFiles:getFullPath($id)
+
+  return wdbFiles:evaluateIfModifiedSince($path?collectionPath, $path?fileName, $requestedModified)
+};
+
 (:~
  : evaluate If-Modified-Since and return either 200 or 304
  :)
-declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string, $id as xs:string, $requestedModified as xs:string+ ) as xs:double {
-  let $modifiedWithoutMillisecs := wdbFiles:getModificationDate($collectionPath, $id)
+declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string, $fileName as xs:string, $requestedModified as xs:string+ ) as xs:double {
+  let $modifiedWithoutMillisecs := wdbFiles:getModificationDate($collectionPath, $fileName)
     , $requestedModifiedParsed := parse-ietf-date(string-join($requestedModified))
   
   return if ( $requestedModifiedParsed lt $modifiedWithoutMillisecs )
