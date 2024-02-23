@@ -127,10 +127,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         return map:merge(($map, $mmap))
       else $map (: if it is an element, this usually means that populateModel has returned an error :)
   } catch * {
-    error(
-      xs:QName("wdbErr:wdb3001"),
-      "error creating map in function.xqm",
-      map {
+    let $errorMap := map {
         "code":        "wdbErr:wdb3001",
         "id":          $id,
         "ed":          $ed,
@@ -143,6 +140,13 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number,
         "request":     request:get-url()
       }
+    return (
+      util:log("error", $errorMap),
+      error(
+        xs:QName("wdbErr:wdb3001"),
+        "error creating map in function.xqm",
+        $errorMap
+      )
     )
   }
 };
