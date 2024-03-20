@@ -62,8 +62,9 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
 declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : if there are multiple files, this will throw an error :)
-  for $file in collection("/db")/id($id)[not(self::meta:file or self::meta:struct)]
+  for $file in collection("/db")/id($id)[self::meta:file]
     let $path := base-uri($file)
+    
     return map{ "collectionPath": functx:substring-before-last($path, '/') , "fileName": functx:substring-after-last($path, '/') }
 };
 
