@@ -76,7 +76,7 @@
       <create qname="@when" type="xs:date"/>
       <create qname="@notBefore" type="xs:date"/>
       <create qname="@notAfter" type="xs:date"/>
-      <create qname="tei:w" type="xs:string"/>
+      <!--<create qname="tei:w" type="xs:string"/>-->
     </range>
   </index>
   <triggers>
