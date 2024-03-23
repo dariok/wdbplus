@@ -24,11 +24,11 @@ declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
  : xml:id or has an xml:id but is not “registered” with its project’s metadata, it wont’t be returned. Also, this
  : function will return all files with a given ID; it is up to the caller to act upon this accordingly.
  :
- : @param $collection as xs:string: ID of the collection in which to search
+ : @param $collection as xs:string: path the collection in which to search
  : @param $id as xs:string: the ID value to be used
  : @return attribute()* the path attributes to the files as stored in the meta data files
  :)
- declare function wdbFiles:getFilePaths ( $collection, $id ) as attribute()* {
+ declare function wdbFiles:getFilePaths ( $collection as xs:string, $id as xs:string ) as attribute()* {
   let $candidates := collection($collection)//id($id)
 
   return (
@@ -43,7 +43,7 @@ declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
  : @param $path as attribute() an attribute node from wdbmeta
  : @return xs:anyURI
  :)
-declare function wdbFiles:getAbsolutePath ( $path as attribute() ) {
+declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI {
   let $base := functx:substring-before-last(base-uri($path), '/')
     , $val := string($path)
   
@@ -63,7 +63,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : if there are multiple files, this will throw an error :)
   for $file in collection("/db")/id($id)[self::meta:file]
-    let $path := base-uri($file)
+    let $path := (base-uri($file) => substring-before("wdbmeta.xml")) || $file/@path
     
     return map{ "collectionPath": functx:substring-before-last($path, '/') , "fileName": functx:substring-after-last($path, '/') }
 };
