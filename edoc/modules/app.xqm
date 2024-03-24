@@ -205,14 +205,12 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
   try {
     let $newModel := wdb:populateModel($id, $view, $model, $p)
     
-    let $pathParts := if ( $newModel instance of map(*) and exists($newModel?fileLoc) )
-          then tokenize(replace($newModel?fileLoc, '//', '/'), '/')
-          else error(xs:QName("wdbErr:err0815"), "no file: " || $newModel?fileLoc, map{"newModel": $newModel})
-    
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
     else
-      let $last-modified := wdbFiles:getModificationDate($id) => wdbFiles:ietfDate()
+      let $last-modified :=
+        wdbFiles:getModificationDate($newModel?filePathInfo?collectionPath, $newModel?filePathInfo?fileName)
+          => wdbFiles:ietfDate()
       
       let $requestedModified := (
             request:get-attribute("if-modified"),
@@ -281,28 +279,22 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     wdb:populateModel($id, $view, $model, "")
 };
 declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
-    let $pTF := wdb:getFilePath($id)
-    let $pathToFile := if ( starts-with($pTF, 'http') )
-      then $pTF
-      else if ( not(doc-available($pTF)) )
-      then error(xs:QName("wdbErr:wdb0404"), "file not found: " || $pTF, map { "code": "wdb0404", "id": $id, "pathToFile": $pTF })
-      else if ( sm:has-access($pTF, "r") )
-      then $pTF
-      else error(xs:QName("wdbErr:wdb0004"))
+  let $filePathInfo := wdbFiles:getFullPath($id)
+    , $pathToFile := if ( map:keys($filePathInfo) = 'fileURL' )
+        then
+          $filePathInfo?fileURL
+        else
+          $filePathInfo?collectionPath || '/' || $filePathInfo?fileName
+    , $pathToEd := $filePathInfo?projectPath
+    , $infoFileLoc := $filePathInfo?projectPath || '/wdbmeta.xml'
     
-    let $pathToEd := wdb:getEdPath($id, true())
-    let $pathToEdRel := substring-after($pathToEd, $wdb:edocBaseDB||'/')
-    
-    (: The meta data are taken from wdbmeta.xml :)
-    let $infoFileLoc := wdb:getMetaFile($pathToEd)
-    
-    let $ed := string(doc($infoFileLoc)/meta:projectMD/@xml:id)
-    
-    let $xsl := if ( contains($pTF, 'wdbmeta.xml') )
-      then
-        (: TODO get path to XSL via function (use what’s in rest-files.xql) :)
-        xs:anyURI($wdb:data || '/resources/nav.xsl')
-      else wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
+  let $ed := string(doc($infoFileLoc)/meta:projectMD/@xml:id)
+  
+  let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
+    then
+      (: TODO get path to XSL via function (use what’s in rest-files.xql) :)
+      xs:anyURI($wdb:data || '/resources/nav.xsl')
+    else wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
     
     let $xslt := if (doc-available($xsl))
       then $xsl
@@ -332,6 +324,7 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     let $map := map {
       "ed":               $ed,
       "fileLoc":          $pathToFile,
+      "filePathInfo":     $filePathInfo,
       "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
       "header":           $header,
       "id":               $id,

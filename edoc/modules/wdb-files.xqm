@@ -58,14 +58,48 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
 :
 : @param $id as xs:string: the ID of the file (which should be unique)
 : @return map(string, string) with "collectionPath", "fileName"
+ : @throws wdbErr:wdb0000
+ : @throws wdbErr:wdb0001
 :)
-declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
-  (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
-   : if there are multiple files, this will throw an error :)
-  for $file in collection("/db")/id($id)[self::meta:file]
-    let $path := (base-uri($file) => substring-before("wdbmeta.xml")) || $file/@path
-    
-    return map{ "collectionPath": functx:substring-before-last($path, '/') , "fileName": functx:substring-after-last($path, '/') }
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string? )? {
+  let $file := collection("/db")/id($id)[self::meta:file]
+
+  return if ( count($file) = 0 ) then
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb0000'),
+        "no file with ID " || $id,
+        map { "id": $id, "request": request:get-url() }
+      )
+    else if ( count($file) > 1 ) then
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb0001'),
+        "multiple files with ID " || $id,
+        map { "id": $id, "request": request:get-url() }
+      )
+    else if ( $file[self::meta:projectMD] ) then
+      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
+      return map {
+        "projectPath": $projectPath,
+        "collectionPath": $projectPath,
+        "fileName": "wdbmeta.xml"
+      }
+    else if ( starts-with($file/@path, '$') ) then
+      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
+        , $peer := $file => substring(2) => substring-before('/')
+        , $id := $file => substring-after('/')
+      return map {
+        "projectPath": $projectPath,
+        "fileURL": doc("../config.xml")/id($peer) || '/' || $id
+      }
+    else
+      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
+        , $path := $projectPath || $file/@path
+
+      return map{
+        "projectPath": $projectPath,
+        "collectionPath": functx:substring-before-last($path, '/') ,
+        "fileName": functx:substring-after-last($path, '/')
+      }
 };
 
 (:~
