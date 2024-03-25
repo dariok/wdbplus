@@ -2,14 +2,12 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
 import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
-import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace functx    = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
 
-declare function wdbErr:error ($data as map (*)) {
+declare function wdbErr:error ( $data as map (*) ) as item()+ {
   let $error := switch (xs:string($data("code")))
     case "wdbErr:wdb0000"
     case "wdb0000"
@@ -35,25 +33,40 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  return (
-    util:log("error", $error),
-    util:log("info", $data),
-    response:set-status-code(418),
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="wdb-template" content="(error page)" />
-      <title>ERROR</title>
-      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
-      <script src="resources/scripts/function.js"/>
-    </head>,
-    <body>
-      <main>
+  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000") )
+    then 404
+    else 418
+  
+  let $errorContent := if ( xs:string($data?code) = "wdbErr:wdb0200" )
+    then
+        <div>
+            <h1>Seite nicht gefunden</h1>
+            <p>Leider konnten wir die angegebene Seite nicht finden</p>
+        </div>
+    else 
         <div>
           <h1>Something has gone wrong...</h1>
           <p>{$error}</p>
           { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
         </div>
+
+  return (
+    util:log("error", $error),
+    util:log("info", $data),
+    response:set-status-code($statusCode),
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta name="wdb-template" content="(error page)" />
+      <title>ERROR</title>
+      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
+      <script src="resources/scripts/function.js"/>
+    </head>,
+    <body>
+      <header>head</header>
+      <main>
+        { $errorContent }
       </main>
     </body>
   )

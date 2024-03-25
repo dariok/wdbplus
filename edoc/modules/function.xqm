@@ -126,6 +126,20 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         }
         return map:merge(($map, $mmap))
       else $map (: if it is an element, this usually means that populateModel has returned an error :)
+  } catch *:wdb0200 {
+    (: app.xqm: no file with ID :)
+    error(
+      xs:QName("wdbErr:wdb0200"),
+      "project not found",
+      map {
+        "id":          $id,
+        "ed":          $ed,
+        "p":           $p,
+        "q":           $q,
+        "wdb:data":    $wdb:data,
+        "request":     request:get-url()
+      }
+    )
   } catch * {
     let $errorMap := map {
         "code":        "wdbErr:wdb3001",
@@ -161,43 +175,39 @@ declare
     %templates:default("ed", "")
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
     $q as xs:string ) as item()* {
-  let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
+  try {
+    let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
 
-  (: TODO: use a function to get the actual content language :)
-  return
-    <html lang="de">
-      {
-        for $h in $node/* return
-          if ( $h/*[@data-template] )
-            then for $c in $h/* return
-              try {
+    (: TODO: use a function to get the actual content language :)
+    return
+      <html lang="de">
+        {
+          for $h in $node/* return
+            if ( $h/*[@data-template] )
+              then for $c in $h/* return
                 templates:apply($c, $wdbfp:lookup, $newModel)
-              } catch * {
-                util:log("error", "error when applying templates in function.xqm: " || $err:description),
-                wdbErr:error(map{
-                  "code": $err:code,
-                  "model": $newModel,
-                  "err:value": $err:value,
-                  "err:description": $err:description,
-                  "err:additional": $err:additional,
-                  "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
-                })
-              }
-            else try {
-              templates:apply($h, $wdbfp:lookup, $newModel)
-            } catch * {
-              util:log("error", "error when applying templates in function.xqm: " || $err:description),
-              wdbErr:error(map{
-                "code": $err:code,
-                "model": $newModel,
-                "err:value": $err:value,
-                "err:description": $err:description,
-                "err:additional": $err:additional,
-                "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
-              })
-            }
-      }
-    </html>
+              else
+                templates:apply($h, $wdbfp:lookup, $newModel)
+        }
+      </html>
+  } catch *:wdb0200 {
+    util:log("error", "project not found: " || $err:value?ed || " from request " || $err:value?request),
+    wdbErr:error(map{
+      "code": $err:code,
+      "err:description": "project not found",
+      "err:additional": $err:additional
+    })
+  } catch * {
+    util:log("error", "error when applying templates in function.xqm: " || $err:description),
+    wdbErr:error(map{
+      "code": $err:code,
+      "model": $newModel,
+      "err:value": $err:value,
+      "err:description": $err:description,
+      "err:additional": $err:additional,
+      "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+    })
+  }
 };
 
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
