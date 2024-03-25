@@ -1,10 +1,5 @@
-<xsl:stylesheet
-   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta"
-   xmlns:config="https://github.com/dariok/wdbplus/config"
-   version="3.0">
-   
-   <xsl:output method="html" />
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" xmlns:config="https://github.com/dariok/wdbplus/config" version="3.0">
+   <xsl:output method="html"/>
 
    <xsl:param name="footerXML"/>
    <xsl:param name="footerXSL"/>
@@ -109,14 +104,23 @@
 
    <xsl:template match="meta:legal">
       <p class="legalInfo">
+         <span style="display: block;">Lizenzinformationen:</span>
          <xsl:apply-templates select="meta:licence"/>
       </p>
    </xsl:template>
 
    <xsl:template match="meta:licence">
-      <a href="{@href}">
-         <xsl:apply-templates/>
-      </a>
+      <span style="display: block;">
+         <xsl:apply-templates select="@content" />
+         <a href="{@href}">
+            <xsl:apply-templates/>
+         </a>
+      </span>
+   </xsl:template>
+   
+   <xsl:template match="@content">
+       <xsl:value-of select="id(.)/meta:description" />
+       <xsl:text>: </xsl:text>
    </xsl:template>
    
    <xsl:template match="meta:projectDesc">

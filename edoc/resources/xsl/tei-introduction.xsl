@@ -1,18 +1,21 @@
 <!-- Introduction-XSL für \\edoc\ed000216 Karlstadt-Edition -->
-<xsl:stylesheet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:mets="http://www.loc.gov/METS/" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.w3.org/1999/XSL/Transform http://www.w3.org/2007/schema-for-xslt20.xsd" exclude-result-prefixes="html tei mets xlink xsl exist xsi" version="2.0">
-	<!-- Imports werden über tei-common abgewickelt; 2015/10/23 DK -->
-	<xsl:import href="tei-common.xsl#1"/>
-	
-	<xsl:output encoding="UTF-8" indent="no" method="html" doctype-system="about:legacy-compat"/>
+<xsl:stylesheet
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:tei="http://www.tei-c.org/ns/1.0"
+      xsi:schemaLocation="http://www.w3.org/1999/XSL/Transform http://www.w3.org/2007/schema-for-xslt20.xsd"
+      exclude-result-prefixes="#all"
+      version="2.0">
+   
+   <!-- Imports werden über tei-common abgewickelt; 2015/10/23 DK -->
+   <xsl:import href="tei-common.xsl#1"/>
+   
+   <xsl:output encoding="UTF-8" indent="no" method="html" doctype-system="about:legacy-compat"/>
 
 	<!-- mehrere param nach common ausgelagert; 2016-05-27 DK -->
 	<xsl:param name="footerXSL">
 		<xsl:value-of select="concat($baseDir, '/tei-introduction.xsl')"/>
 	</xsl:param>
-	<!-- Auflösung von absoluter URI via Katalog; 2016-06-24 DK -->
-		<xsl:variable name="metsfile">
-		<xsl:value-of select="concat($baseDir,'/mets.xml')"/>
-	</xsl:variable>
 	
 	<!-- neu mit mode="content" enthält nur noch den tatsächlichen Inhalt; das Gerüst wird über Templating bzw. in common
 			erstellt; 2016-07-14 DK -->

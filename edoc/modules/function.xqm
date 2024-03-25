@@ -10,6 +10,7 @@ import module namespace wdba         = "https://github.com/dariok/wdbplus/auth" 
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"      at "/db/apps/edoc/modules/entity.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"      at "/db/apps/edoc/modules/pquery.xqm";
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "/db/apps/edoc/modules/start.xqm";
@@ -57,15 +58,20 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
     else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
       let $regFile := switch ( $q )
         case "per"
-          return collection(wdb:getEdPath($ed, true()))//*:listPerson
+          return collection(wdb:getEdPath($ed, true()))//*:listPerson[ancestor::*:text]
         case "org"
-          return collection(wdb:getEdPath($ed, true()))//*:listOrg
+          return collection(wdb:getEdPath($ed, true()))//*:listOrg[ancestor::*:text]
+        case "pla"
+          return collection(wdb:getEdPath($ed, true()))//*:listPlace[ancestor::*:text]
         default
-          return ""
+          return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
               
       let $entryEd := $regFile/id($id)
+        , $pathToEd := if ( $ed = "" )
+            then $wdb:data
+            else wdb:getEdPath($ed, true())
       (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
-      return map { "entry": $entryEd, "id": $id, "ed": $ed }
+      return map { "entry": $entryEd, "id": $id, "ed": $ed, "pathToEd": $pathToEd }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
@@ -120,20 +126,43 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         }
         return map:merge(($map, $mmap))
       else $map (: if it is an element, this usually means that populateModel has returned an error :)
+  } catch *:wdb0200 {
+    (: app.xqm: no file with ID :)
+    error(
+      xs:QName("wdbErr:wdb0200"),
+      "project not found",
+      map {
+        "id":          $id,
+        "ed":          $ed,
+        "p":           $p,
+        "q":           $q,
+        "wdb:data":    $wdb:data,
+        "request":     request:get-url()
+      }
+    )
   } catch * {
-    wdbErr:error(map {
-      "code":        "wdbErr:wdb3001",
-      "id":          $id,
-      "ed":          $ed,
-      "p":           $p,
-      "q":           $q,
-      "wdb:data":    $wdb:data,
-      "errC":        $err:code,
-      "errA":        $err:additional,
-      "errM":        $err:description,
-      "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number
-    })
-  }  
+    let $errorMap := map {
+        "code":        "wdbErr:wdb3001",
+        "id":          $id,
+        "ed":          $ed,
+        "p":           $p,
+        "q":           $q,
+        "wdb:data":    $wdb:data,
+        "errC":        $err:code,
+        "errA":        $err:additional,
+        "errM":        $err:description,
+        "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number,
+        "request":     request:get-url()
+      }
+    return (
+      util:log("error", $errorMap),
+      error(
+        xs:QName("wdbErr:wdb3001"),
+        "error creating map in function.xqm",
+        $errorMap
+      )
+    )
+  }
 };
 
 (:~
@@ -144,39 +173,53 @@ declare
     %templates:default("p", "")
     %templates:default("id", "")
     %templates:default("ed", "")
-    %templates:wrap
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
     $q as xs:string ) as item()* {
-  let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
+  try {
+    let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
 
-  (: TODO: use a function to get the actual content language :)
-  return
-    <html lang="de">
-      {
-        for $h in $node/* return
-          if ( $h/*[@data-template] )
-            then for $c in $h/* return
-              try {
+    (: TODO: use a function to get the actual content language :)
+    return
+      <html lang="de">
+        {
+          for $h in $node/* return
+            if ( $h/*[@data-template] )
+              then for $c in $h/* return
                 templates:apply($c, $wdbfp:lookup, $newModel)
-              } catch * {
-                util:log("info", $newModel),
-                util:log("error", $err:description),
-                error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
-              }
-            else try {
-              templates:apply($h, $wdbfp:lookup, $newModel)
-            } catch * {
-              util:log("info", $newModel),
-              util:log("error", $err:description),
-              error(xs:QName("wdbErr:e1234"), $err:description, $newModel)
-            }
-      }
-    </html>
+              else
+                templates:apply($h, $wdbfp:lookup, $newModel)
+        }
+      </html>
+  } catch *:wdb0200 {
+    util:log("error", "project not found: " || $err:value?ed || " from request " || $err:value?request),
+    wdbErr:error(map{
+      "code": $err:code,
+      "err:description": "project not found",
+      "err:additional": $err:additional
+    })
+  } catch * {
+    util:log("error", "error when applying templates in function.xqm: " || $err:description),
+    wdbErr:error(map{
+      "code": $err:code,
+      "model": $newModel,
+      "err:value": $err:value,
+      "err:description": $err:description,
+      "err:additional": $err:additional,
+      "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+    })
+  }
 };
 
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
   element { local-name($node) } {
     $model($key)
+  }
+};
+
+declare function wdbfp:evalForAttribute ( $node as node(), $model as map(*), $attribute as xs:string, $expression as xs:string ) {
+  element { local-name($node) } {
+    attribute { $attribute } { util:eval($expression) },
+    $node/node()
   }
 };
 

@@ -2,7 +2,21 @@ xquery version "3.1";
 
 let $targetCollection := '/db/apps/edoc'
 
-let $cp := xmldb:copy-collection($targetCollection || '/config/edoc', '/db/system/config/db/apps')
+(: let $cp := xmldb:copy-collection($targetCollection || '/config/edoc', '/db/system/config/db/apps') :)
+(: It seems that copying and then re-indexing does not suffice. A workaround reported in
+ : https://github.com/eXist-db/exist/issues/5099#issuecomment-1775120346 suggests that storing
+ : a collection.xconf might help. :)
+let $indexConfig := (
+  xmldb:create-collection("/db/system/config/db/apps", "edoc"),
+  xmldb:create-collection("/db/system/config/db/apps/edoc", "addins"),
+  xmldb:create-collection("/db/system/config/db/apps/edoc", "annotations"),
+  xmldb:create-collection("/db/system/config/db/apps/edoc", "data"),
+  xmldb:create-collection("/db/system/config/db/apps/edoc", "rest"),
+  xmldb:store("/db/system/config/db/apps/edoc/addins", "collection.xconf", doc($targetCollection || "/config/edoc/addins/collection.xconf")),
+  xmldb:store("/db/system/config/db/apps/edoc/annotations", "collection.xconf", doc($targetCollection || "/config/edoc/annotations/collection.xconf")),
+  xmldb:store("/db/system/config/db/apps/edoc/data", "collection.xconf", doc($targetCollection || "/config/edoc/data/collection.xconf")),
+  xmldb:store("/db/system/config/db/apps/edoc/rest", "collection.xconf", doc($targetCollection || "/config/edoc/rest/collection.xconf"))
+)
 
 let $collsr := (
   "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/xsl"
@@ -37,7 +51,8 @@ let $chmod := (
 let $reindex := (
   xmldb:reindex($targetCollection || '/data'),
   xmldb:reindex($targetCollection || '/rest'),
-  xmldb:reindex($targetCollection || '/annotation')
+  xmldb:reindex($targetCollection || '/annotation'),
+  xmldb:reindex($targetCollection || '/addins')
 )
 
 return ($reindex, $chmod)

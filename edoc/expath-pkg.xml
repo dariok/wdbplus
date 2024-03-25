@@ -1,4 +1,4 @@
-<package xmlns="http://expath.org/ns/pkg" name="https://github.com/dariok/wdbplus" abbrev="wdb" version="2.0" spec="1.0">
+<package xmlns="http://expath.org/ns/pkg" name="https://github.com/dariok/wdbplus" abbrev="wdb" version="3.0" spec="1.0">
    <title>W. Digitale Bibliothek</title>
-   <dependency package="http://exist-db.org/html-templating" semver-min="1.0.0"/>
+   <dependency package="http://exist-db.org/html-templating" semver-min="1.1.0"/>
 </package>
