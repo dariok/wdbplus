@@ -8,7 +8,7 @@ import module namespace functx    = "http://www.functx.com"                     
 
 
 declare function wdbErr:error ( $data as map (*) ) as item()+ {
-  let $error := switch (xs:string($data("code")))
+  let $error := switch ( xs:string($data("code")) )
     case "wdbErr:wdb0000"
     case "wdb0000"
       return "No file could be found for the ID supplied in the request: " || $data("err:value")?id
@@ -33,11 +33,11 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000") )
+  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdbErr:wdb0404") )
     then 404
     else 418
   
-  let $errorContent := if ( xs:string($data?code) = "wdbErr:wdb0200" )
+  let $errorContent := if ( $statusCode = 404 )
     then
         <div>
             <h1>Seite nicht gefunden</h1>
