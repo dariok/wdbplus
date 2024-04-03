@@ -53,11 +53,11 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
 };
 
 (:~
-: return a map with the path to a file split into its parent collection (which may be different from the
-: project collection) and its file name
-:
-: @param $id as xs:string: the ID of the file (which should be unique)
-: @return map(string, string) with "collectionPath", "fileName"
+ : return a map with the path to a file split into its parent collection (which may be different from the
+ : project collection) and its file name
+ :
+ : @param $id as xs:string: the ID of the file (which should be unique)
+ : @return map(string, string) with keys "collectionPath", "fileName", "projectPath"
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
