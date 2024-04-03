@@ -1,6 +1,3 @@
-/* globals wdb */
-/* jshint browser: true */
-/* globals wdb */
 "use strict";
 
 const wdbAdmin = {
@@ -111,9 +108,14 @@ const wdbAdmin = {
       /* jshint loopfunc: true*/
       reader.onload = async function ( readFile ) {
         tableData.innerText = ".";
-        let fileContent = readFile.target.result,
-            parser = new DOMParser(),
-            parsed;
+        let fileContent = readFile.target?.result;
+        if ( fileContent === undefined || fileContent === "" || fileContent === null ) {
+          wdb.report("error", "empty", "no file content", tableData);
+          return false;
+        }
+
+        let parser = new DOMParser()
+          , parsed;
         
         // try to parse as XML (for now, we only handle XML files here)
         try {
@@ -124,11 +126,16 @@ const wdbAdmin = {
         }
 
         // try to find an ID for the XML file
-        let xml = $(parsed),
-            fileID = xml.find("TEI").attr("xml:id");
+        let xml = $(parsed)
+          , fileID = xml.find("tei\\:TEI, TEI").attr("xml:id")
+          , parserError = xml.find("parsererror");
         
-        if (fileID === undefined || fileID == "") {
-          wdb.report("error", "no @xml:id found in " + file.name, {}, tableData);
+        if ( xml.find("parsererror").length > 0 ) {
+          wdb.report("error", "parser error", parserError.text(), tableData);
+          return false;
+        }
+        if ( fileID === undefined || fileID === "" ) {
+          wdb.report("error", "ID missing", "no @xml:id found in " + file.name, {}, tableData);
           return false;
         }
 

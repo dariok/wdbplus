@@ -1,5 +1,5 @@
 <collection xmlns="http://exist-db.org/collection-config/1.0">
-  <index xmlns:mets="http://www.loc.gov/METS/" xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <index xmlns:meta="https://github.com/dariok/wdbplus/wdbmeta" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <!-- Lucene index is configured below -->
     <lucene>
       <analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
@@ -34,7 +34,7 @@
       <text qname="tei:l"/>
       
       <!-- index w for fast queries for single words if text is tokenized -->
-      <text qname="tei:w"/>
+      <!--<text qname="tei:w"/>-->
       
       <!-- lists are not indexed, only the main entry head -->
       <ignore qname="tei:listPerson"/>
@@ -59,10 +59,7 @@
       <ignore qname="tei:pc"/>
     </lucene>
     <range>
-      <!-- configuration for metadata files; esp. mets with screaming, non-standard attributes -->
-      <create qname="mets:file">
-        <field name="mets-file-id" match="@ID" type="xs:string"/>
-      </create>
+      <!-- configuration for metadata files -->
       <create qname="meta:file">
         <field name="file-path" match="@path" type="xs:string"/>
       </create>
@@ -79,7 +76,7 @@
       <create qname="@when" type="xs:date"/>
       <create qname="@notBefore" type="xs:date"/>
       <create qname="@notAfter" type="xs:date"/>
-      <create qname="tei:w" type="xs:string"/>
+      <!--<create qname="tei:w" type="xs:string"/>-->
     </range>
   </index>
   <triggers>

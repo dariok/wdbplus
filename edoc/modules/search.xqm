@@ -10,51 +10,50 @@ import module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities"
 import module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
 import module namespace wdb   = "https://github.com/dariok/wdbplus/wdb"          at "app.xqm";
 
-declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {(
-  <div>
-    <h1>Volltextsuche</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
-      <input type="hidden" name="p">
-        { attribute value {'{"job": "fts"}'} }
-      </input>
-      <input type="submit" />
-    </form>
-    <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
-  </div>,
-  <hr />,
-  <div>
-    <h1>Registersuche</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      { local:listEnt("search") }
-      <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
-      <input type="submit" />
-    </form>
-  </div>,
-  <hr />,
-  <div>
-    <h1>Registerliste</h1>
-    <form action="search.html">
-      { local:selectEd($model) }
-      { local:listEnt("entries") }
-      <select name="q">{
-        for $c in (1 to 26)
-          let $b := codepoints-to-string($c + 64)
-          return <option value="{$b}">{$b}</option>
-      }</select>
-      <input type="submit" />
-    </form>
-  </div>
-)
+declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
+  let $options := local:selectEd($model)
+  
+  return (
+    <div>
+      <h1>Volltextsuche</h1>
+      <form action="search.html">
+        { $options }
+        <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+        <input type="hidden" name="p">
+          { attribute value {'{"job": "fts", "start": "1"}'} }
+        </input>
+        <input type="submit" />
+      </form>
+      <p>Wildcard: * (<i>nicht</i> an erster Stelle!)<br/>Suche mit RegEx ist möglich mit Delimiter '/': <span style="font-family: monospace; background-color: lightgray;">/[k|K][e|a].+/</span></p>
+    </div>,
+    <hr />,
+    <div>
+      <h1>Registersuche</h1>
+      <form action="search.html">
+        { $options }
+        { local:listEnt("search") }
+        <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
+        <input type="submit" />
+      </form>
+    </div>,
+    <hr />,
+    <div>
+      <h1>Registerliste</h1>
+      <form action="search.html">
+        { $options }
+        { local:listEnt("entries") }
+        <select name="q">{
+          for $c in (1 to 26)
+            let $b := codepoints-to-string($c + 64)
+            return <option value="{$b}">{$b}</option>
+        }</select>
+        <input type="submit" />
+      </form>
+    </div>
+  )
 };
 
 declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
-  let $start := if ( $model?p instance of map(*) and map:contains($model?p, "start"))
-    then '&amp;start=' || $model?p?start
-    else 1
-  
   let $job := if ( $model?p instance of map(*) )
     then $model?p?job
     else "err"
@@ -68,50 +67,16 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
       response:set-header("Cache-Control", "no-cache"),
       switch ( $job )
         case "fts"
-          return wdbRs:collectionHtml($model?ed, $model?q, $start)
+          return wdbRs:collectionHtml($model?ed, $model?q, $model?p?start)
         case "search"
           return wdbRe:scanHtml($model?ed, $model?p?type, $model?q)
         case "list"
-          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $start)
+          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $model?p?start)
         case "entries"
           return wdbRe:scanHtml($model?ed, $model?p?type, lower-case($model?q))
         default
           return response:set-status-code(400)
     )
-
-    (:
-    let $ln := switch ($job)
-      case "fts"      return $wdb:restURL || "search/collection/" || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
-      case "search"   return $wdb:restURL || "entities/scan/" || $model?p?type || '/' || $model?ed || ".html?q=" || encode-for-uri($model?q) || "&amp;p=" || encode-for-uri($json)
-      case "entries"  return $wdb:restURL || 'entities/scan/' || $model?p?type || '/' || $model?ed || '.html?q=' || lower-case($model?q) || '&amp;p=' || encode-for-uri($json)
-      case "list"     return $wdb:restURL || "entities/collection/" || $model?ed || "/" || $model?p?type || "/" || $model?p?id || ".html?p=" || encode-for-uri($json)
-      default return ""
-    let $url := xs:anyURI($ln || $start),
-        $auth := request:get-cookie-value("wdbplus")
-    
-    let $request-headers := (
-        <http:header name="cache-control" value="no-cache" />,
-        if ( exists($auth) )
-          then <http:header name="authorization" value="Basic {$auth}" />
-          else ()
-      )
-    
-    return try {
-      http:send-request(
-        <http:request href="{$url}" method="GET">
-          {$request-headers}
-        </http:request>)//(*:div)[1]
-    } catch * {
-      <div>
-        <a href="{$url}">klick</a>
-        <ul>
-          <li>{$err:code}</li>
-          <li>{$err:description}</li>
-          <li>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</li>
-          <li>{$err:additional}</li>
-        </ul>
-      </div>
-    } :)
   else <div />
 };
 
@@ -120,11 +85,11 @@ declare function local:selectEd ($model) {(
     let $md := doc($wdb:data || '/wdbmeta.xml')
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id
-      let $label := $md//meta:struct[@file = $id]/@label
+      
       return
         <option value="{$id}">
           { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
-          { normalize-space($label) }
+          { normalize-space($md//meta:struct[@file = $id]/@label) }
         </option>
     return (
       if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),
