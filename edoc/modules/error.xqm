@@ -2,17 +2,16 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
 import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
-import module namespace console   = "http://exist-db.org/xquery/console";
 import module namespace functx    = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
 
-declare function wdbErr:error ($data as map (*)) {
-  let $error := switch (xs:string($data("code")))
+declare function wdbErr:error ( $data as map (*) ) as item()+ {
+  let $error := switch ( xs:string($data("code")) )
     case "wdbErr:wdb0000"
-    case "wdb0000" return "No file could be found for the ID supplied in the request."
+    case "wdb0000"
+      return "No file could be found for the ID supplied in the request: " || $data("err:value")?id
     case "wdbErr:wdb0001"
     case "wdb0001" return "Multiple files were found for the ID supplied. Unable to determine which one to display."
     case "wdbErr:wdb0002"
@@ -23,6 +22,8 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdb0004" return "The requested file is not readable by the current user."
     case "wdbErr:wdb0200"
     case "wdb0200" return "Project not found."
+    case "wdbErr:wdb0404"
+      return "file not found for path " || $data("err:value")?pathToFile
     case "wdbErr:wdb1001"
     case "wdb1001" return "An error occurred while applying the transformation."
     case "wdbErr:wdb2001" return "Module not found."
@@ -32,24 +33,40 @@ declare function wdbErr:error ($data as map (*)) {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  return (
-    console:log($error),
-    response:set-status-code(418),
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="wdb-template" content="(error page)" />
-      <title>ERROR</title>
-      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
-      <script src="resources/scripts/function.js"/>
-    </head>,
-    <body>
-      <main>
+  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdbErr:wdb0404") )
+    then 404
+    else 418
+  
+  let $errorContent := if ( $statusCode = 404 )
+    then
+        <div>
+            <h1>Seite nicht gefunden</h1>
+            <p>Leider konnten wir die angegebene Seite nicht finden</p>
+        </div>
+    else 
         <div>
           <h1>Something has gone wrong...</h1>
           <p>{$error}</p>
           { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
         </div>
+
+  return (
+    util:log("error", $error),
+    util:log("info", $data),
+    response:set-status-code($statusCode),
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <meta name="wdb-template" content="(error page)" />
+      <title>ERROR</title>
+      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
+      <script src="resources/scripts/function.js"/>
+    </head>,
+    <body>
+      <header>head</header>
+      <main>
+        { $errorContent }
       </main>
     </body>
   )

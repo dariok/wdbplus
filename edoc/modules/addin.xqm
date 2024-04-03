@@ -11,10 +11,10 @@ import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "
 declare namespace wdbadd = "https://github.com/dariok/wdbplus/addins";
 
 (: load the main XQuery module for the requested addin. It is mandatory these implement wdbadd:main($map as map(*)) :)
-declare function wdbAddinMain:body($node as node(), $model as map(*)) {
+declare function wdbAddinMain:body ( $node as node(), $model as map(*) ) as element()+ {
   let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
-  let $path := $wdb:edocBaseDB || "/addins/" || $addinName || "/addin.xqm"
-  let $map := map { "location-hints": $path }
+    , $path := $wdb:edocBaseDB || "/addins/" || $addinName || "/addin.xqm"
+    , $map := map { "location-hints": $path }
   
   let $module := try {
     load-xquery-module("https://github.com/dariok/wdbplus/addins", $map)

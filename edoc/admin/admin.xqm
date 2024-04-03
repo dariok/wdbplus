@@ -8,8 +8,6 @@ import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    a
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace mets = "http://www.loc.gov/METS/";
-declare namespace mods = "http://www.loc.gov/mods/v3";
 declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 
 (:~
@@ -22,19 +20,13 @@ declare
     %templates:default("ed", "")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
   try {
-    let $pathToEd := if ( $ed = "" ) then
-      $wdb:data
-    else 
-      wdb:getEdPath($ed, true())
+    let $pathToEd := if ( $ed = "" )
+      then $wdb:data
+      else wdb:getEdPath($ed, true())
     
-    (: The meta data are taken from wdbmeta.xml or a mets.xml as fallback :)
+    (: The meta data are taken from wdbmeta.xml :)
     let $infoFileLoc := wdb:getMetaFile($pathToEd)
-    
-    let $title :=
-      (
-        normalize-space((doc($infoFileLoc)//meta:title)[1]),
-        normalize-space((doc($infoFileLoc)//mods:title)[1])
-      )[1]
+      , $title := normalize-space((doc($infoFileLoc)//meta:title)[1])
     
     return map {
       "ed":          if ( $pathToEd = $wdb:data ) then "data" else $ed,

@@ -3,8 +3,18 @@ GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/entities/list/file/pa000008-0130/
 
 ###
 
-GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/collection/pa000015
-Accept: application/xml
+GET https://tueditions.ulb.tu-darmstadt.de/r/edoc/collection/pa000018
+Accept: application/json
+
+###
+
+GET https://tueditions.ulb.tu-darmstadt.de/r/edoc/resource/pa000018-0001
+#If-Modified-Since: Thu, 15 Feb 2024 18:14:21 GMT
+
+###
+
+GET https://tueditions.ulb.tu-darmstadt.de/v/pa000018-0001
+If-Modified-Since: Thu, 15 Feb 2024 18:14:21 GMT
 
 ###
 
@@ -26,3 +36,7 @@ https://exist.ulb.tu-darmstadt.de/1/r/edoc/entities/pd000090/org/byId?q=https%3A
 
 GET https://tueditions.ulb.tu-darmstadt.de/v/pd000090/per/np000012
 
+###
+
+GET https://exist.ulb.tu-darmstadt.de/1/r/edoc/collection/pa000018/nav.html?html
+If-Modified-Since: Fri, 23 Feb 2024 19:42:00 GMT

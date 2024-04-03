@@ -677,7 +677,20 @@
     <xsl:attribute name="id" select="." />
   </xsl:template>
   
+  <xsl:template match="tei:foreign">
+    <span>
+       <xsl:if test="contains(@xml:lang, '-')">
+          <xsl:attribute name="class" select="substring-after(@xml:lang, '-')" />
+       </xsl:if>
+       <xsl:apply-templates select="@xml:lang, @style, node()" />
+    </span>
+  </xsl:template>
+  
+  <!--<xsl:template match="*[@xml:lang = 'grc-Grek']//text()">
+    <xsl:value-of select="translate(., 'θ', 'ϑ')" />
+  </xsl:template>-->
+  
   <xsl:template match="@xml:lang">
-    <xsl:attribute name="lang" select="." />
+    <xsl:attribute name="lang" select="."/>
   </xsl:template>
 </xsl:stylesheet>

@@ -51,7 +51,7 @@
          </button>
          <ul>
             <xsl:attribute name="id" select="$id" />
-            <xsl:if test="@ed != $id or not(@ed)">
+            <xsl:if test="not(meta:view) and (@ed != $id or not(@ed))">
                <xsl:attribute name="style">display: none;</xsl:attribute>
             </xsl:if>
             <xsl:if test="not(meta:struct or meta:view)">
