@@ -33,7 +33,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdbErr:wdb0404") )
+  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdb0000", "wdbErr:wdb0404") )
     then 404
     else 418
   
