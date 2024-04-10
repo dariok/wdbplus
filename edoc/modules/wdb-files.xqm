@@ -76,7 +76,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "multiple files with ID " || $id,
         map { "id": $id, "request": request:get-url() }
       )
-    else if ( $file[self::meta:projectMD] ) then
+    else if ( $file[self::meta:projectMD or self::meta:struct] ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
       return map {
         "projectPath": $projectPath,
