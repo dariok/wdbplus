@@ -62,7 +62,7 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @throws wdbErr:wdb0001
 :)
 declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string? )? {
-  let $file := collection("/db")/id($id)[self::meta:file]
+  let $file := collection("/db")/id($id)
 
   return if ( count($file) = 0 ) then
       error(
@@ -70,7 +70,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "no file with ID " || $id,
         map { "id": $id, "request": request:get-url() }
       )
-    else if ( count($file) > 1 ) then
+    else if ( count($file[self::meta:file]) > 1 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0001'),
         "multiple files with ID " || $id,
@@ -92,8 +92,8 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "fileURL": doc("../config.xml")/id($peer) || '/' || $id
       }
     else
-      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
-        , $path := $projectPath || $file/@path
+      let $projectPath := base-uri($file[self::meta:file]) => substring-before("wdbmeta.xml")
+        , $path := $projectPath || $file[self::meta:file]/@path
 
       return map{
         "projectPath": $projectPath,
