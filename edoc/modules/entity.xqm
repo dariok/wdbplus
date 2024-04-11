@@ -10,7 +10,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 (: $ent   ID-String of the entity to be displayed – must be globally unique
    $ed    ID of the project from which specific information shall be drawn :)
 declare function wdbe:getEntity ( $node as node(), $model as map(*), $ent as xs:string, $ed as xs:string ) as map(*) {
-  let $edPath := wdb:getEdPath($ed, true())
+  let $edPath := (wdbFile:getFullPath($ed))?projectPath
     , $entry := collection($edPath || "/index")/id($ent)
   
   return map { "entry": $entry, "ent": $ent, "ed": $ed, "pathToEd": $edPath }

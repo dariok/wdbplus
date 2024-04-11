@@ -592,37 +592,6 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
 };
 
 (:~
- : Return the (relative or absolute) path to the project
- : 
- : @param $id the ID of a resource within a project
- : @param $absolute (optional) if true(), return an absolute URL
- : 
- : @returns the path (relative) to the app root
- :)
-declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD or self::meta:struct]
-  
-  let $edPath := if ( count($file) = 1 ) then
-      xstring:substring-before-last(base-uri($file), '/')
-    else if ( count($file) > 1 ) then
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
-  
-  return if ($absolute) then replace($edPath, '//', '/') else substring-after($edPath, $wdb:edocBaseDB)
-};
-
-(:~
- : Return the relative path to the project
- : 
- : @param $id the ID of a resource within a project
- : @return the path relative to the app root
- :)
-declare function wdb:getEdPath($id as xs:string) as xs:string {
-  wdb:getEdPath($id, false())
-};
-
-(:~
  : Tries to return an absolute path for a path within a project
  : 
  : @param $ed the ID of the project
@@ -632,7 +601,7 @@ declare function wdb:getEdPath($id as xs:string) as xs:string {
 declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
   if ( starts-with($path, '/') )
     then $path
-    else wdb:getEdPath($ed, true()) || "/" || $path
+    else (wdbFile:getFullPath($ed))?projectPath || "/" || $path
 };
 
 (:~

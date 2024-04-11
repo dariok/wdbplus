@@ -15,11 +15,11 @@ function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
   wdbs:projectList(sm:is-dba(sm:id()//sm:real/sm:username/string()), $ed)
 };
 
-declare function wdbs:projectList($admin as xs:boolean, $ed) {
-  let $pathToEd := if ($ed = "") then
+declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
+  let $pathToEd := if ( $ed = "" ) then
       $wdb:data
     else try {
-      wdb:getEdPath($ed, true())
+      (wdbFile:getFullPath($ed))?projectPath
     } catch * {()}
   
   let $editionsW := collection($pathToEd)//wdbmeta:projectMD

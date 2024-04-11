@@ -189,7 +189,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
   let $files := collection($wdb:data)//id($id)[self::meta:file]
-    , $collectionPath := wdb:getEdPath($id, true())
+    , $collectionPath := (wdbFile:getFullPath($id))?collectionPath
     , $f := $files[1]
     , $path := $collectionPath || '/' || $f/@path
     , $readable := sm:has-access($path, "r")

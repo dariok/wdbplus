@@ -6,6 +6,11 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Incompatible changes
 
+Release 24Q2 dropped functions `wdb:getEdPath( $ed as xs:string , $absolute as xs:boolean() )` and
+`wdb:getEdPath( $ed as xs:string )`. These queries can be replaced by `(wdbFile:getFullPath($id))` which returns a map
+with `projectPath` (the path to the project, i.e. the collection where `project.xqm` is stored), `collectionPath` (for
+the subcollection where a file is actually located), and `fileName`.
+
 Release 24Q1 dropped support for METS-based projects. As METS files can have a number of very different ways of encoding
 information, especially when it comes to behaviours, native support is hard to achieve. At the same time, most
 installations use wdb+’s native wdbmeta system as this is what the admin functions work with.

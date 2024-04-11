@@ -58,25 +58,25 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
     else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
       let $regFile := switch ( $q )
         case "per"
-          return collection(wdb:getEdPath($ed, true()))//*:listPerson[ancestor::*:text]
+          return (wdbFile:getFullPath($ed))?projectPath//*:listPerson[ancestor::*:text]
         case "org"
-          return collection(wdb:getEdPath($ed, true()))//*:listOrg[ancestor::*:text]
+          return (wdbFile:getFullPath($ed))?projectPath//*:listOrg[ancestor::*:text]
         case "pla"
-          return collection(wdb:getEdPath($ed, true()))//*:listPlace[ancestor::*:text]
+          return (wdbFile:getFullPath($ed))?projectPath//*:listPlace[ancestor::*:text]
         default
           return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
               
       let $entryEd := $regFile/id($id)
         , $pathToEd := if ( $ed = "" )
             then $wdb:data
-            else wdb:getEdPath($ed, true())
+            else (wdbFile:getFullPath($ed))?projectPath
       (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
       return map { "entry": $entryEd, "id": $id, "ed": $ed, "pathToEd": $pathToEd }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
             then $wdb:data
-            else wdb:getEdPath($ed, true()),
+            else (wdbFile:getFullPath($ed))?projectPath,
           $infoFileLoc := wdb:getMetaFile($pathToEd)
         , $pp := try {
               parse-json($p)
