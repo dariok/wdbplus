@@ -454,7 +454,9 @@ declare function wdb:wrapText ( $node as node(), $model as map(*), $key as xs:st
  : return the body
  :)
 declare function wdb:getContent($node as node(), $model as map(*)) {
-  let $file := $model("fileLoc")
+  let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
+    then $model?fileLoc || '#' || $model?id
+    else $model?fileLoc
   
   let $xslt := if (string-length($model?xslt) = 0)
     then wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
