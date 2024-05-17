@@ -603,7 +603,7 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
 declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
   if ( starts-with($path, '/') )
     then $path
-    else (wdbFile:getFullPath($ed))?projectPath || "/" || $path
+    else (wdbFiles:getFullPath($ed))?projectPath || "/" || $path
 };
 
 (:~
