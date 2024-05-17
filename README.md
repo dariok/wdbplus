@@ -101,5 +101,12 @@ See the Wiki for details!
 * Akademie der Wissenschaften, Heidelberg
   * Theologenbriefwechsel
 * ULB Darmstadt
+  * TUEditions
+  * WDM
 
 If you use wdbplus for your editions, please drop me a message so I can add you to this list.
+
+## Sponsoring
+
+Development of wdb+ is chiefly done in projects funded by DFG and the German BMBF.
+Additionally, we would like to say thank you to BrowserStack for giving us sponsored access!
