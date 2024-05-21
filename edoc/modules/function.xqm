@@ -10,6 +10,7 @@ import module namespace wdba         = "https://github.com/dariok/wdbplus/auth" 
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main" at "/db/apps/edoc/modules/addin.xqm";
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"      at "/db/apps/edoc/modules/entity.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"       at "wdb-files.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"      at "/db/apps/edoc/modules/pquery.xqm";
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "/db/apps/edoc/modules/search.xqm";
@@ -58,25 +59,25 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
     else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
       let $regFile := switch ( $q )
         case "per"
-          return (wdbFile:getFullPath($ed))?projectPath//*:listPerson[ancestor::*:text]
+          return (wdbFiles:getFullPath($ed))?projectPath//*:listPerson[ancestor::*:text]
         case "org"
-          return (wdbFile:getFullPath($ed))?projectPath//*:listOrg[ancestor::*:text]
+          return (wdbFiles:getFullPath($ed))?projectPath//*:listOrg[ancestor::*:text]
         case "pla"
-          return (wdbFile:getFullPath($ed))?projectPath//*:listPlace[ancestor::*:text]
+          return (wdbFiles:getFullPath($ed))?projectPath//*:listPlace[ancestor::*:text]
         default
           return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
               
       let $entryEd := $regFile/id($id)
         , $pathToEd := if ( $ed = "" )
             then $wdb:data
-            else (wdbFile:getFullPath($ed))?projectPath
+            else (wdbFiles:getFullPath($ed))?projectPath
       (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
       return map { "entry": $entryEd, "id": $id, "ed": $ed, "pathToEd": $pathToEd }
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
             then $wdb:data
-            else (wdbFile:getFullPath($ed))?projectPath,
+            else (wdbFiles:getFullPath($ed))?projectPath,
           $infoFileLoc := wdb:getMetaFile($pathToEd)
         , $pp := try {
               parse-json($p)

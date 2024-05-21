@@ -38,7 +38,7 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
     "Error: no query content!"
   )
   else 
-    let $coll := (wdbFile:getFullPath($id))?projectPath
+    let $coll := (wdbFiles:getFullPath($id))?projectPath
       , $query := xmldb:decode($q)
     
     (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
@@ -92,7 +92,7 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
   )
   else 
     let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-      , $coll := (wdbFile:getFullPath($id))?projectPath
+      , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
     
     let $params := 
@@ -193,7 +193,7 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
   )
   else
     let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-      , $coll := (wdbFile:getFullPath($id))?projectPath
+      , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
       
     let $params := <parameters>

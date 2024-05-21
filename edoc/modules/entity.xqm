@@ -2,15 +2,15 @@ xquery version "3.1";
 
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
-import module namespace console = "http://exist-db.org/xquery/console";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "app.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "wdb-files.xqm";
 
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
 (: $ent   ID-String of the entity to be displayed – must be globally unique
    $ed    ID of the project from which specific information shall be drawn :)
 declare function wdbe:getEntity ( $node as node(), $model as map(*), $ent as xs:string, $ed as xs:string ) as map(*) {
-  let $edPath := (wdbFile:getFullPath($ed))?projectPath
+  let $edPath := (wdbFiles:getFullPath($ed))?projectPath
     , $entry := collection($edPath || "/index")/id($ent)
   
   return map { "entry": $entry, "ent": $ent, "ed": $ed, "pathToEd": $edPath }

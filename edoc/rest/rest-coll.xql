@@ -71,12 +71,12 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       "no project with ID " || $collectionID || " or project not using wdbmeta.xml"
     )
   else
-    let $collection := (wdbFile:getFullPath($collectionID))?projectPath
+    let $collection := (wdbFiles:getFullPath($collectionID))?projectPath
       , $parentMeta := doc($collection || "/wdbmeta.xml")
     let $errUser := not(sm:has-access(base-uri($parentMeta), "w"))
     
     let $errCollectionPresent := try {
-        (wdbFile:getFullPath($collectionData?id))?collectionPath
+        (wdbFiles:getFullPath($collectionData?id))?collectionPath
       } catch * {
         false()
       }
@@ -186,7 +186,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
       else ()
       
-    let $collectionPath := (wdbFile:getFullPath($collection))?collectionPath
+    let $collectionPath := (wdbFiles:getFullPath($collection))?collectionPath
     let $err := if (not(sm:has-access(xs:anyURI($collectionPath), "w")))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
       else ()
@@ -390,7 +390,7 @@ declare
   %rest:path("/edoc/collection/{$id}/structure.json")
   %output:method("json")
 function wdbRc:getStructureJson ( $id ) {
-  let $collection-uri := (wdbFile:getFullPath($id))?projectPath
+  let $collection-uri := (wdbFiles:getFullPath($id))?projectPath
   
   return (
     <rest:response>
