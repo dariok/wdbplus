@@ -6,9 +6,9 @@ module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
  : - $wdb:data
  :)
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"   at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm   = "http://exist-db.org/xquery/securitymanager";

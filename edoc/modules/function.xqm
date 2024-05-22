@@ -57,22 +57,10 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "pathToEd":  $wdb:data
       }
     else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
-      let $regFile := switch ( $q )
-        case "per"
-          return (wdbFiles:getFullPath($ed))?projectPath//*:listPerson[ancestor::*:text]
-        case "org"
-          return (wdbFiles:getFullPath($ed))?projectPath//*:listOrg[ancestor::*:text]
-        case "pla"
-          return (wdbFiles:getFullPath($ed))?projectPath//*:listPlace[ancestor::*:text]
-        default
-          return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
-              
-      let $entryEd := $regFile/id($id)
-        , $pathToEd := if ( $ed = "" )
-            then $wdb:data
-            else (wdbFiles:getFullPath($ed))?projectPath
-      (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
-      return map { "entry": $entryEd, "id": $id, "ed": $ed, "pathToEd": $pathToEd }
+      (
+        util:log("error", "function.xqm called for an entity"),
+        error(xs:QName("wdbErr:wdb3200"))
+      )
     else if ( $id = "" ) then
       (: no ID: related to a project :)
       let $pathToEd := if ( $ed = "" )
