@@ -61,7 +61,7 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
-declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string? )? {
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string?, xs:string? )? {
   let $file := collection("/db")/id($id)
 
   return if ( count($file) = 0 ) then
@@ -81,7 +81,8 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
       return map {
         "projectPath": $projectPath,
         "collectionPath": $projectPath,
-        "fileName": "wdbmeta.xml"
+        "fileName": "wdbmeta.xml",
+        "mainProject": wdbFiles:findMainProject($projectPath)
       }
     else if ( starts-with($file/@path, '$') ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
@@ -98,8 +99,25 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
       return map{
         "projectPath": $projectPath,
         "collectionPath": functx:substring-before-last($path, '/') ,
-        "fileName": functx:substring-after-last($path, '/')
+        "fileName": functx:substring-after-last($path, '/'),
+        "mainProject": wdbFiles:findMainProject($projectPath)
       }
+};
+
+(:~
+ : Find the main project: if a project.xqm is present in $projectPath, use it; else, ascend and look for project.xqm
+ : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
+ :
+ : @param $projectPath a string representation of the path to the project
+ : @returns the path to the main project
+ :)
+declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:string {
+  if ( util:binary-doc-available($projectPath || "/project.xqm") )
+  then $projectPath
+  else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
+    "/db/apps/edoc/data/instance.xqm"
+  else
+    wdbFiles:findMainProject(functx:substring-before-last($projectPath, '/'))
 };
 
 (:~

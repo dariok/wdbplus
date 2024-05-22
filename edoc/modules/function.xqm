@@ -84,9 +84,9 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
             } catch * {
               normalize-space($p)
             }
-      let $proFile := wdb:findProjectXQM($pathToEd)
-        , $mainProject := substring-before($proFile, "project.xqm")
-        , $resource := $mainProject || "resources/"
+      let $proFile := $filePathInfo?mainProject || "/project.xqm"
+        , $mainProject := $filePathInfo?mainProject
+        , $resource := $filePathInfo?mainProject || "/resources/"
       
 
       let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function

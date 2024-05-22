@@ -304,9 +304,9 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     
     let $title := normalize-space((doc($pathToFile)//tei:title)[1])
     
-    let $proFile := wdb:findProjectXQM($pathToEd)
-      , $mainProject := substring-before($proFile, "project.xqm")
-      , $resource := $mainProject || "resources/"
+    let $proFile := $filePathInfo?mainProject || "/project.xqm"
+      , $mainProject := $filePathInfo?mainProject
+      , $resource := $filePathInfo?mainProject || "/resources/"
     
     let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
           return $function/@name || '#' || count($function/argument)
@@ -698,22 +698,6 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
   else if ( $model?functions?instance = $name || "#" || $arity ) then
     function-lookup(xs:QName($name), $arity)
   else ()
-};
-
-(:~
- : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
- : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
- :
- : @param $project a string representation of the path to the project
- : @returns the path to a project.xqm if one was found; false() otherwise
- :)
-declare function wdb:findProjectXQM ( $project as xs:string ) {
-  if ( util:binary-doc-available($project || "/project.xqm") ) then
-    $project || "/project.xqm"
-  else if (substring-after($project, $wdb:data) = '') then
-    $wdb:data || "/instance.xqm"
-  else
-    wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
 };
 
 (:~
