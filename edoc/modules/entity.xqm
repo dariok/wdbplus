@@ -4,7 +4,8 @@ module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "wdb-files.xqm";
 
-declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (: $id    ID-String of the entity to be displayed – must be globally unique
    $ed    ID of the project from which specific information shall be drawn :)
@@ -19,11 +20,13 @@ declare function wdbe:getEntity ( $node as node(), $model as map(*), $ent as xs:
       return $collection/id($ent)[self::tei:org and ancestor::*:text]
     case "pla"
       return $collection/id($ent)[self::tei:place and ancestor::*:text]
+    case "bib"
+      return $collection/id($ent)[self::tei:bibl and ancestor::*:text]
     default
       return error(xs:QName("wdbErr:wdb3010"), "unknown entity type", map { "type": $q })
     
   (: TODO: this only uses a project specific list* file; we want ot use (or at least support) globals files :)
-  return map { "entry": $entryEd, "ed": $ed, "pathToEd": $fullPath?mainProject } 
+  return map { "entry": $entryEd[1], "ed": $ed, "pathToEd": $fullPath?mainProject } 
 };
 
 declare function wdbe:getEntityBody( $node as node(), $model as map(*) ) as element() {
