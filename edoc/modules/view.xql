@@ -49,5 +49,6 @@ let $lookup := function($functionName as xs:string, $arity as xs:integer) {
  : Run it through the templating system and return the result.
  :)
 let $content := request:get-data()
-return
-    templates:apply($content, $lookup, (), $config)
+return if ( request:get-method() = 'GET' )
+    then templates:apply($content, $lookup, (), $config)
+    else request:get-method()
