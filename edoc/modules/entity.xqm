@@ -7,7 +7,7 @@ import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at 
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-(: $id    ID-String of the entity to be displayed – must be globally unique
+(: $ent   ID-String of the entity to be displayed – must be globally unique
    $ed    ID of the project from which specific information shall be drawn :)
 declare function wdbe:getEntity ( $node as node(), $model as map(*), $ent as xs:string, $ed as xs:string, $q as xs:string ) as map(*) {
   let $fullPath := wdbFiles:getFullPath($ed)
