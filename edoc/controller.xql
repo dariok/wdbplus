@@ -83,10 +83,6 @@ else if ( ends-with($exist:resource, ".html") ) then
 				{ login:set-user("wd", $cookiePath, $duration, false()) }
 			</forward>
     </view>
-    <error-handler>
-      <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
-    </error-handler>
   </dispatch>
 else if ( contains($exist:path, "/$shared/") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

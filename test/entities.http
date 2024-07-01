@@ -13,8 +13,8 @@ GET https://tueditions.ulb.tu-darmstadt.de/r/edoc/resource/pa000018-0001
 
 ###
 
-GET https://tueditions.ulb.tu-darmstadt.de/v/pa000018-0001
-If-Modified-Since: Thu, 15 Feb 2024 18:14:21 GMT
+GET https://tueditions.ulb.tu-darmstadt.de/v/pa000018-0005
+If-Modified-Since: Fri, 23 Feb 2024 18:04:12 GMT
 
 ###
 

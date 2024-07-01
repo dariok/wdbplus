@@ -3,6 +3,7 @@ xquery version "3.1";
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
 import module namespace kwic   = "http://exist-db.org/xquery/kwic";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"   at "wdb-files.xqm";
 import module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
 import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"        at "/db/apps/edoc/modules/app.xqm";
 
@@ -21,7 +22,7 @@ declare
     %rest:path("/edoc/search/collection/{$id}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
+function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) {
   if (0 = (count($q), string-length($q))) then (
     <rest:response>
       <output:serialization-parameters>
@@ -37,16 +38,16 @@ function wdbRs:collectionText ($id as xs:string*, $q as xs:string*, $start as xs
     "Error: no query content!"
   )
   else 
-    let $coll := wdb:getEdPath($id, true())
-    
-    let $query := xmldb:decode($q)
+    let $coll := (wdbFiles:getFullPath($id))?projectPath
+      , $query := xmldb:decode($q)
     
     (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
        subsequence here and then looping through grouped results leads to problems with IDs of ancestors and KWIC.
        Hence, only look for matching files and then do the search in subsequences of files. This way, KWIC works and IDs
        can be retrieved. The cost of the extra searches should not be as high as before :)
     let $res := collection($coll)//tei:text[ft:query(., $query)]
-    let $max := count($res)
+      , $max := count($res)
+    
     let $result := for $r in $res
       order by $r/ancestor::tei:TEI//tei:date[@type = 'published']/@when
       return $r
@@ -91,7 +92,7 @@ function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs
   )
   else 
     let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-      , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+      , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
     
     let $params := 
@@ -192,7 +193,7 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
   )
   else
     let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
-      , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($id, true())), 'project.xqm')
+      , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
       
     let $params := <parameters>
