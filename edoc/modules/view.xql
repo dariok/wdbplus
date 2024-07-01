@@ -48,7 +48,26 @@ let $lookup := function($functionName as xs:string, $arity as xs:integer) {
  : The HTML is passed in the request from the controller.
  : Run it through the templating system and return the result.
  :)
+
 let $content := request:get-data()
+  , $id := request:get-parameter("id", "")
+
 return if ( request:get-method() = 'GET' )
     then templates:apply($content, $lookup, (), $config)
-    else request:get-method()
+    else if ( request:get-method() = 'HEAD' ) then
+      let $requestedModified := (
+            request:get-attribute("if-modified"),
+            request:get-header("If-Modified-Since")
+          )[1]
+        , $isModified := if ( $requestedModified != '' )
+            then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
+            else 200
+      
+      return if ( $isModified = 200 ) then
+          response:set-header(
+            "Last-Modified",
+            wdbFiles:getModificationDate($id) => wdbFiles:ietfDate()
+          )
+        else
+          response:set-status-code(304)
+    else templates:apply($content, $lookup, (), $config)
