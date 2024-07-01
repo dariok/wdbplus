@@ -112,8 +112,8 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
  : @returns the path to the main project
  :)
 declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:string {
-  if ( util:binary-doc-available($projectPath || "/project.xqm") )
-  then $projectPath
+  if ( util:binary-doc-available($projectPath || "/project.xqm") ) then
+    $projectPath
   else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
     "/db/apps/edoc/data/instance.xqm"
   else
