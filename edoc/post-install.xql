@@ -51,8 +51,9 @@ let $chmod := (
 let $reindex := (
   xmldb:reindex($targetCollection || '/data'),
   xmldb:reindex($targetCollection || '/rest'),
-  xmldb:reindex($targetCollection || '/annotation'),
-  xmldb:reindex($targetCollection || '/addins')
+  xmldb:reindex($targetCollection || '/annotations'),
+  xmldb:reindex($targetCollection || '/addins'),
+  xmldb:reindex($targetCollection || '/admin')
 )
 
 return ($reindex, $chmod)

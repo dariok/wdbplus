@@ -2,10 +2,13 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace console   = "http://exist-db.org/xquery/console"       at "java:org.exist.console.xquery.ConsoleModule";
+(: note for code maintenance: as of 2024-04-10, this module uses the following exports from app.xqm:
+ : - $wdb:data
+ :)
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
@@ -22,10 +25,10 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
   try {
     let $pathToEd := if ( $ed = "" )
       then $wdb:data
-      else wdb:getEdPath($ed, true())
+      else (wdbFiles:getFullPath($ed))?projectPath
     
     (: The meta data are taken from wdbmeta.xml :)
-    let $infoFileLoc := wdb:getMetaFile($pathToEd)
+    let $infoFileLoc := $pathToEd || "/wdbmeta.xml"
       , $title := normalize-space((doc($infoFileLoc)//meta:title)[1])
     
     return map {

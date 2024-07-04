@@ -304,9 +304,9 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
     
     let $title := normalize-space((doc($pathToFile)//tei:title)[1])
     
-    let $proFile := wdb:findProjectXQM($pathToEd)
-      , $mainProject := substring-before($proFile, "project.xqm")
-      , $resource := $mainProject || "resources/"
+    let $proFile := $filePathInfo?mainProject || "/project.xqm"
+      , $mainProject := $filePathInfo?mainProject
+      , $resource := $filePathInfo?mainProject || "/resources/"
     
     let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
           return $function/@name || '#' || count($function/argument)
@@ -454,7 +454,9 @@ declare function wdb:wrapText ( $node as node(), $model as map(*), $key as xs:st
  : return the body
  :)
 declare function wdb:getContent($node as node(), $model as map(*)) {
-  let $file := $model("fileLoc")
+  let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
+    then $model?fileLoc || '#' || $model?id
+    else $model?fileLoc
   
   let $xslt := if (string-length($model?xslt) = 0)
     then wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
@@ -592,37 +594,6 @@ declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
 };
 
 (:~
- : Return the (relative or absolute) path to the project
- : 
- : @param $id the ID of a resource within a project
- : @param $absolute (optional) if true(), return an absolute URL
- : 
- : @returns the path (relative) to the app root
- :)
-declare function wdb:getEdPath($id as xs:string, $absolute as xs:boolean) as xs:string {
-  let $file := collection($wdb:data)/id($id)[self::meta:file or self::meta:projectMD or self::meta:struct]
-  
-  let $edPath := if ( count($file) = 1 ) then
-      xstring:substring-before-last(base-uri($file), '/')
-    else if ( count($file) > 1 ) then
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0001'))
-    else
-      fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdb0200'))
-  
-  return if ($absolute) then replace($edPath, '//', '/') else substring-after($edPath, $wdb:edocBaseDB)
-};
-
-(:~
- : Return the relative path to the project
- : 
- : @param $id the ID of a resource within a project
- : @return the path relative to the app root
- :)
-declare function wdb:getEdPath($id as xs:string) as xs:string {
-  wdb:getEdPath($id, false())
-};
-
-(:~
  : Tries to return an absolute path for a path within a project
  : 
  : @param $ed the ID of the project
@@ -632,7 +603,7 @@ declare function wdb:getEdPath($id as xs:string) as xs:string {
 declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
   if ( starts-with($path, '/') )
     then $path
-    else wdb:getEdPath($ed, true()) || "/" || $path
+    else (wdbFiles:getFullPath($ed))?projectPath || "/" || $path
 };
 
 (:~
@@ -727,22 +698,6 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
   else if ( $model?functions?instance = $name || "#" || $arity ) then
     function-lookup(xs:QName($name), $arity)
   else ()
-};
-
-(:~
- : Lookup a project's project.xqm: if present in $model("pathToEd"), use it; else, ascend and look for project.xqm
- : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
- :
- : @param $project a string representation of the path to the project
- : @returns the path to a project.xqm if one was found; false() otherwise
- :)
-declare function wdb:findProjectXQM ( $project as xs:string ) {
-  if ( util:binary-doc-available($project || "/project.xqm") ) then
-    $project || "/project.xqm"
-  else if (substring-after($project, $wdb:data) = '') then
-    $wdb:data || "/instance.xqm"
-  else
-    wdb:findProjectXQM(xstring:substring-before-last($project, '/'))
 };
 
 (:~

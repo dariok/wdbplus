@@ -3,6 +3,7 @@ xquery version "3.0";
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "app.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 
 declare namespace tei     = "http://www.tei-c.org/ns/1.0";
@@ -15,11 +16,11 @@ function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
   wdbs:projectList(sm:is-dba(sm:id()//sm:real/sm:username/string()), $ed)
 };
 
-declare function wdbs:projectList($admin as xs:boolean, $ed) {
-  let $pathToEd := if ($ed = "") then
+declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
+  let $pathToEd := if ( $ed = "" ) then
       $wdb:data
     else try {
-      wdb:getEdPath($ed, true())
+      (wdbFiles:getFullPath($ed))?projectPath
     } catch * {()}
   
   let $editionsW := collection($pathToEd)//wdbmeta:projectMD
@@ -52,7 +53,7 @@ declare function wdbs:projectList($admin as xs:boolean, $ed) {
               {
                 if ( $admin ) then ( 
                   <td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-                  <td><a href="?ed={$w/@xml:id}">verwalten</a></td>
+                  <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$w/@xml:id}">verwalten</a></td>
                 )
                 else ()
               }
