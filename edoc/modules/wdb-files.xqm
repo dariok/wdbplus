@@ -96,7 +96,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
       let $projectPath := base-uri($file[self::meta:file]) => substring-before("wdbmeta.xml")
         , $path := $projectPath || $file[self::meta:file]/@path
 
-      return map{
+      return map {
         "projectPath": $projectPath,
         "collectionPath": functx:substring-before-last($path, '/') ,
         "fileName": functx:substring-after-last($path, '/'),
