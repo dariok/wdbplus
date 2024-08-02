@@ -2,10 +2,10 @@ xquery version "3.1";
 
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
-import module namespace kwic   = "http://exist-db.org/xquery/kwic";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"   at "wdb-files.xqm";
-import module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"        at "/db/apps/edoc/modules/app.xqm";
+import module namespace kwic     = "http://exist-db.org/xquery/kwic";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"        at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -13,7 +13,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare variable $wdbRs:callback := function ( $node, $direction ) {
+declare variable $wdbRs:callback := function ( $node as node(), $mode as xs:string ) as xs:string? {
     if ( $node/ancestor::tei:note ) then () else $node
 };
 
@@ -22,8 +22,8 @@ declare
     %rest:path("/edoc/search/collection/{$id}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) {
-  if (0 = (count($q), string-length($q))) then (
+function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
+  if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="text" />
@@ -75,7 +75,7 @@ declare
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRs:collectionHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
+function wdbRs:collectionHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
   if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
@@ -126,8 +126,8 @@ declare
     %rest:path("/edoc/search/file/{$id}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  if (0 = (count($q), string-length($q))) then (
+function wdbRs:fileText ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
+  if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="text" />
@@ -143,8 +143,8 @@ function wdbRs:fileText ($id as xs:string*, $q as xs:string*, $start as xs:int*)
   )
   else
     let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]/tei:text
-    let $query := lower-case(xmldb:decode($q))
-    (: querying for tei:w only will return no context :)
+      , $query := lower-case(xmldb:decode($q))
+    
     let $res := $file//tei:p[ft:query(., $query)]
           | $file//tei:ab[ft:query(., $query)]
           | $file//tei:cell[ft:query(., $query)]
@@ -176,8 +176,8 @@ declare
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*) {
-  if (0 = (count($q), string-length($q))) then (
+function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
+  if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
         <output:method value="text" />
@@ -196,13 +196,15 @@ function wdbRs:fileHtml ($id as xs:string*, $q as xs:string*, $start as xs:int*)
       , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
       
-    let $params := <parameters>
-      <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
-      <param name="rest" value="{$wdb:restURL}" />
-    </parameters>
+    let $params :=
+      <parameters>
+        <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
+        <param name="rest" value="{$wdb:restURL}" />
+      </parameters>
     
     let $searchResult := wdbRs:fileText($id, $q, $start)
-    return if (count($searchResult) gt 0) then (
+
+    return if ( count($searchResult) gt 0 ) then (
       <rest:response>
         <http:response status="200">
             <http:header name="Access-Control-Allow-Origin" value="*"/>
