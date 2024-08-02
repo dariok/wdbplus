@@ -44,15 +44,12 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
     (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
        subsequence here and then looping through grouped results leads to problems with IDs of ancestors and KWIC.
        Hence, only look for matching files and then do the search in subsequences of files. This way, KWIC works and IDs
-       can be retrieved. The cost of the extra searches should not be as high as before :)
-    let $res := collection($coll)//tei:text[ft:query(., $query)]
+       can be retrieved. The cost of the extra searches should not be as high as before.
+       For the same reason, we do not sort the results anymore as this will take considerable time for large data sets :)
+    let $result := collection($coll)//tei:text[ft:query(., $query)]
       , $max := count($res)
     
-    let $result := for $r in $res
-      order by $r/ancestor::tei:TEI//tei:date[@type = 'published']/@when
-      return $r
-    
-    return ( 
+    return (
       <rest:response>
         <http:response status="200">
           <http:header name="rest-status" value="REST:SUCCESS" />
