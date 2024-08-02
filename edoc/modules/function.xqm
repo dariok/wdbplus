@@ -71,7 +71,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
                 "mainProject": $wdb:data
               }
             else (wdbFiles:getFullPath($ed))
-        , $infoFileLoc := wdb:getMetaFile($pathInfo?projectPath)
+        , $infoFileLoc := $pathInfo?projectPath || "wdbmeta.xml" (: projectPath is derived from the path to wdbmeta.xml :)
         , $pp := try {
               parse-json($p)
             } catch * {
@@ -81,7 +81,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         , $mainProject := $pathInfo?mainProject
         , $resource := $pathInfo?mainProject || "/resources/"
       
-      let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+      let $projectFunctions := for $function in doc($mainProject || "/project-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
         , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
@@ -94,8 +94,8 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "auth":             sm:id()/sm:id,
         "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
         "infoFileLoc":      $infoFileLoc,
-        "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
-        "title":            doc($infoFileLoc)//meta:title[1]/text(),
+        "mainEd":           substring-after($mainProject, 'data/'),
+        "title":            string(doc($infoFileLoc)//meta:title[1]),
         "projectFile":      $proFile,
         "projectResources": $resource,
         "requestUrl":       if ( request:exists() ) then request:get-url() else ""
