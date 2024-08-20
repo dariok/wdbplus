@@ -780,29 +780,38 @@ declare function wdb:getMetaElementFromEd ( $ed as xs:string ) as element() {
  : @returns The path to the XSLT
 :)
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as xs:string {
-  let $metaFile := doc($infoFileLoc),
-      $process := (
+  let $metaFile := doc($infoFileLoc)
+    , $process := (
         $metaFile//meta:process[@target = $target],
         $metaFile//meta:process[1]
       )[1]
   
-  let $sel := for $c in $process/meta:command
-    return if ( $c/@refs ) then
-        (: if a list of IDREFS is given, this command matches if $id is part of that list :)
-        let $map := tokenize($c/@refs, ' ')
-        return if ( $map = $id ) then $c else ()
-      else if ( $c/@regex and matches($id, $c/@regex) )
-        (: if a regex is given and $id matches that regex, the command matches :)
-        then $c
-      else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
-        then $c
-      else if ( not($c/@refs or $c/@regex or $c/@group) )
-        (: if no selection method is given, the command is considered the default :)
-        then $c
-      else () (: neither refs nor regex match and no default given :)
+  let $sel := if ( $process/meta:command )
+    then
+      for $c in $process/meta:command
+        return if ( $c/@refs ) then
+          (: if a list of IDREFS is given, this command matches if $id is part of that list :)
+          let $map := tokenize($c/@refs, ' ')
+          return if ( $map = $id ) then $c else ()
+        else if ( $c/@regex and matches($id, $c/@regex) )
+          (: if a regex is given and $id matches that regex, the command matches :)
+          then $c
+        else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
+          then $c
+        else if ( not($c/@refs or $c/@regex or $c/@group) )
+          (: if no selection method is given, the command is considered the default :)
+          then $c
+        else () (: neither refs nor regex match and no default given :)
+    (: if no command is defined, traverse up the project ancestors :)
+    else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
+      let $path := xstring:substring-before-last($infoFileLoc, '/')
+        , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
+      return
+        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target)
+    else ( )
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return ($sel)[1]/text()
+  return normalize-space($sel[1])
 };
 
 (: we need a lookup function for the templating system to work :)
