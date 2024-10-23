@@ -37,58 +37,26 @@ declare variable $wdb:configFile := doc('../config.xml');
 declare variable $wdb:edocBaseDB := $wdb:configFile => base-uri() => substring-before('/config.xml');
 
 (:~
- : Try to get the data collection. Documentation explicitly tells users to have a wdbmeta.xml
- : in the Collection that contains all projects
+ : Get the data collection. Since v4.0, we only support setting this in the config file – for standard installations,
+   the default will do just fine.
  :)
-declare variable $wdb:data :=
-  if ($wdb:configFile//config:data)
-  then normalize-space($wdb:configFile//config:data)
-  else 
-    let $editionsW := collection($wdb:edocBaseDB)//meta:projectMD
-    
-    let $paths := for $f in $editionsW
-      let $path := base-uri($f)
-      where contains($path, '.xml')
-      order by string-length($path)
-      return $path
-
-    return replace(xstring:substring-before-last($paths[1], '/'), '//', '/')
-;
+declare variable $wdb:data := $wdb:configFile//config:data;
 
 (:~
- : get the base URI either from the data of the last call or from the configuration
+ : get the base URI either from the configuration
  :)
-declare variable $wdb:edocBaseURL :=
-  if ($wdb:configFile//config:server)
-  then normalize-space($wdb:configFile//config:server)
-  else
-    let $dir := try { xstring:substring-before-last(request:get-uri(), '/') } catch * { "" }
-    let $db := substring-after($wdb:edocBaseDB, 'db/')
-    let $local := xstring:substring-after($dir, $db)
-    let $path := if (string-length($local) > 0)
-      then xstring:substring-before($dir, $local) (: there is a local part, e.g. 'admin' :)
-      else $dir (: no local part, e.g. for view.html in app root :)
-    
-    return wdb:getServerApp() || replace($path, '//', '/')
-;
+declare variable $wdb:edocBaseURL := $wdb:configFile//config:server;
 
 (: ~
  : get the base URL for REST calls
  :)
-declare variable $wdb:restURL := 
-  if ($wdb:configFile//config:rest)
-  then normalize-space($wdb:configFile//config:rest)
-  else if ($wdb:edocBaseURL = "") 
-  then rest:base-uri() || "/edoc"
-  else substring-before($wdb:edocBaseURL, substring-after($wdb:edocBaseDB, '/db/')) || "restxq/edoc/";
-
+declare variable $wdb:restURL := $wdb:configFile//config:rest;
 
 (:~
  :  the server role
  :)
-declare variable $wdb:role :=
-  ($wdb:configFile//main:role/main:type, "standalone")[1]
-;
+declare variable $wdb:role := $wdb:configFile//main:role/main:type;
+
 (:~
  : the peer in a sandbox/publication configuration
  :)
@@ -156,41 +124,6 @@ declare function wdb:test($node as node(), $model as map(*)) as node() {
     { wdbErr:get($model, "") }
   </div>
 </div>
-};
- 
-(: ~
- : get the name of the server, possibly including the port
- : If resolution fails, set the value in config.xml instead
- : This cannot be used for RESTXQ
- :)
-declare function wdb:getServerApp() as xs:string {
-  (: config:server contains the full base URL :)
-  let $config := 
-    let $scheme := substring-before($wdb:configFile//config:server, '//')
-    let $server := substring-before(substring-after($wdb:configFile//config:server, '//'), '/')
-    return if ($scheme != "") then $scheme || '//' || $server else ()
-  
-  let $origin := try { request:get-header("Origin") } catch * { () }
-  let $request := try {
-    let $scheme := if (request:get-header-names() = 'X-Forwarded-Proto')
-      then normalize-space(request:get-header('X-Forwarded-Proto'))
-      else normalize-space(request:get-scheme())
-    
-    return if (request:get-server-port() != 80)
-      then $scheme || '://' || request:get-server-name() || ':' || request:get-server-port()
-      else $scheme || '://' || request:get-server-name()
-  } catch * { () }
-  let $ref := try {
-    let $r := request:get-header('referer')
-    let $scheme := substring-before($r, '://')
-    let $server := substring-before(substring-after($r, '://'), '/')
-    return $scheme || '://' || $server
-  } catch * { () }
-  
-  let $server := ($config, $request, $ref, $origin)
-  return if (count($server) > 0)
-    then $server[1]
-    else ""
 };
 (: END FUNCTIONS TO GET SERVER INFO :)
 
@@ -439,8 +372,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
 };
 
 declare function wdb:pageTitle($node as node(), $model as map(*)) {
-	let $ti := $model("title")
-	return <title>{normalize-space($wdb:configFile//main:short)} – {$ti}</title>
+  <title>{ normalize-space($wdb:configFile//main:short) } – { $model("title") }</title>
 };
 
 (:~
