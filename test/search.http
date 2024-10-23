@@ -1,0 +1,5 @@
+GET https://exist.ulb.tu-darmstadt.de/3/r/edoc/search/collection/data.xml?q=theater
+
+###
+
+GET https://tueditions.ulb.tu-darmstadt.de/r/edoc/search/collection/data.xml?q=gesetz

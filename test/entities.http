@@ -1,5 +1,9 @@
 GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/entities/list/file/pa000008-0130/person.xml
 
+###
+
+GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/entities/scan/per/pa000008.xml?q=luther
+
 
 ###
 
