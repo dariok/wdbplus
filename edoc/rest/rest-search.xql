@@ -19,10 +19,10 @@ declare variable $wdbRs:callback := function ( $node as node(), $mode as xs:stri
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/collection/{$id}.xml")
+    %rest:path("/edoc/search/collection/{$ed}.xml")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
-function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
+function wdbRs:collectionText ( $ed as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
   if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
@@ -38,7 +38,7 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
     "Error: no query content!"
   )
   else 
-    let $coll := (wdbFiles:getFullPath($id))?projectPath
+    let $coll := (wdbFiles:getFullPath($ed))?projectPath
       , $query := xmldb:decode($q)
     
     (: going through several thousand hits is too costly (base-uri for 10,000 hits alone would take about one second);
@@ -47,7 +47,7 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
        can be retrieved. The cost of the extra searches should not be as high as before.
        For the same reason, we do not sort the results anymore as this will take considerable time for large data sets :)
     let $result := collection($coll)//tei:text[ft:query(., $query)]
-      , $max := count($res)
+      , $max := count($result)
     
     return (
       <rest:response>
@@ -57,7 +57,7 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
           <http:header name="Cache-Control" value="no-cache" />
         </http:response>
       </rest:response>,
-      <results count="{$max}" from="{$start}" id="{$id}" q="{$q}" job="fts">{
+      <results count="{$max}" from="{$start}" id="{$ed}" q="{$q}" job="fts">{
         for $f in subsequence($result, $start, 25)
         return
           <file id="{$f/ancestor::tei:TEI/@xml:id}">{$f/ancestor::tei:TEI//tei:titleStmt}</file>
@@ -67,12 +67,12 @@ function wdbRs:collectionText ( $id as xs:string*, $q as xs:string*, $start as x
 
 declare
     %rest:GET
-    %rest:path("/edoc/search/collection/{$id}.html")
+    %rest:path("/edoc/search/collection/{$ed}.html")
     %rest:produces("text/html")
     %rest:query-param("q", "{$q}")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRs:collectionHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
+function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as xs:int* ) as item()+ {
   if ( 0 = (count($q), string-length($q)) ) then (
     <rest:response>
       <output:serialization-parameters>
@@ -88,8 +88,8 @@ function wdbRs:collectionHtml ( $id as xs:string*, $q as xs:string*, $start as x
     "Error: no query content!"
   )
   else 
-    let $md := collection($wdb:data)//id($id)[self::meta:projectMD]
-      , $coll := (wdbFiles:getFullPath($id))?projectPath
+    let $md := collection($wdb:data)//id($ed)[self::meta:projectMD]
+      , $coll := (wdbFiles:getFullPath($ed))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
     
     let $params := 
@@ -98,7 +98,7 @@ function wdbRs:collectionHtml ( $id as xs:string*, $q as xs:string*, $start as x
         <param name="rest" value="{$wdb:restURL}" />
       </parameters>
     
-    let $searchResult := wdbRs:collectionText($id, $q, $start)
+    let $searchResult := wdbRs:collectionText($ed, $q, $start)
     
     return if ( count($searchResult) gt 0 ) then (
       <rest:response>
