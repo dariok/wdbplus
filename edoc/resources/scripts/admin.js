@@ -95,9 +95,14 @@ const wdbAdmin = {
   
     wdbAdmin.uploadFiles(contents);
   },
+  
+  successfulUL: 0,
+  failedUL: 0,
+  numFiles: 0,
 
   uploadFiles: function ( collectionContent ) {
-    $('p img').show();
+    $('main p').html('<span id="q"></span> — <span id="d"></span>');
+    this.numFiles = this.files.length;
     
     for (let i = 0; i < this.files.length; i++) {
       let reader = new FileReader(),
@@ -185,7 +190,6 @@ const wdbAdmin = {
 
       reader.readAsText(file, "UTF-8");
     }
-    $('p img').hide();
   },
 
   doUpload: async function (method, url, headers, formdata, item) {
@@ -198,9 +202,11 @@ const wdbAdmin = {
       processData: false,
       dataType: "text",
       success: function (response, textStatus) {
+        $('#d').html(++wdbAdmin.successfulUL + " erfolgreich, " + wdbAdmin.failedUL + " fehlgeschlagen von insgesamt " + wdbAdmin.numFiles + " Dateien");
         wdb.report("success", "uploaded to " + url, textStatus, item);
       },
       error: function (response) {
+        $('#d').html(wdbAdmin.successfulUL + " erfolgreich, " + ++wdbAdmin.failedUL + " fehlgeschlagen von insgesamt " + wdbAdmin.numFiles + " Dateien");
         wdb.report("error", "Error uploading to " + url + " : " + response.status, response.responseText, item);
       }
     });

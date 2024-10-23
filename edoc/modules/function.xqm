@@ -63,35 +63,39 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
       )
     else if ( $id = "" ) then
       (: no ID: related to a project :)
-      let $pathToEd := if ( $ed = "" )
-            then $wdb:data
-            else (wdbFiles:getFullPath($ed))?projectPath,
-          $infoFileLoc := wdb:getMetaFile($pathToEd)
+      let $pathInfo := if ( $ed = "" )
+            then map {
+                "projectPath": $wdb:data,
+                "collectionPath": $wdb:data,
+                "fileName": $wdb:data || "/wdbmeta.xml",
+                "mainProject": $wdb:data
+              }
+            else (wdbFiles:getFullPath($ed))
+        , $infoFileLoc := $pathInfo?projectPath || "wdbmeta.xml" (: projectPath is derived from the path to wdbmeta.xml :)
         , $pp := try {
               parse-json($p)
             } catch * {
               normalize-space($p)
             }
-      let $proFile := $filePathInfo?mainProject || "/project.xqm"
-        , $mainProject := $filePathInfo?mainProject
-        , $resource := $filePathInfo?mainProject || "/resources/"
+      let $proFile := $pathInfo?mainProject || "/project.xqm"
+        , $mainProject := $pathInfo?mainProject
+        , $resource := $pathInfo?mainProject || "/resources/"
       
-
-      let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
+      let $projectFunctions := for $function in doc($mainProject || "/project-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
         , $instanceFunctions := for $function in doc($wdb:data || "/instance-functions.xml")//function
             return $function/@name || '#' || count($function/argument)
       
       return map {
         "p":                $pp,
-        "pathToEd":         $pathToEd,
+        "pathToEd":         $pathInfo?projectPath,
         "q":                $q,
         "ed":               $ed,
         "auth":             sm:id()/sm:id,
         "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
         "infoFileLoc":      $infoFileLoc,
-        "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
-        "title":            doc($infoFileLoc)//meta:title[1]/text(),
+        "mainEd":           substring-after($mainProject, 'data/'),
+        "title":            string(doc($infoFileLoc)//meta:title[1]),
         "projectFile":      $proFile,
         "projectResources": $resource,
         "requestUrl":       if ( request:exists() ) then request:get-url() else ""
@@ -126,7 +130,7 @@ declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p a
         "p":           $p,
         "q":           $q,
         "wdb:data":    $wdb:data,
-        "request":     request:get-url()
+        "request":     if ( request:exists() ) then request:get-url() else ""
       }
     )
   } catch * {
@@ -190,7 +194,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed 
     util:log("error", "error when applying templates in function.xqm: " || $err:description),
     wdbErr:error(map{
       "code": $err:code,
-      "model": $newModel,
+      "model": $model,
       "err:value": $err:value,
       "err:description": $err:description,
       "err:additional": $err:additional,
