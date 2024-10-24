@@ -181,12 +181,12 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no Content Type declared for file")
       else ()
       
-    let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+    let $collectionPath := wdb:getProjectPathFromId($collection)
+      , $collectionFile := doc($collectionPath || '/wdbmeta.xml')/*[self::meta:projectMD]
     let $err := if (not($collectionFile))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
       else ()
-      
-    let $collectionPath := (wdbFiles:getFullPath($collection))?collectionPath
+    
     let $err := if (not(sm:has-access(xs:anyURI($collectionPath), "w")))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
       else ()
@@ -311,14 +311,13 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/full/{$id}.zip")
   %output:method("binary")
-function wdb:getResourcesZip ($id as xs:string) {
-  let $meta := collection($wdb:data)/id($id)[self::meta:projectMD]
-  let $base := substring-before(base-uri($meta), 'wdbmeta')
+function wdb:getResourcesZip ( $ed as xs:string ) {
+  let $base := wdb:getProjectPathFromId($ed)
   
-  return if ($meta = "")
-  then <rest:response>
-    <http:response status="404"/>
-      </rest:response>
+  return if ( $base = "" ) then
+    <rest:response>
+      <http:response status="404"/>
+    </rest:response>
   else (
     <rest:response>
       <http:response status="200">
@@ -408,9 +407,8 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.xml")
 function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
-  let $md := collection($wdb:data)/id($ed)[self::meta:projectMD]
-    , $uri := base-uri($md)
-    , $struct := $md/meta:struct
+  let $md := doc(wdb:getProjectPathFromId($collection) || '/wdbmeta.xml')
+    , $struct := $md//meta:struct
   
   let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$ed}">{(
       $struct/@*,
@@ -510,30 +508,27 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
     )
 };
 
-declare function wdbRc:getGeneral ($id, $mt, $content) {
+declare function wdbRc:getGeneral ( $ed as xs:string, $mt as xs:string+, $content as xs:string ) as item()+ {
   let $wdbRc:acceptable := ("application/json", "application/xml")
 
   let $content := if ( $mt = $wdbRc:acceptable ) then
     try {
-      let $path := wdb:getProjectPathFromId($id)
-        , $meta := doc(wdb:getMetaFile($path))
+      let $meta := doc(wdb:getProjectPathFromId($ed) || '/wdbmeta.xml')
       
-      return if ( $meta/*[self::meta:projectMD] ) then
-        let $eval := wdb:eval ( $content, false(), (xs:QName("meta"), $meta))
+      return if ( count($meta) = 0 )
+      then
+        ( 404, "no collection with ID " || $ed )
+      else
+        let $eval := wdb:eval($content, false(), (xs:QName("meta"), $meta))
         
         return if ( count($eval) gt 0 ) then (
           200,
-          <collection id="{$id}">{
+          <collection id="{$ed}">{
             $eval
           }</collection>
         )
         else
           ( 204, "" )
-      else
-        ( 400, "no a wdbmeta project" )
-    }
-    catch *:wdb0200 {
-      ( 404, "no collection with ID " || $id )
     }
     catch * {
       ( 400, "" )

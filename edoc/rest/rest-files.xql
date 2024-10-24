@@ -2,7 +2,6 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace console  = "http://exist-db.org/xquery/console"            at "java:org.exist.console.xquery.ConsoleModule";
 import module namespace json     = "http://www.json.org";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "/db/apps/edoc/modules/wdb-files.xqm";
@@ -188,10 +187,10 @@ declare
 function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
   (: Admins are advised by the documentation they REALLY SHOULD NOT have more than one entry for every ID
    : To be on the safe side, we go for the first one anyway :)
-  let $files := collection($wdb:data)//id($id)[self::meta:file]
+  let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
+    , $file := doc($file-hint/@project)/id($id)
     , $collectionPath := (wdbFiles:getFullPath($id))?collectionPath
-    , $f := $files[1]
-    , $path := $collectionPath || '/' || $f/@path
+    , $path := $collectionPath || '/' || $file/@path
     , $readable := sm:has-access($path, "r")
 
   let $doc := if ( not($readable) ) then
@@ -216,7 +215,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
     else
       "binary"
   
-  let $respCode := if ( count($files) = 0 ) then
+  let $respCode := if ( count($file) = 0 ) then
       404
     else if ( not($readable) ) then
       401
@@ -460,7 +459,7 @@ declare function wdbRf:processXSL( $id as xs:string, $process as element(), $mod
     } catch * {
       ("error",
         $err:description,
-        console:log("Processing " || $id || ": " || $err:description))
+        util:log("error", "Processing " || $id || ": " || $err:description))
     }
   
   return if ($content[1] = "error")

@@ -538,17 +538,6 @@ declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
     else (wdbFiles:getFullPath($ed))?projectPath || "/" || $path
 };
 
-(:~
- : Return the ID of a project from a resource ID within the project
- : 
- : @param $id the ID of a resource within a project
- : @return the ID of the project
- :)
-declare function wdb:getEdFromFileId ($id as xs:string) as xs:string {
-  let $file := collection($wdb:data)/id($id)[self::meta:file]
-  return $file/ancestor::meta:projectMD/@xml:id
-};
-
 (: ~
  : Return the path to a project
  : 
@@ -677,27 +666,9 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @return The path to the project 
  :)
 declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
-  let $md := collection($wdb:data)/id($ed)[self::meta:projectMD]
-
-  return xstring:substring-before-last(base-uri(($md)[1]), '/')
-};
-
-(:~
- : Get the meta data file from the ed path
- :)
-declare function wdb:getMetaFile($pathToEd) {
-  if ( doc-available($pathToEd||'/wdbmeta.xml') )
-    then $pathToEd || '/wdbmeta.xml'
-    else fn:error(fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb0003'))
-};
-
-(:~
- : Get the meta data file by project ID
- : 
- : @param $ed The project ID to be evaluated
- :)
-declare function wdb:getMetaElementFromEd ( $ed as xs:string ) as element() {
-  collection($wdb:data)/id($ed)[self::meta:projectMD]
+  if ( $ed = ( "", "data" ) )
+    then $wdb:data
+    else string( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path )
 };
 (: END GENERAL HELPER FUNCTIONS :)
 

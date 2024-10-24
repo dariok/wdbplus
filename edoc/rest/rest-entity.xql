@@ -70,9 +70,9 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.html")
     %rest:query-param("q", "{$q}")
     %output:method("html")
-function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
-  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := (wdbFiles:getFullPath($collection))?projectPath
+function wdbRe:scanHtml ( $collection as xs:string, $type as xs:string, $q as xs:string* ) as item()+ {
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
+    , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
     , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
   
   let $params := <parameters>
@@ -124,9 +124,9 @@ declare
     %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.html")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := (wdbFiles:getFullPath($collection))?projectPath
+function wdbRe:collectionEntityHtml ( $collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int* ) as item()+ {
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
+    , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
     , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
     
   let $params := <parameters>

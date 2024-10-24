@@ -62,7 +62,9 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @throws wdbErr:wdb0001
 :)
 declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string?, xs:string? )? {
-  let $file := collection("/db")/id($id)
+  let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
+    , $project-hint := doc("/db/apps/edoc/index/project-index.xml")/id($id)
+    , $file := ( doc($file-hint/@project)/id($id), doc($project-hint/@path || "/wdbmeta.xml")/id($id) )
 
   return if ( count($file) = 0 ) then
       error(

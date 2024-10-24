@@ -88,8 +88,8 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
     "Error: no query content!"
   )
   else 
-    let $md := collection($wdb:data)//id($ed)[self::meta:projectMD]
-      , $coll := (wdbFiles:getFullPath($ed))?projectPath
+    let $coll := wdbFiles:getProjectPathFromId($ed)
+      , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
     
     let $params := 
