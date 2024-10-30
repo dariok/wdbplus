@@ -1,0 +1,168 @@
+openapi: 3.0.0
+info:
+  description: "wdb+ REST API v2 (wdb+ > v4.0) – see https://github.com/dariok/wdbplus for details"
+  version: "2.0"
+  title: "wdb+ API"
+  # termsOfService: "see instance"
+  contact:
+    url: https://github.com/dariok/wdbplus
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://wdbplus.instance/exist/restxq/edoc/v2
+tags:
+  - name: annotations
+    description: Concerning Hobbits
+  - name: projects
+    description: Operations on wdb+ projects
+  - name: entities
+    description: Operations on entities
+  - name: resources
+    description: Operations on resources (usually texts)
+  - name: search
+    description: Full text search
+paths:
+  /annotations:
+    # post:
+    #   tags:
+    #     - annotations
+    #   summary: Add a new annotation
+    #   description: "Create an annotation for a file (to be identified by ID in the request body)"
+    #   operationId: insertAnnotation
+    #   requestBody:
+    #     $ref: "#/components/requestBodies/Annotation"
+    #   responses:
+    #     "201":
+    #       description: Annotation has been created
+    #     "400":
+    #       description: Invalid input
+  /annotations/{$id}:
+    # get:
+    #   tags:
+    #     - annotations
+    #   summary: Get annotation by ID
+    #   operationId: getAnnotationById
+    #   responses:
+    #     "200":
+    #       description: Annotation has been found
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: "#/components/schemas/Annotation"
+    #     "404":
+    #       description: No ID found by this ID
+    # delete:
+    #   tags:
+    #     - annotations
+    #   summary: Delete the annotation
+    #   operationId: deleteAnnotation
+    #   responses:
+    #     "200":
+    #       description: The annotation has been deleted
+    #     "404":
+    #       description: This annotation was not found
+  /annotations/byFile/{$id}:
+    # get:
+    #   tags:
+    #     - annotations
+    #   summary: Get a list of annotations related to a file
+    #   responses:
+    #     "200":
+    #       description: Found annotations for this file
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: #TODO
+    #     "204":
+    #       description: No annotations for this file
+    #     "404":
+    #       description: File not found
+    #   operationId: #TODO
+  
+  /projects:
+    # get:
+    #   tags:
+    #     - projects
+    #   summary: Get a list of all projects
+    #   operationId: listProjects
+    #   responses:
+    #     "200":
+    #       description: Contains a list of projects
+    #       content: #TODO
+  /projects/{$ed}:
+    # get:
+    #   tags:
+    #     - projects
+    #   summary: Get project by ID
+    # delete:
+    #   tags:
+    #     - projects
+    #   summary: Delete project by ID
+    # put:
+    #   tags:
+    #     - projects
+    #   summary: Create project with known ID
+  /projects/{$ed}/nav:
+    # get:
+    #   tags:
+    #     - projects
+    #   summary: Get project navigation
+
+  /entities:
+    # get:
+    #   tags:
+    #     - entities
+    #   summary: Get entities from global registry
+    #   parameters:
+    #     - name: q
+    #       in: query
+    #       schema:
+    #         type: string
+    #       description: filter by name / title
+    #     - name: type
+    #       in: query
+    #       schema:
+    #         enum:
+    #           - per
+    #           - pla
+    #           - org
+    #           - bib
+    #           - evt
+    #       description: 
+  /entities/project/{$ed}/{$type}/list:
+  /entities/project/{$ed}/refs/{$entity}:
+  /entities/resource/{$id}/refs/{$entity}:
+
+  /resource/{$id}:
+  /resource/{$id}/views:
+  /resource/{$id}/views/{$view}:
+  /resource/byPid/{$pid}:
+
+  /search/ft/project/{$ed}:
+  /search/ft/resource/{$id}:
+
+
+# components:
+#   requestBodies:
+#     Annotation:
+#       required: true
+#       description: A new annotation for a file
+#       content:
+#         application/json:
+#           schema:
+#             $ref: "#/components/schemas/Annotation"
+  
+#   schemas:
+#     Annotation:
+#       type: object
+#       required:
+#         - id #file ID
+#         - content #text of the annotation
+#       properties:
+#         id:
+#           type: string
+#           description: "The ID of the file"
+#         content:
+#           type: string
+#           description: "The text of the annotation"
