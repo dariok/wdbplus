@@ -28,7 +28,7 @@ paths:
     post:
       tags:
         - annotations
-    #   summary: Add a new annotation
+      summary: Add a new annotation
     #   description: "Create an annotation for a file (to be identified by ID in the request body)"
     #   operationId: insertAnnotation
     #   requestBody:
@@ -42,7 +42,7 @@ paths:
     get:
       tags:
         - annotations
-    #   summary: Get annotation by ID
+      summary: Get annotation by ID
     #   operationId: getAnnotationById
     #   responses:
     #     "200":
@@ -56,7 +56,7 @@ paths:
     delete:
       tags:
         - annotations
-    #   summary: Delete the annotation
+      summary: Delete an annotation
     #   operationId: deleteAnnotation
     #   responses:
     #     "200":
@@ -67,7 +67,7 @@ paths:
     get:
       tags:
         - annotations
-    #   summary: Get a list of annotations related to a file
+      summary: List of annotations related to a file
     #   responses:
     #     "200":
     #       description: Found annotations for this file
@@ -85,7 +85,7 @@ paths:
     get:
       tags:
         - projects
-    #   summary: Get a list of all projects
+      summary: List all projects
     #   operationId: listProjects
     #   responses:
     #     "200":
@@ -95,26 +95,26 @@ paths:
     get:
       tags:
         - projects
-    #   summary: Get project by ID
+      summary: Project info by ID
     delete:
       tags:
         - projects
-    #   summary: Delete project by ID
+      summary: Delete project
     put:
       tags:
         - projects
-    #   summary: Create project with known ID
+      summary: Create project with given ID
   /projects/{$ed}/nav:
     get:
       tags:
         - projects
-    #   summary: Get project navigation
+      summary: Get project navigation
 
   /entities:
     get:
       tags:
         - entities
-    #   summary: Get entities from global registry
+      summary: Query entities in global registry
     #   parameters:
     #     - name: q
     #       in: query
@@ -135,49 +135,65 @@ paths:
     get:
       tags:
         - entities
+      summary: Query entities in a project’s registry
   /entities/project/{$ed}/refs/{$entity}:
     get:
       tags:
         - entities
+      summary: List texts in a project referring to an entity
   /entities/resource/{$id}/refs/{$entity}:
     get:
       tags:
         - entities
+      summary: List all fragments containina reference to an entity
 
   /resources/{$id}:
     get:
       tags:
         - resources
+      summary: Get resource by ID
     put:
       tags:
         - resources
+      summary: Create or update a file
+    patch:
+      tags:
+        - resources
+      summary: Change a fragment from a file
     head:
       tags:
         - resources
+      summary: Preflight request
     options:
       tags:
         - resources
+      summary: Preflight request
   /resources/{$id}/views:
     get:
       tags:
         - resources
+      summary: List views for a file
   /resources/{$id}/views/{$view}:
     get:
       tags:
         - resources
+      summary: Get resource as represented by view
   /resources/byPid/{$pid}:
     get:
       tags:
         - resources
+      summary: Return our ID for a external PID
 
   /search/ft/project/{$ed}:
     get:
       tags:
         - search
+      summary: List files in project containing text
   /search/ft/resource/{$id}:
     get:
       tags:
         - search
+      summary: List fragments in file containing text
 
 
 # components:
