@@ -22,11 +22,12 @@ tags:
     description: Operations on resources (usually texts)
   - name: search
     description: Full text search
+
 paths:
   /annotations:
-    # post:
-    #   tags:
-    #     - annotations
+    post:
+      tags:
+        - annotations
     #   summary: Add a new annotation
     #   description: "Create an annotation for a file (to be identified by ID in the request body)"
     #   operationId: insertAnnotation
@@ -38,9 +39,9 @@ paths:
     #     "400":
     #       description: Invalid input
   /annotations/{$id}:
-    # get:
-    #   tags:
-    #     - annotations
+    get:
+      tags:
+        - annotations
     #   summary: Get annotation by ID
     #   operationId: getAnnotationById
     #   responses:
@@ -52,9 +53,9 @@ paths:
     #             $ref: "#/components/schemas/Annotation"
     #     "404":
     #       description: No ID found by this ID
-    # delete:
-    #   tags:
-    #     - annotations
+    delete:
+      tags:
+        - annotations
     #   summary: Delete the annotation
     #   operationId: deleteAnnotation
     #   responses:
@@ -62,10 +63,10 @@ paths:
     #       description: The annotation has been deleted
     #     "404":
     #       description: This annotation was not found
-  /annotations/byFile/{$id}:
-    # get:
-    #   tags:
-    #     - annotations
+  /annotations/forFile/{$id}:
+    get:
+      tags:
+        - annotations
     #   summary: Get a list of annotations related to a file
     #   responses:
     #     "200":
@@ -81,9 +82,9 @@ paths:
     #   operationId: #TODO
   
   /projects:
-    # get:
-    #   tags:
-    #     - projects
+    get:
+      tags:
+        - projects
     #   summary: Get a list of all projects
     #   operationId: listProjects
     #   responses:
@@ -91,28 +92,28 @@ paths:
     #       description: Contains a list of projects
     #       content: #TODO
   /projects/{$ed}:
-    # get:
-    #   tags:
-    #     - projects
+    get:
+      tags:
+        - projects
     #   summary: Get project by ID
-    # delete:
-    #   tags:
-    #     - projects
+    delete:
+      tags:
+        - projects
     #   summary: Delete project by ID
-    # put:
-    #   tags:
-    #     - projects
+    put:
+      tags:
+        - projects
     #   summary: Create project with known ID
   /projects/{$ed}/nav:
-    # get:
-    #   tags:
-    #     - projects
+    get:
+      tags:
+        - projects
     #   summary: Get project navigation
 
   /entities:
-    # get:
-    #   tags:
-    #     - entities
+    get:
+      tags:
+        - entities
     #   summary: Get entities from global registry
     #   parameters:
     #     - name: q
@@ -130,17 +131,53 @@ paths:
     #           - bib
     #           - evt
     #       description: 
-  /entities/project/{$ed}/{$type}/list:
+  /entities/project/{$ed}/{$type}:
+    get:
+      tags:
+        - entities
   /entities/project/{$ed}/refs/{$entity}:
+    get:
+      tags:
+        - entities
   /entities/resource/{$id}/refs/{$entity}:
+    get:
+      tags:
+        - entities
 
-  /resource/{$id}:
-  /resource/{$id}/views:
-  /resource/{$id}/views/{$view}:
-  /resource/byPid/{$pid}:
+  /resources/{$id}:
+    get:
+      tags:
+        - resources
+    put:
+      tags:
+        - resources
+    head:
+      tags:
+        - resources
+    options:
+      tags:
+        - resources
+  /resources/{$id}/views:
+    get:
+      tags:
+        - resources
+  /resources/{$id}/views/{$view}:
+    get:
+      tags:
+        - resources
+  /resources/byPid/{$pid}:
+    get:
+      tags:
+        - resources
 
   /search/ft/project/{$ed}:
+    get:
+      tags:
+        - search
   /search/ft/resource/{$id}:
+    get:
+      tags:
+        - search
 
 
 # components:
