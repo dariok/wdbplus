@@ -30,7 +30,7 @@ paths:
         - annotations
       summary: Add a new annotation
     #   description: "Create an annotation for a file (to be identified by ID in the request body)"
-    #   operationId: insertAnnotation
+      operationId: #TODO
     #   requestBody:
     #     $ref: "#/components/requestBodies/Annotation"
     #   responses:
@@ -43,7 +43,7 @@ paths:
       tags:
         - annotations
       summary: Get annotation by ID
-    #   operationId: getAnnotationById
+      operationId: #TODO getAnnotationById
     #   responses:
     #     "200":
     #       description: Annotation has been found
@@ -57,7 +57,7 @@ paths:
       tags:
         - annotations
       summary: Delete an annotation
-    #   operationId: deleteAnnotation
+      operationId: #TODO deleteAnnotation
     #   responses:
     #     "200":
     #       description: The annotation has been deleted
@@ -68,6 +68,7 @@ paths:
       tags:
         - annotations
       summary: List of annotations related to a file
+      operationId: #TODO
     #   responses:
     #     "200":
     #       description: Found annotations for this file
@@ -79,14 +80,13 @@ paths:
     #       description: No annotations for this file
     #     "404":
     #       description: File not found
-    #   operationId: #TODO
   
   /projects:
     get:
       tags:
         - projects
       summary: List all projects
-    #   operationId: listProjects
+      operationId: #TODO listProjects
     #   responses:
     #     "200":
     #       description: Contains a list of projects
@@ -96,25 +96,30 @@ paths:
       tags:
         - projects
       summary: Project info by ID
+      operationId: #TODO
     delete:
       tags:
         - projects
       summary: Delete project
+      operationId: #TODO
     put:
       tags:
         - projects
       summary: Create project with given ID
+      operationId: #TODO
   /projects/{$ed}/nav:
     get:
       tags:
         - projects
       summary: Get project navigation
+      operationId: #TODO
 
   /entities:
     get:
       tags:
         - entities
       summary: Query entities in global registry
+      operationId: #TODO
     #   parameters:
     #     - name: q
     #       in: query
@@ -136,64 +141,78 @@ paths:
       tags:
         - entities
       summary: Query entities in a project’s registry
+      operationId: #TODO
   /entities/project/{$ed}/refs/{$entity}:
     get:
       tags:
         - entities
       summary: List texts in a project referring to an entity
+      operationId: #TODO
   /entities/resource/{$id}/refs/{$entity}:
     get:
       tags:
         - entities
       summary: List all fragments containina reference to an entity
+      operationId: #TODO
 
   /resources/{$id}:
     get:
       tags:
         - resources
       summary: Get resource by ID
+      operationId: #TODO
     put:
       tags:
         - resources
       summary: Create or update a file
+      operationId: #TODO
     patch:
       tags:
         - resources
       summary: Change a fragment from a file
+      operationId: #TODO
     head:
       tags:
         - resources
       summary: Preflight request
+      operationId: #TODO
     options:
       tags:
         - resources
       summary: Preflight request
+      operationId: #TODO
   /resources/{$id}/views:
     get:
       tags:
         - resources
       summary: List views for a file
+      operationId: #TODO
   /resources/{$id}/views/{$view}:
     get:
       tags:
         - resources
       summary: Get resource as represented by view
+      operationId: #TODO
   /resources/byPid/{$pid}:
     get:
       tags:
         - resources
       summary: Return our ID for a external PID
+      operationId: #TODO
 
   /search/ft/project/{$ed}:
     get:
       tags:
         - search
       summary: List files in project containing text
+      operationId: #TODO
   /search/ft/resource/{$id}:
-    get:
+
+      operationId: #TODO    get:
       tags:
         - search
       summary: List fragments in file containing text
+      operationId: #TODO
 
 
 # components:
