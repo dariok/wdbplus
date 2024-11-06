@@ -137,6 +137,7 @@ paths:
   /projects/{ed}/nav:
     parameters:
       - "$ref": "#/components/parameters/ed"
+      - "$ref": "#/components/parameters/modified"
     get:
       tags:
         - projects
@@ -152,11 +153,13 @@ paths:
       parameters:
         - "$ref": "#/components/parameters/q"
         - "$ref": "#/components/parameters/type"
+        - "$ref": "#/components/parameters/start"
   /entities/project/{ed}:
     parameters:
       - "$ref": "#/components/parameters/ed"
       - "$ref": "#/components/parameters/q"
       - "$ref": "#/components/parameters/type"
+      - "$ref": "#/components/parameters/start"
     get:
       tags:
         - entities
@@ -175,6 +178,7 @@ paths:
     parameters:
       - "$ref": "#/components/parameters/id"
       - "$ref": "#/components/parameters/entity"
+      - "$ref": "#/components/parameters/start"
     get:
       tags:
         - entities
@@ -237,6 +241,7 @@ paths:
   /resources/{id}/views/{view}:
     parameters:
       - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/modified"
       - name: view
         in: path
         description: The ID of the view to be invoked
@@ -266,6 +271,7 @@ paths:
     parameters:
       - "$ref": "#/components/parameters/ed"
       - "$ref": "#/components/parameters/q"
+      - "$ref": "#/components/parameters/start"
     get:
       tags:
         - search
@@ -275,6 +281,7 @@ paths:
     parameters:
       - "$ref": "#/components/parameters/id"
       - "$ref": "#/components/parameters/q"
+      - "$ref": "#/components/parameters/start"
     get:
       tags:
         - search
@@ -312,8 +319,8 @@ components:
         type: string
       description: query or filter by name / title
     type:
-      name: "type"
-      in: path
+      name: type
+      in: query
       description: The type of entity
       schema:
         enum:
@@ -323,6 +330,19 @@ components:
           - bib
           - evt
       required: true
+    start:
+      name: start
+      in: query
+      description: from which position in a list to start (1-based)
+      schema:
+        type: integer
+        default: 1
+    modified:
+      name: "If-Modified-Since"
+      in: header
+      schema:
+        type: string
+        format: date-time
   
 #   requestBodies:
 #     Annotation:
