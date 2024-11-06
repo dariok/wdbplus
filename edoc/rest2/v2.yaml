@@ -28,11 +28,17 @@ paths:
     post:
       tags:
         - annotations
-      summary: Add a new annotation
-    #   description: "Create an annotation for a file (to be identified by ID in the request body)"
+      summary: Add a new full text annotation
+      description: This creates full text annotations only. Changes to the file, including entity markup, must use PATCH /resources/{$id}
       operationId: TODO
-    #   requestBody:
-    #     $ref: "#/components/requestBodies/Annotation"
+      requestBody:
+        description: the full text annotation to be added
+        required: true
+        content:
+          application/json:
+            schema: #TODO
+          application/xml:
+            schema: #TODO
     #   responses:
     #     "201":
     #       description: Annotation has been created
@@ -127,7 +133,14 @@ paths:
       tags:
         - projects
       summary: Create project with given ID
+      description: This creates a new project with the ID given as $ed and the necessary meta data in the request body
       operationId: #TODO
+      requestBody:
+        description: The necessary data for the project to be created
+        required: true
+        content:
+          application/xml:
+            schema: #TODO
   /projects/{$ed}/nav:
     parameters:
       - name: "ed"
@@ -245,11 +258,23 @@ paths:
         - resources
       summary: Create or update a file
       operationId: #TODO
+      requestBody:
+        description: Create or replace a file with the ID given in $id and the content in the request body
+        required: true
+        content:
+          application/xml:
+            schema: #TODO
     patch:
       tags:
         - resources
       summary: Change a fragment from a file
       operationId: #TODO
+      requestBody:
+        description: The replacement XML fragment 
+        required: true
+        content:
+          application/xml:
+            schema: #TODO or use an example
     head:
       tags:
         - resources
