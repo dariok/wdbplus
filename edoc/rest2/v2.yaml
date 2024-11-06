@@ -29,7 +29,7 @@ paths:
       tags:
         - annotations
       summary: Add a new full text annotation
-      description: This creates full text annotations only. Changes to the file, including entity markup, must use PATCH /resources/{$id}
+      description: This creates full text annotations only. Changes to the file, including entity markup, must use PATCH /resources/{id}
       operationId: TODO
       requestBody:
         description: the full text annotation to be added
@@ -78,12 +78,7 @@ paths:
     #       description: This annotation was not found
   /annotations/forFile/{id}:
     parameters:
-      - name: "id"
-        in: path
-        description: The ID of the file to which the annotation is to be attached
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/id"
     get:
       tags:
         - annotations
@@ -111,14 +106,9 @@ paths:
     #     "200":
     #       description: Contains a list of projects
     #       content: #TODO
-  /projects/{$ed}:
+  /projects/{ed}:
     parameters:
-      - name: "ed"
-        in: path
-        description: The ID of the project
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/ed"
     get:
       tags:
         - projects
@@ -133,7 +123,7 @@ paths:
       tags:
         - projects
       summary: Create project with given ID
-      description: This creates a new project with the ID given as $ed and the necessary meta data in the request body
+      description: This creates a new project with the ID given as ed and the necessary meta data in the request body
       operationId: #TODO
       requestBody:
         description: The necessary data for the project to be created
@@ -141,14 +131,9 @@ paths:
         content:
           application/xml:
             schema: #TODO
-  /projects/{$ed}/nav:
+  /projects/{ed}/nav:
     parameters:
-      - name: "ed"
-        in: path
-        description: The ID of the project
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/ed"
     get:
       tags:
         - projects
@@ -177,14 +162,9 @@ paths:
     #           - bib
     #           - evt
     #       description: 
-  /entities/project/{$ed}/{$type}:
+  /entities/project/{ed}/{type}:
     parameters:
-      - name: "ed"
-        in: path
-        description: The ID of the project
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/ed"
       - name: "type"
         in: path
         description: The type of entity
@@ -201,53 +181,28 @@ paths:
         - entities
       summary: Query entities in a project’s registry
       operationId: #TODO
-  /entities/project/{$ed}/refs/{$entity}:
+  /entities/project/{ed}/refs/{entity}:
     parameters:
-      - name: "ed"
-        in: path
-        description: The ID of the project
-        schema:
-          type: string
-        required: true
-      - name: "entity"
-        in: path
-        description: The ID of the entity
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/ed"
+      - "$ref": "#/components/parameters/entity"
     get:
       tags:
         - entities
       summary: List texts in a project referring to an entity
       operationId: #TODO
-  /entities/resource/{$id}/refs/{$entity}:
+  /entities/resource/{id}/refs/{entity}:
     parameters:
-      - name: "id"
-        in: path
-        description: The ID of the file
-        schema:
-          type: string
-        required: true
-      - name: "entity"
-        in: path
-        description: The ID of the entity
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/entity"
     get:
       tags:
         - entities
       summary: List all fragments containing a reference to an entity
       operationId: #TODO
 
-  /resources/{$id}:
+  /resources/{id}:
     parameters:
-      - name: "id"
-        in: path
-        description: The ID of the file
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/id"
     get:
       tags:
         - resources
@@ -259,7 +214,7 @@ paths:
       summary: Create or update a file
       operationId: #TODO
       requestBody:
-        description: Create or replace a file with the ID given in $id and the content in the request body
+        description: Create or replace a file with the ID given in id and the content in the request body
         required: true
         content:
           application/xml:
@@ -290,27 +245,17 @@ paths:
         - resources
       summary: delete a file
       operationId: #TODO
-  /resources/{$id}/views:
+  /resources/{id}/views:
     parameters:
-      - name: "id"
-        in: path
-        description: The ID of the file
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/id"
     get:
       tags:
         - resources
       summary: List views for a file
       operationId: #TODO
-  /resources/{$id}/views/{$view}:
+  /resources/{id}/views/{view}:
     parameters:
-      - name: id
-        in: path
-        description: The ID of the file
-        schema:
-          type: string
-        required: true
+      - "$ref": "#/components/parameters/id"
       - name: view
         in: path
         description: The ID of the view to be invoked
@@ -322,20 +267,31 @@ paths:
         - resources
       summary: Get resource as represented by view
       operationId: #TODO
-  /resources/byPid/{$pid}:
+  /resources/byPid/{pid}:
+    parameters:
+      - name: "pid"
+        in: path
+        description: The externally defined persistend ID of a file
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - resources
       summary: Return our ID for a external PID
       operationId: #TODO
 
-  /search/ft/project/{$ed}:
+  /search/ft/project/{ed}:
+    parameters:
+      - "$ref": "#/components/parameters/ed"
     get:
       tags:
         - search
       summary: List files in project containing text
       operationId: #TODO
-  /search/ft/resource/{$id}:
+  /search/ft/resource/{id}:
+    parameters:
+      - "$ref": "#/components/parameters/id"
     get:
       tags:
         - search
@@ -343,7 +299,29 @@ paths:
       operationId: #TODO
 
 
-# components:
+components:
+  parameters:
+    id:
+      name: "id"
+      in: path
+      description: The ID of the
+      schema:
+        type: string
+      required: true
+    ed:
+      name: "ed"
+      in: path
+      description: The ID of the project
+      schema:
+        type: string
+      required: true
+    entity:
+      name: "entity"
+      in: path
+      description: The ID of the entity
+      schema:
+        type: string
+      required: true
 #   requestBodies:
 #     Annotation:
 #       required: true
