@@ -30,7 +30,7 @@ paths:
         - annotations
       summary: Add a new annotation
     #   description: "Create an annotation for a file (to be identified by ID in the request body)"
-      operationId: #TODO
+      operationId: TODO
     #   requestBody:
     #     $ref: "#/components/requestBodies/Annotation"
     #   responses:
@@ -38,12 +38,19 @@ paths:
     #       description: Annotation has been created
     #     "400":
     #       description: Invalid input
-  /annotations/{$id}:
+  /annotations/{annotation}:
+    parameters:
+      - name: "annotation"
+        in: path
+        description: The ID of the annotation
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - annotations
       summary: Get annotation by ID
-      operationId: #TODO getAnnotationById
+      operationId: TODO getAnnotationById
     #   responses:
     #     "200":
     #       description: Annotation has been found
@@ -63,7 +70,14 @@ paths:
     #       description: The annotation has been deleted
     #     "404":
     #       description: This annotation was not found
-  /annotations/forFile/{$id}:
+  /annotations/forFile/{id}:
+    parameters:
+      - name: "id"
+        in: path
+        description: The ID of the file to which the annotation is to be attached
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - annotations
@@ -92,6 +106,13 @@ paths:
     #       description: Contains a list of projects
     #       content: #TODO
   /projects/{$ed}:
+    parameters:
+      - name: "ed"
+        in: path
+        description: The ID of the project
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - projects
@@ -108,6 +129,13 @@ paths:
       summary: Create project with given ID
       operationId: #TODO
   /projects/{$ed}/nav:
+    parameters:
+      - name: "ed"
+        in: path
+        description: The ID of the project
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - projects
@@ -137,25 +165,76 @@ paths:
     #           - evt
     #       description: 
   /entities/project/{$ed}/{$type}:
+    parameters:
+      - name: "ed"
+        in: path
+        description: The ID of the project
+        schema:
+          type: string
+        required: true
+      - name: "type"
+        in: path
+        description: The type of entity
+        schema:
+          enum:
+            - per
+            - pla
+            - org
+            - bib
+            - evt
+        required: true
     get:
       tags:
         - entities
       summary: Query entities in a project’s registry
       operationId: #TODO
   /entities/project/{$ed}/refs/{$entity}:
+    parameters:
+      - name: "ed"
+        in: path
+        description: The ID of the project
+        schema:
+          type: string
+        required: true
+      - name: "entity"
+        in: path
+        description: The ID of the entity
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - entities
       summary: List texts in a project referring to an entity
       operationId: #TODO
   /entities/resource/{$id}/refs/{$entity}:
+    parameters:
+      - name: "id"
+        in: path
+        description: The ID of the file
+        schema:
+          type: string
+        required: true
+      - name: "entity"
+        in: path
+        description: The ID of the entity
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - entities
-      summary: List all fragments containina reference to an entity
+      summary: List all fragments containing a reference to an entity
       operationId: #TODO
 
   /resources/{$id}:
+    parameters:
+      - name: "id"
+        in: path
+        description: The ID of the file
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - resources
@@ -181,13 +260,38 @@ paths:
         - resources
       summary: Preflight request
       operationId: #TODO
+    delete:
+      tags:
+        - resources
+      summary: delete a file
+      operationId: #TODO
   /resources/{$id}/views:
+    parameters:
+      - name: "id"
+        in: path
+        description: The ID of the file
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - resources
       summary: List views for a file
       operationId: #TODO
   /resources/{$id}/views/{$view}:
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the file
+        schema:
+          type: string
+        required: true
+      - name: view
+        in: path
+        description: The ID of the view to be invoked
+        schema:
+          type: string
+        required: true
     get:
       tags:
         - resources
@@ -207,8 +311,7 @@ paths:
       summary: List files in project containing text
       operationId: #TODO
   /search/ft/resource/{$id}:
-
-      operationId: #TODO    get:
+    get:
       tags:
         - search
       summary: List fragments in file containing text
