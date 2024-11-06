@@ -24,6 +24,9 @@ tags:
     description: Full text search
 
 paths:
+  # TODO:
+  # /admin
+
   /annotations:
     post:
       tags:
@@ -146,36 +149,14 @@ paths:
         - entities
       summary: Query entities in global registry
       operationId: #TODO
-    #   parameters:
-    #     - name: q
-    #       in: query
-    #       schema:
-    #         type: string
-    #       description: filter by name / title
-    #     - name: type
-    #       in: query
-    #       schema:
-    #         enum:
-    #           - per
-    #           - pla
-    #           - org
-    #           - bib
-    #           - evt
-    #       description: 
-  /entities/project/{ed}/{type}:
+      parameters:
+        - "$ref": "#/components/parameters/q"
+        - "$ref": "#/components/parameters/type"
+  /entities/project/{ed}:
     parameters:
       - "$ref": "#/components/parameters/ed"
-      - name: "type"
-        in: path
-        description: The type of entity
-        schema:
-          enum:
-            - per
-            - pla
-            - org
-            - bib
-            - evt
-        required: true
+      - "$ref": "#/components/parameters/q"
+      - "$ref": "#/components/parameters/type"
     get:
       tags:
         - entities
@@ -284,6 +265,7 @@ paths:
   /search/ft/project/{ed}:
     parameters:
       - "$ref": "#/components/parameters/ed"
+      - "$ref": "#/components/parameters/q"
     get:
       tags:
         - search
@@ -292,6 +274,7 @@ paths:
   /search/ft/resource/{id}:
     parameters:
       - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/q"
     get:
       tags:
         - search
@@ -322,6 +305,25 @@ components:
       schema:
         type: string
       required: true
+    q:
+      name: q
+      in: query
+      schema:
+        type: string
+      description: query or filter by name / title
+    type:
+      name: "type"
+      in: path
+      description: The type of entity
+      schema:
+        enum:
+          - per
+          - pla
+          - org
+          - bib
+          - evt
+      required: true
+  
 #   requestBodies:
 #     Annotation:
 #       required: true
