@@ -43,7 +43,7 @@ declare variable $wdb:edocBaseDB := $wdb:configFile => base-uri() => substring-b
 declare variable $wdb:data := $wdb:configFile//config:data;
 
 (:~
- : get the base URI either from the configuration
+ : get the base URI from the configuration
  :)
 declare variable $wdb:edocBaseURL := $wdb:configFile//config:server;
 
