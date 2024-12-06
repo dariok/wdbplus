@@ -62,16 +62,17 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
     let $p := $model?p
       , $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
       , $json := "{" || string-join($c, ', ') || "}"
+      , $start := if ( exists($model?p?start) ) then $model?p?start else 1
     
     return (
       response:set-header("Cache-Control", "no-cache"),
       switch ( $job )
         case "fts"
-          return wdbRs:collectionHtml($model?ed, $model?q, $model?p?start)
+          return wdbRs:collectionHtml($model?ed, $model?q, $start)
         case "search"
           return wdbRe:scanHtml($model?ed, $model?p?type, $model?q)
         case "list"
-          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $model?p?start)
+          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $start)
         case "entries"
           return wdbRe:scanHtml($model?ed, $model?p?type, lower-case($model?q))
         default
@@ -82,7 +83,7 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
 
 declare function local:selectEd ($model) {(
   <select name="ed">{
-    let $md := doc($wconfig:data || '/wdbmeta.xml')
+    let $md := doc($config:data || '/wdbmeta.xml')
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id
       
