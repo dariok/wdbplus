@@ -2,7 +2,6 @@ xquery version "3.0";
 
 module namespace wdbGS = "https://github.com/dariok/wdbplus/GlobalSettings";
 
-import module namespace console  = "http://exist-db.org/xquery/console";
 import module namespace config = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
 
 declare namespace exgit  = "http://exist-db.org/xquery/exgit";

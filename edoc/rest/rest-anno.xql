@@ -7,7 +7,6 @@ import module namespace util     = "http://exist-db.org/xquery/util"          at
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"   at "/db/apps/edoc/modules/annotations.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace console  = "http://exist-db.org/xquery/console";
 
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 declare namespace http    = "http://expath.org/ns/http-client";
@@ -300,7 +299,6 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
       </rest:response>,
       switch ($data("job"))
       case "edit" return
-        let $d := console:log($token)
         let $u := if ($token/tei:lb)
           then
             let $id := $token/@xml:id
@@ -310,7 +308,6 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
               then $token/tei:pc/@xml:id
               else ()
             let $pc := <pc>{$pid, substring($text[1], string-length($text[1]))}</pc>
-            let $d1 := console:log($text)
             let $repl :=
               <w xmlns="http://www.tei-c.org/ns/1.0">{$id,
                 substring($text[1], 1, string-length($text[1]) - 1),
