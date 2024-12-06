@@ -96,6 +96,7 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
       <parameters>
         <param name="title" value="{$md//meta:title[1]}" />
         <param name="rest" value="{$config:restURL}" />
+        <param name="baseURL" value="{ $config:edocBaseURL }" />
       </parameters>
     
     let $searchResult := wdbRs:collectionText($ed, $q, $start)
@@ -197,6 +198,7 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
       <parameters>
         <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
         <param name="rest" value="{$config:restURL}" />
+        <param name="baseURL" value="{ $config:edocBaseURL }" />
       </parameters>
     
     let $searchResult := wdbRs:fileText($id, $q, $start)
