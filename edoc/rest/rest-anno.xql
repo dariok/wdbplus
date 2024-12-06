@@ -2,10 +2,11 @@ xquery version "3.1";
 
 module namespace wdbRa = "https://github.com/dariok/wdbplus/RestAnnotations";
 
-import module namespace util     = "http://exist-db.org/xquery/util"         at "java:org.exist.xquery.functions.util.UtilModule";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"  at "/db/apps/edoc/modules/annotations.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace config   = "https://github.com/dariok/wdbplus/config" at "../modules/config.xml";
+import module namespace util     = "http://exist-db.org/xquery/util"          at "java:org.exist.xquery.functions.util.UtilModule";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"   at "/db/apps/edoc/modules/annotations.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace console  = "http://exist-db.org/xquery/console";
 
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
@@ -118,7 +119,7 @@ declare
   %rest:DELETE
   %rest:path("/edoc/anno/{$id}")
 function wdbRa:deleteFTA ( $id as xs:string) {
-  let $annoCollection := $wdb:edocBaseDB || "/annotations"
+  let $annoCollection := $config:edocBaseDB || "/annotations"
   let $target := collection($annoCollection)//anno:entry[anno:id = $id]
   
   return update delete $target
@@ -342,7 +343,7 @@ function wdbRa:check ($fileID, $data, $mode, $keys) {
   
   (: check whether a file with the given ID exists and is accessible :)
   let $accessible := try { 
-      let $ac := wdbFiles:hasAccess($wdb:data, $fileID, $mode)
+      let $ac := wdbFiles:hasAccess($config:data, $fileID, $mode)
       return if ($ac)
         then (true(), $ac)
         else (false(), 403, "User " || $user || " does not have sufficient rights to access resource " || $fileID || " in mode " || $mode)

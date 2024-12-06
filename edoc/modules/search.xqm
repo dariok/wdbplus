@@ -5,10 +5,10 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace http  = "http://expath.org/ns/http-client";
-import module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities" at "../rest/rest-entity.xql";
-import module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
-import module namespace wdb   = "https://github.com/dariok/wdbplus/wdb"          at "app.xqm";
+import module namespace config = "https://github.com/dariok/wdbplus/config"       at "config.xml";
+import module namespace http   = "http://expath.org/ns/http-client";
+import module namespace wdbRe  = "https://github.com/dariok/wdbplus/RestEntities" at "../rest/rest-entity.xql";
+import module namespace wdbRs  = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
 
 declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
   let $options := local:selectEd($model)
@@ -82,7 +82,7 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
 
 declare function local:selectEd ($model) {(
   <select name="ed">{
-    let $md := doc($wdb:data || '/wdbmeta.xml')
+    let $md := doc($wconfig:data || '/wdbmeta.xml')
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id
       

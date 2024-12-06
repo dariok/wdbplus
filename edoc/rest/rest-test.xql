@@ -2,8 +2,8 @@ xquery version "3.1";
 
 module namespace wdbRt = "https://github.com/dariok/wdbplus/RestTest";
 
-import module namespace inspect = "http://exist-db.org/xquery/inspection" at "java:org.exist.xquery.functions.inspect.InspectionModule";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
+import module namespace config  = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
+import module namespace inspect = "http://exist-db.org/xquery/inspection"    at "java:org.exist.xquery.functions.inspect.InspectionModule";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -21,7 +21,7 @@ function wdbRt:test ($referer as xs:string*) {
       </http:response>
     </rest:response>,
     <div>
-      <h1>REST test on {$wdb:configFile//config:name}</h1>
+      <h1>REST test on {$$config:configFile//config:name}</h1>
       <dl>
         <dt>$referer (rest:header-param)</dt>
         <dd>{$referer}</dd>

@@ -2,7 +2,7 @@ xquery version "3.0";
 
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "app.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config"   at "wdb-config.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 
@@ -18,7 +18,7 @@ function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
 
 declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
   let $pathToEd := if ( $ed = "" ) then
-      $wdb:data
+      $config:data
     else try {
       (wdbFiles:getFullPath($ed))?projectPath
     } catch * {()}
@@ -43,17 +43,17 @@ declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
           let $name := $w/wdbmeta:titleData/wdbmeta:title[1]
             , $metaFile := document-uri(root($w))
             , $id := $w/@xml:id
-            , $pa := substring-before(substring-after($metaFile, $wdb:data), "/wdbmeta.xml")
+            , $pa := substring-before(substring-after($metaFile, $config:data), "/wdbmeta.xml")
             , $padding := count(tokenize($pa, '/')) + 0.2
           order by $pa
           return
             <tr>
               <td>{$id}</td>
-              <td style="padding-left: {$padding}em;"><a href="{$wdb:edocBaseURL}/start.html?ed={$w/@xml:id}">{normalize-space($name)}</a></td>
+              <td style="padding-left: {$padding}em;"><a href="{$config:edocBaseURL}/start.html?ed={$w/@xml:id}">{normalize-space($name)}</a></td>
               {
                 if ( $admin ) then ( 
                   <td><a href="{wdb:getUrl($metaFile)}">{xs:string($metaFile)}</a></td>,
-                  <td><a href="{$wdb:edocBaseURL}/admin/projects.html?ed={$w/@xml:id}">verwalten</a></td>
+                  <td><a href="{$config:edocBaseURL}/admin/projects.html?ed={$w/@xml:id}">verwalten</a></td>
                 )
                 else ()
               }
@@ -63,8 +63,8 @@ declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
 };
 
 declare function wdbs:getInstanceName($node as node(), $model as map(*)) {
-  <span>{$wdb:configFile//wdbc:meta/wdbc:name}</span>
+  <span>{$config:configFile//wdbc:meta/wdbc:name}</span>
 };
 declare function wdbs:getInstanceShort($node as node(), $model as map(*)) {
-  <span>{$wdb:configFile//wdbc:meta/wdbc:short}</span>
+  <span>{$config:configFile//wdbc:meta/wdbc:short}</span>
 };

@@ -2,6 +2,7 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
+import module namespace config   = "https://github.com/dariok/wdbplus/config"        at "../modules/config.xml";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "/db/apps/edoc/modules/wdb-files.xqm";
@@ -60,7 +61,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       </rest:response>,
       "missing data; needed information: collectionName, id, name"
     )
-  else if (not (collection($wdb:data)/id($collectionID)[self::meta:projectMD])) then
+  else if (not (collection($config:data)/id($collectionID)[self::meta:projectMD])) then
     (
       <rest:response>
         <http:response status="404">
@@ -100,7 +101,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
-      let $co := xmldb:copy-resource($wdb:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
+      let $co := xmldb:copy-resource($config:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
       let $newMetaPath := $subCollection || "/wdbmeta.xml"
       
       let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
@@ -204,7 +205,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
           else ()
     let $err := if ($contents instance of document-node() and not($id))
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no ID found in XML file")
-      else if (collection($wdb:data)/id($id))
+      else if (collection($config:data)/id($id))
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h409"), "a file with the ID " || $id || " is already present")
         else ()
     
@@ -224,7 +225,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
                 <http:header name="Location" value="{$store[2]}" />
               </http:response>
             </rest:response>,
-            $wdb:restURL || "/resource/" || $id
+            $config:restURL || "/resource/" || $id
           )
         else if ($store[1]//http:response/@status != "200")
         then $store
@@ -478,9 +479,9 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
             then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
             else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
             then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
-            else if ( doc-available($wdb:data || '/resources/nav.xsl') )
-            then xs:anyURI($wdb:data || '/resources/nav.xsl')
-            else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+            else if ( doc-available($config:data || '/resources/nav.xsl') )
+            then xs:anyURI($config:data || '/resources/nav.xsl')
+            else xs:anyURI($config:edocBaseDB || '/resources/nav.xsl')
       
       return transform:transform($struct, doc($xsl), $params, $attributes, ())
     } catch * {

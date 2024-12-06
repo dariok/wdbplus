@@ -2,17 +2,16 @@ xquery version "3.0";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
+import module namespace config = "https://github.com/dariok/wdbplus/config"  at "../modules/wdb-config.xqm";
 import module namespace sm      = "http://exist-db.org/xquery/securitymanager";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
 import module namespace wdbs    = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
 import module namespace xstring = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
-declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
 declare function wdbPL:pageTitle ($node as node(), $model as map(*)) {
-  let $t := $wdb:configFile//config:short
+  let $t := $config:configFile//config:short
   
   return <title>{normalize-space($t)} – Admin</title>
 };
@@ -228,8 +227,8 @@ declare function local:getFileStat($model, $file) {
           </tbody>
         </table>
         {
-          if ($wdb:role = 'workbench') then
-            let $remoteMetaFilePath := $wdb:peer || '/' || substring-after($model?pathToEd, $wdb:data) || '/wdbmeta.xml'
+          if ( $config:role = 'workbench' ) then
+            let $remoteMetaFilePath := $config:peer || '/' || substring-after($model?pathToEd, $config:data) || '/wdbmeta.xml'
             let $remoteMetaFile := try {
                doc($remoteMetaFilePath)
             } catch * {
@@ -246,7 +245,7 @@ declare function local:getFileStat($model, $file) {
                 <tbody>
                   <tr>
                     <td>Peer Server</td>
-                    <td>{$wdb:peer}</td>
+                    <td>{ $config:peer }</td>
                   </tr>
                   <tr>
                     <td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
@@ -287,7 +286,7 @@ declare function local:getFileStat($model, $file) {
           else ()
         }
         {
-          if ($wdb:role = 'standalone') then
+          if ( $config:role = 'standalone' ) then
             let $status := if ($metaFile//meta:view[@file = $file])
               then
                 let $view := ($metaFile//meta:view[@file = $file])[1]

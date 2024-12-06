@@ -2,11 +2,10 @@ xquery version "3.0";
 
 module namespace wdbPN = "https://github.com/dariok/wdbplus/ProjectNew";
 
-import module namespace wdb   = "https://github.com/dariok/wdbplus/wdb"             at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
-import module namespace sm    = "http://exist-db.org/xquery/securitymanager";
+import module namespace config = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
+import module namespace wdbRc  = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
+import module namespace sm     = "http://exist-db.org/xquery/securitymanager";
 
-declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace map    = "http://www.w3.org/2005/xpath-functions/map";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -50,11 +49,11 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         
         let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
           then util:eval("xmldb:copy-collection($source, $destination)", false(), (
-              xs:QName("source"), $wdb:edocBaseDB || "/resources/xsl",
+              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
               xs:QName("destination"), $collection-uri
             ))
           else util:eval("xmldb:copy($source, $destination)", false(), (
-              xs:QName("source"), $wdb:edocBaseDB || "/resources/xsl",
+              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
               xs:QName("destination"), $collection-uri
             ))
         

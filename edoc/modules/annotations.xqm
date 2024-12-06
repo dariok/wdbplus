@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbanno = "https://github.com/dariok/wdbplus/anno";
 
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xqm";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 
 (:~
  : return the annotation file for the given user on the given file.
@@ -13,8 +13,8 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
  : @return node(): the annotation file 
  :)
 declare function wdbanno:getAnnoFile($file as xs:anyURI, $username as xs:string) as node() {
-	let $annotationCollectionName := substring-before(substring-after($file, $wdb:data), '.xml')
-	let $annotationCollectionBase := $wdb:edocBaseDB || '/annotations/'
+	let $annotationCollectionName := substring-before(substring-after($file, $config:data), '.xml')
+	let $annotationCollectionBase := $config:edocBaseDB || '/annotations/'
 	let $annotationCollection := if (xmldb:collection-available($annotationCollectionBase || $annotationCollectionName))
 			then $annotationCollectionBase || $annotationCollectionName
 			else if (sm:has-access($annotationCollectionBase, 'w'))

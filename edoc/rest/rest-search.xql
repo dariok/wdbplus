@@ -2,10 +2,10 @@ xquery version "3.1";
 
 module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
+import module namespace config   = "https://github.com/dariok/wdbplus/config"     at "../modules/wdb-config.xqm";
 import module namespace kwic     = "http://exist-db.org/xquery/kwic";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"        at "/db/apps/edoc/modules/app.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -95,7 +95,7 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
     let $params := 
       <parameters>
         <param name="title" value="{$md//meta:title[1]}" />
-        <param name="rest" value="{$wdb:restURL}" />
+        <param name="rest" value="{$config:restURL}" />
       </parameters>
     
     let $searchResult := wdbRs:collectionText($ed, $q, $start)
@@ -139,7 +139,7 @@ function wdbRs:fileText ( $id as xs:string*, $q as xs:string*, $start as xs:int*
     "Error: no query content!"
   )
   else
-    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]/tei:text
+    let $file := (collection($config:data)/id($id))[self::tei:TEI][1]/tei:text
       , $query := lower-case(xmldb:decode($q))
     
     let $res := $file//tei:p[ft:query(., $query)]
@@ -189,14 +189,14 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
     "Error: no query content!"
   )
   else
-    let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+    let $file := (collection($config:data)/id($id))[self::tei:TEI][1]
       , $coll := (wdbFiles:getFullPath($id))?projectPath
       , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
       
     let $params :=
       <parameters>
         <param name="title" value="{$file//tei:titleStmt/tei:title[1]}" />
-        <param name="rest" value="{$wdb:restURL}" />
+        <param name="rest" value="{$config:restURL}" />
       </parameters>
     
     let $searchResult := wdbRs:fileText($id, $q, $start)
