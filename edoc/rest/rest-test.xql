@@ -13,7 +13,7 @@ declare
     %rest:GET
     %rest:path("/edoc/test")
     %rest:header-param("Referer", "{$referer}")
-function wdbRt:test ($referer as xs:string*) {
+function wdbRt:test ( $referer as xs:string* ) as element(div) {
   (
     <rest:response>
       <http:response>
@@ -21,20 +21,20 @@ function wdbRt:test ($referer as xs:string*) {
       </http:response>
     </rest:response>,
     <div>
-      <h1>REST test on {$$config:configFile//config:name}</h1>
+      <h1>REST test on { $config:configFile//config:name }</h1>
       <dl>
         <dt>$referer (rest:header-param)</dt>
-        <dd>{$referer}</dd>
+        <dd>{ $referer }</dd>
         {
           for $var in inspect:inspect-module(xs:anyURI("../modules/app.xqm"))//variable
             let $variable := '$' || normalize-space($var/@name)
             return (
-              <dt>{$variable}</dt>,
+              <dt>{ $variable }</dt>,
               <dd><pre>{
                 let $s := util:eval($variable)
                 return typeswitch ($s)
-                case node() return serialize($s, ())
-                default return $s
+                  case node() return serialize($s, ())
+                  default return $s
               }</pre></dd>
             )
         }
