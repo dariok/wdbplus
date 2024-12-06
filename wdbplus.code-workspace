@@ -2,9 +2,12 @@
    "folders": [
       {
          "path": "."
+      },
+      {
+         "path": "../wdbmeta"
       }
    ],
    "settings": {
-      "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: 24Q2]"
+      "window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: 24Q3]"
    }
 }

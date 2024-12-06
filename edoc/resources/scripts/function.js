@@ -249,31 +249,36 @@ const wdbDocument = {
   },
 
   /* actual positioning */
-  marginaliaPositioningCallback: function (index, element) {
-    let referenceElementID = $(element).attr('id'),
-        referenceElementTop = $(element).position().top,
-        marginNote = $("#margin-" + referenceElementID),
-        previousMarginNote = marginNote.prev(),
-        targetTop;
-    
-    if (previousMarginNote.length == 0) {
-      targetTop = referenceElementTop;
-    } else {
-      let previousNoteHeight = $(previousMarginNote).height(),
-          previousNoteTop = $(previousMarginNote).position().top,
-          minimumTargetTop = previousNoteHeight + previousNoteTop;
-  
-      if ( Math.floor(referenceElementTop) < minimumTargetTop ) {
-        targetTop = previousNoteTop + previousNoteHeight;
-      } else {
+  marginaliaPositioningCallback: function ( index, element ) {
+    let referenceElementID = $(element).attr('id')
+      , marginNote = $("#margin-" + referenceElementID)
+      , previousMarginNote = marginNote.prev();
+      
+    try {
+      let referenceElementTop = $(element).position().top
+        , targetTop;
+      
+      if ( previousMarginNote.length == 0 ) {
         targetTop = referenceElementTop;
+      } else {
+        let previousNoteHeight = $(previousMarginNote).height() ?? 0
+          , previousNoteTop = $(previousMarginNote).position().top
+          , minimumTargetTop = previousNoteHeight + previousNoteTop;
+        
+        if ( Math.floor(referenceElementTop) < minimumTargetTop ) {
+          targetTop = previousNoteTop + previousNoteHeight;
+        } else {
+          targetTop = referenceElementTop;
+        }
       }
-    }
     
-    wdb.report("info", "position for " + referenceElementID + ': ' + targetTop);
-    // offset is relative to the document, so the header has to be substracted if top is set via
-    // CSS - which is necessary because setting the offset will change position and left
-    marginNote.css('top', targetTop + "px");
+      wdb.report("info", "position for " + referenceElementID + ': ' + targetTop);
+      // offset is relative to the document, so the header has to be substracted if top is set via
+      // CSS - which is necessary because setting the offset will change position and left
+      marginNote.css('top', targetTop + "px");
+    } catch ( e ) {
+      wdb.report("error", "Error positioning margin note #" + index + " for " + referenceElementID, e);
+    }
   },
 
   /* load an element by ID and display it to the right */

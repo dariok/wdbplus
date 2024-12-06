@@ -17,7 +17,7 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
-  let $coll := try { (wdbFiles:getFullPath($id))?projectPath } catch * { "" }
+  let $coll := try { (wdbFiles:getFullPath($collection))?projectPath } catch * { "" }
     , $query := xmldb:decode($q) || '*'
 
   let $errNoColl := if ($coll eq "")
@@ -72,7 +72,7 @@ declare
     %output:method("html")
 function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := (wdbFiles:getFullPath($id))?projectPath
+    , $coll := (wdbFiles:getFullPath($collection))?projectPath
     , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
   
   let $params := <parameters>
@@ -96,7 +96,7 @@ declare
     %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
 function wdbRe:collectionEntity ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $coll := (wdbFiles:getFullPath($id))?projectPath
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
   let $query := xmldb:decode($ref)
   
   let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query or @ref='#'||$query or @ref = $type || ':' || $ref]]
@@ -126,7 +126,7 @@ declare
     %output:method("html")
 function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
   let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := (wdbFiles:getFullPath($id))?projectPath
+    , $coll := (wdbFiles:getFullPath($collection))?projectPath
     , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
     
   let $params := <parameters>

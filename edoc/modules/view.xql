@@ -17,6 +17,7 @@ import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"  
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"          at "/db/apps/edoc/modules/auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main"   at "/db/apps/edoc/modules/addin.xqm";
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"        at "/db/apps/edoc/modules/entity.xqm";
+import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"         at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace wdbfp        = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"        at "/db/apps/edoc/modules/pquery.xqm";
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"         at "/db/apps/edoc/modules/stats.xqm";
