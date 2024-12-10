@@ -10,6 +10,7 @@ Release 24Q4 dropped another set of functions that were unused:
 - `wdb:getEdFromFileID( $id as xs:string )`: `(wdbFiles:getFullPath($id))?projectPath` returns the base path to `wdbmeta.xml`
 - `wdb:getMetaElementFromEd ( $ed as xs:string )`: use `doc( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path || '/wdbmeta.xml' )/id($ed)[self::meta:projectMD]` instead
 - `wdb:getMetaFile( $pathToEd )`: `(wdbFiles:getFullPath($ed))?projectPath` returns the base path to `wdbmeta.xml`
+- `wdb:getProjectPathFromId ( $ed )`:  use `(wdbFiles:getFullPath($ed))?projectPath` instead
 
 Release 24Q2 dropped functions `wdb:getEdPath( $ed as xs:string , $absolute as xs:boolean() )`,
 `wdb:getEdPath( $ed as xs:string )`, and `wdb:findProjectXQM( $project )`. These queries can be replaced by

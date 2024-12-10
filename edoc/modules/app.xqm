@@ -615,18 +615,6 @@ declare function wdb:eval($function as xs:string) {
 declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $external-variable as item()*) {
   util:eval($function, $cache-flag, $external-variable)
 };
-
-(:~
- : Return the full path to the project collection by trying to find the meta file by the project ID
- :
- : @param $ed The ID of a project, to be found in meta:projectMD/@xml:id
- : @return The path to the project 
- :)
-declare function wdb:getProjectPathFromId ( $ed as xs:string ) as xs:string {
-  if ( $ed = ( "", "data" ) )
-    then $config:data
-    else string( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path )
-};
 (: END GENERAL HELPER FUNCTIONS :)
 
 (: LOCAL HELPER FUNCTIONS :)

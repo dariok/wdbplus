@@ -182,7 +182,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no Content Type declared for file")
       else ()
       
-    let $collectionPath := wdb:getProjectPathFromId($collection)
+    let $collectionPath := (wdbFiles:getFullPath($collection))?projectPath
       , $collectionFile := doc($collectionPath || '/wdbmeta.xml')/*[self::meta:projectMD]
     let $err := if (not($collectionFile))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
@@ -313,7 +313,7 @@ declare
   %rest:path("/edoc/collection/full/{$id}.zip")
   %output:method("binary")
 function wdb:getResourcesZip ( $ed as xs:string ) {
-  let $base := wdb:getProjectPathFromId($ed)
+  let $base := (wdbFiles:getFullPath($ed))?projectPath
   
   return if ( $base = "" ) then
     <rest:response>
@@ -408,7 +408,7 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.xml")
 function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
-  let $md := doc(wdb:getProjectPathFromId($collection) || '/wdbmeta.xml')
+  let $md := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
     , $struct := $md//meta:struct
   
   let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$ed}">{(
@@ -514,7 +514,7 @@ declare function wdbRc:getGeneral ( $ed as xs:string, $mt as xs:string+, $conten
 
   let $content := if ( $mt = $wdbRc:acceptable ) then
     try {
-      let $meta := doc(wdb:getProjectPathFromId($ed) || '/wdbmeta.xml')
+      let $meta := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
       
       return if ( count($meta) = 0 )
       then
