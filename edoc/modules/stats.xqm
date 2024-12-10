@@ -3,6 +3,7 @@ xquery version "3.0";
 module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"   at "wdb-config.xqm";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 

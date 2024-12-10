@@ -19,11 +19,10 @@ import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFi
 import module namespace xConf     = "http://exist-db.org/xquery/apps/config"         at "config.xqm";
 import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
-declare namespace config = "https://github.com/dariok/wdbplus/config";
-declare namespace main   = "https://github.com/dariok/wdbplus";
-declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace rest   = "http://exquery.org/ns/restxq";
-declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace main = "https://github.com/dariok/wdbplus";
+declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace rest = "http://exquery.org/ns/restxq";
+declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
 (: FUNCTIONS TO GET SERVER INFO :)
 (:~
@@ -120,13 +119,13 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
               for $h in $node/* return
                 if ( $h/*[@data-template] ) then
                   for $c in $h/* return try { 
-                    templates:apply($c, $config:lookup, $newModel)
+                    templates:apply($c, $wdb:lookup, $newModel)
                   } catch * {
                     util:log("error", $err:description)
                   }
                 else
                   try {
-                    templates:apply($h, $config:lookup, $newModel)
+                    templates:apply($h, $wdb:lookup, $newModel)
                   } catch * {
                     util:log("error", $err:description)
                   }
@@ -292,7 +291,7 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
 declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
     if ( doc-available($model?projectResources || '/header.html') )
-      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $config:lookup, $model)
+      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $wdb:lookup, $model)
     else if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
@@ -300,14 +299,14 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
         else if ( doc-available($config:data || "/resources/headerLeft.html") ) then
-          templates:apply(doc($config:data || "/resources/headerLeft.html"), $config:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerLeft.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>,
       <div class="headerCentre">{
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
         else if ( doc-available($config:data || "/resources/headerCentre.html") ) then
-          templates:apply(doc($config:data || "/resources/headerCentre.html"), $config:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerCentre.html"), $wdb:lookup, $model)/*
         else
           <h1>{$model("title")}</h1>
       }</div>,
@@ -315,14 +314,14 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
         else if ( doc-available($config:data || "/resources/headerMenu.html") ) then
-          templates:apply(doc($config:data || "/resources/headerMenu.html"), $config:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerMenu.html"), $wdb:lookup, $model)/*
         else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
       )}</div>,
       <div class="headerSide" role="navigation">{
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
         else if ( doc-available($config:data || "/resources/headerRight.html") ) then
-          templates:apply(doc($config:data || "/resources/headerRight.html"), $config:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerRight.html"), $wdb:lookup, $model)/*
         else <p />
       }</div>
     )
@@ -409,9 +408,9 @@ declare function wdb:getContent($node as node(), $model as map(*)) {
  :)
 declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
   if ( doc-available($config:data || "/resources/mainFooter.html") )
-    then templates:apply(doc($config:data || "/resources/mainFooter.html"),  $config:lookup, $model)
+    then templates:apply(doc($config:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
   else if ( doc-available($model?projectResources || '/mainFooter.html') ) 
-    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $config:lookup, $model)
+    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $wdb:lookup, $model)
   else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
     (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
@@ -419,20 +418,20 @@ declare function wdb:getGlobalFooter($node as node(), $model as map(*)) {
 
 declare function wdb:getLeftFooter($node as node(), $model as map(*)) as element()? {
   if (doc-available($model?projectResources || "/footer.html")) then
-    templates:apply(doc($model?projectResources || "/footer.html"), $config:lookup, $model)
+    templates:apply(doc($model?projectResources || "/footer.html"), $wdb:lookup, $model)
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
   else if (doc-available($config:edocBaseDB || "/resources/footer.html")) then
-    templates:apply(doc($config:edocBaseDB || "/resources/footer.html"), $config:lookup, $model)
+    templates:apply(doc($config:edocBaseDB || "/resources/footer.html"), $wdb:lookup, $model)
   else ()
 };
 declare function wdb:getRightFooter($node as node(), $model as map(*)) as element()? {
   if (doc-available($model?projectResources || "/projectRightFooter.html")) then
-    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $config:lookup, $model)
+    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $wdb:lookup, $model)
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectRightFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectRightFooter", 1))($model)
   else if (doc-available($config:data || "/resources/rightFooter.html")) then
-    templates:apply(doc($config:data || "/resources/rightFooter.html"), $config:lookup, $model)
+    templates:apply(doc($config:data || "/resources/rightFooter.html"), $wdb:lookup, $model)
   else ()
 };
 
@@ -676,7 +675,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
 };
 
 (: we need a lookup function for the templating system to work :)
-declare variable $config:lookup := function($functionName as xs:string, $arity as xs:int) {
+declare variable $wdb:lookup := function($functionName as xs:string, $arity as xs:int) {
     try {
         function-lookup(xs:QName($functionName), $arity)
     } catch * {
