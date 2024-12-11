@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config"        at "../modules/config.xml";
+import module namespace config   = "https://github.com/dariok/wdbplus/config"        at "../modules/wdb-config.xqm";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "/db/apps/edoc/modules/wdb-files.xqm";
@@ -310,7 +310,7 @@ function wdbRc:getCollectionJSON ($id) {
 
 declare
   %rest:GET
-  %rest:path("/edoc/collection/full/{$id}.zip")
+  %rest:path("/edoc/collection/full/{$ed}.zip")
   %output:method("binary")
 function wdb:getResourcesZip ( $ed as xs:string ) {
   let $base := (wdbFiles:getFullPath($ed))?projectPath
@@ -409,7 +409,7 @@ declare
     %rest:path("/edoc/collection/{$ed}/nav.xml")
 function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
   let $md := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
-    , $struct := $md//meta:struct
+    , $struct := $md//meta:projectMD/meta:struct
   
   let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$ed}">{(
       $struct/@*,
