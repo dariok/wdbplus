@@ -3,7 +3,6 @@ xquery version "3.1";
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
-import module namespace json     = "http://www.json.org";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "/db/apps/edoc/modules/wdb-files.xqm";
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "/db/apps/edoc/rest/common.xqm";
@@ -380,7 +379,7 @@ function wdbRf:getResourceViews ($id as xs:string, $mt as xs:string*) {
     </rest:response>,
   if ($respCode != 200) then () else
     if ($mt = "application/json")
-      then json:xml-to-json($content)
+      then serialize($content, map { "method": "json" })
       else $content
   )
 };
