@@ -13,7 +13,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
 
-declare variable $wdbRs:callback := function ( $node as node(), $mode as xs:string ) as xs:string? {
+declare variable $wdbRs:callback := function ( $node as node(), $mode as xs:string ) as node()? {
     if ( $node/ancestor::tei:note ) then () else $node
 };
 
@@ -160,10 +160,11 @@ function wdbRs:fileText ( $id as xs:string*, $q as xs:string*, $start as xs:int*
               let $element := local-name($h)
                 , $n := count($h/preceding::*[local-name() = $element]) + 1
               return $element || $n
+          
           return
             <result fragment="{$id}">{
               kwic:summarize($h, <config width="40" />, $wdbRs:callback)
-          }</result>
+            }</result>
       }</results>
 };
 
