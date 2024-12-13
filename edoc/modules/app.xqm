@@ -114,21 +114,10 @@ function wdb:getEE($node as node(), $model as map(*), $id as xs:string, $view as
       return  if ( count($newModel) = 1 and $isModified = 200 )
         then (
           response:set-header("Last-Modified", $last-modified),
-          <html lang="de">
+          <html>
             {
-              for $h in $node/* return
-                if ( $h/*[@data-template] ) then
-                  for $c in $h/* return try { 
-                    templates:apply($c, $wdb:lookup, $newModel)
-                  } catch * {
-                    util:log("error", $err:description)
-                  }
-                else
-                  try {
-                    templates:apply($h, $wdb:lookup, $newModel)
-                  } catch * {
-                    util:log("error", $err:description)
-                  }
+              attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
+              templates:process($node/node(), $newModel)
             }
           </html>
         )
@@ -192,7 +181,9 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
       then $pathToEd || '/' || $xsl
       else ""
     
-    let $title := normalize-space((doc($pathToFile)//tei:title)[1])
+    let $doc := doc($pathToFile)
+      , $title := normalize-space(($doc//tei:title)[1])
+      , $language := normalize-space($doc//tei:langUsage/tei:language[1]/@ident)
     
     let $proFile := $filePathInfo?mainProject || "/project.xqm"
       , $mainProject := $filePathInfo?mainProject
@@ -219,6 +210,7 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
       "header":           $header,
       "id":               $id,
       "infoFileLoc":      $infoFileLoc,
+      "language":         $language,
       "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
       "p":                $p,
       "pathToEd":         $pathToEd,
@@ -230,7 +222,7 @@ declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $mode
       "xslt":             $xslt
     }
     
-    return $map
+    return map:merge( ($model, $map) )
 };
 
 (: ~
