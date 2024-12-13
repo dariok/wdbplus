@@ -6,9 +6,10 @@ import module namespace config    = "https://github.com/dariok/wdbplus/config" a
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
 
-declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
-declare namespace wdb  = "https://github.com/dariok/wdbplus/wdb";
+declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace sm        = "http://exist-db.org/xquery/securitymanager";
+declare namespace templates = "http://exist-db.org/xquery/html-templating";
+declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
 
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)

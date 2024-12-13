@@ -8,7 +8,7 @@ declare namespace exgit  = "http://exist-db.org/xquery/exgit";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace system = "http://exist-db.org/xquery/system";
 
-declare function wdbGS:getRest ( $node as node(), $model as map(*) ) {
+declare function wdbGS:getRest ( $node as node(), $model as map(*) ) as element(meta) {
   <meta name="rest" content="{ $config:restURL }" />
 };
 
