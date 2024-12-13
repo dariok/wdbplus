@@ -5,13 +5,12 @@ module namespace wdbSearch = "https://github.com/dariok/wdbplus/wdbs";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace config = "https://github.com/dariok/wdbplus/config"       at "config.xml";
-import module namespace http   = "http://expath.org/ns/http-client";
+import module namespace config = "https://github.com/dariok/wdbplus/config"       at "config.xqm";
 import module namespace wdbRe  = "https://github.com/dariok/wdbplus/RestEntities" at "../rest/rest-entity.xql";
 import module namespace wdbRs  = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
 
-declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
-  let $options := local:selectEd($model)
+declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as element()+ {
+  let $options := wdbSearch:selectEd($model)
   
   return (
     <div>
@@ -31,7 +30,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
       <h1>Registersuche</h1>
       <form action="search.html">
         { $options }
-        { local:listEnt("search") }
+        { wdbSearch:listEnt("search") }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
         <input type="submit" />
       </form>
@@ -41,7 +40,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) {
       <h1>Registerliste</h1>
       <form action="search.html">
         { $options }
-        { local:listEnt("entries") }
+        { wdbSearch:listEnt("entries") }
         <select name="q">{
           for $c in (1 to 26)
             let $b := codepoints-to-string($c + 64)
@@ -81,9 +80,12 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
   else <div />
 };
 
-declare function local:selectEd ($model) {(
+declare
+  %private
+function wdbSearch:selectEd ( $model as map(*) ) as element()+ {(
   <select name="ed">{
     let $md := doc($config:data || '/wdbmeta.xml')
+    
     let $opts := for $file in $md//meta:ptr
       let $id := $file/@xml:id
       
@@ -92,15 +94,18 @@ declare function local:selectEd ($model) {(
           { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
           { normalize-space($md//meta:struct[@file = $id]/@label) }
         </option>
+    
     return (
-      if ( count($opts) gt 1 ) then <option value="{$md/meta:projectMD/@xml:id}">global</option> else (),
+      <option value="{$md/meta:projectMD/@xml:id}">global</option>,
       $opts
     )
   }</select>,
   <br />
 )};
 
-declare function local:listEnt ($job) {(
+declare
+  %private
+function wdbSearch:listEnt ( $job as xs:string ) as element()+ {(
   <select name="p">
     <option>
       {attribute value {'{"job": "' || $job || '", "type": "per"}'}}Personen</option>
