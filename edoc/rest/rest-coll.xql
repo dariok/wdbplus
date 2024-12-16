@@ -130,6 +130,13 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
+
+      (: Create entry in project index :)
+      let $insertIndexEntry := update insert <project
+        xmlns="https://github.com/dariok/wdbplus/index"
+        xml:id="{ $collectionData?id }"
+        path="{ $subCollection }"
+      /> into doc("/db/apps/edoc/index/project-index.xml")/*
       
       return (
         <rest:response>
@@ -514,6 +521,7 @@ declare function wdbRc:getGeneral ( $ed as xs:string, $mt as xs:string+, $conten
 
   let $content := if ( $mt = $wdbRc:acceptable ) then
     try {
+      let $path := (wdbFiles:getFullPath($ed))?projectPath
       let $meta := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
       
       return if ( count($meta) = 0 )
