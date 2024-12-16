@@ -1,0 +1,7 @@
+<result xmlns="https://github.com/dariok/wdbplus/api/result/v1"
+  start="1"
+  total="42">
+  <project id="..." label="..." />
+  <file id="..." label="..." />
+  <view name="..." />
+</result>
