@@ -10,7 +10,6 @@
       <text qname="tei:placeName"/>
       <text qname="tei:orgName"/>
       <text qname="tei:title"/>
-      <text qname="tei:idno" />
       
       <!-- main text -->
       <!-- tei:text for fast first step, cf. rest-search.xql: /edoc/search/collection/{$id}.xml -->
@@ -18,6 +17,7 @@
       
       <!-- notes usually contain text that is outside the main text’s flow; hence, they must be
         handled separately -->
+      <ignore qname="tei:note"/>
       <text qname="tei:note"/>
       
       <!-- main structure types that contain relevant text -->
@@ -41,10 +41,7 @@
       <ignore qname="tei:listPlace"/>
       <ignore qname="tei:listOrg"/>
       <ignore qname="tei:listBibl"/>
-      
-      <!-- note is not to be considered as part of a text structure element -->
-      <ignore qname="tei:note"/>
-      
+            
       <!-- elements that may appear within a word -->
       <inline qname="tei:unclear"/>
       <inline qname="tei:supplied"/>
@@ -77,6 +74,8 @@
       <create qname="@notBefore" type="xs:date"/>
       <create qname="@notAfter" type="xs:date"/>
       <!--<create qname="tei:w" type="xs:string"/>-->
+
+      <create qname="tei:idno" type="xs:string" />
     </range>
   </index>
   <triggers>
