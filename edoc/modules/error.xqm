@@ -72,7 +72,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
   )
 };
 
-declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element(dt, dd)+ {
+declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element()+ {
   typeswitch ($test)
     case array(*) return
       for $n in (1 to array:size($test)) return

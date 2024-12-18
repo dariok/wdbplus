@@ -319,7 +319,7 @@ declare
   %rest:GET
   %rest:path("/edoc/collection/full/{$ed}.zip")
   %output:method("binary")
-function wdb:getResourcesZip ( $ed as xs:string ) {
+function wdbRc:getResourcesZip ( $ed as xs:string ) {
   let $base := (wdbFiles:getFullPath($ed))?projectPath
   
   return if ( $base = "" ) then
