@@ -18,19 +18,17 @@ declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
  : @return    The model
  :)
 declare
-    %templates:default("ed", "")
+    %templates:default("ed", "data")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
   try {
-    let $pathToEd := if ( $ed = "" )
-      then $config:data
-      else (wdbFiles:getFullPath($ed))?projectPath
+    let $pathToEd := (wdbFiles:getFullPath($ed))?projectPath
     
     (: The meta data are taken from wdbmeta.xml :)
     let $infoFileLoc := $pathToEd || "/wdbmeta.xml"
       , $title := normalize-space((doc($infoFileLoc)//meta:title)[1])
     
     return map {
-      "ed":          if ( $pathToEd = $config:data ) then "data" else $ed,
+      "ed":          $ed,
       "infoFileLoc": $infoFileLoc,
       "page":        substring-after(request:get-uri(), "admin/"),
       "pathToEd":    $pathToEd,

@@ -76,7 +76,7 @@ declare function wdbRCo:head ( $filePath as xs:string ) as element(rest:response
  : @param $coll Path to the Project
  : @param $name file name of the XSLT
  :)
-declare function wdbRCo:getXSLT ( $coll as xs:string, $name ) as xs:anyURI {
+declare function wdbRCo:getXSLT ( $coll as xs:string, $name as xs:string ) as xs:anyURI {
   (: for now, we ignore this possibility – havin an XSLT in the project collection should hopefully suffice; if it is
      indeed needed, we must move that function here so we do not have to import app.xqm :)
   (: if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then

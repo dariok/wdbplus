@@ -27,7 +27,7 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 (: configuration map for the templating system; simplify the generic approach in e.g. eXide’s config.xqm :)
-let $app-root := "/db/" || substring-after(system:get-module-load-path(), "/db/")
+let $app-root := "/db/" || substring-after(system:get-module-load-path(), "/db/") => substring-before("modules")
 let $config := map {
   $templates:CONFIG_APP_ROOT: $app-root,
   $templates:CONFIG_STOP_ON_ERROR: true()
