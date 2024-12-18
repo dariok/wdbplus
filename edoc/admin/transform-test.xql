@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "modules/app.xql";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xql";
 
 let $id := "edoc_wd_1703-08-20"
 

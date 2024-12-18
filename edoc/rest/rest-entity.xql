@@ -4,7 +4,7 @@ module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config"     at "../modules/wdb-config.xqm";
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "wdb-files.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "../modules/wdb-files.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";

@@ -13,7 +13,7 @@ xquery version "3.1";
 module namespace wdbst = "https://github.com/dariok/wdbplus/start";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "wdb-config.xqm";
-import module namespace wdbRc     = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
+import module namespace wdbRc     = "https://github.com/dariok/wdbplus/RestCollections" at "../rest/rest-coll.xql";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"             at "app.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 

@@ -5,11 +5,10 @@
  :)
 xquery version "3.1";
 
-import module namespace config  = "http://exist-db.org/xquery/apps/config"     at "/db/apps/eXide/modules/config.xqm";
 import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
 import module namespace sm      = "http://exist-db.org/xquery/securitymanager" at "java:org.exist.xquery.functions.securitymanager.SecurityManagerModule";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "/db/apps/edoc/modules/auth.xqm";
+import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm";
 
 declare namespace exist = "http://exist.sourceforge.net/NS/exist";
 
@@ -20,18 +19,13 @@ declare variable $exist:prefix external;
 declare variable $exist:root external;
 
 (: von eXide geklaut :)
-declare function local:user-allowed() {
-  (
-    request:get-attribute("wd.user") and
-    request:get-attribute("wd.user") != "guest"
-  ) or config:get-configuration()/restrictions/@guest = "yes"
+declare function local:user-allowed() as xs:boolean {
+  request:get-attribute("wd.user")
+  and request:get-attribute("wd.user") != "guest"
 };
-declare function local:query-execution-allowed() {
-  (
-    config:get-configuration()/restrictions/@execute-query = "yes"
-    and local:user-allowed()
-  )
-  or sm:is-dba((request:get-attribute("wd.user"),request:get-attribute("xquery.user"), 'nobody')[1])
+declare function local:query-execution-allowed() as xs:boolean {
+  local:user-allowed()
+  or sm:is-dba( (request:get-attribute("wd.user"), request:get-attribute("xquery.user"), 'nobody')[1] )
 };
 
 let $cookiePath := substring-before(request:get-uri(), $exist:path)

@@ -3,8 +3,8 @@ xquery version "3.1";
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xml";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm        = "http://exist-db.org/xquery/securitymanager";

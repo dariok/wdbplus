@@ -4,7 +4,7 @@ module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config"     at "../modules/wdb-config.xqm";
 import module namespace kwic     = "http://exist-db.org/xquery/kwic";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "../modules/wdb-files.xqm";
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";

@@ -3,7 +3,7 @@ xquery version "3.0";
 module namespace wdbPN = "https://github.com/dariok/wdbplus/ProjectNew";
 
 import module namespace config = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
-import module namespace wdbRc  = "https://github.com/dariok/wdbplus/RestCollections" at "/db/apps/edoc/rest/rest-coll.xql";
+import module namespace wdbRc  = "https://github.com/dariok/wdbplus/RestCollections" at "../rest/rest-coll.xql";
 import module namespace sm     = "http://exist-db.org/xquery/securitymanager";
 
 declare namespace http   = "http://expath.org/ns/http-client";

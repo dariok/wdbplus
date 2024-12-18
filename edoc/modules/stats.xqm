@@ -5,19 +5,19 @@ module namespace wdbs = "https://github.com/dariok/wdbplus/stats";
 import module namespace config    = "https://github.com/dariok/wdbplus/config"   at "wdb-config.xqm";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"    at "wdb-files.xqm";
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
 
-declare namespace tei     = "http://www.tei-c.org/ns/1.0";
-declare namespace wdbc    = "https://github.com/dariok/wdbplus/config";
-declare namespace wdbmeta = "https://github.com/dariok/wdbplus/wdbmeta";
+
+declare namespace tei       = "http://www.tei-c.org/ns/1.0";
+declare namespace templates = "http://exist-db.org/xquery/html-templating";
+declare namespace wdbmeta   = "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare
-%templates:default("ed", "")
-function wdbs:getEd($node as node(), $model as map(*), $ed as xs:string) {
+  %templates:default("ed", "")
+function wdbs:getEd( $node as node(), $model as map(*), $ed as xs:string ) as element(table) {
   wdbs:projectList(sm:is-dba(sm:id()//sm:real/sm:username/string()), $ed)
 };
 
-declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
+declare function wdbs:projectList ( $admin as xs:boolean, $ed as xs:string ) as element(table) {
   let $pathToEd := if ( $ed = "" ) then
       $config:data
     else try {
@@ -63,9 +63,9 @@ declare function wdbs:projectList ( $admin as xs:boolean, $ed ) {
     </table>
 };
 
-declare function wdbs:getInstanceName($node as node(), $model as map(*)) {
-  <span>{$config:configFile//wdbc:meta/wdbc:name}</span>
+declare function wdbs:getInstanceName($node as node(), $model as map(*)) as element(span) {
+  <span>{$config:configFile//config:meta/config:name}</span>
 };
-declare function wdbs:getInstanceShort($node as node(), $model as map(*)) {
-  <span>{$config:configFile//wdbc:meta/wdbc:short}</span>
+declare function wdbs:getInstanceShort($node as node(), $model as map(*)) as element(span) {
+  <span>{$config:configFile//config:meta/config:short}</span>
 };
