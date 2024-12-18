@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
-import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
-import module namespace functx    = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
+import module namespace response = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
+import module namespace map      = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
+import module namespace functx   = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
 
 declare function wdbErr:error ( $data as map (*) ) as item()+ {
@@ -72,7 +72,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
   )
 };
 
-declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) {
+declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element(dt, dd)+ {
   typeswitch ($test)
     case array(*) return
       for $n in (1 to array:size($test)) return

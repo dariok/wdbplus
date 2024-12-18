@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 
@@ -37,7 +37,7 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
       return switch ($job)
         case 'add' return
           let $ins := <file xmlns="https://github.com/dariok/wdbplus/wdbmeta" path="{$relativePath}" uuid="{util:uuid($xml)}" 
-            date="{xmldb:last-modified(xstring:substring-before-last($file, '/'), xstring:substring-after-last($file, '/'))}"
+            date="{xmldb:last-modified($subColl, $resource)}"
             xml:id="{$xml/tei:TEI/@xml:id}" />
           let $up1 := update insert $ins into $metaFile//meta:files
           return wdbPL:getFileStat($model , $file)
@@ -142,9 +142,7 @@ declare function local:getFiles($model) {
     </div>
 };
 
-declare
-  %private
-function wdbPL:getFileStat( $model as map(*), $id as xs:string ) as element(div) {
+declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string ) as element(div) {
   let $fullPath := wdbFiles:getFullPath($id)
     , $filePath := $fullPath?collectionPath || "/" || $fullPath?fileName
     , $doc := doc($filePath)
