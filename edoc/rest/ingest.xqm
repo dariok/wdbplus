@@ -2,9 +2,8 @@ xquery version "3.1";
 
 module namespace wdbRMi = "https://github.com/dariok/wdbplus/RestMIngest";
 
-import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
+import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "../include/xstring/string-pack.xql";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "../modules/app.xqm";
 
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -321,7 +320,7 @@ declare function wdbRMi:createCollection ($coll as xs:string) {
     let $chgrp := sm:chgrp($path, "wdbusers")
     let $chmod := sm:chmod($path, "rwxrwxr-x")
     
-    return console:log("creating " || $new-collection || " in " || $target-collection)
+    return util:log("info", "creating " || $new-collection || " in " || $target-collection)
   )
   else ( 
     wdbRMi:createCollection($target-collection),

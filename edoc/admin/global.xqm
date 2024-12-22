@@ -2,21 +2,18 @@ xquery version "3.0";
 
 module namespace wdbGS = "https://github.com/dariok/wdbplus/GlobalSettings";
 
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb" at "../modules/app.xqm";
-import module namespace console  = "http://exist-db.org/xquery/console";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
 
-declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exgit  = "http://exist-db.org/xquery/exgit";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace system = "http://exist-db.org/xquery/system";
 
-declare function wdbGS:getRest ( $node as node(), $model as map(*) ) {
-  <meta name="rest" content="{$wdb:restURL}" />
+declare function wdbGS:getRest ( $node as node(), $model as map(*) ) as element(meta) {
+  <meta name="rest" content="{ $config:restURL }" />
 };
 
 declare function wdbGS:body ( $node as node(), $model as map(*) ) {
   let $param := request:get-parameter('job', 'main')
-  let $metaFile := doc('../config.xml')
   
   return switch ( $param )
     case 'main' return
@@ -32,24 +29,24 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
       </div>
       
     case 'title' return
-      local:titleForm($metaFile)
+      local:titleForm($config:configFile)
         
     case 'chgTitle' return
-      let $u1 := update replace $metaFile//config:meta/config:name
+      let $u1 := update replace $config:configFile//config:meta/config:name
         with <name xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('longTitle', '')}</name>
-      let $u1 := update replace $metaFile//config:meta/config:short
+      let $u1 := update replace $config:configFile//config:meta/config:short
         with <short xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('shortTitle', '')}</short>
-      return local:titleForm($metaFile)
+      return local:titleForm($config:configFile)
     
     case 'role' return
-      local:roleForm($metaFile)
+      local:roleForm($config:configFile)
     
     case 'chgRole' return
-      let $u1 := update replace $metaFile//config:role/config:type
+      let $u1 := update replace $config:configFile//config:role/config:type
         with <type xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('role', '')}</type>
-      let $u1 := update replace $metaFile//config:role/config:other
+      let $u1 := update replace $config:configFile//config:role/config:other
         with <other xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('other', '')}</other>
-      return local:roleForm($metaFile)
+      return local:roleForm($config:configFile)
     
     default return
       <div>
@@ -58,23 +55,23 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
       </div>
 };
 
-declare function local:titleForm($metaFile) {
+declare function local:titleForm($config:configFile) {
   <div>
     <h3>Titeldaten verändern</h3>
     <form action="global.html">
       <input type="hidden" name="job" value="chgTitle" />
       <label style="width: 100%">Titel: <input type="text" name="longTitle"
-        value="{$metaFile//config:meta/config:name}" /></label><br />
+        value="{$config:configFile//config:meta/config:name}" /></label><br />
       <label style="width: 100%">Kurztitel: <input type="text" name="shortTitle"
-        value="{$metaFile//config:meta/config:short}" /></label><br />
+        value="{$config:configFile//config:meta/config:short}" /></label><br />
       <input type="submit" />
     </form>
   </div>
 };
 
-declare function local:roleForm($metaFile) {
-  let $role := $metaFile//config:role/config:type
-  let $other := $metaFile//config:role/config:other
+declare function local:roleForm($config:configFile) {
+  let $role := $config:configFile//config:role/config:type
+  let $other := $config:configFile//config:role/config:other
   
   return
   <div>
@@ -85,7 +82,7 @@ declare function local:roleForm($metaFile) {
         <select name="role">
           <option value="standalone">{if ($role = 'standalone') then attribute selected {'selected'} else () }Standalone</option>
           <option value="workbench">{if ($role = 'workbench') then attribute selected {'selected'} else () }Workbench</option>
-          <option value="publisher">{if ($role = 'publisher') then attribute selected {'selected'} else ()}Publikationsumgebung</option>
+          <option value="publisher">{if ($role = 'publisher') then attribute selected {'selected'} else () }Publikationsumgebung</option>
         </select>
       </label><br />
       <label>zugehörige Instanz: <input type="text" name="other" value="{$other}" /></label><br />
@@ -95,5 +92,5 @@ declare function local:roleForm($metaFile) {
 };
 
 declare function wdbGS:ingest($node as node(), $model as map(*)) {
-  <a href="directoryForm.html?ed={doc($wdb:data || '/wdbmeta.xml')/meta:projectMD/@xml:id}">bestehendes Projekt hochladen</a>
+  <a href="directoryForm.html?ed={doc($config:data || '/wdbmeta.xml')/meta:projectMD/@xml:id}">bestehendes Projekt hochladen</a>
 };

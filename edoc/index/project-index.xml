@@ -1,0 +1,3 @@
+<index xmlns="https://github.com/dariok/wdbplus/index">
+   <project xml:id="data" path="/db/apps/edoc/data" />
+</index>

@@ -8,11 +8,11 @@ const wdbAdmin = {
       cache: false,
       dataType: "json",
       success: function (data) {
-        this.getPaths(data);
+        wdbAdmin.getPaths(data);
         $("input[type='submit']").prop("disabled", false);
       },
       error: function ( response ) {
-        wdb.report("error", "Kein Projekt mit der ID " + wdb.params.id + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
           response, $('aside'));
       }
     });
@@ -32,12 +32,6 @@ const wdbAdmin = {
       // only one entry
       $('#selectTarget select').append('<option selected="selected">' + data + '</option>');
     }
-  },
-
-  // show info for a file
-  showFile: function ( ed, file ) {
-    let url = 'projects.html?ed=' + ed + '&file=' + file;
-    this.displayRight(url);
   },
 
   // execute a job and show results

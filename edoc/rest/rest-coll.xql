@@ -2,13 +2,14 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace wdbfp    = "https://github.com/dariok/wdbplus/functionpages" at "/db/apps/edoc/modules/function.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"    at "/db/apps/edoc/rest/common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest"   at "/db/apps/edoc/rest/ingest.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"          at "/db/apps/edoc/include/xstring/string-pack.xql";
+import module namespace config   = "https://github.com/dariok/wdbplus/config"        at "../modules/wdb-config.xqm";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "../modules/app.xqm";
+import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "../modules/error.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "../modules/wdb-files.xqm";
+import module namespace wdbfp    = "https://github.com/dariok/wdbplus/functionpages" at "../modules/function.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"    at "../rest/common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest"   at "../rest/ingest.xqm";
+import module namespace xstring  = "https://github.com/dariok/XStringUtils"          at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -60,7 +61,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       </rest:response>,
       "missing data; needed information: collectionName, id, name"
     )
-  else if (not (collection($wdb:data)/id($collectionID)[self::meta:projectMD])) then
+  else if (not (collection($config:data)/id($collectionID)[self::meta:projectMD])) then
     (
       <rest:response>
         <http:response status="404">
@@ -100,7 +101,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
-      let $co := xmldb:copy-resource($wdb:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
+      let $co := xmldb:copy-resource($config:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
       let $newMetaPath := $subCollection || "/wdbmeta.xml"
       
       let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
@@ -129,6 +130,13 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
+
+      (: Create entry in project index :)
+      let $insertIndexEntry := update insert <project
+        xmlns="https://github.com/dariok/wdbplus/index"
+        xml:id="{ $collectionData?id }"
+        path="{ $subCollection }"
+      /> into doc("/db/apps/edoc/index/project-index.xml")/*
       
       return (
         <rest:response>
@@ -181,12 +189,12 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no Content Type declared for file")
       else ()
       
-    let $collectionFile := collection($wdb:data)/id($collection)[self::meta:projectMD]
+    let $collectionPath := (wdbFiles:getFullPath($collection))?projectPath
+      , $collectionFile := doc($collectionPath || '/wdbmeta.xml')/*[self::meta:projectMD]
     let $err := if (not($collectionFile))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "collection " || $collection || " not found", 404)
       else ()
-      
-    let $collectionPath := (wdbFiles:getFullPath($collection))?collectionPath
+    
     let $err := if (not(sm:has-access(xs:anyURI($collectionPath), "w")))
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
       else ()
@@ -204,7 +212,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
           else ()
     let $err := if ($contents instance of document-node() and not($id))
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no ID found in XML file")
-      else if (collection($wdb:data)/id($id))
+      else if (collection($config:data)/id($id))
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h409"), "a file with the ID " || $id || " is already present")
         else ()
     
@@ -224,7 +232,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
                 <http:header name="Location" value="{$store[2]}" />
               </http:response>
             </rest:response>,
-            $wdb:restURL || "/resource/" || $id
+            $config:restURL || "/resource/" || $id
           )
         else if ($store[1]//http:response/@status != "200")
         then $store
@@ -309,16 +317,15 @@ function wdbRc:getCollectionJSON ($id) {
 
 declare
   %rest:GET
-  %rest:path("/edoc/collection/full/{$id}.zip")
+  %rest:path("/edoc/collection/full/{$ed}.zip")
   %output:method("binary")
-function wdb:getResourcesZip ($id as xs:string) {
-  let $meta := collection($wdb:data)/id($id)[self::meta:projectMD]
-  let $base := substring-before(base-uri($meta), 'wdbmeta')
+function wdbRc:getResourcesZip ( $ed as xs:string ) {
+  let $base := (wdbFiles:getFullPath($ed))?projectPath
   
-  return if ($meta = "")
-  then <rest:response>
-    <http:response status="404"/>
-      </rest:response>
+  return if ( $base = "" ) then
+    <rest:response>
+      <http:response status="404"/>
+    </rest:response>
   else (
     <rest:response>
       <http:response status="200">
@@ -408,9 +415,8 @@ declare
     %rest:GET
     %rest:path("/edoc/collection/{$ed}/nav.xml")
 function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
-  let $md := collection($wdb:data)/id($ed)[self::meta:projectMD]
-    , $uri := base-uri($md)
-    , $struct := $md/meta:struct
+  let $md := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
+    , $struct := $md//meta:projectMD/meta:struct
   
   let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$ed}">{(
       $struct/@*,
@@ -480,9 +486,9 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
             then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
             else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
             then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
-            else if ( doc-available($wdb:data || '/resources/nav.xsl') )
-            then xs:anyURI($wdb:data || '/resources/nav.xsl')
-            else xs:anyURI($wdb:edocBaseDB || '/resources/nav.xsl')
+            else if ( doc-available($config:data || '/resources/nav.xsl') )
+            then xs:anyURI($config:data || '/resources/nav.xsl')
+            else xs:anyURI($config:edocBaseDB || '/resources/nav.xsl')
       
       return transform:transform($struct, doc($xsl), $params, $attributes, ())
     } catch * {
@@ -510,30 +516,28 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
     )
 };
 
-declare function wdbRc:getGeneral ($id, $mt, $content) {
+declare function wdbRc:getGeneral ( $ed as xs:string, $mt as xs:string+, $content as xs:string ) as item()+ {
   let $wdbRc:acceptable := ("application/json", "application/xml")
 
   let $content := if ( $mt = $wdbRc:acceptable ) then
     try {
-      let $path := wdb:getProjectPathFromId($id)
-        , $meta := doc(wdb:getMetaFile($path))
+      let $path := (wdbFiles:getFullPath($ed))?projectPath
+      let $meta := doc((wdbFiles:getFullPath($ed))?projectPath || '/wdbmeta.xml')
       
-      return if ( $meta/*[self::meta:projectMD] ) then
-        let $eval := wdb:eval ( $content, false(), (xs:QName("meta"), $meta))
+      return if ( count($meta) = 0 )
+      then
+        ( 404, "no collection with ID " || $ed )
+      else
+        let $eval := wdb:eval($content, false(), (xs:QName("meta"), $meta))
         
         return if ( count($eval) gt 0 ) then (
           200,
-          <collection id="{$id}">{
+          <collection id="{$ed}">{
             $eval
           }</collection>
         )
         else
           ( 204, "" )
-      else
-        ( 400, "no a wdbmeta project" )
-    }
-    catch *:wdb0200 {
-      ( 404, "no collection with ID " || $id )
     }
     catch * {
       ( 400, "" )

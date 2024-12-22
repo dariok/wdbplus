@@ -2,16 +2,14 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-(: note for code maintenance: as of 2024-04-10, this module uses the following exports from app.xqm:
- : - $wdb:data
- :)
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "/db/apps/edoc/modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "/db/apps/edoc/modules/wdb-files.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xml";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
 
-declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
+declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace sm        = "http://exist-db.org/xquery/securitymanager";
+declare namespace templates = "http://exist-db.org/xquery/html-templating";
+declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
 
 (:~
  : populate the model for functions pages (similar but not identical to wdb:populateModel)
@@ -20,19 +18,17 @@ declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
  : @return    The model
  :)
 declare
-    %templates:default("ed", "")
+    %templates:default("ed", "data")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
   try {
-    let $pathToEd := if ( $ed = "" )
-      then $wdb:data
-      else (wdbFiles:getFullPath($ed))?projectPath
+    let $pathToEd := (wdbFiles:getFullPath($ed))?projectPath
     
     (: The meta data are taken from wdbmeta.xml :)
     let $infoFileLoc := $pathToEd || "/wdbmeta.xml"
       , $title := normalize-space((doc($infoFileLoc)//meta:title)[1])
     
     return map {
-      "ed":          if ( $pathToEd = $wdb:data ) then "data" else $ed,
+      "ed":          $ed,
       "infoFileLoc": $infoFileLoc,
       "page":        substring-after(request:get-uri(), "admin/"),
       "pathToEd":    $pathToEd,
@@ -92,10 +88,10 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
 };
 
 declare function wdbAdmin:css ( $node as node(), $model as map(*) ) as element()* {
-  if ( unparsed-text-available($wdb:data || "/resources/wdb.css") )
+  if ( unparsed-text-available($config:data || "/resources/wdb.css") )
     then <link rel="stylesheet" type="text/css" href="../data/resources/wdb.css" />
     else (),
-  if ( unparsed-text-available($wdb:data || "/resources/admin.css") )
+  if ( unparsed-text-available($config:data || "/resources/admin.css") )
     then <link rel="stylesheet" type="text/css" href="../data/resources/admin.css" />
     else ()
 };

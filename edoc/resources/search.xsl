@@ -4,8 +4,9 @@
   xmlns:exist="http://exist.sourceforge.net/NS/exist"
   exclude-result-prefixes="#all" version="3.0">
   
-  <xsl:param name="title"/>
-  <xsl:param name="rest"/>
+  <xsl:param name="title" />
+  <xsl:param name="rest" />
+  <xsl:param name="baseURL" />
   
   <xsl:template match="/results">
     <xsl:variable name="p" select="parse-json(@p)" />

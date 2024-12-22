@@ -19,12 +19,12 @@
             <xsl:apply-templates select="id($structID)" mode="lp" />
          </xsl:when>
          <xsl:otherwise>
-            <xsl:apply-templates />
+            <xsl:apply-templates select="//meta:struct[not(parent::meta:struct)]" />
          </xsl:otherwise>
       </xsl:choose>
    </xsl:template>
    
-   <xsl:template match="meta:struct[not(parent::*)]">
+   <xsl:template match="meta:struct[not(parent::meta:struct)]">
       <nav>
          <ul>
             <xsl:apply-templates select="*">
@@ -34,7 +34,7 @@
       </nav>
    </xsl:template>
    
-   <xsl:template match="meta:struct[parent::* and *]">
+   <xsl:template match="meta:struct[parent::meta:struct and *]">
       <xsl:variable name="id">
          <xsl:call-template name="makeID" />
       </xsl:variable>
