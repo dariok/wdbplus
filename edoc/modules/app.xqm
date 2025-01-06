@@ -624,6 +624,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         $metaFile//meta:process[@target = $target],
         $metaFile//meta:process[1]
       )[1]
+    , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
   
   let $sel := if ( $process/meta:command )
     then
@@ -631,15 +632,15 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         return if ( $c/@refs ) then
           (: if a list of IDREFS is given, this command matches if $id is part of that list :)
           let $map := tokenize($c/@refs, ' ')
-          return if ( $map = $id ) then $c else ()
+          return if ( $map = $id ) then $base || $c else ()
         else if ( $c/@regex and matches($id, $c/@regex) )
           (: if a regex is given and $id matches that regex, the command matches :)
-          then $c
+          then $base || $c
         else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
-          then $c
+          then $base || $c
         else if ( not($c/@refs or $c/@regex or $c/@group) )
           (: if no selection method is given, the command is considered the default :)
-          then $c
+          then $base || $c
         else () (: neither refs nor regex match and no default given :)
     (: if no command is defined, traverse up the project ancestors :)
     else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
@@ -647,7 +648,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target)
-    else ( )
+    else ( util:log("error", $metaFile) )
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return normalize-space($sel[1])
