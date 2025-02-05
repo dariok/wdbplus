@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace config       = "https://github.com/dariok/wdbplus/config"      at "config.xml";
+import module namespace config       = "https://github.com/dariok/wdbplus/config"      at "wdb-config.xqm";
 import module namespace request      = "http://exist-db.org/xquery/request";
 import module namespace templates    = "http://exist-db.org/xquery/html-templating";
 import module namespace util         = "http://exist-db.org/xquery/util";
@@ -12,6 +12,7 @@ import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"      at "entity.xqm";
 import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"      at "error.xqm";
 import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"       at "wdb-files.xqm";
+import module namespace wdbm         = "https://github.com/dariok/wdbplus/model"       at "model.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"      at "pquery.xqm";
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "search.xqm";
@@ -19,145 +20,6 @@ import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"
 import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-
-(:~
- : populate the model for functions pages (similar but not identical to wdb:populateModel)
- : 
- : @param $id The ID of a _resource_
- : @param $ed The ID of a _project_
- : @param $p  A string or a JSON-like string containing additional query parameters
- : @param $q  The main query parameter
- : @return    The model
- :)
-declare function wdbfp:populateModel ( $id as xs:string?, $ed as xs:string, $p as xs:string?, $q as xs:string? ) as item()+ {
-  try {
-    if ( request:exists() and contains(request:get-uri(), 'addins') ) then
-      let $addinName := substring-before(substring-after(request:get-uri(), 'addins/'), '/')
-        , $path := $config:edocBaseDB || "/addins/" || $addinName
-        , $pp := try {
-            parse-json($p)
-          } catch * {
-            normalize-space($p)
-          }
-        , $functions := load-xquery-module("https://github.com/dariok/wdbplus/projectFiles", map { "location-hints": $config:data || "/instance.xqm" })
-      
-      return map {
-        "requestUrl": request:get-uri(),
-        "pathToEd":   $path,
-        "p":          $pp,
-        "job":        $q,
-        "id":         $id,
-        "functions":  $functions?functions,
-        "ed":         $ed,
-        "auth":       sm:id()/sm:id
-      }
-    else if ( request:exists() and request:get-uri() => ends-with('/toc.html') ) then
-      map {
-        "auth":      sm:id()/sm:id,
-        "title":     $config:configFile//*:name || " – Table of Contents",
-        "pathToEd":  $config:data
-      }
-    else if ( request:exists() and request:get-uri() => ends-with('/entity.html') ) then
-      (
-        util:log("error", "function.xqm called for an entity"),
-        error(xs:QName("wdbErr:wdb3200"))
-      )
-    else if ( $id = "" ) then
-      (: no ID: related to a project :)
-      let $pathInfo := if ( $ed = "" )
-            then map {
-                "projectPath": $config:data,
-                "collectionPath": $config:data,
-                "fileName": $config:data || "/wdbmeta.xml",
-                "mainProject": $config:data
-              }
-            else (wdbFiles:getFullPath($ed))
-        , $infoFileLoc := $pathInfo?projectPath || "wdbmeta.xml" (: projectPath is derived from the path to wdbmeta.xml :)
-        , $pp := try {
-              parse-json($p)
-            } catch * {
-              normalize-space($p)
-            }
-      let $proFile := $pathInfo?mainProject || "/project.xqm"
-        , $mainProject := $pathInfo?mainProject
-        , $resource := $pathInfo?mainProject || "/resources/"
-      
-      let $projectFunctions := for $function in doc($mainProject || "/project-functions.xml")//function
-            return $function/@name || '#' || count($function/argument)
-        , $instanceFunctions := for $function in doc($config:data || "/instance-functions.xml")//function
-            return $function/@name || '#' || count($function/argument)
-      
-      return map {
-        "p":                $pp,
-        "pathToEd":         $pathInfo?projectPath,
-        "q":                $q,
-        "ed":               $ed,
-        "auth":             sm:id()/sm:id,
-        "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions },
-        "infoFileLoc":      $infoFileLoc,
-        "mainEd":           substring-after($mainProject, 'data/'),
-        "title":            string(doc($infoFileLoc)//meta:title[1]),
-        "projectFile":      $proFile,
-        "projectResources": $resource,
-        "requestUrl":       if ( request:exists() ) then request:get-url() else ""
-      }
-    else
-      let $map := wdb:populateModel($id, "", map{})
-      let $pp := try {
-        parse-json($p)
-      } catch * {
-        normalize-space($p)
-      }
-      
-      return if ( $map instance of map(*) ) then 
-        let $mmap := map {
-          "title": (doc($map("infoFileLoc"))//*:title)[1]/text(),
-          "q":     $q,
-          "p":     $pp,
-          "id":    $id,
-          "ed":    $ed,
-          "auth":  sm:id()/sm:id
-        }
-        return map:merge(($map, $mmap))
-      else $map (: if it is an element, this usually means that populateModel has returned an error :)
-  } catch *:wdb0200 {
-    (: app.xqm: no file with ID :)
-    error(
-      xs:QName("wdbErr:wdb0200"),
-      "project not found",
-      map {
-        "id":          $id,
-        "ed":          $ed,
-        "p":           $p,
-        "q":           $q,
-        "wdb:data":    $config:data,
-        "request":     if ( request:exists() ) then request:get-url() else ""
-      }
-    )
-  } catch * {
-    let $errorMap := map {
-        "code":        "wdbErr:wdb3001",
-        "id":          $id,
-        "ed":          $ed,
-        "p":           $p,
-        "q":           $q,
-        "wdb:data":    $config:data,
-        "errC":        $err:code,
-        "errA":        $err:additional,
-        "errM":        $err:description,
-        "errLocation": $err:module || '@' || $err:line-number ||':'||$err:column-number,
-        "request":     request:get-url()
-      }
-    return (
-      util:log("error", $errorMap),
-      error(
-        xs:QName("wdbErr:wdb3001"),
-        "error creating map in function.xqm",
-        $errorMap
-      )
-    )
-  }
-};
 
 (:~
  : create the outer HTML shell for a function page, including an html:lang attribute
@@ -170,7 +32,7 @@ declare
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
     $q as xs:string ) as item()* {
   try {
-    let $newModel := wdbfp:populateModel($id, $ed, $p, $q)
+    let $newModel := wdbm:populateModel($id, $ed, "", $p, $q)
 
     (: TODO: use a function to get the actual content language :)
     return

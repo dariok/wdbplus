@@ -2,9 +2,10 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace config    = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xml";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
+import module namespace config   = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
+import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
+import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"  at "../modules/model.xqm";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm        = "http://exist-db.org/xquery/securitymanager";
@@ -12,35 +13,15 @@ declare namespace templates = "http://exist-db.org/xquery/html-templating";
 declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
 
 (:~
- : populate the model for functions pages (similar but not identical to wdb:populateModel)
+ : populate the model for admin pages
  : 
  : @param $ed The ID of a _project_
  : @return    The model
  :)
 declare
     %templates:default("ed", "data")
-function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) {
-  try {
-    let $pathToEd := (wdbFiles:getFullPath($ed))?projectPath
-    
-    (: The meta data are taken from wdbmeta.xml :)
-    let $infoFileLoc := $pathToEd || "/wdbmeta.xml"
-      , $title := normalize-space((doc($infoFileLoc)//meta:title)[1])
-    
-    return map {
-      "ed":          $ed,
-      "infoFileLoc": $infoFileLoc,
-      "page":        substring-after(request:get-uri(), "admin/"),
-      "pathToEd":    $pathToEd,
-      "title":       $title,
-      "auth":        sm:id()/sm:id
-    }
-  } catch * {
-    util:log("error", "No collection found for project ID " || $ed),
-    map {
-      "ed": ""
-    }
-  }
+function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) as item()* {
+  wdbm:populateModel("", $ed, "", "", "")
 };
 
 declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as element(meta) {

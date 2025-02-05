@@ -52,13 +52,13 @@ declare function wdb:test( $node as node(), $model as map(*) ) as node() {
     </dl>
   </div>
     <div>
-    <h2>populateModel (app.xqm)</h2>
+    <h2>populateModel (model.xqm)</h2>
     <dl>
       {
         if (exists($model?id))
-        then
-          let $computedModel := wdb:populateModel($model?id, "", map {})
-          return wdbErr:get($computedModel, "")
+        then "currently, no model view is available"
+          (: let $computedModel := wdb:populateModel($model?id, "", map {})
+          return wdbErr:get($computedModel, "") :)
         else "Keine ID zur Auswertung vorhanden"
       }
     </dl>
@@ -84,86 +84,6 @@ declare function wdb:test( $node as node(), $model as map(*) ) as node() {
 (: END FUNCTIONS TO GET SERVER INFO :)
 
 (: FUNCTIONS USED BY THE TEMPLATING SYSTEM :)
-(:~
- : Populate the model with the most important global settings when displaying a file
- : Moved to a separate function as this one may be called by other functions, too
- : 
- : @param $id the id for the file to be displayed
- : @param $view a string to be passed to the processing XSLT
- : @param $p general parameter to be passed to the processing XSLT
- : @return a map; in case of error, an HTML file
- :)
-declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*) ) as item()* {
-    wdb:populateModel($id, $view, $model, "")
-};
-declare function wdb:populateModel ( $id as xs:string, $view as xs:string, $model as map(*), $p as xs:string ) as item()* {
-  let $filePathInfo := wdbFiles:getFullPath($id)
-    , $pathToFile := if ( map:keys($filePathInfo) = 'fileURL' )
-        then
-          $filePathInfo?fileURL
-        else
-          $filePathInfo?collectionPath || '/' || $filePathInfo?fileName
-    , $pathToEd := $filePathInfo?projectPath
-    , $infoFileLoc := $filePathInfo?projectPath || '/wdbmeta.xml'
-    
-  let $ed := string(doc($infoFileLoc)/meta:projectMD/@xml:id)
-  
-  let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
-    then
-      (: TODO get path to XSL via function (use what’s in rest-files.xql) :)
-      xs:anyURI($config:data || '/resources/nav.xsl')
-    else wdb:getXslFromWdbMeta($infoFileLoc, $id, 'html')
-    
-    let $xslt := if (doc-available($xsl))
-      then $xsl
-      else if (doc-available($pathToEd || '/' || $xsl))
-      then $pathToEd || '/' || $xsl
-      else ""
-    
-    let $doc := doc($pathToFile)
-      , $title := normalize-space(($doc//tei:title)[1])
-      , $language := normalize-space($doc//tei:langUsage/tei:language[1]/@ident)
-    
-    let $proFile := $filePathInfo?mainProject || "/project.xqm"
-      , $mainProject := $filePathInfo?mainProject
-      , $resource := $filePathInfo?mainProject || "/resources/"
-    
-    let $projectFunctions := for $function in doc($mainProject || "project-functions.xml")//function
-          return $function/@name || '#' || count($function/argument)
-      , $instanceFunctions := for $function in doc($config:data || "/instance-functions.xml")//function
-          return $function/@name || '#' || count($function/argument)
-
-    let $header := if ( request:exists() )
-          then map:merge( for $header in request:get-header-names() return map:entry($header, request:get-header($header)) )
-          else ()
-      , $requestUrl := if ( request:exists() )
-          then request:get-url()
-          else ()
-    
-    (: TODO read global parameters from config.xml and store as a map :)
-    let $map := map {
-      "ed":               $ed,
-      "fileLoc":          $pathToFile,
-      "filePathInfo":     $filePathInfo,
-      "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
-      "header":           $header,
-      "id":               $id,
-      "infoFileLoc":      $infoFileLoc,
-      "language":         $language,
-      "mainEd":           substring-after($mainProject, 'data/') => substring-before('/'),
-      "p":                $p,
-      "pathToEd":         $pathToEd,
-      "projectFile":      $proFile,
-      "projectResources": $resource,
-      "requestUrl":       $requestUrl,
-      "title":            $title,
-      "view":             $view,
-      "xslt":             $xslt
-    }
-    
-    return map:merge( ($model, $map) )
-};
-
 (:~
  : generic function to wrap some info from the model in an HTML element via templating
  :)
@@ -397,15 +317,6 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return normalize-space($sel[1])
-};
-
-(: we need a lookup function for the templating system to work :)
-declare variable $wdb:lookup := function($functionName as xs:string, $arity as xs:int) {
-    try {
-        function-lookup(xs:QName($functionName), $arity)
-    } catch * {
-        ()
-    }
 };
 (: END LOCAL HELPER FUNCTIONS :)
 
