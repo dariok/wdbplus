@@ -14,8 +14,10 @@ module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
 import module namespace functx = "http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
-declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
+declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace request = "http://exist-db.org/xquery/request";
+declare namespace util    = "http://exist-db.org/xquery/util";
+declare namespace wdbErr  = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : Return the path to all Resources with a given ID
@@ -61,7 +63,7 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
-declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string?, xs:string? )? {
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
   let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
     , $project-hint := doc("/db/apps/edoc/index/project-index.xml")/id($id)
     , $file := ( doc($file-hint/@project)/id($id), doc($project-hint/@path || "/wdbmeta.xml")/id($id) )

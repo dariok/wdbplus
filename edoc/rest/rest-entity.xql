@@ -6,11 +6,13 @@ import module namespace config   = "https://github.com/dariok/wdbplus/config"   
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "../modules/wdb-files.xqm";
 
+declare namespace ft     = "http://exist-db.org/xquery/lucene";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 declare
     %rest:GET

@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace response = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
-import module namespace map      = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
-import module namespace functx   = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
+declare namespace response = "http://exist-db.org/xquery/response";
+declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
+declare namespace functx   = "http://www.functx.com";
 
 
 declare function wdbErr:error ( $data as map (*) ) as item()+ {

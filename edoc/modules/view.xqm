@@ -11,8 +11,21 @@ xquery version "3.1";
 
 module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
 
-import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace config  = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
+import module namespace request = "http://exist-db.org/xquery/request";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace wdbm    = "https://github.com/dariok/wdbplus/model"  at "model.xqm";
+
+declare namespace templates = "http://exist-db.org/xquery/html-templating";
+
+(: we need a lookup function for the templating system to work :)
+declare variable $wdbv:lookup := function($functionName as xs:string, $arity as xs:int) {
+    try {
+        function-lookup(xs:QName($functionName), $arity)
+    } catch * {
+        ()
+    }
+};
 
 (:~
  : Templating function; called from layout.html. Entry point for content pages
@@ -22,15 +35,11 @@ declare
     %templates:default("p", "")
 function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string ) as item()* {
   try {
-    let $newModel := wdb:populateModel($id, $view, $model, $p)
+    let $newModel := wdbm:populateModel($id, $view, $model, $p)
     
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
     else
-      let $lastModified :=
-        wdbFiles:getModificationDate($newModel?filePathInfo?collectionPath, $newModel?filePathInfo?fileName)
-          => wdbFiles:ietfDate()
-      
       let $requestedModified := (
             request:get-attribute("if-modified"),
             request:get-header("If-Modified-Since")
@@ -41,7 +50,11 @@ function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view
       
       return  if ( count($newModel) = 1 and $isModified = 200 )
         then (
-          response:set-header("Last-Modified", $lastModified),
+          response:set-header(
+            "Last-Modified",
+            wdbFiles:getModificationDate($newModel?filePathInfo?collectionPath, $newModel?filePathInfo?fileName)
+              => wdbFiles:ietfDate()
+          ),
           <html>
             {
               attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
@@ -77,7 +90,7 @@ function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view
  : Create the head for HTML files served via the templating system
  : @created 2018-02-02 DK
  :)
-declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(head) {
+declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -128,10 +141,10 @@ declare function wdb:getHead ( $node as node(), $model as map(*) ) as element(he
  :    c) wdbPF:getHeaderMenu#1 or {$config:data}/resources/headerMenu.html or html:button
  :    d) wdbPF:getHeaderRight#1 or {$config:data}/resources/headerRight.html or empty html:p
  :)
-declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element() {
+declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element() {
   <header>{
     if ( doc-available($model?projectResources || '/header.html') )
-      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $wdb:lookup, $model)
+      then templates:apply(doc($model?projectResources || '/header.html')/header/*, $wdbv:lookup, $model)
     else if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
     else (
@@ -139,14 +152,14 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
         else if ( doc-available($config:data || "/resources/headerLeft.html") ) then
-          templates:apply(doc($config:data || "/resources/headerLeft.html"), $wdb:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerLeft.html"), $wdbv:lookup, $model)/*
         else <p />
       }</div>,
       <div class="headerCentre">{
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
         else if ( doc-available($config:data || "/resources/headerCentre.html") ) then
-          templates:apply(doc($config:data || "/resources/headerCentre.html"), $wdb:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerCentre.html"), $wdbv:lookup, $model)/*
         else
           <h1>{$model("title")}</h1>
       }</div>,
@@ -154,14 +167,14 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
         else if ( doc-available($config:data || "/resources/headerMenu.html") ) then
-          templates:apply(doc($config:data || "/resources/headerMenu.html"), $wdb:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerMenu.html"), $wdbv:lookup, $model)/*
         else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
       )}</div>,
       <div class="headerSide" role="navigation">{
         if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
           (wdb:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
         else if ( doc-available($config:data || "/resources/headerRight.html") ) then
-          templates:apply(doc($config:data || "/resources/headerRight.html"), $wdb:lookup, $model)/*
+          templates:apply(doc($config:data || "/resources/headerRight.html"), $wdbv:lookup, $model)/*
         else <p />
       }</div>
     )
@@ -171,7 +184,7 @@ declare function wdb:getHeader ( $node as node(), $model as map(*) ) as element(
 (:~
  : return the body
  :)
-declare function wdb:getContent ( $node as node(), $model as map ) {
+declare function wdbv:getContent ( $node as node(), $model as map ) {
   let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
     then $model?fileLoc || '#' || $model?id
     else $model?fileLoc
@@ -237,28 +250,28 @@ declare function wdb:getContent ( $node as node(), $model as map ) {
  :)
 declare function wdbv:getGlobalFooter ( $node as node(), $model as map(*) ) as element(footer)? {
   if ( doc-available($config:data || "/resources/mainFooter.html") )
-    then templates:apply(doc($config:data || "/resources/mainFooter.html"),  $wdb:lookup, $model)
+    then templates:apply(doc($config:data || "/resources/mainFooter.html"),  $wdbv:lookup, $model)
   else if ( doc-available($model?projectResources || '/mainFooter.html') ) 
-    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $wdb:lookup, $model)
+    then templates:apply(doc($model?projectResources || '/mainFooter.html'), $wdbv:lookup, $model)
   else if ( wdb:findProjectFunction($model, "wdbPF:getMainFooter", 1) ) then
     (wdb:getProjectFunction($model, "wdbPF:getMainFooter", 1))($model)
   else ()
 };
 declare function wdbv:getLeftFooter ( $node as node(), $model as map(*) ) as element(footer)? {
   if (doc-available($model?projectResources || "/footer.html")) then
-    templates:apply(doc($model?projectResources || "/footer.html"), $wdb:lookup, $model)
+    templates:apply(doc($model?projectResources || "/footer.html"), $wdbv:lookup, $model)
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
   else if (doc-available($config:edocBaseDB || "/resources/footer.html")) then
-    templates:apply(doc($config:edocBaseDB || "/resources/footer.html"), $wdb:lookup, $model)
+    templates:apply(doc($config:edocBaseDB || "/resources/footer.html"), $wdbv:lookup, $model)
   else ()
 };
 declare function wdbv:getRightFooter ( $node as node(), $model as map(*) ) as element(footer)? {
   if (doc-available($model?projectResources || "/projectRightFooter.html")) then
-    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $wdb:lookup, $model)
+    templates:apply(doc($model?projectResources || "/projectRightFooter.html"), $wdbv:lookup, $model)
   else if (wdb:findProjectFunction($model, "wdbPF:getProjectRightFooter", 1)) then
     (wdb:getProjectFunction($model, "wdbPF:getProjectRightFooter", 1))($model)
   else if (doc-available($config:data || "/resources/rightFooter.html")) then
-    templates:apply(doc($config:data || "/resources/rightFooter.html"), $wdb:lookup, $model)
+    templates:apply(doc($config:data || "/resources/rightFooter.html"), $wdbv:lookup, $model)
   else ()
 };

@@ -4,6 +4,8 @@ module namespace wdbanno = "https://github.com/dariok/wdbplus/anno";
 
 import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 
+declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
+
 (:~
  : return the annotation file for the given user on the given file.
  : If no user is given, the public annotation file is returned.
