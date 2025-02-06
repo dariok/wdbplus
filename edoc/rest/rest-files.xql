@@ -390,7 +390,7 @@ declare
     %rest:path("/edoc/resource/view/{$id}.{$type}")
     %rest:query-param("view", "{$view}", "")
 function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as xs:string* ) as item()* {
-  let $model := wdbm:populateModel($id, "", $view, "", "")
+  let $model := wdbm:populateModel($id, (), $view, "", "")
     , $wdbmeta := doc($model?infoFileLoc)
   
   (: by definition in wdbmeta.rng and in analogy to the behaviour of view.html: $type maps to process/@target,
@@ -574,7 +574,7 @@ function wdbRf:getImages($id as xs:string) {
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()
   let $file := $retrFile/tei:TEI
-  let $map := wdbm:populateModel($id, "", '', "", "")
+  let $map := wdbm:populateModel($id, (), '', "", "")
   
   let $canv := for $fa in $file//tei:surface
     return wdbRf:image($id, $fa/@xml:id, $map)
@@ -602,7 +602,7 @@ function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
     else ()
   let $file := $retrFile/tei:TEI
   
-  let $map := wdbm:populateModel($id, "", "", "", "")
+  let $map := wdbm:populateModel($id, (), "", "", "")
   let $meta := doc($map("infoFileLoc"))
   
   let $errors := string-join($errorFile, ' - ')
@@ -635,7 +635,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
     else ()
   let $file := $retrFile/tei:TEI
   
-  let $map := wdbm:populateModel($id, "", "", "", "")
+  let $map := wdbm:populateModel($id, (), "", "", "")
   let $meta := doc($map("infoFileLoc"))
   
   let $title := normalize-space($meta//meta:view[@file = $id]/@label)

@@ -130,13 +130,6 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
-
-      (: Create entry in project index :)
-      let $insertIndexEntry := update insert <project
-        xmlns="https://github.com/dariok/wdbplus/index"
-        xml:id="{ $collectionData?id }"
-        path="{ $subCollection }"
-      /> into doc("/db/apps/edoc/index/project-index.xml")/*
       
       return (
         <rest:response>
@@ -462,7 +455,7 @@ declare
     %rest:path("/edoc/collection/{$ed}/nav.html")
     %rest:header-param("If-Modified-Since", "{$modified}")
 function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)?, $modified as xs:string* ) {
-  let $model := if ( exists($externalModel) ) then $externalModel else wdbm:populateModel("", $ed, "", "", "")
+  let $model := if ( exists($externalModel) ) then $externalModel else wdbm:populateModel((), $ed, "", "", "")
 
   return if ( $modified != '' and wdbFiles:evaluateIfModifiedSince($model?pathToEd, 'wdbmeta.xml', $modified) = 304 )
   then
