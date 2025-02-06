@@ -12,6 +12,7 @@ module namespace wdbm = "https://github.com/dariok/wdbplus/model";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"  at "error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 
 declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -28,7 +29,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
  : @param $p general parameter to be passed to the processing XSLT
  : @return a map; in case of error, an HTML file
  :)
- declare function wdbm:populateModel ( $id as xs:string, $ed as xs:string,
+ declare function wdbm:populateModel ( $id as xs:string?, $ed as xs:string?,
                                        $view as xs:string, $p as xs:string, $q as xs:string ) as item()* {
   try {
     let $filePathInfo := if ( $ed = "" and $id = "" )

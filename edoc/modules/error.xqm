@@ -2,10 +2,10 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
+import module namespace functx   = "http://www.functx.com";
+
 declare namespace response = "http://exist-db.org/xquery/response";
 declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
-declare namespace functx   = "http://www.functx.com";
-
 
 declare function wdbErr:error ( $data as map (*) ) as item()+ {
   let $error := switch ( xs:string($data("code")) )

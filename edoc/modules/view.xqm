@@ -11,20 +11,21 @@ xquery version "3.1";
 
 module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
 
-import module namespace config  = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
-import module namespace request = "http://exist-db.org/xquery/request";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
-import module namespace wdbm    = "https://github.com/dariok/wdbplus/model"  at "model.xqm";
-
-declare namespace templates = "http://exist-db.org/xquery/html-templating";
+import module namespace config    = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
+import module namespace request   = "http://exist-db.org/xquery/request";
+import module namespace templates = "http://exist-db.org/xquery/html-templating";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
+import module namespace wdbm      = "https://github.com/dariok/wdbplus/model"  at "model.xqm";
 
 (: we need a lookup function for the templating system to work :)
 declare variable $wdbv:lookup := function($functionName as xs:string, $arity as xs:int) {
-    try {
-        function-lookup(xs:QName($functionName), $arity)
-    } catch * {
-        ()
-    }
+  try {
+    function-lookup(xs:QName($functionName), $arity)
+  } catch * {
+    ()
+  }
 };
 
 (:~
@@ -35,7 +36,10 @@ declare
     %templates:default("p", "")
 function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string ) as item()* {
   try {
-    let $newModel := wdbm:populateModel($id, $view, $model, $p)
+    let $newModel := map:merge((
+          wdbm:populateModel($id, (), $view, $p, ""),
+          $model
+    ))
     
     return if ( contains($newModel?fileLoc, 'http') ) then
       $newModel
@@ -184,7 +188,7 @@ declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element
 (:~
  : return the body
  :)
-declare function wdbv:getContent ( $node as node(), $model as map ) {
+declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
   let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
     then $model?fileLoc || '#' || $model?id
     else $model?fileLoc
@@ -221,7 +225,7 @@ declare function wdbv:getContent ( $node as node(), $model as map ) {
     try {
       <main>
         { transform:transform(doc($file), doc($xslt), $params, $attr, "") }
-        { wdb:getLeftFooter($node, $model) }
+        { wdbv:getLeftFooter($node, $model) }
       </main>
     } catch * { (util:log("error",
       <report>

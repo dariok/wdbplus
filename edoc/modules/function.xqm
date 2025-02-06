@@ -27,16 +27,19 @@ declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare
     %templates:default("q", "")
     %templates:default("p", "")
-    %templates:default("id", "")
-    %templates:default("ed", "")
-function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string, $ed as xs:string, $p as xs:string,
+function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed as xs:string?, $p as xs:string,
     $q as xs:string ) as item()* {
   try {
-    let $newModel := wdbm:populateModel($id, $ed, "", $p, $q)
+    let $newModel := map:merge((
+          wdbm:populateModel($id, $ed, "", $p, $q),
+          $model
+        ))
+      , $language := if ( $newModel?language != "" )
+          then $newModel?language
+          else "sco"
 
-    (: TODO: use a function to get the actual content language :)
     return
-      <html lang="de">
+      <html lang="{ $language }">
         {
           for $h in $node/* return
             if ( $h/*[@data-template] )
