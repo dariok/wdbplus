@@ -291,7 +291,7 @@ function wdbRc:getCollection ($id as xs:string, $mt as xs:string*) {
       for $s in $meta//meta:struct[@file] return
         <collection id="{$s/@file}" label="{$s/@label}" />,
       for $s in $meta//meta:view return
-        <resources id="{$s/@xml:id}" label="{normalize-space($meta//meta:view[@file = $s/@xml:id]/@label)}" />)')
+        <resources id="{$s/@file}" label="{normalize-space($s/@label)}" />)')
 };
 declare
   %rest:GET
