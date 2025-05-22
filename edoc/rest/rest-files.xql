@@ -5,8 +5,9 @@ module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "../rest/common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "../rest/ingest.xqm";
+import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
 import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
@@ -388,8 +389,8 @@ declare
     %rest:GET
     %rest:path("/edoc/resource/view/{$id}.{$type}")
     %rest:query-param("view", "{$view}", "")
-function wdbRf:getResourceView ($id as xs:string, $type as xs:string, $view as xs:string*)  {
-  let $model := wdb:populateModel($id, $view, map {})
+function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as xs:string* ) as item()* {
+  let $model := wdbm:populateModel($id, (), $view, "", "")
     , $wdbmeta := doc($model?infoFileLoc)
   
   (: by definition in wdbmeta.rng and in analogy to the behaviour of view.html: $type maps to process/@target,
@@ -573,7 +574,7 @@ function wdbRf:getImages($id as xs:string) {
     then "File not found or other error: " || $retrFile//http:response/@status
     else ()
   let $file := $retrFile/tei:TEI
-  let $map := wdb:populateModel($id, '', map{})
+  let $map := wdbm:populateModel($id, (), '', "", "")
   
   let $canv := for $fa in $file//tei:surface
     return wdbRf:image($id, $fa/@xml:id, $map)
@@ -601,7 +602,7 @@ function wdbRf:getImageDesc($id as xs:string, $image as xs:string) {
     else ()
   let $file := $retrFile/tei:TEI
   
-  let $map := wdb:populateModel($id, '', map{})
+  let $map := wdbm:populateModel($id, (), "", "", "")
   let $meta := doc($map("infoFileLoc"))
   
   let $errors := string-join($errorFile, ' - ')
@@ -634,7 +635,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
     else ()
   let $file := $retrFile/tei:TEI
   
-  let $map := wdb:populateModel($id, '', map{})
+  let $map := wdbm:populateModel($id, (), "", "", "")
   let $meta := doc($map("infoFileLoc"))
   
   let $title := normalize-space($meta//meta:view[@file = $id]/@label)

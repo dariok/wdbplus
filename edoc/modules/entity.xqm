@@ -2,10 +2,11 @@ xquery version "3.1";
 
 module namespace wdbe = "https://github.com/dariok/wdbplus/entity";
 
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "wdb-files.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files" at "wdb-files.xqm";
 
-declare namespace tei    = "http://www.tei-c.org/ns/1.0";
-declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
+declare namespace tei       = "http://www.tei-c.org/ns/1.0";
+declare namespace transform = "http://exist-db.org/xquery/transform";
+declare namespace wdbErr    = "https://github.com/dariok/wdbplus/errors";
 
 (: $ent   ID-String of the entity to be displayed – must be globally unique
    $ed    ID of the project from which specific information shall be drawn :)

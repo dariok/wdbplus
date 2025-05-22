@@ -322,7 +322,7 @@
       </xsl:variable>
       <xsl:variable name="image">
          <xsl:choose>
-            <xsl:when test="not(@facs)" />
+            <xsl:when test="not(@facs)"/>
             <xsl:when test="starts-with(@facs, '#')">
                <xsl:variable name="id" select="substring(@facs, 2)"/>
                <xsl:value-of select="/id($id)/tei:graphic/@url"/>
@@ -332,19 +332,34 @@
             </xsl:otherwise>
          </xsl:choose>
       </xsl:variable>
+      <xsl:variable name="url">
+         <xsl:choose>
+            <xsl:when test="starts-with($image, 'http')">
+               <xsl:value-of select="@facs"/>
+            </xsl:when>
+            <!-- private URI -->
+            <xsl:when test="contains($image, ':')">
+               <xsl:variable name="ident" select="substring-before($image, ':')"/>
+               <xsl:variable name="matchPattern" select="//tei:prefixDef[@ident = $ident]/@matchPattern"/>
+               <xsl:variable name="replacementPattern" select="//tei:prefixDef[@ident = $ident]/@replacementPattern"/>
+               
+               <xsl:value-of select="replace($image, $matchPattern, $replacementPattern)"/>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:value-of select="$image"/>
+            </xsl:otherwise>
+         </xsl:choose>
+      </xsl:variable>
       
       <xsl:choose>
-         <xsl:when test="string-length($image)">
-            <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}">
-               <xsl:if test="$image != ''">
-                  <xsl:attribute name="data-image" select="$image" />
-               </xsl:if>
-               <xsl:sequence select="$content" />
+         <xsl:when test="$url != ''">
+            <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}" data-image="{$url}">
+               <xsl:sequence select="$content"/>
             </button>
          </xsl:when>
          <xsl:otherwise>
             <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="p{@ed}-{@n}">
-               <xsl:sequence select="$content" />
+               <xsl:sequence select="$content"/>
             </span>
          </xsl:otherwise>
       </xsl:choose>

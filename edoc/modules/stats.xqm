@@ -6,7 +6,7 @@ import module namespace config   = "https://github.com/dariok/wdbplus/config" at
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "/db/apps/edoc/modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 
-
+declare namespace sm        = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei       = "http://www.tei-c.org/ns/1.0";
 declare namespace templates = "http://exist-db.org/xquery/html-templating";
 declare namespace wdbmeta   = "https://github.com/dariok/wdbplus/wdbmeta";

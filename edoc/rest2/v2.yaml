@@ -22,9 +22,13 @@ tags:
     description: Operations on resources (usually texts)
   - name: search
     description: Full text search
+  - name: oai
+    description: OAI PMH endpoints
+  - name: dts
+    description: Endpoints for Distributed Text Services
 
 paths:
-  # TODO:
+  # TODO – this should only contain functions that are not already covered by the other endpoint (if any):
   # /admin
 
   /annotations:
@@ -586,6 +590,12 @@ paths:
           description: An error was found in the query
         404:
           description: File not found
+
+  # TODO
+  # /oai
+
+  # TODO
+  # /dts
 
 components:
   parameters:

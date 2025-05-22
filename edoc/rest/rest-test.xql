@@ -5,7 +5,6 @@ module namespace wdbRt = "https://github.com/dariok/wdbplus/RestTest";
 import module namespace config  = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
 import module namespace inspect = "http://exist-db.org/xquery/inspection"    at "java:org.exist.xquery.functions.inspect.InspectionModule";
 
-declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 

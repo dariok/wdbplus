@@ -2,14 +2,14 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config"        at "../modules/wdb-config.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"           at "../modules/app.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"        at "../modules/error.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"         at "../modules/wdb-files.xqm";
-import module namespace wdbfp    = "https://github.com/dariok/wdbplus/functionpages" at "../modules/function.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"    at "../rest/common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest"   at "../rest/ingest.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"          at "../include/xstring/string-pack.xql";
+import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
+import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"      at "../modules/error.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
+import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
+import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -130,13 +130,6 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
-
-      (: Create entry in project index :)
-      let $insertIndexEntry := update insert <project
-        xmlns="https://github.com/dariok/wdbplus/index"
-        xml:id="{ $collectionData?id }"
-        path="{ $subCollection }"
-      /> into doc("/db/apps/edoc/index/project-index.xml")/*
       
       return (
         <rest:response>
@@ -462,7 +455,7 @@ declare
     %rest:path("/edoc/collection/{$ed}/nav.html")
     %rest:header-param("If-Modified-Since", "{$modified}")
 function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)?, $modified as xs:string* ) {
-  let $model := if ( exists($externalModel) ) then $externalModel else wdbfp:populateModel("", $ed, "", "")
+  let $model := if ( exists($externalModel) ) then $externalModel else wdbm:populateModel((), $ed, "", "", "")
 
   return if ( $modified != '' and wdbFiles:evaluateIfModifiedSince($model?pathToEd, 'wdbmeta.xml', $modified) = 304 )
   then

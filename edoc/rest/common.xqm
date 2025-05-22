@@ -5,6 +5,7 @@ module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon";
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 (: To avoid circular dependencies, app.xqm is not imported; all relevant variables must be read from config.xml, or
  : handed to the functions :)

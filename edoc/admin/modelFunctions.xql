@@ -15,7 +15,36 @@ declare function trigger:after-update-document ( $uri as xs:anyURI ) as xs:strin
         else 'project-functions.xml'
     
     return xmldb:store($projectPath, $statFileName, inspect:inspect-module($uri))
-  else if ( ends-with($uri, '.xml') and not(ends-with($uri, 'wdbmeta.xml')) ) then
+  else if ( ends-with($uri, 'wdbmeta.xml') ) then
+    let $meta := doc($uri)
+      , $projectId := $meta/meta:projectMD/@xml:id
+      , $files := $meta//meta:file
+      , $projectIndex := doc("/db/apps/edoc/index/project-index.xml")
+      , $fileIndex := doc("/db/apps/edoc/index/file-index.xml")
+      , $projectEntry := <project xmlns="https://github.com/dariok/wdbplus/index"
+          xml:id="{ $projectId }"
+          path="{ substring-before($uri, '/wdbmeta.xml') }"
+        />
+      
+    (: enter or update project :)
+    let $insertProject := if ( exists($projectIndex/id($projectId)) )
+      then update replace $projectIndex/id($projectId) with $projectEntry
+      else update insert $projectEntry into $projectIndex/index:index
+    
+    (: enter or update files entries :)
+    let $entries := for $file in $files
+      let $id := $file/@xml:id
+        , $entry := <file xmlns="https://github.com/dariok/wdbplus/index"
+            xml:id="{ $id }"
+            project="{ $meta => base-uri() }"
+          />
+      
+      return if ( exists($fileIndex/id($id)) )
+          then update replace $fileIndex/id($id) with $entry
+          else update insert $entry into $fileIndex/index:index
+    
+    return $uri
+  (: else if ( ends-with($uri, '.xml') ) then
     let $id := doc($uri)/*/@xml:id
       , $present := doc("/db/apps/edoc/index/file-index.xml")/id($id)
       , $entry := <file xmlns="https://github.com/dariok/wdbplus/index"
@@ -25,6 +54,6 @@ declare function trigger:after-update-document ( $uri as xs:anyURI ) as xs:strin
       , $insert := if ( $present )
           then update replace $present with $entry
           else update insert $entry into doc("/db/apps/edoc/index/file-index.xml")/*
-    return $uri
+    return $uri :)
   else ""
 };

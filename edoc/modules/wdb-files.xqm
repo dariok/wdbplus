@@ -14,8 +14,10 @@ module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
 import module namespace functx = "http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
-declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
+declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace request = "http://exist-db.org/xquery/request";
+declare namespace util    = "http://exist-db.org/xquery/util";
+declare namespace wdbErr  = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : Return the path to all Resources with a given ID
@@ -61,10 +63,10 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
-declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string?, xs:string? )? {
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
   let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
     , $project-hint := doc("/db/apps/edoc/index/project-index.xml")/id($id)
-    , $file := ( doc($file-hint/@project)/id($id), doc($project-hint/@path || "/wdbmeta.xml")/id($id) )
+    , $file := ( doc($file-hint[1]/@project)/id($id), doc($project-hint[1]/@path || "/wdbmeta.xml")/id($id) )
 
   return if ( count($file) = 0 ) then
       error(
@@ -72,10 +74,16 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "no file with ID " || $id,
         map { "id": $id, "request": request:get-url() }
       )
-    else if ( count($file[self::meta:file]) > 1 ) then
+    else if ( count($file-hint) gt 1 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0001'),
         "multiple files with ID " || $id,
+        map { "id": $id, "request": request:get-url() }
+      )
+    else if ( count($project-hint) gt 1 ) then
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb1001'),
+        "multiple projects with ID " || $id,
         map { "id": $id, "request": request:get-url() }
       )
     else if ( $file[self::meta:projectMD or self::meta:struct] ) then
