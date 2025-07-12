@@ -17,7 +17,7 @@ $(function(){
       information with third parties. <a href="imprint.html">Learn more</a></span>\
       <br /><button id="cookieConsentOK"\
         style="background-color: yellow; padding: 10px; border-radius: 7.5px; \
-        height: 1.5rem; flex: 1 0 auto;">Got it!</button></div>');
+        flex: 1 0 auto;">Got it!</button></div>');
     }
 
   $(document).on('click', '#cookieConsentOK', () => { cookieConsent() });
