@@ -28,7 +28,7 @@
       <nav>
          <ul>
             <xsl:apply-templates select="*">
-               <xsl:sort select="@order" />
+               <xsl:sort select="number(@order)" />
             </xsl:apply-templates>
          </ul>
       </nav>
@@ -58,12 +58,31 @@
                <li>Noch kein Inhalt</li>
             </xsl:if>
             <xsl:apply-templates select="*">
-               <xsl:sort select="@order" />
+               <xsl:sort select="meta:order(@order)" />
             </xsl:apply-templates>
          </ul>
       </li>
    </xsl:template>
    
+   <xsl:function name="meta:order" as="xs:double">
+      <xsl:param name="order" />
+      
+      <xsl:choose>
+         <xsl:when test="$order castable as xs:double">
+            <xsl:value-of select="number($order)"/>
+         </xsl:when>
+         <xsl:when test="matches($order, '\d+\w')">
+            <xsl:variable name="number" select="analyze-string($order, '(\d+)(\w)')"/>
+            <xsl:variable name="num" select="number($number//*:group[1])"/>
+            <xsl:variable name="alph" select="index-of(('a', 'b', 'c', 'd', 'e'), $number//*:group[2])"/>
+            
+            <xsl:value-of select="$num + $alph div 100"/>
+         </xsl:when>
+         <xsl:otherwise>
+            <xsl:value-of select="0"/>
+         </xsl:otherwise>
+      </xsl:choose>
+   </xsl:function>
    <xsl:template name="makeID">
       <xsl:param name="context" select="." />
       
@@ -72,9 +91,7 @@
             <xsl:value-of select="$context/@ed" />
          </xsl:when>
          <xsl:otherwise>
-            <xsl:call-template name="makeID">
-               <xsl:with-param name="context" select="parent::meta:struct" />
-            </xsl:call-template>
+            <xsl:value-of select="(parent::*/@ed, generate-id(parent::*))[1]"/>
             <xsl:text>-</xsl:text>
             <xsl:value-of select="generate-id($context)" />
          </xsl:otherwise>
@@ -91,6 +108,9 @@
    
    <xsl:template match="meta:view">
       <li>
+         <xsl:if test="@order">
+            <span class="label"><xsl:value-of select="@order" /></span>
+         </xsl:if>
          <a href="view.html?id={@file}">
             <xsl:apply-templates select="@label | meta:label" />
          </a>
