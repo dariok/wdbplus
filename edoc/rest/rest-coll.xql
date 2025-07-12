@@ -421,23 +421,31 @@ function wdbRc:getCollectionNavXML ( $ed as xs:string ) {
     else $content
 };
 
-declare function wdbRc:imported ( $import, $child ) {
-  let $uri := base-uri($import)
-  let $path := substring-before($uri, "wdbmeta.xml") || $import/@path
-  let $meta := doc($path)
+declare function wdbRc:imported ( $import, $importerContent ) {
+  let $base-uri := base-uri($import)
+    , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path
+    , $importedMeta := doc($fullImportedPath)
+    , $importedContent := $importedMeta/meta:projectMD/meta:struct
+    
+  let $struct := wdbRc:importedStruct ( $importedContent, $importerContent )
   
-  let $content := $meta/meta:projectMD/meta:struct
-  let $struct := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$meta/meta:projectMD/@xml:id}">{(
-        $content/@*,
-        for $st in $content/* return
-          if ($st/@file = $child/@ed)
-            then $child
-            else $st
-      )}</struct>
-  
-  return if ($content/meta:import)
-    then wdbRc:imported ( $content/meta:import, $struct)
+  return if ($importedContent/meta:import)
+    then wdbRc:imported ( $importedContent/meta:import, $struct)
     else $struct
+};
+
+declare function wdbRc:importedStruct ( $struct, $importerContent ) {
+    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">{ $struct/@* }{
+        for $content in $struct/* return
+            if ( $content[self::meta:struct and not(*)] ) then
+                if ( $content/@file = $importerContent/@ed)
+                    then $importerContent
+(:                    then <sti label="{$content/@label}">{ $importerContent/* }</sti>:)
+                    else $content
+            else if ( $content[self::meta:struct and meta:struct] )
+                then wdbRc:importedStruct ( $content, $importerContent )
+                else $content
+    }</struct>
 };
 
 (:~
