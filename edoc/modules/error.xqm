@@ -53,7 +53,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
   return (
     util:log("error", $error),
     util:log("info", $data),
-    response:set-status-code($statusCode),
+    if ( response:exists() ) then response:set-status-code($statusCode) else (),
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
       <meta name="wdb-template" content="(error page)" />
