@@ -84,8 +84,11 @@ declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as eleme
           then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
         else if ($test($key) instance of function(*))
           then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
-        else if ($test($key) instance of xs:string or $test($key) instance of xs:boolean)
-          then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
+        else if ($test($key) instance of xs:string 
+                or $test($key) instance of xs:boolean 
+                or $test($key) instance of xs:integer 
+                or $test($key) instance of xs:double)
+        then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
         else (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{functx:atomic-type($test($key))}</dd>)
       } catch * {
         functx:atomic-type($key) || " - " || functx:atomic-type($prefix)
