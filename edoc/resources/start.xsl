@@ -106,7 +106,7 @@
       <div class="legalInfo">
          <h3>Lizenzinformationen:</h3>
          <xsl:apply-templates select="meta:licence"/>
-      </div
+      </div>
    </xsl:template>
 
    <xsl:template match="meta:licence">
