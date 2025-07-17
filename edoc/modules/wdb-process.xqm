@@ -25,21 +25,43 @@ declare function wdbProc:getContent($id as xs:string, $process as element(), $vi
 (: TODO: move this to a more generic location (e.g. common.xq) as it is also used in app.xqm :)
 declare function wdbProc:processXSL( $id as xs:string, $process as element(), $model as map(*), $view as xs:string ) as item()* {
   let $content := try {
+
+  (: this is necessary to catch meta:struct with IDs (for a sub-corpus) :)
+  let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
+    then $model?fileLoc || '#' || $model?id
+    else $model?fileLoc
+
+        (: do not stop transformation on ambiguous rule match and similar warnings :)
     let $attr :=
           <attributes>
             <attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" />
-          </attributes>,
-        $params :=
+          </attributes>
+      , $params :=
           <parameters>
-            <param name="view" value="{$view}" />
+            <param name="exist:stop-on-warn" value="no" />
+            <param name="exist:stop-on-error" value="no" />
+            <param name="projectDir" value="{$model?pathToEd}" />
+            <param name="ed" value="{$model?ed}" />
+            {
+              if ( $view != '' )
+              then <param name="view" value="{$view}" />
+              else ()
+            }
+            {
+              if ($model?p != '')
+              then <param name="p" value="{$model?p}" />
+              else ()
+            }
+            <param name="xml" value="{$file}" />
+            <param name="xsl" value="{normalize-space($process/meta:command)}" />
           </parameters>
       
       (: TODO: for multiple commands, we need recursion here :)
-      return transform:transform(doc($model?fileLoc),
+      return transform:transform(doc($file),
           doc(normalize-space($process/meta:command)),
           $params,
           $attr,
-          "expand-xincludes=no"
+          ""
         )
     } catch * {
       ("error",

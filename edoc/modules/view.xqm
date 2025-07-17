@@ -11,13 +11,14 @@ xquery version "3.1";
 
 module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
 
-import module namespace config    = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config"  at "wdb-config.xqm";
 import module namespace request   = "http://exist-db.org/xquery/request";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
-import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
-import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
-import module namespace wdbm      = "https://github.com/dariok/wdbplus/model"  at "model.xqm";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"     at "app.xqm";
+import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"   at "wdb-files.xqm";
+import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"  at "error.xqm";
+import module namespace wdbm      = "https://github.com/dariok/wdbplus/model"   at "model.xqm";
+import module namespace wdbProc   = "https://github.com/dariok/wdbplus/Process" at "wdb-process.xqm";
 
 (: we need a lookup function for the templating system to work :)
 declare variable $wdbv:lookup := function($functionName as xs:string, $arity as xs:int) {
@@ -190,59 +191,26 @@ declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element
  : return the body
  :)
 declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
-  let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
-    then $model?fileLoc || '#' || $model?id
-    else $model?fileLoc
-  
-  let $xslt := if (string-length($model?xslt) = 0)
-    then wdbErr:error(map {"code": "wdbErr:wdb0002", "model": $model})
-    else $model("xslt")
-  
-  let $params :=
-    <parameters>
-      <param name="exist:stop-on-warn" value="no" />
-      <param name="exist:stop-on-error" value="no" />
-      <param name="projectDir" value="{$model?pathToEd}" />
-      <param name="ed" value="{$model?ed}" />
-      {
-        if ($model("view") != '')
-        then <param name="view" value="{$model("view")}" />
-        else ()
-      }
-      {
-        if ($model("p") != '')
-        then <param name="p" value="{$model("p")}" />
-        else ()
-      }
-      <param name="xml" value="{$file}" />
-      <param name="xsl" value="{$xslt}" />
-    </parameters>
-  (: do not stop transformation on ambiguous rule match and similar warnings :)
-  let $attr := <attributes><attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" /></attributes>
-  
   (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
-  return
-    try {
-      <main>
-        { transform:transform(doc($file), doc($xslt), $params, $attr, "") }
-        { wdbv:getLeftFooter($node, $model) }
-      </main>
-    } catch * { (util:log("error",
-      <report>
-        <file>{$file}</file>
-        <xslt>{$xslt}</xslt>
-        {$params}
-        {$attr}
-        <error>{$err:code || ': ' || $err:description}</error>
-        <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
-        <additional>{$err:additional}</additional>
-      </report>),
-      wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "additional": $params, "error": map {
-          "code": $err:code, "desc": $err:description, "module": $err:module, "line": $err:line-number,
-          "col": $err:column-number, "add": $err:additional
-      }}))
-    }
+  try {
+    <main>
+      { wdbProc:getContent($model?id, $model?xslt, $model?view, $model) }
+      { wdbv:getLeftFooter($node, $model) }
+    </main>
+  } catch * { (util:log("error",
+    <report>
+      <file>{$file}</file>
+      <xslt>{$model?xslt}</xslt>
+      <error>{$err:code || ': ' || $err:description}</error>
+      <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
+      <additional>{$err:additional}</additional>
+    </report>),
+    wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "error": map {
+        "code": $err:code, "desc": $err:description, "module": $err:module, "line": $err:line-number,
+        "col": $err:column-number, "add": $err:additional
+    }}))
+  }
 };
 
 (:~
