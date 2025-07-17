@@ -12,7 +12,6 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"       at "wdb-config.xqm";
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
 import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "../data/instance.xqm";
@@ -284,10 +283,10 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  :
  : @returns The path to the XSLT
 :)
-declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as xs:string {
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as element(process)? {
     wdb:getXslFromWdbMeta($infoFileLoc, $id, $target, "")
 };
-declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as xs:string {
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as element(process)? {
   let $metaFile := doc($infoFileLoc)
     , $process := (
         $metaFile//meta:process[@target = $target and @view = $view],
@@ -321,7 +320,17 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
     else ( util:log("error", $metaFile) )
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return normalize-space($sel[1])
+  return if ( $sel[1] instance of element(meta:process) )
+    then $sel[1]
+    else if ( $sel[1] instance of xs:string )
+      then <meta:process target="{$target}" view="{$view}">
+              <meta:command type="{$process/meta:command/@type}">{$sel[1]}</meta:command>
+           </meta:process>
+    else
+      error(
+        QName('wdbRErr', 'wdb0002'),
+        "no process found for target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+      )
 };
 (: END LOCAL HELPER FUNCTIONS :)
 

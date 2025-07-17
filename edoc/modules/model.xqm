@@ -73,6 +73,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
         xs:anyURI($config:data || '/resources/nav.xsl')
       else
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
+            => normalize-space()
     
     let $xslt := if ( doc-available($xsl) )
       then $xsl
