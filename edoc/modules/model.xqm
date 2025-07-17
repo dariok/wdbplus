@@ -72,7 +72,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
         (: TODO get path to XSL via function – unify with REST function (rest-files) :)
         xs:anyURI($config:data || '/resources/nav.xsl')
       else
-        wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html')
+        wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
     let $xslt := if ( doc-available($xsl) )
       then $xsl
