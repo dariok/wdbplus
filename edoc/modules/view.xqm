@@ -124,8 +124,8 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
         <script src="$shared/scripts/js.cookie.js"></script>,
         <script src="$shared/scripts/legal.js"></script>,
         <script src="$shared/scripts/function.js"></script>,
-        if ( util:binary-doc-available($config:data || "/resources/function.js") )
-          then <script src="data/resources/function.js"></script>
+        if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
+          then <script src="data/resources/js/function.js"></script>
           else (),
         wdb:getProjectFiles($node, $model, 'js')
       )
