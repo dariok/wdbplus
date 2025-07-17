@@ -43,6 +43,18 @@ declare function trigger:after-update-document ( $uri as xs:anyURI ) as xs:strin
           then update replace $fileIndex/id($id) with $entry
           else update insert $entry into $fileIndex/index:index
     
+    (: enter or update subcorpora :)
+    let $subcorpora := for $subcorpus in $meta//meta:struct[@xml:id]
+      let $id := $subcorpus/@xml:id
+        , $entry := <file xmlns="https://github.com/dariok/wdbplus/index"
+            xml:id="{ $id }"
+            project="{ $meta => base-uri() }"
+          />
+      
+      return if ( exists($fileIndex/id($id)) )
+          then update replace $fileIndex/id($id) with $entry
+          else update insert $entry into $fileIndex/index:index
+    
     return $uri
   (: else if ( ends-with($uri, '.xml') ) then
     let $id := doc($uri)/*/@xml:id
