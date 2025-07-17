@@ -247,7 +247,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
             else <http:header name="rest-status" value="REST:ERROR" />
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
-        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
+        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($file/@path, '.')}"' />
         <http:header name="Last-Modified" value="{ wdbFiles:getModificationDate($id) => wdbFiles:ietfDate() }" />
       </http:response>
     </rest:response>,
