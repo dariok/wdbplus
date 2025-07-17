@@ -11,7 +11,7 @@
  */
 
 body {
-  grid-template-columns: auto 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
+  grid-template-columns: 1fr 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
 }
 
 /* hide right side on small broser windows, e.g. mobile */
