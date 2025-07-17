@@ -24,7 +24,7 @@
     <files></files>
     <processes>
         <process target="html">
-            <command type="xsl">xsl/tei-transcript.xsl</command>
+            <command type="xsl">resources/xsl/tei-transcript.xsl</command>
         </process>
     </processes>
     <struct></struct>
