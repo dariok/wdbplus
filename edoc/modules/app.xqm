@@ -277,15 +277,20 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
 (:~
  : Evaluate wdbmeta.xml to get the process used for transformation
  :
- : @param $ed The (relative) path to the project
  : @param $id The ID of the file to be processed
  : @param $target The processing target to be used
+ : @param $infoFileLoc The location of the wdbmeta.xml file
+ : @param $view (optional) a view parameter for selecting the right process
  :
  : @returns The path to the XSLT
 :)
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as xs:string {
+    wdb:getXslFromWdbMeta($infoFileLoc, $id, $target, "")
+};
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as xs:string {
   let $metaFile := doc($infoFileLoc)
     , $process := (
+        $metaFile//meta:process[@target = $target and @view = $view],
         $metaFile//meta:process[@target = $target],
         $metaFile//meta:process[1]
       )[1]
@@ -312,7 +317,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
       let $path := xstring:substring-before-last($infoFileLoc, '/')
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
-        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target)
+        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
     else ( util:log("error", $metaFile) )
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
