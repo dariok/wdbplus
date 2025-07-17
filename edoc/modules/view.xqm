@@ -200,7 +200,7 @@ declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
     </main>
   } catch * { (util:log("error",
     <report>
-      <file>{$file}</file>
+      <file>{$model?fileLoc}</file>
       <xslt>{$model?xslt}</xslt>
       <error>{$err:code || ': ' || $err:description}</error>
       <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>

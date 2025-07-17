@@ -28,7 +28,10 @@ declare
 function wdbRa:getFileAnno ($fileID as xs:string) {
   (: get the username; use sm:real to avoid setuid conflicts :)
   let $username := xs:string(sm:id()//sm:real/sm:username)
-  let $fileURI := xs:anyURI(wdb:getFilePath($fileID))
+    , $fileInfo := wdbFiles:getFullPath($fileID)
+  let $fileURI := xs:anyURI($fileInfo?collectionPath || '/' || $fileInfo?fileName)
+  
+  (: check whether the file exists and is accessible :)
   
   let $public := wdbanno:getAnnoFile($fileURI, "")//anno:entry
   let $private := wdbanno:getAnnoFile($fileURI, $username)//anno:entry

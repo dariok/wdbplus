@@ -67,7 +67,8 @@ declare
   %rest:HEAD
   %rest:path("/edoc/resource/{$id}")
 function wdbRf:fileHead ( $id as xs:string ) as element(rest:response) {
-  wdbRCo:head(wdb:getFilePath($id))
+  let $fileInfo := wdbFiles:getFullPath($id)
+  return wdbRCo:head($fileInfo?collectionPath || '/' || $fileInfo?fileName)
 };
 
 (: upload a single file with known ID (i.e. one that is already present)

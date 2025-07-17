@@ -97,47 +97,6 @@ declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) )
 
 (: FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 (:~
- : Return the full URI to the (edition) XML file with the given ID
- : The scope is the whole data collection; documentation states in several places that file IDs need to be unique
- : 
- : This function raises errors that are to be caught by the caller
- :
- : @param $id as xs:string: the file ID
- : @return xs:string the full URI to the file within the database
- : @throws wdbErr:wdb0000
- : @throws wdbErr:wdb0001
- :)
-declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
-  let $files := wdbFiles:getFilePaths($config:data, $id)
-  
-  (: do not just return a random URI but add some checks for better error messages:
-   : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
-  let $pathToFile := if ( count($files) = 0 ) then
-      error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0000'),
-        "no file with ID " || $id || " in " || $config:data,
-        map { "id": $id, "request": request:get-url() }
-      )
-    else if ( count($files) > 1 ) then
-      error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0001'),
-        "multiple files with ID " || $id || " in " || $config:data,
-        map { "id": $id, "request": request:get-url() }
-      )
-    else if ( local-name($files[1]) = 'id' ) then
-      base-uri($files[1]) || '#' || $id
-    else
-      xstring:substring-before-last(base-uri($files[1]), '/') || '/' || $files[1]
-  
-  return if ( starts-with($files[1], '$') )
-    then
-      let $peer := $files[1] => substring(2) => substring-before('/')
-        , $id := $files[1] => substring-after('/')
-      return $config:configFile/id($peer) || '/' || $id
-    else $pathToFile
-};
-
-(:~
  : Tries to return an absolute path for a path within a project
  : 
  : @param $ed the ID of the project

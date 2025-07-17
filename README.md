@@ -6,11 +6,20 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Incompatible changes
 
+### 25Q3
+
+Release 25Q3 dropped support for more unsued functions:
+- `wdb:getFilePath ( $id as xs:string )`: use the map from `wdbFiles:getFullPath` instead
+
+### 24Q4
+
 Release 24Q4 dropped another set of functions that were unused:
 - `wdb:getEdFromFileID( $id as xs:string )`: `(wdbFiles:getFullPath($id))?projectPath` returns the base path to `wdbmeta.xml`
 - `wdb:getMetaElementFromEd ( $ed as xs:string )`: use `doc( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path || '/wdbmeta.xml' )/id($ed)[self::meta:projectMD]` instead
 - `wdb:getMetaFile( $pathToEd )`: `(wdbFiles:getFullPath($ed))?projectPath` returns the base path to `wdbmeta.xml`
 - `wdb:getProjectPathFromId ( $ed )`:  use `(wdbFiles:getFullPath($ed))?projectPath` instead
+
+### 24Q2
 
 Release 24Q2 dropped functions `wdb:getEdPath( $ed as xs:string , $absolute as xs:boolean() )`,
 `wdb:getEdPath( $ed as xs:string )`, and `wdb:findProjectXQM( $project )`. These queries can be replaced by
@@ -18,6 +27,8 @@ Release 24Q2 dropped functions `wdb:getEdPath( $ed as xs:string , $absolute as x
 `wdbmeta.xml`¹ is stored), `collectionPath` (for the subcollection where a file is actually located), `mainProject` for
 the path to the project containing `project.xqm`, and `fileName`.
 1) (24Q4): this corrects a typo as previous versions incorrectly read `project.xqm`.
+
+### 24Q1
 
 Release 24Q1 dropped support for METS-based projects. As METS files can have a number of very different ways of encoding
 information, especially when it comes to behaviours, native support is hard to achieve. At the same time, most
