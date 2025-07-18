@@ -45,18 +45,39 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         (: TODO: this should be done in wdbRc:createSubcollection #424 :)
         let $collection-uri := $create[2]
 
-        (: TODO: subcollections must follow new structure, cf. #326 :)
         let $textCollection := xmldb:create-collection($collection-uri, "texts")
-        let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
-          , $resourcesSubCollections := (
-                xmldb:create-collection($collection-uri || "/resources", "blobs"),
-                xmldb:create-collection($collection-uri || "/resources", "css"),
-                xmldb:create-collection($collection-uri || "/resources", "html"),
-                xmldb:create-collection($collection-uri || "/resources", "images"),
-                xmldb:create-collection($collection-uri || "/resources", "js"),
-                xmldb:create-collection($collection-uri || "/resources", "xq")
+        (: create collection resources and project.xqm only if this is a main project :)
+        let $resources := if ( $targetCollection = 'data' )
+          then
+            let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
+            return (
+              xmldb:create-collection($collection-uri || "/resources", "blobs"),
+              xmldb:create-collection($collection-uri || "/resources", "css"),
+              xmldb:create-collection($collection-uri || "/resources", "html"),
+              xmldb:create-collection($collection-uri || "/resources", "images"),
+              xmldb:create-collection($collection-uri || "/resources", "js"),
+              xmldb:create-collection($collection-uri || "/resources", "xq"),
+
+              xmldb:copy-collection($config:edocBaseDB || "/admin/project-template/resources/xsl", $resourcesCollection),
+
+              sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
+              sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
+              for $c in xmldb:get-child-collections($resourcesCollection)
+                return (
+                    sm:chmod(xs:anyURI($resourcesCollection || '/' || $c), 'rwxrwxr-x'),
+                    sm:chown(xs:anyURI($resourcesCollection || '/' || $c), "wdb:wdbusers")
+                  ),
+              for $f in xmldb:get-child-resources($resourcesCollection || "/xsl")
+                return (
+                  sm:chmod(xs:anyURI($resourcesCollection || "/xsl/" || $f), "rwxrwxr-x"),
+                  sm:chown(xs:anyURI($resourcesCollection || "/xsl/" || $f), "wdb:wdbusers")
+                ),
+              
+              xmldb:copy-resource($config:edocBaseDB || "/admin/project-template", "project.xqm", $collection-uri, "project.xqm"),
+              sm:chown(xs:anyURI($collection-uri || "/project.xqm"), "wdb:wdbusers"),
+              sm:chmod(xs:anyURI($collection-uri || "/project.xqm"), "rwxrwxr-x")
             )
-          , $copy := xmldb:copy-collection($config:edocBaseDB || "/admin/project-template/resources/xsl", $resourcesCollection)
+          else ()
         
         let $metaFile := $collection-uri || "/wdbmeta.xml"
           , $MD := doc($metaFile)
@@ -70,21 +91,9 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
           sm:chmod(xs:anyURI($collection-uri), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($textCollection), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($metaFile), 'rw-rw-r--'),
-          sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
           sm:chown(xs:anyURI($collection-uri), "wdb:wdbusers"),
           sm:chown(xs:anyURI($textCollection), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($metaFile), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
-          for $c in xmldb:get-child-collections($resourcesCollection)
-            return (
-                sm:chmod(xs:anyURI($resourcesCollection || '/' || $c), 'rwxrwxr-x'),
-                sm:chown(xs:anyURI($resourcesCollection || '/' || $c), "wdb:wdbusers")
-              ),
-          for $f in xmldb:get-child-resources($resourcesCollection || "/xsl")
-            return (
-              sm:chmod(xs:anyURI($resourcesCollection || "/xsl/" || $f), "rwxrwxr-x"),
-              sm:chown(xs:anyURI($resourcesCollection || "/xsl/" || $f), "wdb:wdbusers")
-            )
+          sm:chown(xs:anyURI($metaFile), "wdb:wdbusers")
         )
         
         let $addMD := (
