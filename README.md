@@ -10,12 +10,29 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
 Release 25Q3 dropped support for more unsued functions:
 - `wdb:getFilePath ( $id as xs:string )`: use the map from `wdbFiles:getFullPath` instead
+- the default layout of all `resources` collections has changed to group files by type. This also affects the main
+  project specific overrides, i.e. `project.js` and `project.css`. An XQuery is provided to move all files to their
+  appropriate new locations (TODO: add file name here).
+  This also affects `edoc/data/resources` and `edoc/resources` so you might have to change imports manually if you make
+  use of any file in these collections.
+
+Changes in standard behaviour
+- sub-projects will now make use of process inheritance; i.e., they only define empty `processes` with no `command`. A
+  `command` is then picked by traversing up through parent `wdbmeta.xml` (i.e., one that is pointed to by a
+  `struct/import`; worst case: data). This way, you can still have  different `command` defined for sub-projects (and
+  their children) but do not need to change the path for every sub-project.
+- as part of this, no XSLTs are being copied to `{$subproject}/resources` as inheritance is now the standard. This way,
+  surplus XSLTs do not have to be deleted or kept up to date. As said above, it is still possible to create a `command`
+  for this sub-project tree and create specific XSLTs (usually by including the main XSLTs)
+- standard XSLTs for a new project are now bare: they only include `/edoc/data/resources/xslt/{$currentFileName}`, and
+  `tei-common.xsl` (unless it’s common itself).
 
 ### 24Q4
 
 Release 24Q4 dropped another set of functions that were unused:
 - `wdb:getEdFromFileID( $id as xs:string )`: `(wdbFiles:getFullPath($id))?projectPath` returns the base path to `wdbmeta.xml`
-- `wdb:getMetaElementFromEd ( $ed as xs:string )`: use `doc( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path || '/wdbmeta.xml' )/id($ed)[self::meta:projectMD]` instead
+- `wdb:getMetaElementFromEd ( $ed as xs:string )`: use
+  `doc( (doc("/db/apps/edoc/index/project-index.xml")/id($ed))/@path || '/wdbmeta.xml' )/id($ed)[self::meta:projectMD]` instead
 - `wdb:getMetaFile( $pathToEd )`: `(wdbFiles:getFullPath($ed))?projectPath` returns the base path to `wdbmeta.xml`
 - `wdb:getProjectPathFromId ( $ed )`:  use `(wdbFiles:getFullPath($ed))?projectPath` instead
 
@@ -88,9 +105,11 @@ into `/db/apps/edoc` and want to put your projects into `/db/apps/edoc/data/your
         <files>
             <file path="pathTo.xml" xml:id="xml-id" />
         </files>
-        <process target="html">
-            <command type="xsl">/db/apps/edoc/resources/xsl/tei-transcript.xsl</command>
-        </process>
+        <processes>
+            <process target="html">
+                <command type="xsl">/db/apps/edoc/resources/xsl/tei-transcript.xsl</command>
+            </process>
+        </processes>
         <struct label="1722" order="1722">
             <view file="xml-id" label="Title of File" />
         </struct>
