@@ -32,8 +32,8 @@ declare function wdbst:getStartLeft( $node as node(), $model as map(*) ) as node
 
 (: get the main part of the start page from either projectSpec HTML, projectSpec function or return an empty seq :)
 declare function wdbst:getStart ( $node as node(), $model as map(*) ) as node()* {
-  if ( doc-available($model("projectResources") || '/startRight.html') ) then
-    templates:apply(doc($model("projectResources") || '/startRight.html'), $wdbst:lookup, $model)
+  if ( doc-available($model("projectResources") || '/html/startRight.html') ) then
+    templates:apply(doc($model("projectResources") || '/html/startRight.html'), $wdbst:lookup, $model)
   else if ( wdb:findProjectFunction($model, "wdbPF:getStart", 1) ) then
     (wdb:getProjectFunction($model, "wdbPF:getStart", 1))($model)
   else if ( doc-available($config:data || '/resources/xsl/start.xsl') ) then

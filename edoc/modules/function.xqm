@@ -134,20 +134,20 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
   
   return
     (: 1a. :)
-    if ( doc-available($model("projectResources") || '/' || $name || 'Header.html') ) then
-      templates:apply(doc($model("projectResources") || '/' || $name || 'Header.html'), $wdbfp:lookup, $model)
+    if ( doc-available($model("projectResources") || '/html/' || $name || 'Header.html') ) then
+      templates:apply(doc($model("projectResources") || '/html/' || $name || 'Header.html'), $wdbfp:lookup, $model)
     (: 1b. :)
     else if ( wdb:findProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1) ) then
       (wdb:getProjectFunction($model, 'wdbPF:get' || $unam || 'Header', 1))($model)
     (: 2a. :)
-    else if ( doc-available($model?projectResources || "functionHeader.html") ) then
-      templates:apply(doc($model?projectResources || "functionHeader.html"), $wdbfp:lookup, $model)
+    else if ( doc-available($model?projectResources || "html/functionHeader.html") ) then
+      templates:apply(doc($model?projectResources || "html/functionHeader.html"), $wdbfp:lookup, $model)
     (: 2b. :)
     else if ( wdb:findProjectFunction($model, 'wdbPF:getFunctionHeader', 1) ) then
       (wdb:getProjectFunction($model, 'wdbPF:getFunctionHeader', 1))($model)
     (: 3a. :)
-    else if ( doc-available($config:data || '/resources/' || $name || 'Header.html') ) then
-      templates:apply(doc($config:data || '/resources/' || $name || 'Header.html'), $wdbfp:lookup, $model)
+    else if ( doc-available($config:data || '/resources/html/' || $name || 'Header.html') ) then
+      templates:apply(doc($config:data || '/resources/html/' || $name || 'Header.html'), $wdbfp:lookup, $model)
     (: 4a. :)
     else if ( doc-available($config:data || "/resources/functionHeader.html") ) then
       templates:apply(doc($config:data|| "/resources/functionHeader.html"), $wdbfp:lookup, $model)
@@ -218,12 +218,12 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
 
 (: get the footer for function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
 declare function wdbfp:getFooter($node as node(), $model as map(*)) as node()* {
-  if (doc-available($model("projectResources") || 'functionFooter.html')) then 
-    templates:apply(doc($model("projectResources") || 'functionFooter.html'),  $wdbfp:lookup, $model)
+  if (doc-available($model("projectResources") || 'html/functionFooter.html')) then 
+    templates:apply(doc($model("projectResources") || 'html/functionFooter.html'),  $wdbfp:lookup, $model)
   else if (wdb:findProjectFunction($model, 'wdbPF:getFunctionFooter', 1)) then
     (wdb:getProjectFunction($model, 'wdbPF:getFunctionFooter', 1))($model)
-  else if ( doc-available($config:data || "/resources/mainFooter.html") ) then
-    doc($config:data || "/resources/mainFooter.html")
+  else if ( doc-available($config:data || "/resources/html/mainFooter.html") ) then
+    doc($config:data || "/resources/html/mainFooter.html")
   else if (wdb:findProjectFunction($model, 'wdbPF:getMainFooter', 1)) then
     (wdb:getProjectFunction($model, 'wdbPF:getMainFooter', 1))($model)
   else ()

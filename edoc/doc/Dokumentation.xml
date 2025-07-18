@@ -79,7 +79,7 @@
                   </div>
                   <!-- muss nach oben :-) -->
                   If you want to change it on a project-level: link to
-                  project/resource/startLeft.html and startRight.html; if you want to change it
+                  {$project}/resource/html/startLeft.html and {$project}/resource/html/startRight.html; if you want to change it
                   globally, you can override the default behaviour by changing
                   edoc/data/instance.xqm </p>
             </div>
