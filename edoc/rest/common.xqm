@@ -71,6 +71,9 @@ declare function wdbRCo:head ( $filePath as xs:string ) as element(rest:response
     </rest:response>
 };
 
+(: TODO: combine this with a lookup of a function: findProjectSpecific("getNavXSLT", "nav.xsl")
+  first, look fo a project or instance specific functin, then look for a file in project, data, global resources;
+  infer the path from the ending (because of #326) :)
 (:~
  : Get a project specific / instance specific / global XSLT by name
  :

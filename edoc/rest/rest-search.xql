@@ -90,7 +90,7 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
   else 
     let $coll := (wdbFiles:getFullPath($ed))?projectPath
       , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
-      , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
+      , $xsl := wdbRCo:getXSLT($coll, 'xsl/search.xsl')
     
     let $params := 
       <parameters>
@@ -193,7 +193,7 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
   else
     let $file := (collection($config:data)/id($id))[self::tei:TEI][1]
       , $coll := (wdbFiles:getFullPath($id))?projectPath
-      , $xsl := wdbRCo:getXSLT($coll, 'search.xsl')
+      , $xsl := wdbRCo:getXSLT($coll, 'xsl/search.xsl')
       
     let $params :=
       <parameters>

@@ -61,7 +61,7 @@
                <head>Where to find the function</head>
                <p>the files can be found in <list>
                      <item>/edoc/modules/start.xqm</item>
-                     <item>/edoc/resources/start.xsl</item>
+                     <item>/edoc/resources/xsl/start.xsl</item>
                   </list>
                   <div>
                      <head>The start.xqm</head>
