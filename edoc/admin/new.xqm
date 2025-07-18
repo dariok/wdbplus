@@ -48,6 +48,15 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         (: TODO: subcollections must follow new structure, cf. #326 :)
         let $textCollection := xmldb:create-collection($collection-uri, "texts")
         let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
+          , $resourcesSubCollections := (
+                xmldb:create-collection($collection-uri || "/resources", "blobs"),
+                xmldb:create-collection($collection-uri || "/resources", "css"),
+                xmldb:create-collection($collection-uri || "/resources", "html"),
+                xmldb:create-collection($collection-uri || "/resources", "images"),
+                xmldb:create-collection($collection-uri || "/resources", "js"),
+                xmldb:create-collection($collection-uri || "/resources", "xq")
+            )
+          , $copy := xmldb:copy-collection($config:edocBaseDB || "/admin/project-template/resources/xsl", $resourcesCollection)
         
         let $metaFile := $collection-uri || "/wdbmeta.xml"
           , $MD := doc($metaFile)
@@ -57,31 +66,24 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
                   with <process xmlns="https://github.com/dariok/wdbplus/wdbmeta" target="html" />
                 else ()
         
-        let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
-          then util:eval("xmldb:copy-collection($source, $destination)", false(), (
-              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
-              xs:QName("destination"), $collection-uri
-            ))
-          else util:eval("xmldb:copy($source, $destination)", false(), (
-              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
-              xs:QName("destination"), $collection-uri
-            ))
-        
         let $chmod := (
           sm:chmod(xs:anyURI($collection-uri), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($textCollection), 'rwxrwxr-x'),
-          sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($metaFile), 'rw-rw-r--'),
-          sm:chmod(xs:anyURI($collection-uri || "/xsl"), "rwxrwxr-x"),
+          sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
           sm:chown(xs:anyURI($collection-uri), "wdb:wdbusers"),
           sm:chown(xs:anyURI($textCollection), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
           sm:chown(xs:anyURI($metaFile), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($collection-uri || "/xsl"), "wdb:wdbusers"),
-          for $f in xmldb:get-child-resources($collection-uri || "/xsl")
+          sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
+          for $c in xmldb:get-child-collections($resourcesCollection)
             return (
-              sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "rwxrwxr-x"),
-              sm:chown(xs:anyURI($collection-uri || "/xsl/" || $f), "wdb:wdbusers")
+                sm:chmod(xs:anyURI($resourcesCollection || '/' || $c), 'rwxrwxr-x'),
+                sm:chown(xs:anyURI($resourcesCollection || '/' || $c), "wdb:wdbusers")
+              ),
+          for $f in xmldb:get-child-resources($resourcesCollection || "/xsl")
+            return (
+              sm:chmod(xs:anyURI($resourcesCollection || "/xsl/" || $f), "rwxrwxr-x"),
+              sm:chown(xs:anyURI($resourcesCollection || "/xsl/" || $f), "wdb:wdbusers")
             )
         )
         
