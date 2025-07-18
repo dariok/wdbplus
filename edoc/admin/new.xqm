@@ -42,10 +42,20 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       
       return if ( ($create)[1]//http:response/@status = '201')
       then
+        (: TODO: this should be done in wdbRc:createSubcollection #424 :)
         let $collection-uri := $create[2]
+
+        (: TODO: subcollections must follow new structure, cf. #326 :)
         let $textCollection := xmldb:create-collection($collection-uri, "texts")
         let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
+        
         let $metaFile := $collection-uri || "/wdbmeta.xml"
+          , $MD := doc($metaFile)
+          (: $targetCollection != 'data': sub-project; here, we use process inheritance as standard behaviour :)
+          , $changeProcess := if ( $targetCollection != 'data' )
+                then update replace $MD//meta:process[@target = 'html']
+                  with <process xmlns="https://github.com/dariok/wdbplus/wdbmeta" target="html" />
+                else ()
         
         let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
           then util:eval("xmldb:copy-collection($source, $destination)", false(), (
@@ -75,7 +85,6 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
             )
         )
         
-        let $MD := doc($metaFile)
         let $addMD := (
           if ($pShort != "")
             then
