@@ -126,7 +126,7 @@ declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:st
   if ( util:binary-doc-available($projectPath || "/project.xqm") ) then
     $projectPath
   else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
-    "/db/apps/edoc/data/instance.xqm"
+    "/db/apps/edoc/data/"
   else
     wdbFiles:findMainProject(functx:substring-before-last($projectPath, '/'))
 };

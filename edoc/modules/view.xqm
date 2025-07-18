@@ -111,20 +111,20 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
         (wdb:getProjectFunction($model, "wdbPF:overrideCssJs", 1))($model)
       else (
         <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
-        if ( util:binary-doc-available($config:data || "/resources/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
+        if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
+          then <link rel="stylesheet" type="text/css" href="data/resources/css/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
-        if ( util:binary-doc-available($config:data || "/resources/view.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/view.css" />
+        if ( util:binary-doc-available($config:data || "/resources/css/view.css") )
+          then <link rel="stylesheet" type="text/css" href="data/resources/css/view.css" />
           else (),
         wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
         wdb:getBlob($node, $model, 'jquery'),
         wdb:getBlob($node, $model, 'jquery-ui-js'),
-        <script src="$shared/scripts/js.cookie.js"></script>,
-        <script src="$shared/scripts/legal.js"></script>,
-        <script src="$shared/scripts/function.js"></script>,
+        <script src="$shared/js/js.cookie.js"></script>,
+        <script src="$shared/js/legal.js"></script>,
+        <script src="$shared/js/function.js"></script>,
         if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
           then <script src="data/resources/js/function.js"></script>
           else (),

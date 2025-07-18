@@ -96,18 +96,18 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
         (wdb:getProjectFunction($model, "wdbPF:overrideFunctionCssJs", 2))($model, $templateFile)
       else (
         <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>,
-        if ( util:binary-doc-available($config:data || "/resources/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/wdb.css" />
+        if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
+          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/css/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css" />,
-        if ( util:binary-doc-available($config:data || "/resources/" || $templateFile || ".css") )
-          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/{$templateFile}.css" />
+        if ( util:binary-doc-available($config:data || "/resources/css/" || $templateFile || ".css") )
+          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/css/{$templateFile}.css" />
           else (),
         wdbfp:get('css', $model?pathToEd, $model),
         wdb:getBlob($node, $model, 'jquery'),
-        <script src="./$shared/scripts/js.cookie.js"/>,
-        <script src="./$shared/scripts/legal.js"/>,
-        <script src="./$shared/scripts/function.js"/>,
+        <script src="./$shared/js/js.cookie.js"/>,
+        <script src="./$shared/js/legal.js"/>,
+        <script src="./$shared/js/function.js"/>,
         wdbfp:get('js', $model?pathToEd, $model)
       )
     }
@@ -180,37 +180,37 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
   
   return switch($type)
     case "css" return
-      let $fun := if (util:binary-doc-available($model?projectResources || 'projectFunction.css'))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model?projectResources)}projectFunction.css" />
+      let $fun := if (util:binary-doc-available($model?projectResources || '/css/projectFunction.css'))
+        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model?projectResources)}/css/projectFunction.css" />
         else() 
       let $gen := if (util:binary-doc-available($config:edocBaseDB || '/resources/css/' || $name || '.css'))
         then <link rel="stylesheet" type="text/css" href="$shared/css/{$name}.css" />
         else()
-      let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.css'))
-        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model("projectResources"))}/{$unam}.css" />
+      let $pro := if (util:binary-doc-available($model?projectResources || '/css/' || $unam || '.css'))
+        then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($model("projectResources"))}/css/{$unam}.css" />
         else()
       let $add := if ( util:binary-doc-available($edPath || "/addin.css") )
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($edPath)}/addin.css" />
         else()
-      let $ins := if ( util:binary-doc-available($config:data || "/resources/" || $name || ".css") )
-        then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/{$name}.css" />
+      let $ins := if ( util:binary-doc-available($config:data || "/resources/css/" || $name || ".css") )
+        then <link rel="stylesheet" type="text/css" href="{$config:data}/resources/css/{$name}.css" />
         else ()
       return ($fun, $gen, $ins, $pro, $add)
     case "js" return
-      let $gen := if (util:binary-doc-available($config:edocBaseDB || '/resources/scripts/' || $name || '.js'))
-        then <script src="$shared/scripts/{$name}.js" />
+      let $gen := if (util:binary-doc-available($config:edocBaseDB || '/resources/js/' || $name || '.js'))
+        then <script src="$shared/js/{$name}.js" />
         else()
-      let $pro := if (util:binary-doc-available($model?projectResources || $unam || '.js'))
-        then <script src="{wdb:getUrl($model("projectResources"))}/{$unam}.js" />
+      let $pro := if (util:binary-doc-available($model?projectResources || '/js/' || $unam || '.js'))
+        then <script src="{wdb:getUrl($model("projectResources"))}/js/{$unam}.js" />
         else()
       let $add := if ( util:binary-doc-available($edPath || "/addin.js") )
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
-      let $ins := if ( util:binary-doc-available($config:data || "/resources/function.js") )
-          then <script src="{$config:edocBaseURL}/data/resources/function.js" />
+      let $ins := if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
+          then <script src="{$config:data}/resources/js/function.js" />
           else ()
-      let $spec := if ( util:binary-doc-available($config:data || "/resources/" || $name || ".js") )
-        then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/{$name}.js" />
+      let $spec := if ( util:binary-doc-available($config:data || "/resources/js/" || $name || ".js") )
+        then <link rel="stylesheet" type="text/css" href="{$config:data}/resources/js/{$name}.js" />
         else ()
       return ($ins, $gen, $pro, $add, $spec)
     default return <meta name="specFile" value="{$name}" />

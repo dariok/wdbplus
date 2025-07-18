@@ -19,7 +19,7 @@ let $indexConfig := (
 )
 
 let $collsr := (
-  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/xsl"
+  "/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl"
 )
 
 let $chmod := (

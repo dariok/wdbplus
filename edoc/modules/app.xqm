@@ -144,8 +144,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
   let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
     else
-      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
-        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      let $css := wdb:findProjectFile($model?projectResources, "/css/project.css")
+        , $js := wdb:findProjectFile($model?projectResources, "/js/project.js")
       
       return (
         if ( $css != "" )
@@ -200,13 +200,13 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
  : @param $fileName name of the file to search
  : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
  :)
-declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
-  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
-    xs:anyURI($pathToEd || "/" || $fileName)
-  else if ( substring-after($pathToEd, $config:data) = '' ) then
+declare function wdb:findProjectFile ( $path as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($path || "/" || $fileName) ) then
+    xs:anyURI($path || "/" || $fileName)
+  else if ( substring-after($path, $config:data) = '' ) then
     xs:anyURI("")
   else
-    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
+    wdb:findProjectFile(xstring:substring-before-last($path, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
