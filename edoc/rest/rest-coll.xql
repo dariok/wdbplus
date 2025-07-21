@@ -103,7 +103,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
-      let $co := xmldb:copy-resource($config:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
+      let $co := xmldb:copy-resource($config:edocBaseDB || "/admin/project-template", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
       let $newMetaPath := $subCollection || "/wdbmeta.xml"
       
       let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
@@ -132,6 +132,9 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
+      
+      (: TODO: insert date, involvement, place, language, type, etc. :)
+      (: TODO: insert $collectionData?name into projectMD/struct/@label :)
       
       return (
         <rest:response>
