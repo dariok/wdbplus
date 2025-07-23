@@ -32,12 +32,13 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
  declare function wdbm:populateModel ( $id as xs:string?, $ed as xs:string?,
                                        $view as xs:string, $p as xs:string, $q as xs:string ) as item()* {
   try {
-    let $filePathInfo := if ( $ed = "" and $id = "" )
+    (: get the file path info :)
+    let $filePathInfo := if ( not($ed or $id) )
           then
             map {
               "projectPath": $config:data,
               "collectionPath": $config:data,
-              "fileName": $config:data || "/wdbmeta.xml",
+              "fileName": "wdbmeta.xml",
               "mainProject": $config:data
             }
           else
