@@ -106,7 +106,7 @@ declare function wdbErr:store ( $type as xs:string, $description as xs:string, $
   return (
     $id || " - " || $description || " – " || $type || " - " || serialize($content),
     update insert 
-        <error xmlns="https://github.com/dariok/wdbplus/errors" xml:id="{$id}">
+        <error xmlns="https://github.com/dariok/wdbplus/errors" xml:id="e-{$id}">
           <desc>{ $description }</desc>
           <type>{$type}</type>
           <date>{ xs:dateTime(current-dateTime()) }</date>
