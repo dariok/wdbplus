@@ -2,7 +2,8 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace functx   = "http://www.functx.com";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
+import module namespace functx = "http://www.functx.com";
 
 declare namespace response = "http://exist-db.org/xquery/response";
 declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
@@ -53,6 +54,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
   return (
     util:log("error", $error),
     util:log("info", $data),
+    wdbErr:store("error", $error, $data),
     if ( response:exists() ) then response:set-status-code($statusCode) else (),
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -96,4 +98,20 @@ declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as eleme
     case element(*) return
       (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
     default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
+};
+
+declare function wdbErr:store ( $type as xs:string, $description as xs:string, $content as map(*) ) as xs:string {
+  let $id := util:uuid()
+
+  return (
+    $id || " - " || $description || " – " || $type || " - " || serialize($content),
+    update insert 
+        <error xmlns="https://github.com/dariok/wdbplus/errors" xml:id="{$id}">
+          <desc>{ $description }</desc>
+          <type>{$type}</type>
+          <date>{ xs:dateTime(current-dateTime()) }</date>
+          <content>{ wdbErr:get($content, '') }</content>
+        </error>
+      into doc($config:edocBaseDB || "/logs/errors.xml")//wdbErr:errors
+  )
 };
