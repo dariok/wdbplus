@@ -7,8 +7,8 @@ xquery version "3.1";
 
 import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace sm      = "http://exist-db.org/xquery/securitymanager" at "java:org.exist.xquery.functions.securitymanager.SecurityManagerModule";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm";
+(: import module namespace sm      = "http://exist-db.org/xquery/securitymanager" at "java:org.exist.xquery.functions.securitymanager.SecurityManagerModule";
+import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm"; :)
 
 declare namespace exist = "http://exist.sourceforge.net/NS/exist";
 
@@ -18,50 +18,25 @@ declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
-(: von eXide geklaut :)
-declare function local:user-allowed() as xs:boolean {
-  request:get-attribute("wd.user")
-  and request:get-attribute("wd.user") != "guest"
-};
-declare function local:query-execution-allowed() as xs:boolean {
-  local:user-allowed()
-  or sm:is-dba( (request:get-attribute("wd.user"), request:get-attribute("xquery.user"), 'nobody')[1] )
-};
+declare variable $local:isget := request:get-method() = ("GET","get");
 
-let $cookiePath := substring-before(request:get-uri(), $exist:path)
-  , $duration := xs:dayTimeDuration("P2D")
-
-return
-if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/global/index.html"/>
-    </dispatch>
-(: login :)
-else if ( $exist:resource = 'login' ) then
-  (
-    login:set-user("wd", $cookiePath, $duration, false()),
-    try {
-      if (request:get-parameter('logout', '') = 'logout') then
-        wdba:getAuth(<br/>, map {'res': 'logout'})
-      else if (local:user-allowed()) then
-        wdba:getAuth(<br/>, map {'auth': <sm:id><sm:real><sm:username>{request:get-attribute("wd.user")}</sm:username></sm:real></sm:id>})
-      else ( 
-        response:set-status-code(401),
-        <status>fail</status>
-      )
-    } catch * {
-      response:set-status-code(403),
-      <status>{$err:description}</status>
-    }
-  )
+if ( contains($exist:path, 'api/v2') ) then
+  (: REST API :)
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/api.xq"/>
+  </dispatch>
+else if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/global/index.html"/>
+  </dispatch>
 (: admin pages :)
 else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    { login:set-user("wd", $cookiePath, $duration, false()) }
+    <!-- { login:set-user("wd", $cookiePath, $duration, false()) } -->
     <view>
       <set-header name="Cache-Control" value="no-cache"/>
       <forward url="{$exist:controller}/admin/view.xql">
-        { login:set-user("wd", $cookiePath, $duration, false()) }
+      <!--  { login:set-user("wd", $cookiePath, $duration, false()) } -->
       </forward>
     </view>
     <error-handler>
@@ -74,7 +49,7 @@ else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/modules/view.xql">
-				{ login:set-user("wd", $cookiePath, $duration, false()) }
+				<!-- { login:set-user("wd", $cookiePath, $duration, false()) } -->
 			</forward>
     </view>
   </dispatch>
@@ -86,7 +61,7 @@ else if ( contains($exist:path, "/$shared/") ) then
   </dispatch>
 else if ( ends-with($exist:path, ".xql") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    { login:set-user("wd", $cookiePath, $duration, false()) }
+    <!-- { login:set-user("wd", $cookiePath, $duration, false()) } -->
     <set-header name="Cache-Control" value="no-cache"/>
     <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
   </dispatch>
