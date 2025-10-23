@@ -39,12 +39,12 @@ paths:
   #     description: "Create a new full text annotation; return its location when sucessful.<br> **Note:** 1. no checks are performed and multiple requests will create multiple entries. 2. This creates full text annotations only. Changes to the file, including entity markup, must be made using → `PATCH /resources/{id}`"
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/annotation"
+  #       $ref: "#/components/requestBodies/annotation"
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   # /api/v2/annotations/{annotation}:
   #   parameters:
   #     - name: "annotation"
@@ -64,10 +64,10 @@ paths:
   #         content:
   #           application/json:
   #             schema:
-  #               "$ref": "#/components/schemas/annotation.json"
+  #               $ref: "#/components/schemas/annotation.json"
   #           application/xml:
   #             schema:
-  #               "$ref": "#/components/schemas/annotation.xml"
+  #               $ref: "#/components/schemas/annotation.xml"
   #       "404":
   #         description: No annotation found by this ID
   #   put:
@@ -75,12 +75,12 @@ paths:
   #       - annotations
   #     summary: Update an annotation
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/annotation"
+  #       $ref: "#/components/requestBodies/annotation"
   #     responses:
   #       "204":
   #         description: Update sucessful.
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: No annotation found by this ID
   #   delete:
@@ -95,7 +95,7 @@ paths:
   #         description: This annotation was not found
   # /api/v2/annotations/forFile/{id}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/id"
   #   get:
   #     tags:
   #       - annotations
@@ -107,10 +107,10 @@ paths:
   #         content:
   #           application/json:
   #             schema:
-  #               "$ref": "#/components/schemas/listAnnotations"
+  #               $ref: "#/components/schemas/listAnnotations"
   #           application/xml:
   #             schema:
-  #               "$ref": "#/components/schemas/listAnnotations"
+  #               $ref: "#/components/schemas/listAnnotations"
   #       "204":
   #         description: No annotations for this file
   #       "404":
@@ -125,7 +125,7 @@ paths:
       operationId: r2p:listProjects
       responses:
         "200":
-          "$ref": "#/components/responses/result"
+          $ref: '#/components/responses/result'
     # TODO: implement
     # post:
     #   tags:
@@ -134,18 +134,18 @@ paths:
     #   description: Create a project with the meta data provided while auto-generating the ID
     #   operationId: #TODO
     #   requestBody:
-    #     "$ref": "#/components/requestBodies/project"
+    #     $ref: "#/components/requestBodies/project"
     #   responses:
     #     "204":
-    #       "$ref": "#/components/responses/created"
+    #       $ref: "#/components/responses/created"
     #     "400":
-    #       "$ref": "#/components/responses/invalidBody"
+    #       $ref: "#/components/responses/invalidBody"
     #     "409":
     #       description: A project already exists in this location
   # TODO: implement
   # /api/v2/projects/{ed}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/ed"
+  #     - $ref: "#/components/parameters/ed"
   #   get:
   #     tags:
   #       - projects
@@ -153,7 +153,7 @@ paths:
   #     operationId: #TODO
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/projectContents"
+  #         $ref: "#/components/responses/projectContents"
   #       "204":
   #         description: The project was found but currently has neither subprojects nor registered resources
   #       "404":
@@ -175,12 +175,12 @@ paths:
   #     description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/project"
+  #       $ref: "#/components/requestBodies/project"
   #     responses:
   #       "204":
   #         description: The project was created or updated
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: Project $ed not found
   #       "409":
@@ -189,8 +189,8 @@ paths:
   # TODO: implement as a view on the project instead (with parameter ?view=nav or similar)
   # /api/v2/projects/{ed}/nav:
   #   parameters:
-  #     - "$ref": "#/components/parameters/ed"
-  #     - "$ref": "#/components/parameters/modified"
+  #     - $ref: "#/components/parameters/ed"
+  #     - $ref: "#/components/parameters/modified"
   #   get:
   #     tags:
   #       - projects
@@ -212,12 +212,12 @@ paths:
   #     summary: Query entities in global registry
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/q"
-  #       - "$ref": "#/components/parameters/type"
-  #       - "$ref": "#/components/parameters/start"
+  #       - $ref: "#/components/parameters/q"
+  #       - $ref: "#/components/parameters/type"
+  #       - $ref: "#/components/parameters/start"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/entities"
+  #         $ref: "#/components/responses/entities"
   #       "204":
   #         description: No entities were found for the combination of query parameters
   #   post:
@@ -226,12 +226,12 @@ paths:
   #     summary: Create a global entity without specifying an ID
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/entity"
+  #       $ref: "#/components/requestBodies/entity"
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "409":
   #         description: The body contains an ID for which an entity is already present
   # /api/v2/entities/{entity}:
@@ -241,10 +241,10 @@ paths:
   #     summary: Get details of entity
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/entity"
+  #       - $ref: "#/components/parameters/entity"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/entity"
+  #         $ref: "#/components/responses/entity"
   #       "404":
   #         description: Entity not found
   #   put:
@@ -253,14 +253,14 @@ paths:
   #     summary: Create a global entity specifying an ID
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/entity"
+  #       $ref: "#/components/requestBodies/entity"
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "204":
   #         description: The entity was updated
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: Entity $ed not found
   #       "409":
@@ -281,14 +281,14 @@ paths:
   #       - entities
   #     summary: Query entities in a project’s registry
   #     parameters:
-  #       - "$ref": "#/components/parameters/ed"
-  #       - "$ref": "#/components/parameters/q"
-  #       - "$ref": "#/components/parameters/type"
-  #       - "$ref": "#/components/parameters/start"
+  #       - $ref: "#/components/parameters/ed"
+  #       - $ref: "#/components/parameters/q"
+  #       - $ref: "#/components/parameters/type"
+  #       - $ref: "#/components/parameters/start"
   #     operationId: #TODO
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/entities"
+  #         $ref: "#/components/responses/entities"
   #       "204":
   #         description: No entities were found for the combination of query parameters
   #       "404":
@@ -299,12 +299,12 @@ paths:
   #     summary: Create an entity with a project without specifying an ID
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/entity"
+  #       $ref: "#/components/requestBodies/entity"
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "409":
   #         description: The body contains an ID for which an entity is already present
   # /api/v2/entities/project/{ed}/{entity}:
@@ -314,10 +314,10 @@ paths:
   #     summary: Get details of project entity
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/entity"
+  #       - $ref: "#/components/parameters/entity"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/entity"
+  #         $ref: "#/components/responses/entity"
   #       "404":
   #         description: Entity not foun
   #   put:
@@ -326,14 +326,14 @@ paths:
   #     summary: Create a project entity specifying an ID
   #     operationId: #TODO
   #     requestBody:
-  #       "$ref": "#/components/requestBodies/entity"
+  #       $ref: "#/components/requestBodies/entity"
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "204":
   #         description: The entity was updated
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: Project $ed or entity $entity not found
   #       "409":
@@ -350,51 +350,51 @@ paths:
   #         description: This entity was not found
   # /api/v2/entities/refs/{entity}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/entity"
+  #     - $ref: "#/components/parameters/entity"
   #   get:
   #     tags:
   #       - entities
   #     summary: List projects referring to an entity
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/start"
+  #       - $ref: "#/components/parameters/start"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/projects"
+  #         $ref: "#/components/responses/projects"
   #       "204":
   #         description: No references to the queried entity were found
   # /api/v2/entities/refs/project/{ed}/{entity}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/ed"
-  #     - "$ref": "#/components/parameters/entity"
+  #     - $ref: "#/components/parameters/ed"
+  #     - $ref: "#/components/parameters/entity"
   #   get:
   #     tags:
   #       - entities
   #     summary: List texts in a project referring to an entity
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/start"
+  #       - $ref: "#/components/parameters/start"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/files"
+  #         $ref: "#/components/responses/files"
   #       "204":
   #         description: No references to the queried entity were found
   #       "404":
   #         description: The project was not found
   # /api/v2/entities/refs/resource/{id}/{entity}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
-  #     - "$ref": "#/components/parameters/entity"
+  #     - $ref: "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/entity"
   #   get:
   #     tags:
   #       - entities
   #     summary: List all fragments in a text containing a reference to an entity
   #     operationId: #TODO
   #     parameters:
-  #       - "$ref": "#/components/parameters/start"
+  #       - $ref: "#/components/parameters/start"
   #     responses:
   #       "200":
-  #         "$ref": "#/components/responses/fragments"
+  #         $ref: "#/components/responses/fragments"
   #       "204":
   #         description: No references to the queried entity were found
   #       "404":
@@ -402,7 +402,7 @@ paths:
 
   # /api/v2/resources/{id}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/id"
   #   get:
   #     tags:
   #       - resources
@@ -414,7 +414,7 @@ paths:
   #         content:
   #           "application/tei+xml":
   #             schema:
-  #               "$ref": "#/components/schemas/TEI"
+  #               $ref: "#/components/schemas/TEI"
   #       "404":
   #         description: No resource found by this ID
   #   put:
@@ -437,11 +437,11 @@ paths:
   #                 format: binary
   #     responses:
   #       "201":
-  #         "$ref": "#/components/responses/created"
+  #         $ref: "#/components/responses/created"
   #       "204":
   #         description: File has been updated
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: File $id not found
   #       "409":
@@ -461,7 +461,7 @@ paths:
   #       "204":
   #         description: File has been updated
   #       "400":
-  #         "$ref": "#/components/responses/invalidBody"
+  #         $ref: "#/components/responses/invalidBody"
   #       "404":
   #         description: File $id not found
   #   head:
@@ -498,7 +498,7 @@ paths:
   #         description: File $id not found
   # /api/v2/resources/{id}/views:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/id"
   #   get:
   #     tags:
   #       - resources
@@ -510,14 +510,14 @@ paths:
   #         content:
   #           application/json:
   #             schema:
-  #               "$ref": "#/components/schemas/listViews"
+  #               $ref: "#/components/schemas/listViews"
   #           application/xml:
   #             schema:
-  #               "$ref": "#/components/schemas/listViews"
+  #               $ref: "#/components/schemas/listViews"
   # /api/v2/resources/{id}/views/{view}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
-  #     - "$ref": "#/components/parameters/modified"
+  #     - $ref: "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/modified"
   #     - name: view
   #       in: path
   #       description: The ID of the view to be invoked
@@ -559,9 +559,9 @@ paths:
 
   # /api/v2/search/ft/project/{ed}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/ed"
-  #     - "$ref": "#/components/parameters/q"
-  #     - "$ref": "#/components/parameters/start"
+  #     - $ref: "#/components/parameters/ed"
+  #     - $ref: "#/components/parameters/q"
+  #     - $ref: "#/components/parameters/start"
   #   get:
   #     tags:
   #       - search
@@ -569,7 +569,7 @@ paths:
   #     operationId: #TODO
   #     responses:
   #       200:
-  #         "$ref": "#/components/responses/files"
+  #         $ref: "#/components/responses/files"
   #       204:
   #         description: Search result list is empty
   #       400:
@@ -578,9 +578,9 @@ paths:
   #         description: project not found
   # /api/v2/search/ft/resource/{id}:
   #   parameters:
-  #     - "$ref": "#/components/parameters/id"
-  #     - "$ref": "#/components/parameters/q"
-  #     - "$ref": "#/components/parameters/start"
+  #     - $ref: "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/q"
+  #     - $ref: "#/components/parameters/start"
   #   get:
   #     tags:
   #       - search
@@ -588,7 +588,7 @@ paths:
   #     operationId: #TODO
   #     responses:
   #       200:
-  #         "$ref": "#/components/responses/fragments"
+  #         $ref: "#/components/responses/fragments"
   #       204:
   #         description: Search result list is empty
   #       400:
@@ -682,47 +682,47 @@ components:
     #   content:
     #     application/json:
     #       schema:
-    #         "$ref": "#/components/schemas/listAnnotations"
+    #         $ref: "#/components/schemas/listAnnotations"
     #     application/xml:
     #       schema:
-    #         "$ref": "#/components/schemas/listAnnotations"
+    #         $ref: "#/components/schemas/listAnnotations"
     # fragments:
     #   description: A list of fragments within a file matching the query
     #   content:
     #     application/json:
     #       schema:
-    #         "$ref": "#/components/schemas/listFragments"
+    #         $ref: "#/components/schemas/listFragments"
     #     application/xml:
     #       schema:
-    #         "$ref": "#/components/schemas/listFragments"
+    #         $ref: "#/components/schemas/listFragments"
     # files:
     #   description: A list of fragments within a file matching the query
     #   content:
     #     application/json:
     #       schema:
-    #         "$ref": "#/components/schemas/listFiles"
+    #         $ref: "#/components/schemas/listFiles"
     #     application/xml:
     #       schema:
-    #         "$ref": "#/components/schemas/listFiles"
+    #         $ref: "#/components/schemas/listFiles"
     
     result:
       description: A result set
       content:
         application/json:
           schema:
-            "$ref": "#/components/schemas/result"
+            $ref: '#/components/schemas/Result'
         application/xml:
           schema:
-            "$ref": "#/components/schemas/result"
+            $ref: '#/components/schemas/Result'
   #   entities:
   #     description: A list of entities matching the query
   #     content:
   #       application/json:
   #         schema:
-  #           "$ref": "#/components/schemas/listEntities"
+  #           $ref: "#/components/schemas/listEntities"
   #       application/xml:
   #         schema:
-  #           "$ref": "#/components/schemas/listEntities"
+  #           $ref: "#/components/schemas/listEntities"
   #   entity:
   #     description: A (TEI) description of one entity
   #     content:
@@ -732,11 +732,11 @@ components:
   #             name: entity
   #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
   #           oneOf:
-  #             - "$ref": "#/components/schemas/entity-person"
-  #             - "$ref": "#/components/schemas/entity-place"
-  #             - "$ref": "#/components/schemas/entity-org"
-  #             - "$ref": "#/components/schemas/entity-bibl"
-  #             - "$ref": "#/components/schemas/entity-event"
+  #             - $ref: "#/components/schemas/entity-person"
+  #             - $ref: "#/components/schemas/entity-place"
+  #             - $ref: "#/components/schemas/entity-org"
+  #             - $ref: "#/components/schemas/entity-bibl"
+  #             - $ref: "#/components/schemas/entity-event"
   #   projectContents:
   #     description: Lists the registered contents of a project
   #     content:
@@ -746,16 +746,16 @@ components:
   #             name: contents
   #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
   #           anyOf:
-  #             - "$ref": "#/components/schemas/files"
-  #             - "$ref": "#/components/schemas/projects"
+  #             - $ref: "#/components/schemas/files"
+  #             - $ref: "#/components/schemas/projects"
   #       application/xml:
   #         schema:
   #           xml:
   #             name: contents
   #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
   #           anyOf:
-  #             - "$ref": "#/components/schemas/files"
-  #             - "$ref": "#/components/schemas/projects"
+  #             - $ref: "#/components/schemas/files"
+  #             - $ref: "#/components/schemas/projects"
 
   # requestBodies:
   #   annotation:
@@ -764,20 +764,20 @@ components:
   #     content:
   #       application/json:
   #         schema:
-  #           "$ref": "#/components/schemas/annotation.json"
+  #           $ref: "#/components/schemas/annotation.json"
   #       application/xml:
   #         schema:
-  #           "$ref": "#/components/schemas/annotation.xml"
+  #           $ref: "#/components/schemas/annotation.xml"
   #   project:
   #     description: The necessary data for the project to be created or updated
   #     required: true
   #     content:
   #       application/json:
   #         schema:
-  #           "$ref": "#/components/schemas/projectMetadata"
+  #           $ref: "#/components/schemas/projectMetadata"
   #       application/xml:
   #         schema:
-  #           "$ref": "#/components/schemas/projectMetadata"
+  #           $ref: "#/components/schemas/projectMetadata"
   #   entity:
   #     description: A (TEI) description of one entity
   #     required: true
@@ -788,18 +788,18 @@ components:
   #             name: entity
   #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
   #           oneOf:
-  #             - "$ref": "#/components/schemas/entity-person"
-  #             - "$ref": "#/components/schemas/entity-place"
-  #             - "$ref": "#/components/schemas/entity-org"
-  #             - "$ref": "#/components/schemas/entity-bibl"
-  #             - "$ref": "#/components/schemas/entity-event"
+  #             - $ref: "#/components/schemas/entity-person"
+  #             - $ref: "#/components/schemas/entity-place"
+  #             - $ref: "#/components/schemas/entity-org"
+  #             - $ref: "#/components/schemas/entity-bibl"
+  #             - $ref: "#/components/schemas/entity-event"
   #   file:
   #     description: A full TEI file
   #     required: true
   #     content:
   #       application/xml:
   #         schema:
-  #           "$ref": "#/components/schemas/TEI"
+  #           $ref: "#/components/schemas/TEI"
 
 
   schemas:
@@ -818,9 +818,9 @@ components:
     #     name: "result"
     #   properties:
     #     start:
-    #       "$ref": "#/components/schemas/start"
+    #       $ref: "#/components/schemas/start"
     #     total:
-    #       "$ref": "#/components/schemas/total"
+    #       $ref: "#/components/schemas/total"
     #     annotations:
     #       type: array
     #       items:
@@ -828,7 +828,7 @@ components:
     #           name: annotation
     #         properties:
     #           id:
-    #             "$ref": "#/components/schemas/id"  
+    #             $ref: "#/components/schemas/id"  
     # listEntities:
     #   description: A result set, containing a list of entities
     #   type: object
@@ -837,9 +837,9 @@ components:
     #     name: "result"
     #   properties:
     #     start:
-    #       "$ref": "#/components/schemas/start"
+    #       $ref: "#/components/schemas/start"
     #     total:
-    #       "$ref": "#/components/schemas/total"
+    #       $ref: "#/components/schemas/total"
     #     entities:
     #       type: array
     #       items:
@@ -847,9 +847,9 @@ components:
     #           name: entity
     #         properties:
     #           id:
-    #             "$ref": "#/components/schemas/id"
+    #             $ref: "#/components/schemas/id"
     #           label:
-    #             "$ref": "#/components/schemas/label"
+    #             $ref: "#/components/schemas/label"
     # listViews:
     #   description: A result set, containing a list of views for a file
     #   type: object
@@ -858,9 +858,9 @@ components:
     #     name: "result"
     #   properties:
     #     start:
-    #       "$ref": "#/components/schemas/start"
+    #       $ref: "#/components/schemas/start"
     #     total:
-    #       "$ref": "#/components/schemas/total"
+    #       $ref: "#/components/schemas/total"
     #     views:
     #       type: array
     #       items:
@@ -868,23 +868,29 @@ components:
     #           name: view
     #         properties:
     #           id:
-    #             "$ref": "#/components/schemas/id"
-    
-    result:
+    #             $ref: "#/components/schemas/id"
+
+    Result:
       description: A result set, containing a list of 0+ project(s), file(s) etc.
-      type: array
+      type: object
       xml:
-        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-        name: "result"
-      items:
-        oneOf:
-          - "$ref": "#/components/schemas/project"
+        name: result
+        namespace: https://github.com/dariok/wdbplus/api/schema/v1
+      oneOf:
+        - $ref: '#/components/schemas/ProjectResult'
+    ResultBase:
+      type: object
+      xml:
+        name: result
+        namespace: https://github.com/dariok/wdbplus/api/schema/v1
       properties:
         start:
-          "$ref": "#/components/schemas/start"
+          $ref: '#/components/schemas/start'
         total:
-          "$ref": "#/components/schemas/total"
-          
+          $ref: '#/components/schemas/total'
+      required:
+        - start
+        - total
     # listFiles:
     #   description: A result set, containing a list of files
     #   type: object
@@ -893,11 +899,11 @@ components:
     #     name: "result"
     #   properties:
     #     start:
-    #       "$ref": "#/components/schemas/start"
+    #       $ref: "#/components/schemas/start"
     #     total:
-    #       "$ref": "#/components/schemas/total"
+    #       $ref: "#/components/schemas/total"
     #     files:
-    #       "$ref": "#/components/schemas/files"
+    #       $ref: "#/components/schemas/files"
     # listFragments:
     #   description: A result set, containing a list of fragments within a file
     #   type: object
@@ -906,11 +912,11 @@ components:
     #     name: "result"
     #   properties:
     #     start:
-    #       "$ref": "#/components/schemas/start"
+    #       $ref: "#/components/schemas/start"
     #     total:
-    #       "$ref": "#/components/schemas/total"
+    #       $ref: "#/components/schemas/total"
     #     fragments:
-    #       "$ref": "#/components/schemas/fragments"
+    #       $ref: "#/components/schemas/fragments"
 
     # files:
     #   type: array
@@ -920,9 +926,9 @@ components:
     #       name: file
     #     properties:
     #       id:
-    #         "$ref": "#/components/schemas/id"
+    #         $ref: "#/components/schemas/id"
     #       label:
-    #         "$ref": "#/components/schemas/label"
+    #         $ref: "#/components/schemas/label"
     # fragments:
     #   type: array
     #   description: describes a fragment within a file
@@ -931,18 +937,31 @@ components:
     #       name: fragment
     #     properties:
     #       id:
-    #         "$ref": "#/components/schemas/id"
+    #         $ref: "#/components/schemas/id"
     
-    project:
-      description: a single project
-      items:
-        xml:
-          namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-        properties:
-          id:
-            "$ref": "#/components/schemas/id"
-          label:
-            "$ref": "#/components/schemas/label"
+    ProjectResult:
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            project:
+              type: array
+              xml:
+                wrapped: false
+              items:
+                $ref: '#/components/schemas/Project'
+    Project:
+      type: object
+      xml:
+        name: project
+      properties:
+        id:
+          $ref: '#/components/schemas/id'
+        label:
+          $ref: '#/components/schemas/label'
+      required:
+        - id
+        - label
     
     # projectMetadata:
     #   description: project meta data
@@ -996,9 +1015,9 @@ components:
     #   #   <annotation id="..." file="..." createdBy="" createdOn="">Text</annotation>
     #   properties:
     #     id:
-    #       "$ref": "#/components/schemas/id"
+    #       $ref: "#/components/schemas/id"
     #     file:
-    #       "$ref": "#/components/schemas/file"
+    #       $ref: "#/components/schemas/file"
     #     createdBy:
     #       type: string
     #       xml:
@@ -1016,9 +1035,9 @@ components:
     #   type: object
     #   properties:
     #     id:
-    #       "$ref": "#/components/schemas/id"
+    #       $ref: "#/components/schemas/id"
     #     file:
-    #       "$ref": "#/components/schemas/file"
+    #       $ref: "#/components/schemas/file"
     #     createdBy:
     #       type: string
     #     createdOn:
@@ -1037,6 +1056,7 @@ components:
     id:
       description: ID of this entry
       type: string
+      format: uri
       xml:
         attribute: true
     label:
@@ -1045,11 +1065,13 @@ components:
       xml:
         attribute: true
     start:
+      description: from which position in a list the result set starts (1-based)
       type: integer
       default: 1
       xml:
         attribute: true
     total:
+      description: total number of entries in the result set
       type: integer
       xml:
         attribute: true

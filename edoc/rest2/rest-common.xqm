@@ -6,9 +6,20 @@ import module namespace router = "http://e-editiones.org/roaster/router";
 
 declare variable $r2:acceptable := ("application/json", "application/xml");
 
-declare variable $r2:allOrigins := map {
-  "Access-Control-Allow-Origin"  : "*"
-};
+(:~
+ : Base URL for the REST API
+ : TODO: use config:rest and add an optional attribute version; usage of this parameter must be aware of versioning and use only [1]
+ :)
+declare variable $r2:base := doc('../config.xml')//*:rest2;
+
+declare variable $r2:allOrigins := if ( request:get-header('origin') != '' )
+  then map { 
+    "Access-Control-Allow-Origin"  : request:get-header('origin'),
+    "Access-Control-Allow-Credentials" : "true"
+  }
+  else map {
+    "Access-Control-Allow-Origin"  : "*"
+  };
 (: ,
   "Access-Control-Allow-Methods" : "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers" : "Content-Type, Authorization",

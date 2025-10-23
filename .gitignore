@@ -14,6 +14,7 @@ __pycache__/
 # internal
 edoc/resources/xsl/xspec/
 .existdb.json
+edoc/rest2/v2.json
 
 # node-reladted stuff
 node_modules/
