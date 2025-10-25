@@ -20,39 +20,29 @@ declare variable $exist:prefix external;
 
 declare variable $local:isget := request:get-method() = ("GET","get");
 
-declare function local:user-allowed() as xs:boolean {
-  request:get-attribute("wd.user")
-  and request:get-attribute("wd.user") != "guest"
-};
-
 util:log("info", "request:get-method(): " || request:get-method()),
 util:log("info", "exist:path: " || $exist:path),
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
 if (
-    ($local:isget and $exist:path eq "/apiv2.html") or 
-    ($local:isget and matches($exist:path, "^/[^/]+\.json$", "s"))
+    ( $local:isget and $exist:path eq "/apiv2.html" ) or 
+    ( $local:isget and matches($exist:path, "^/[^/]+\.json$", "s") )
 ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist" />
+(: login :)
 else if ( $exist:resource = 'login' ) then
-  (
-    login:set-user("wd", substring-before(request:get-uri(), $exist:path), xs:dayTimeDuration("P2D"), false()),
-    try {
-      if (request:get-parameter('logout', '') = 'logout') then
-        wdba:getAuth(<br/>, map {'res': 'logout'})
-      else if (local:user-allowed()) then
-        wdba:getAuth(<br/>, map {'auth': <sm:id><sm:real><sm:username>{request:get-attribute("wd.user")}</sm:username></sm:real></sm:id>})
-      else ( 
-        response:set-status-code(401),
-        <status>fail</status>
-      )
-    } catch * {
-      response:set-status-code(403),
-      <status>{$err:description}</status>
-    }
-  )
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/api.xq"/>
+  </dispatch>
+(: logout :)
+else if ( $exist:resource = 'logout' ) then
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/api.xq">
+      <add-parameter name="logout" value="logout" />
+    </forward>
+  </dispatch>
+(: REST API :)
 else if ( contains($exist:path, 'api/v2') ) then
-  (: REST API :)
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/rest2/api.xq"/>
   </dispatch>
@@ -67,7 +57,6 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
     <view>
       <set-header name="Cache-Control" value="no-cache"/>
       <forward url="{$exist:controller}/admin/view.xql">
-      <!--  { login:set-user("wd", $cookiePath, $duration, false()) } -->
       </forward>
     </view>
     <error-handler>
@@ -80,7 +69,6 @@ else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/modules/view.xql">
-				<!-- { login:set-user("wd", $cookiePath, $duration, false()) } -->
 			</forward>
     </view>
   </dispatch>
@@ -92,7 +80,6 @@ else if ( contains($exist:path, "/$shared/") ) then
   </dispatch>
 else if ( ends-with($exist:path, ".xql") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <!-- { login:set-user("wd", $cookiePath, $duration, false()) } -->
     <set-header name="Cache-Control" value="no-cache"/>
     <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
   </dispatch>

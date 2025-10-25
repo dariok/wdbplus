@@ -4,6 +4,8 @@ module namespace r2 = "https://github.com/dariok/wdbplus/rest2/common";
 
 import module namespace router = "http://e-editiones.org/roaster/router";
 
+declare namespace sm = "http://exist-db.org/xquery/securitymanager";
+
 declare variable $r2:acceptable := ("application/json", "application/xml");
 
 (:~
@@ -14,11 +16,11 @@ declare variable $r2:base := doc('../config.xml')//*:rest2;
 
 declare variable $r2:allOrigins := if ( request:get-header('origin') != '' )
   then map { 
-    "Access-Control-Allow-Origin"  : request:get-header('origin'),
+    "Access-Control-Allow-Origin"      : request:get-header('origin'),
     "Access-Control-Allow-Credentials" : "true"
   }
   else map {
-    "Access-Control-Allow-Origin"  : "*"
+    "Access-Control-Allow-Origin" : "*"
   };
 (: ,
   "Access-Control-Allow-Methods" : "GET, POST, PUT, DELETE, OPTIONS",
@@ -35,4 +37,8 @@ declare function r2:returnXmlOrJson ( $data as item() ) as item() {
     )
     else
       router:response(406, "text/plain", "Not acceptable", $r2:allOrigins)
+};
+
+declare function r2:writeAllowed ( $user as element(sm:id) ) as xs:boolean {
+  $user//sm:group = ( 'dba', 'wdbadmin' )
 };

@@ -10,8 +10,10 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: /exist/apps/edoc
+  - url: http://localhost:8080/exist/apps/edoc
 tags:
+  - name: auth
+    description: Operations concerning authentication
   # - name: annotations
   #   description: Concerning Hobbits
   - name: projects
@@ -26,8 +28,70 @@ tags:
   #   description: OAI PMH endpoints
   # - name: dts
   #   description: Endpoints for Distributed Text Services
-
+security:
+  - cookieAuth: []
 paths:
+  /login:
+    post:
+      summary: "User Login"
+      description: "Start an authenticated session for the given user"
+      tags: [ "auth" ]
+      operationId: "auth:login"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/login"
+          application/x-www-form-urlencoded:
+            schema:
+              "$ref": "#/components/schemas/login"
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: string
+                  groups:
+                    type: array
+                    items:
+                      type: string
+                  dba:
+                    type: boolean
+                  domain:
+                    type: string
+        '401':
+          description: "Wrong user or password"
+      security:
+        - cookieAuth: []
+  /logout:
+    get:
+      summary: User Logout
+      description: End session of the current user
+      operationId: 'auth:logout'
+      tags:
+        - auth
+      parameters:
+        - name: logout
+          in: query
+          description: Set to some value to log out the current user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  
   # TODO – this should only contain functions that are not already covered by the other endpoint (if any):
   # /api/v2/admin
 
@@ -120,7 +184,6 @@ paths:
     get:
       tags:
         - projects
-      security: []
       summary: List all projects
       operationId: r2p:listProjects
       responses:
@@ -603,6 +666,12 @@ paths:
   # /api/v2/dts
 
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      name: wdbplus.login
+      in: cookie
+
   # parameters:
   #   id:
   #     name: "id"
@@ -803,6 +872,16 @@ components:
 
 
   schemas:
+    login:
+      type: object
+      required: [ "user" ]
+      properties:
+        user:
+          description: "Name of the user"
+          type: string
+        password:
+          type: string
+          format: password
     # TEI:
     #   description: A full TEI file
     #   type: object

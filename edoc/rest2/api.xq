@@ -5,7 +5,8 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
 import module namespace roaster = "http://e-editiones.org/roaster";
 
-import module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects" at "projects.xqm";
+import module namespace auth   = "http://e-editiones.org/roaster/auth";
+import module namespace r2p    = "https://github.com/dariok/wdbplus/rest2/projects" at "projects.xqm";
 
 (:~
  : list of definition files to use – relative to the controller path
