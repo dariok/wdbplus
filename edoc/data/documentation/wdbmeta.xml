@@ -1,0 +1,47 @@
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="documentation">
+    <projectID/>
+    <titleData>
+        <title type="main">wdb+ Documentation</title>
+        
+        <!-- add child elements to describe persons or organizations involved in the creation of a project -->
+        <!-- <involvement></involvement> -->
+        
+        <!-- enter one or more date(s) describing the timeline of texts in this project -->
+        <!-- <date></date> -->
+        
+        <!-- enter one or more places relevant to the texts in this project; use @href to link to authority files)  -->
+        <!-- <place href=""></place> -->
+        
+        <!-- enter on or more languages in which the texts in this project are written; should be ISO 639-3 -->
+        <!-- <language></language> -->
+        
+        <!-- enter a type of the texts in this project; use @hef to link to an authority file -->
+        <!-- <type></type> -->
+    <title type="sub">docu</title>
+    </titleData>
+    <metaData>
+        <contentGroup>
+            <!-- add more information of types of content or adjust this example -->
+            <content xml:id="text">
+                <description>full text of transcribed sources</description>
+                <!-- <external></external> -->
+            </content>
+        </contentGroup>
+        <!-- add persons or organizations that were involved in the creation of the original sources (as opposed to the
+                files contained in this project -->
+        <!-- <involvement></involvement> -->
+        <legal>
+            <licence content="text">(no licence stated)</licence>
+        </legal>
+    </metaData>
+    <files/>
+    <processes>
+        <process target="html">
+            <command type="xsl">resources/xsl/tei-transcript.xsl</command>
+        </process>
+    </processes>
+    <struct>
+        <import path="../wdbmeta.xml"/>
+    </struct>
+</projectMD>

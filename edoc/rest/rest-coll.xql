@@ -24,7 +24,7 @@ declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collectionID}/subcollection")
   %rest:consumes("application/json")
-function wdbRc:createSubcollectionJson ( $data as xs:string*, $collectionID as xs:string ) {
+function wdbRc:createSubcollectionJson ( $data as xs:string*, $collectionID as xs:string ) as item()+{
   let $map := parse-json(util:base64-decode($data))
   return wdbRc:createSubcollection($map, $collectionID)
 };
@@ -33,15 +33,15 @@ declare
   %rest:POST("{$data}")
   %rest:path("/edoc/collection/{$collectionID}/subcollection")
   %rest:consumes("application/xml")
-function wdbRc:createSubcollectionXml ( $data as element()*, $collectionID as xs:string ) {
+function wdbRc:createSubcollectionXml ( $data as element()*, $collectionID as xs:string ) as item()+ {
   let $map := map:merge(for $e in $data/* return map { $e/local-name(): $e/string() })
   return wdbRc:createSubcollection($map, $collectionID)
 };
 
 declare
   %private
-function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as xs:string ) {
-  if (map:size($collectionData) eq 0) then
+function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as xs:string ) as item()+ {
+  if ( map:size($collectionData) eq 0 ) then
     (
       <rest:response>
         <http:response status="400">
@@ -51,7 +51,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       </rest:response>,
       "no configuration data submitted"
     )
-  else if (not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys($collectionData)))) then
+  else if ( not(wdbRCo:sequenceEqual(("collectionName", "id", "name"), map:keys($collectionData))) ) then
     (
       <rest:response>
         <http:response status="400">
@@ -61,7 +61,8 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       </rest:response>,
       "missing data; needed information: collectionName, id, name"
     )
-  else if (not (collection($config:data)/id($collectionID)[self::meta:projectMD])) then
+  else if ( not (collection($config:data)/id($collectionID)[self::meta:projectMD]) ) then
+    (: rewrite to make use of project index :)
     (
       <rest:response>
         <http:response status="404">
@@ -69,9 +70,10 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
           <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
       </rest:response>,
-      "no project with ID " || $collectionID || " or project not using wdbmeta.xml"
+      "no project with ID " || $collectionID
     )
   else
+    (: TODO $collection can also be taken from project index :)
     let $collection := (wdbFiles:getFullPath($collectionID))?projectPath
       , $parentMeta := doc($collection || "/wdbmeta.xml")
     let $errUser := not(sm:has-access(base-uri($parentMeta), "w"))
@@ -101,7 +103,7 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
     else 
       let $subCollection := xmldb:create-collection($collection, $collectionData?collectionName)
       
-      let $co := xmldb:copy-resource($config:edocBaseDB || "/resources", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
+      let $co := xmldb:copy-resource($config:edocBaseDB || "/admin/project-template", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
       let $newMetaPath := $subCollection || "/wdbmeta.xml"
       
       let $collectionPermissions := sm:get-permissions(xs:anyURI($collection))
@@ -130,6 +132,9 @@ function wdbRc:createSubcollection ( $collectionData as map(*), $collectionID as
       let $insStruct := update insert <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta"
         file="{$collectionData?id}" label="{$collectionData?name}"
         /> into $parentMeta/meta:projectMD/meta:struct
+      
+      (: TODO: insert date, involvement, place, language, type, etc. :)
+      (: TODO: insert $collectionData?name into projectMD/struct/@label :)
       
       return (
         <rest:response>
@@ -483,13 +488,14 @@ function wdbRc:getCollectionNavHTML ( $ed as xs:string, $externalModel as map(*)
     
     let $html := try {
       let $struct := wdbRc:getCollectionNavXML($ed)
+          (: TODO: move to findProjectSpecific("getNavXSLT", "nav.xsl") once implemented :)
         , $xsl := if ( wdb:findProjectFunction($model, "wdbPF:getNavXSLT", 0) )
             then (wdb:getProjectFunction($model, "wdbPF:getNavXSLT", 0))($model)
-            else if ( doc-available($model?pathToEd || '/resources/nav.xsl') )
-            then xs:anyURI($model?pathToEd || '/resources/nav.xsl')
-            else if ( doc-available($config:data || '/resources/nav.xsl') )
-            then xs:anyURI($config:data || '/resources/nav.xsl')
-            else xs:anyURI($config:edocBaseDB || '/resources/nav.xsl')
+            else if ( doc-available($model?pathToEd || '/resources/xsl/nav.xsl') )
+            then xs:anyURI($model?pathToEd || '/resources/xsl/nav.xsl')
+            else if ( doc-available($config:data || '/resources/xsl/nav.xsl') )
+            then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
+            else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
       
       return transform:transform($struct, doc($xsl), $params, $attributes, ())
     } catch * {

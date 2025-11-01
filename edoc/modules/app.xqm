@@ -12,7 +12,6 @@ xquery version "3.1";
 module namespace wdb = "https://github.com/dariok/wdbplus/wdb";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"       at "wdb-config.xqm";
-import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
 import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "../data/instance.xqm";
@@ -98,47 +97,6 @@ declare function wdb:getAnnotationDialogue ( $node as node(), $model as map(*) )
 
 (: FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 (:~
- : Return the full URI to the (edition) XML file with the given ID
- : The scope is the whole data collection; documentation states in several places that file IDs need to be unique
- : 
- : This function raises errors that are to be caught by the caller
- :
- : @param $id as xs:string: the file ID
- : @return xs:string the full URI to the file within the database
- : @throws wdbErr:wdb0000
- : @throws wdbErr:wdb0001
- :)
-declare function wdb:getFilePath ( $id as xs:string ) as xs:string {
-  let $files := wdbFiles:getFilePaths($config:data, $id)
-  
-  (: do not just return a random URI but add some checks for better error messages:
-   : no files found or more than one TEI file found or only wdbmeta entry but no other info :)
-  let $pathToFile := if ( count($files) = 0 ) then
-      error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0000'),
-        "no file with ID " || $id || " in " || $config:data,
-        map { "id": $id, "request": request:get-url() }
-      )
-    else if ( count($files) > 1 ) then
-      error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0001'),
-        "multiple files with ID " || $id || " in " || $config:data,
-        map { "id": $id, "request": request:get-url() }
-      )
-    else if ( local-name($files[1]) = 'id' ) then
-      base-uri($files[1]) || '#' || $id
-    else
-      xstring:substring-before-last(base-uri($files[1]), '/') || '/' || $files[1]
-  
-  return if ( starts-with($files[1], '$') )
-    then
-      let $peer := $files[1] => substring(2) => substring-before('/')
-        , $id := $files[1] => substring-after('/')
-      return $config:configFile/id($peer) || '/' || $id
-    else $pathToFile
-};
-
-(:~
  : Tries to return an absolute path for a path within a project
  : 
  : @param $ed the ID of the project
@@ -186,8 +144,8 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
   let $files := if ( wdb:findProjectFunction($model, 'wdbPF:getProjectFiles', 1) ) then
       (wdb:getProjectFunction($model, "wdbPF:getProjectFiles", 1))($model)
     else
-      let $css := wdb:findProjectFile($model?pathToEd, "/scripts/project.css")
-        , $js := wdb:findProjectFile($model?pathToEd, "/scripts/project.js")
+      let $css := wdb:findProjectFile($model?projectResources, "/css/project.css")
+        , $js := wdb:findProjectFile($model?projectResources, "/js/project.js")
       
       return (
         if ( $css != "" )
@@ -242,13 +200,13 @@ declare function wdb:getProjectFunction ( $model as map(*), $name as xs:string, 
  : @param $fileName name of the file to search
  : @returns the full path to the file in the lowest position; if the file cannot be found, an empty URI is returned
  :)
-declare function wdb:findProjectFile ( $pathToEd as xs:string, $fileName as xs:string ) as xs:anyURI {
-  if ( util:binary-doc-available($pathToEd || "/" || $fileName) ) then
-    xs:anyURI($pathToEd || "/" || $fileName)
-  else if ( substring-after($pathToEd, $config:data) = '' ) then
+declare function wdb:findProjectFile ( $path as xs:string, $fileName as xs:string ) as xs:anyURI {
+  if ( util:binary-doc-available($path || "/" || $fileName) ) then
+    xs:anyURI($path || "/" || $fileName)
+  else if ( substring-after($path, $config:data) = '' ) then
     xs:anyURI("")
   else
-    wdb:findProjectFile(xstring:substring-before-last($pathToEd, '/'), $fileName)
+    wdb:findProjectFile(xstring:substring-before-last($path, '/'), $fileName)
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
@@ -277,15 +235,20 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
 (:~
  : Evaluate wdbmeta.xml to get the process used for transformation
  :
- : @param $ed The (relative) path to the project
  : @param $id The ID of the file to be processed
  : @param $target The processing target to be used
+ : @param $infoFileLoc The location of the wdbmeta.xml file
+ : @param $view (optional) a view parameter for selecting the right process
  :
  : @returns The path to the XSLT
 :)
-declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as xs:string {
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as element(process)? {
+    wdb:getXslFromWdbMeta($infoFileLoc, $id, $target, "")
+};
+declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as element(process)? {
   let $metaFile := doc($infoFileLoc)
     , $process := (
+        $metaFile//meta:process[@target = $target and @view = $view],
         $metaFile//meta:process[@target = $target],
         $metaFile//meta:process[1]
       )[1]
@@ -312,11 +275,21 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
       let $path := xstring:substring-before-last($infoFileLoc, '/')
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
-        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target)
+        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
     else ( util:log("error", $metaFile) )
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return normalize-space($sel[1])
+  return if ( $sel[1] instance of element(meta:process) )
+    then $sel[1]
+    else if ( $sel[1] instance of xs:string )
+      then <meta:process target="{$target}" view="{$view}">
+              <meta:command type="{$process/meta:command/@type}">{$sel[1]}</meta:command>
+           </meta:process>
+    else
+      error(
+        QName('wdbRErr', 'wdb0002'),
+        "no process found for target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+      )
 };
 (: END LOCAL HELPER FUNCTIONS :)
 

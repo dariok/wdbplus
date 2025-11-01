@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace wdbPN = "https://github.com/dariok/wdbplus/ProjectNew";
 
@@ -42,40 +42,60 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
       
       return if ( ($create)[1]//http:response/@status = '201')
       then
+        (: TODO: this should be done in wdbRc:createSubcollection #424 :)
         let $collection-uri := $create[2]
+
         let $textCollection := xmldb:create-collection($collection-uri, "texts")
-        let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
-        let $metaFile := $collection-uri || "/wdbmeta.xml"
+        (: create collection resources and project.xqm only if this is a main project :)
+        let $resources := if ( $targetCollection = 'data' )
+          then
+            let $resourcesCollection := xmldb:create-collection($collection-uri, "resources")
+            return (
+              xmldb:create-collection($collection-uri || "/resources", "blobs"),
+              xmldb:create-collection($collection-uri || "/resources", "css"),
+              xmldb:create-collection($collection-uri || "/resources", "html"),
+              xmldb:create-collection($collection-uri || "/resources", "images"),
+              xmldb:create-collection($collection-uri || "/resources", "js"),
+              xmldb:create-collection($collection-uri || "/resources", "xq"),
+
+              xmldb:copy-collection($config:edocBaseDB || "/admin/project-template/resources/xsl", $resourcesCollection),
+
+              sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
+              sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
+              for $c in xmldb:get-child-collections($resourcesCollection)
+                return (
+                    sm:chmod(xs:anyURI($resourcesCollection || '/' || $c), 'rwxrwxr-x'),
+                    sm:chown(xs:anyURI($resourcesCollection || '/' || $c), "wdb:wdbusers")
+                  ),
+              for $f in xmldb:get-child-resources($resourcesCollection || "/xsl")
+                return (
+                  sm:chmod(xs:anyURI($resourcesCollection || "/xsl/" || $f), "rwxrwxr-x"),
+                  sm:chown(xs:anyURI($resourcesCollection || "/xsl/" || $f), "wdb:wdbusers")
+                ),
+              
+              xmldb:copy-resource($config:edocBaseDB || "/admin/project-template", "project.xqm", $collection-uri, "project.xqm"),
+              sm:chown(xs:anyURI($collection-uri || "/project.xqm"), "wdb:wdbusers"),
+              sm:chmod(xs:anyURI($collection-uri || "/project.xqm"), "rwxrwxr-x")
+            )
+          else ()
         
-        let $copy := if (system:function-available(xs:QName("xmldb:copy-collection"), 2))
-          then util:eval("xmldb:copy-collection($source, $destination)", false(), (
-              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
-              xs:QName("destination"), $collection-uri
-            ))
-          else util:eval("xmldb:copy($source, $destination)", false(), (
-              xs:QName("source"), $config:edocBaseDB || "/resources/xsl",
-              xs:QName("destination"), $collection-uri
-            ))
+        let $metaFile := $collection-uri || "/wdbmeta.xml"
+          , $MD := doc($metaFile)
+          (: $targetCollection != 'data': sub-project; here, we use process inheritance as standard behaviour :)
+          , $changeProcess := if ( $targetCollection != 'data' )
+                then update replace $MD//meta:process[@target = 'html']
+                  with <process xmlns="https://github.com/dariok/wdbplus/wdbmeta" target="html" />
+                else ()
         
         let $chmod := (
           sm:chmod(xs:anyURI($collection-uri), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($textCollection), 'rwxrwxr-x'),
-          sm:chmod(xs:anyURI($resourcesCollection), 'rwxrwxr-x'),
           sm:chmod(xs:anyURI($metaFile), 'rw-rw-r--'),
-          sm:chmod(xs:anyURI($collection-uri || "/xsl"), "rwxrwxr-x"),
           sm:chown(xs:anyURI($collection-uri), "wdb:wdbusers"),
           sm:chown(xs:anyURI($textCollection), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($resourcesCollection), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($metaFile), "wdb:wdbusers"),
-          sm:chown(xs:anyURI($collection-uri || "/xsl"), "wdb:wdbusers"),
-          for $f in xmldb:get-child-resources($collection-uri || "/xsl")
-            return (
-              sm:chmod(xs:anyURI($collection-uri || "/xsl/" || $f), "rwxrwxr-x"),
-              sm:chown(xs:anyURI($collection-uri || "/xsl/" || $f), "wdb:wdbusers")
-            )
+          sm:chown(xs:anyURI($metaFile), "wdb:wdbusers")
         )
         
-        let $MD := doc($metaFile)
         let $addMD := (
           if ($pShort != "")
             then
@@ -101,7 +121,12 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
             <dd>wdbmeta.xml:</dd>
             <dt>{$metaFile}</dt>
             <dd>Admin</dd>
-            <dt><a href="directoryForm.html?ed={$pID}">Upload</a></dt>
+            <dt>
+              <ul>
+                <li><a href="directoryForm.html?ed={$pID}">Upload</a></li>
+                <li><a href="new.html?ed={$pID}">Unterprojekt erstellen</a></li>
+              </ul>
+            </dt>
           </dl>
       else $create
 };

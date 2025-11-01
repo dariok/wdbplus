@@ -1,0 +1,7 @@
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects
+Accept: application/json

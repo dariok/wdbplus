@@ -12,14 +12,16 @@ let $indexConfig := (
   xmldb:create-collection("/db/system/config/db/apps/edoc", "annotations"),
   xmldb:create-collection("/db/system/config/db/apps/edoc", "data"),
   xmldb:create-collection("/db/system/config/db/apps/edoc", "rest"),
+  xmldb:create-collection("/db/system/config/db/apps/edoc/data", "documentation"),
   xmldb:store("/db/system/config/db/apps/edoc/addins", "collection.xconf", doc($targetCollection || "/config/edoc/addins/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/annotations", "collection.xconf", doc($targetCollection || "/config/edoc/annotations/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/data", "collection.xconf", doc($targetCollection || "/config/edoc/data/collection.xconf")),
-  xmldb:store("/db/system/config/db/apps/edoc/rest", "collection.xconf", doc($targetCollection || "/config/edoc/rest/collection.xconf"))
+  xmldb:store("/db/system/config/db/apps/edoc/rest", "collection.xconf", doc($targetCollection || "/config/edoc/rest/collection.xconf")),
+  xmldb:store("/db/system/config/db/apps/edoc/data7documentation", "collection.xconf", doc($targetCollection || "/config/edoc/data/documentation/collection.xconf"))
 )
 
 let $collsr := (
-  "/modules", "/templates", "/resources/css", "/resources/scripts", "/resources/xsl"
+  "/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl"
 )
 
 let $chmod := (

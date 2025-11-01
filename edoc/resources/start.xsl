@@ -103,10 +103,10 @@
    </xsl:template>
 
    <xsl:template match="meta:legal">
-      <p class="legalInfo">
-         <span style="display: block;">Lizenzinformationen:</span>
+      <div class="legalInfo">
+         <h3>Lizenzinformationen:</h3>
          <xsl:apply-templates select="meta:licence"/>
-      </p>
+      </div>
    </xsl:template>
 
    <xsl:template match="meta:licence">

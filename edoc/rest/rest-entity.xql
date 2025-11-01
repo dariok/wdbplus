@@ -75,7 +75,7 @@ declare
 function wdbRe:scanHtml ( $collection as xs:string, $type as xs:string, $q as xs:string* ) as item()+ {
   let $coll := (wdbFiles:getFullPath($collection))?projectPath
     , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
   
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
@@ -129,7 +129,7 @@ declare
 function wdbRe:collectionEntityHtml ( $collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int* ) as item()+ {
   let $coll := (wdbFiles:getFullPath($collection))?projectPath
     , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
@@ -180,7 +180,7 @@ declare
     %output:method("html")
 function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
   let $coll := (wdbFiles:getFullPath($id))?collectionPath
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
     
   let $params := <parameters>
     <param name="rest" value="{$config:restURL}" />

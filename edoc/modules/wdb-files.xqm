@@ -67,24 +67,25 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
   let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
     , $project-hint := doc("/db/apps/edoc/index/project-index.xml")/id($id)
     , $file := ( doc($file-hint[1]/@project)/id($id), doc($project-hint[1]/@path || "/wdbmeta.xml")/id($id) )
+    , $request := if ( request:exists() ) then request:get-url() else 'no request context'
 
   return if ( count($file) = 0 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0000'),
         "no file with ID " || $id,
-        map { "id": $id, "request": request:get-url() }
+        map { "id": $id, "request": $request }
       )
     else if ( count($file-hint) gt 1 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0001'),
         "multiple files with ID " || $id,
-        map { "id": $id, "request": request:get-url() }
+        map { "id": $id, "request": $request }
       )
     else if ( count($project-hint) gt 1 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb1001'),
         "multiple projects with ID " || $id,
-        map { "id": $id, "request": request:get-url() }
+        map { "id": $id, "request": $request }
       )
     else if ( $file[self::meta:projectMD or self::meta:struct] ) then
       let $projectPath := base-uri($file[self::meta:projectMD or self::meta:struct]) => substring-before("wdbmeta.xml")
@@ -125,7 +126,7 @@ declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:st
   if ( util:binary-doc-available($projectPath || "/project.xqm") ) then
     $projectPath
   else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
-    "/db/apps/edoc/data/instance.xqm"
+    "/db/apps/edoc/data/"
   else
     wdbFiles:findMainProject(functx:substring-before-last($projectPath, '/'))
 };

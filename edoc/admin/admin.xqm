@@ -69,10 +69,10 @@ declare function wdbAdmin:getAside ($node as node(), $model as map(*)) as elemen
 };
 
 declare function wdbAdmin:css ( $node as node(), $model as map(*) ) as element()* {
-  if ( unparsed-text-available($config:data || "/resources/wdb.css") )
-    then <link rel="stylesheet" type="text/css" href="../data/resources/wdb.css" />
+  if ( unparsed-text-available($config:data || "/resources/css/wdb.css") )
+    then <link rel="stylesheet" type="text/css" href="../data/resources/css/wdb.css" />
     else (),
-  if ( unparsed-text-available($config:data || "/resources/admin.css") )
-    then <link rel="stylesheet" type="text/css" href="../data/resources/admin.css" />
+  if ( unparsed-text-available($config:data || "/resources/css/admin.css") )
+    then <link rel="stylesheet" type="text/css" href="../data/resources/css/admin.css" />
     else ()
 };

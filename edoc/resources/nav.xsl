@@ -64,6 +64,16 @@
       </li>
    </xsl:template>
    
+   <xsl:template match="meta:struct[parent::meta:struct and not(*)]">
+      <xsl:variable name="id">
+         <xsl:call-template name="makeID" />
+      </xsl:variable>
+      
+      <li id="{$id}">
+         <xsl:apply-templates select="@label" />
+      </li>
+   </xsl:template>
+   
    <xsl:function name="meta:order" as="xs:double">
       <xsl:param name="order" />
       

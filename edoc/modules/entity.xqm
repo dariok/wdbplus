@@ -31,10 +31,10 @@ declare function wdbe:getEntity ( $node as node(), $model as map(*), $ent as xs:
 };
 
 declare function wdbe:getEntityBody( $node as node(), $model as map(*) ) as element() {
-  let $xsl := if ( doc-available($model?pathToEd || "/resources/tei-index.xsl") )
-        then doc($model?pathToEd || "/resources/tei-index.xsl")
-        else if ( doc-available("/db/apps/edoc/data" || "/resources/tei-index.xsl") )
-        then doc("/db/apps/edoc/data" || "/resources/tei-index.xsl")
+  let $xsl := if ( doc-available($model?pathToEd || "/resources/xsl/tei-index.xsl") )
+        then doc($model?pathToEd || "/resources/xsl/tei-index.xsl")
+        else if ( doc-available("/db/apps/edoc/data/resources/xsl/tei-index.xsl") )
+        then doc("/db/apps/edoc/data/resources/xsl/tei-index.xsl")
         else doc("/db/apps/edoc/resources/xsl/tei-index.xsl")
     , $result := transform:transform($model?entry, $xsl, ())
   

@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>wdb+ - OpenAPI</title>
+        <link rel="icon" type="image/png" href="static/roaster-router-logo.png" />
+        <link rel="stylesheet" href="resources/css/swagger-ui.css"/>
+        <script src="resources/js/swagger-ui-bundle.js" charset="UTF-8"></script>
+    </head>
+    <body>
+        <div id="basic"/>
+        <div id="custom"/>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                SwaggerUIBundle({
+                    url: 'rest2/v2.json',
+                    dom_id: '#basic',
+                    displayOperationId: true,
+                    displayRequestDuration: true,
+                    showExtensions: true,
+                    withCredentials: true
+                });
+
+               //  SwaggerUIBundle({
+               //      url: 'api-jwt.json',
+               //      dom_id: '#custom',
+               //      displayOperationId: true,
+               //      displayRequestDuration: true,
+               //      showExtensions: true,
+               //      withCredentials: true
+               //  });
+            })
+        </script>
+    </body>
+</html>

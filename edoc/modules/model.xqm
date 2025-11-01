@@ -32,12 +32,13 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
  declare function wdbm:populateModel ( $id as xs:string?, $ed as xs:string?,
                                        $view as xs:string, $p as xs:string, $q as xs:string ) as item()* {
   try {
-    let $filePathInfo := if ( $ed = "" and $id = "" )
+    (: get the file path info :)
+    let $filePathInfo := if ( not($ed or $id) )
           then
             map {
               "projectPath": $config:data,
               "collectionPath": $config:data,
-              "fileName": $config:data || "/wdbmeta.xml",
+              "fileName": "wdbmeta.xml",
               "mainProject": $config:data
             }
           else
@@ -67,19 +68,28 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       , $instanceFunctions := for $function in doc($config:data || "/instance-functions.xml")//function
           return $function/@name || '#' || count($function/argument)
     
+    (: even though it’s called xsl, we use the whole meta:process element here so that later we can use multi-command
+       processing (#394) :)
     let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
       then
-        (: TODO get path to XSL via function – unify with REST function (rest-files) :)
-        xs:anyURI($config:data || '/resources/nav.xsl')
+        (: TODO nav.xsl: use edoc/resources/xsl/nav.xsl if none in data/resources :)
+        <meta:process target="html">
+          <meta:command type="xsl">{ xs:anyURI($config:data || '/resources/xsl/nav.xsl') }</meta:command>
+        </meta:process>
       else
-        wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html')
+        wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
-    let $xslt := if ( doc-available($xsl) )
-      then $xsl
-      else if ( doc-available($filePathInfo?projectPath || '/' || $xsl) )
-      then $filePathInfo?projectPath || '/' || $xsl
-      else ""
-      
+    let $xslt := if ( not($xsl) instance of element(meta:process) )
+      then wdbErr:error(map { "code": "wdbErr:wdb0002", "err:description": "no XSLT found for file with ID " || $id,
+                "err:additional": <additional>
+                  <file>{$filePathInfo?fileName}</file>
+                  <project>{$filePathInfo?projectPath}</project>
+                  <id>{$id}</id>
+                </additional>
+              }
+            )
+      else $xsl
+    
     let $doc := doc($pathToFile)
       , $title := if ( $id != "" )
           then normalize-space(($doc//tei:title)[1])

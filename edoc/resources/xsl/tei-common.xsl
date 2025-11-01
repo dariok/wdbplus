@@ -335,7 +335,7 @@
       <xsl:variable name="url">
          <xsl:choose>
             <xsl:when test="starts-with($image, 'http')">
-               <xsl:value-of select="@facs"/>
+               <xsl:value-of select="$image"/>
             </xsl:when>
             <!-- private URI -->
             <xsl:when test="contains($image, ':')">

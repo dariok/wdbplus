@@ -6,6 +6,7 @@ import module namespace config   = "https://github.com/dariok/wdbplus/config"   
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
 import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbProc  = "https://github.com/dariok/wdbplus/Process"     at "../modules/wdb-process.xqm";
 import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
 import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
 import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
@@ -66,7 +67,8 @@ declare
   %rest:HEAD
   %rest:path("/edoc/resource/{$id}")
 function wdbRf:fileHead ( $id as xs:string ) as element(rest:response) {
-  wdbRCo:head(wdb:getFilePath($id))
+  let $fileInfo := wdbFiles:getFullPath($id)
+  return wdbRCo:head($fileInfo?collectionPath || '/' || $fileInfo?fileName)
 };
 
 (: upload a single file with known ID (i.e. one that is already present)
@@ -247,7 +249,7 @@ function wdbRf:getResource ( $id as xs:string, $modified as xs:string* ) {
             else <http:header name="rest-status" value="REST:ERROR" />
         }
         <http:header name="Access-Control-Allow-Origin" value="*"/>
-        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($f/@path, '.')}"' />
+        <http:header name="Content-Disposition" value='attachment; filename="{$id}.{substring-after($file/@path, '.')}"' />
         <http:header name="Last-Modified" value="{ wdbFiles:getModificationDate($id) => wdbFiles:ietfDate() }" />
       </http:response>
     </rest:response>,
@@ -390,25 +392,25 @@ declare
     %rest:path("/edoc/resource/view/{$id}.{$type}")
     %rest:query-param("view", "{$view}", "")
 function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as xs:string* ) as item()* {
-  let $model := wdbm:populateModel($id, (), $view, "", "")
-    , $wdbmeta := doc($model?infoFileLoc)
-  
   (: by definition in wdbmeta.rng and in analogy to the behaviour of view.html: $type maps to process/@target,
      $view is used as a parameter. If there is only one process for $type, $view will be handed over as a parameter;
      if there are multiple processes for $type, $view will be used to select via process/@view. If the are multiple
      processes but none with the given $view, this is an error :)
-  let $processes := $wdbmeta//meta:process[@target = $type]
-  let $process := if ( count($processes) = 1 )
-    then $processes[1]
-    else $processes[@view = $view]
   
-  let $status := if ( $wdbmeta = () )
-      then (500, "no wdbmeta found for " || $id || "!")
-      else if (not($processes))
-      then (404, "no process found for target type " || $type)
-      else if (not($process))
+  let $pathInfo := wdbFiles:getFullPath($id)
+    , $infoFileLoc := $pathInfo?projectPath || 'wdbmeta.xml'
+    , $process := wdb:getXslFromWdbMeta($infoFileLoc, $id, $type, $view)
+  
+  let $status := if ( $infoFileLoc = "" )
+      then (404, "No file with ID " || $id || " found!")
+      else if ( not($process) )
       then (400, "no process found for target type " || $type || " that has a view " || $view)
-      else wdbRf:getContent($id, $process, $view, $model)
+      else wdbProc:getContent($id, $process, $view,
+              map { 
+                    'fileLoc': $pathInfo?collectionPath || '/' || $pathInfo?fileName,
+                    'pathToEd': $pathInfo?projectPath
+                  }
+            )
   
   let $namespace := if ($status[2] instance of element())
     then $status[2]/*[1]/namespace-uri()
@@ -423,63 +425,6 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
     </rest:response>,
     $status[position() gt 1]
   )
-};
-
-declare function wdbRf:getContent($id as xs:string, $process as element(), $view as xs:string, $model as map(*)) as item()* {
-  (: TODO if multiple commands are defined, check that one is actually applicable – #395 :)
-  (: TODO pass the position of this command on to the processing function or pass target and view on :)
-  (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
-  let $type := $process[1]/meta:command/@type
-  return if ($type = "xsl")
-    then wdbRf:processXSL($id, $process, $model)
-    else if ($type = "xquery")
-    then wdbRf:processXQuery($id, $process, $model)
-    else (500, "Invalid command type " || $type)
-};
-
-(: TODO: move this functions to a more generic location (e.g. common.xq) as is should also be used from app.xqm :)
-(: TODO: use parameter list as defined in app.xqm :)
-(: TODO: inject additional parameters? :)
-declare function wdbRf:processXSL( $id as xs:string, $process as element(), $model as map(*) ) as item()* {
-  let $content := try {
-    let $attr :=
-          <attributes>
-            <attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" />
-          </attributes>,
-        $params :=
-          <parameters>
-            <param name="view" value="{$model?view}" />
-          </parameters>
-      
-      return transform:transform(doc($model?fileLoc),
-          doc($model?pathToEd || '/' || normalize-space($process/meta:command)),
-          $params,
-          $attr,
-          "expand-xincludes=no"
-        )
-    } catch * {
-      ("error",
-        $err:description,
-        util:log("error", "Processing " || $id || ": " || $err:description))
-    }
-  
-  return if ($content[1] = "error")
-    then (500, $content[2])
-    else (200, $content)
-};
-
-declare function wdbRf:processXQuery($id as xs:string, $process as element(), $model as map(*)) as item()* {
-  let $function := $process/meta:command/text()
-  return if (starts-with($function, 'http') or starts-with($function, '/'))
-  then () (: TODO :)
-  else
-    let $fn := wdb:findProjectFunction($model, $function, 2)
-    return if ($fn) then try {
-      (200, wdb:eval($function || "($id, $process)", false(), (xs:QName("id"), $id, xs:QName("process"), $process)))
-    } catch * {
-      (500, $err:description)
-    }
-    else (500, "function " || $function || " not found")
 };
 
 declare
