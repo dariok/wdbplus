@@ -1,7 +1,41 @@
+OPTIONS http://localhost:8080/exist/apps/edoc/api/v2/projects
+
+###
+
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects
 Accept: application/xml
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects
+PATCH http://localhost:8080/exist/apps/edoc/api/v2/projects
 Accept: application/json
+
+###
+# supposed to fail – no media type given
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects
+
+###
+# supposed to fail – POST must not have an ID
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects
+Content-Type: application/json
+
+{
+  "title": "New Project",
+  "short": "short title",
+  "collection": "newCollectionName"
+}
+
+###
+
+POST http://localhost:8080/exist/apps/edoc/api/v2/login
+Content-Type: multipart/form-data; boundary=----test----
+
+------test----
+Content-Disposition: form-data; name="user"
+
+admin
+------test----
+Content-Disposition: form-data; name="password"
+
+admin
+------test------

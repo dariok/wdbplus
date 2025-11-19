@@ -6,12 +6,11 @@ chai.use(chaiHttp);
 chai.config.includeStack = true;
 
 const baseUrl = "http://localhost:8080/exist/apps/edoc/api/v2";
-const agent = request.agent(baseUrl);
 const expect = chai.expect;
 const parser = new xmldom.DOMParser();
 
-describe("REST v2 projects", function() {
-  it("OPTIONS /projects", function( ) {
+describe("REST v2 projects – OPTIONS", function () {
+  it("OPTIONS /projects", function ( ) {
     return request.execute(baseUrl)
       .options("/projects")
       .then(( res ) => {
@@ -19,7 +18,10 @@ describe("REST v2 projects", function() {
         expect(res).to.have.header("allow", "GET, POST, OPTIONS");
       });
     });
-  it("GET /projects XML", function( ) {
+});
+
+describe("REST v2 projects – GET", function () {
+  it("GET /projects XML", function ( ) {
     return request.execute(baseUrl)
       .get("/projects")
       .set("Accept", "application/xml")
@@ -32,7 +34,7 @@ describe("REST v2 projects", function() {
         expect(doc.getElementsByTagName('project')[0].getAttribute('label')).to.equal("wdb+ main project collection");
       });
   });
-  it("GET /projects JSON", function( ) {
+  it("GET /projects JSON", function ( ) {
     return request.execute(baseUrl)
       .get("/projects")
       .set("Accept", "application/json")
@@ -47,4 +49,85 @@ describe("REST v2 projects", function() {
   });
 });
 
-agent.close();
+describe("REST v2 projects – POST", function () {
+  let agent;
+
+  before(() => {
+    // Create a persistent agent for session handling
+    agent = request.agent(baseUrl);
+  });
+
+  after(() => {
+    // Close the agent after tests
+    agent.close();
+  });
+
+  it("POST /projects to create without ID and without login", function ( ) {
+    return request.execute(baseUrl)
+        .post("/projects")
+        .send({ title: "test" })
+        .then( ( res ) => {
+          expect(res).to.have.status(401);
+        } );
+  });
+  it("POST /projects to create without ID with login, but send an ID", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          expect(res).to.have.status(200);
+          expect(res).to.have.cookie('JSESSIONID');
+
+          return agent.post("/projects")
+              .set("Content-Type", "application/json")
+              .send({
+                title: "New Project without ID",
+                short: "Created by unit test",
+                collection: "test10",
+                id: "test10"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(422);
+              });
+            });
+  });
+  it("POST /projects to create without ID with login, but leave out a title", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          return agent.post("/projects")
+              .set("Content-Type", "application/json")
+              .send({
+                short: "Created by unit test",
+                collection: "test20"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(422);
+              });
+            });
+  });
+  it("POST /projects to create without ID with login", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          return agent.post("/projects")
+              .set("Content-Type", "application/json")
+              .set("X-Info", "true")
+              .send({
+                title: "New Project without ID",
+                short: "Created by unit test",
+                collection: "test30"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(204);
+                // expect(res.body).to.have.property("error");
+                // expect(res.body.error).to.equal("Project ID is required.");
+              });
+            });
+  });
+});

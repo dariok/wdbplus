@@ -31,7 +31,7 @@ tags:
 security:
   - cookieAuth: []
 paths:
-  /login:
+  /api/v2/login:
     post:
       summary: "User Login"
       description: "Start an authenticated session for the given user"
@@ -68,7 +68,7 @@ paths:
           description: "Wrong user or password"
       security:
         - cookieAuth: []
-  /logout:
+  /api/v2/logout:
     get:
       summary: User Logout
       description: End session of the current user
@@ -189,22 +189,28 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/result'
-    # TODO: implement
-    # post:
-    #   tags:
-    #     - projects
-    #   summary: Create a project without specifying an ID
-    #   description: Create a project with the meta data provided while auto-generating the ID
-    #   operationId: #TODO
-    #   requestBody:
-    #     $ref: "#/components/requestBodies/project"
-    #   responses:
-    #     "204":
-    #       $ref: "#/components/responses/created"
-    #     "400":
-    #       $ref: "#/components/responses/invalidBody"
-    #     "409":
-    #       description: A project already exists in this location
+    post:
+      tags:
+        - projects
+      summary: Create a project without specifying an ID
+      description: Create a project with the meta data provided while auto-generating the ID
+      operationId: r2p:createProjectWithoutId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "409":
+          description: A project already exists in this location
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
+      security:
+        - cookieAuth: []
+
   # TODO: implement
   # /api/v2/projects/{ed}:
   #   parameters:
@@ -728,16 +734,16 @@ components:
   #       format: date-time
   
   responses:
-    # created:
-    #   description: Annotation, file, etc. has been created
-    #   headers:
-    #     Location:
-    #       description: Location of the annotation, file etc.
-    #       schema:
-    #         type: string
-    #         format: uri
-    # invalidBody:
-    #   description: Request body is invalid or not wellformed
+    created:
+      description: Annotation, file, etc. has been created
+      headers:
+        Location:
+          description: Location of the annotation, file etc.
+          schema:
+            type: string
+            format: uri
+    invalidBody:
+      description: Request body is invalid or not wellformed
     # authenticate:
     #   description: Authentication necessary
     #   headers:
@@ -826,7 +832,7 @@ components:
   #             - $ref: "#/components/schemas/files"
   #             - $ref: "#/components/schemas/projects"
 
-  # requestBodies:
+  requestBodies:
   #   annotation:
   #     description: the full text annotation to be added
   #     required: true
@@ -837,16 +843,16 @@ components:
   #       application/xml:
   #         schema:
   #           $ref: "#/components/schemas/annotation.xml"
-  #   project:
-  #     description: The necessary data for the project to be created or updated
-  #     required: true
-  #     content:
-  #       application/json:
-  #         schema:
-  #           $ref: "#/components/schemas/projectMetadata"
-  #       application/xml:
-  #         schema:
-  #           $ref: "#/components/schemas/projectMetadata"
+    project:
+      description: The necessary data for the project to be created or updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
   #   entity:
   #     description: A (TEI) description of one entity
   #     required: true
@@ -1042,13 +1048,24 @@ components:
         - id
         - label
     
-    # projectMetadata:
-    #   description: project meta data
-    #   type: object
-    #   xml:
-    #     name: projectMD
-    #     namespace: "https://github.com/dariok/wdbmeta"
-      
+    projectMetadata:
+      description: project meta data
+      type: object
+      xml:
+        namespace: "https://github.com/dariok/wdbmeta"
+        name: project
+      properties:
+        title:
+          type: string
+          description: The Title of the project
+        id:
+          type: string
+          description: The ID of the project if it is to be created with a specific ID
+        path:
+          type: string
+          description: The path where the project is to be created; defaults to the value of `id`.
+      required:
+        - title
 
     # entity-person:
     #   type: object
