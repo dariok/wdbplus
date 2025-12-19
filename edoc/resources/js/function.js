@@ -48,15 +48,18 @@ const wdb = (function() {
       , password = $('#password').val();
     wdb.report("info", "login request");
     Cookies.remove('wdbplus');
+
+    let formdata = new FormData();
+    formdata.append("user", username);
+    formdata.append("password", password);
     
     $.ajax({
       url: 'login',
       method: 'post',
-      data: {
-        user: username,
-        password: password,
-        edition: $('#edition').val()
-      },
+      data: formdata,
+      processData: false,
+      contentType: false,
+      cache: false,
       success: function (data) {
         try {
           Cookies.set('wdbplus', btoa(username + ':' + password));
