@@ -54,7 +54,7 @@
       <p class="cite">
          <xsl:text>Diese Seite zitieren: </xsl:text>
          <a href="start.html?{.}">
-            <xsl:value-of select="doc('../config.xml')//config:server"/>
+            <xsl:value-of select="doc('../../config.xml')//config:server"/>
             <xsl:text>/start.html?ed=</xsl:text>
             <xsl:value-of select="."/>
          </a>
