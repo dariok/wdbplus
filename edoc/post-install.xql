@@ -17,7 +17,7 @@ let $indexConfig := (
   xmldb:store("/db/system/config/db/apps/edoc/annotations", "collection.xconf", doc($targetCollection || "/config/edoc/annotations/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/data", "collection.xconf", doc($targetCollection || "/config/edoc/data/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/rest", "collection.xconf", doc($targetCollection || "/config/edoc/rest/collection.xconf")),
-  xmldb:store("/db/system/config/db/apps/edoc/data7documentation", "collection.xconf", doc($targetCollection || "/config/edoc/data/documentation/collection.xconf"))
+  xmldb:store("/db/system/config/db/apps/edoc/data/documentation", "collection.xconf", doc($targetCollection || "/config/edoc/data/documentation/collection.xconf"))
 )
 
 let $collsr := (
@@ -38,6 +38,8 @@ let $chmod := (
     return sm:chmod(xs:anyURI($targetCollection || '/modules/' || $xql), 'r-xr-xr-x'),
   for $global in xmldb:get-child-resources($targetCollection || '/global')
     return sm:chmod(xs:anyURI($targetCollection || '/global/' || $global), 'rw-rw-r--'),
+  for $global in xmldb:get-child-resources($targetCollection || '/logs')
+    return sm:chmod(xs:anyURI($targetCollection || '/logs/' || $global), 'rw-rw-rw-'),
   sm:chmod(xs:anyURI($targetCollection || '/config.xml'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
   sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
