@@ -55,7 +55,7 @@ const wdb = (function() {
     formdata.append("password", password);
     
     $.ajax({
-      url: '../login',
+      url: '../api/v2/login',
       method: 'post',
       data: formdata,
       processData: false,
