@@ -41,6 +41,7 @@ const wdb = (function() {
   };
 
   /* Login and logout */
+  /* TODO: this needs to be reworked completely */
   let login = function ( event, reload ) {
     event.preventDefault();
   
@@ -54,7 +55,7 @@ const wdb = (function() {
     formdata.append("password", password);
     
     $.ajax({
-      url: 'login',
+      url: '../login',
       method: 'post',
       data: formdata,
       processData: false,
