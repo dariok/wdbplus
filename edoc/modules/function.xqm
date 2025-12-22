@@ -53,7 +53,8 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
     util:log("error", "project not found: " || $err:value?ed || " from request " || $err:value?request),
     wdbErr:error(map{
       "code": $err:code,
-      "err:description": "project not found",
+      "description": "project not found",
+      "err:description": $err:description,
       "err:additional": $err:additional
     })
   } catch * {
