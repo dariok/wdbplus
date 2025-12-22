@@ -238,6 +238,10 @@ paths:
           $ref: "#/components/responses/created"
         "400":
           $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
         "415":
           description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
         "422":
@@ -245,24 +249,33 @@ paths:
       security:
         - cookieAuth: []
   
-  # /api/v2/projects/{parent}/subprojects/{ed}:
-  #   put:
-  #     tags:
-  #       - projects
-  #     summary: Create project with given ID
-  #     description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
-  #     operationId: #TODO
-  #     requestBody:
-  #       $ref: "#/components/requestBodies/project"
-  #     responses:
-  #       "204":
-  #         description: The project was created or updated
-  #       "400":
-  #         $ref: "#/components/responses/invalidBody"
-  #       "404":
-  #         description: Project $ed not found
-  #       "409":
-  #         description: A project exists with this ID in a different location or the location requested contains a project with a different ID
+  /api/v2/projects/{parent}/subprojects/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/parent"
+      - $ref: "#/components/parameters/ed"
+    put:
+      tags:
+        - projects
+      summary: Create project with given ID
+      description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
+      operationId: r2p:createProjectWithId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
+        "409":
+          description: A project exists with this ID in a different location or the location requested contains a project with a different ID
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
   
   # TODO: implement as a view on the project instead (with parameter ?view=nav or similar)
   # /api/v2/projects/{ed}/nav:
@@ -695,13 +708,13 @@ components:
   #     schema:
   #       type: string
   #     required: true
-  #   ed:
-  #     name: "ed"
-  #     in: path
-  #     description: The ID of the project
-  #     schema:
-  #       type: string
-  #     required: true
+    ed:
+      name: "ed"
+      in: path
+      description: The ID of the project
+      schema:
+        type: string
+      required: true
   #   entity:
   #     name: "entity"
   #     in: path
@@ -750,6 +763,13 @@ components:
   #       format: date-time
   
   responses:
+    authenticate:
+      description: Authentication necessary
+      headers:
+        WWW-Authenticate:
+          description: Challenge for authentication
+          schema:
+            type: string
     created:
       description: Annotation, file, etc. has been created
       headers:
@@ -760,13 +780,6 @@ components:
             format: uri
     invalidBody:
       description: Request body is invalid or not wellformed
-    # authenticate:
-    #   description: Authentication necessary
-    #   headers:
-    #     WWW-Authenticate:
-    #       description: Challenge for authentication
-    #       schema:
-    #         type: string
 
     # annotations:
     #   description: A list of annotations matching the query

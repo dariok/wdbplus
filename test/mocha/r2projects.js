@@ -65,7 +65,7 @@ describe("REST v2 projects – POST", function () {
   it("POST /projects/data/subprojects to create a new main project without ID and without login", function ( ) {
     return request.execute(baseUrl)
         .post("/projects/data/subprojects")
-        .send({ title: "test" })
+        .send({ title: "test", collection: "collection" })
         .then( ( res ) => {
           expect(res).to.have.status(401);
         } );
@@ -139,6 +139,27 @@ describe("REST v2 projects – POST", function () {
                 title: "New Project without ID",
                 short: "Created by unit test",
                 collection: "test30"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(201);
+                // expect(res.body).to.have.property("error");
+                // expect(res.body.error).to.equal("Project ID is required.");
+              });
+            });
+  });
+  it("PUT /projects/data/subprojects/project to create project with ID with login", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          return agent.put("/projects/data/subprojects/project")
+              .set("Content-Type", "application/json")
+              .set("X-Info", "true")
+              .send({
+                title: "New Project without ID",
+                short: "Created by unit test",
+                collection: "test40"
               })
               .then(( res ) => {
                 expect(res).to.have.status(201);

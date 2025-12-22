@@ -59,6 +59,17 @@ Content-Type: application/json
 }
 
 ###
+# supposed to succeed
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/namedProject
+Content-Type: application/json
+
+{
+  "title": "new named project",
+  "short": "NewName",
+  "collection": "nnp"
+}
+
+###
 
 POST http://localhost:8080/exist/apps/edoc/api/v2/login
 Content-Type: multipart/form-data; boundary=----test----

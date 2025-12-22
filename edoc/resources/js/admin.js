@@ -233,6 +233,35 @@ $(document).on("change", "select[name=target]", () => {
   wdbAdmin.setFiles($('#picker')[0].files);
 });
 
+$(document).on("submit", "#newProjectForm", ( event ) => {
+  event.preventDefault();
+  /* TODO adjust for RESTv2 meta */
+  let rest = window.location.pathname.substring(0, window.location.pathname.indexOf('admin')) + "api/v2/"
+    , baseUrl = rest + "projects/" + wdb.meta.ed + "/subprojects/"
+    , newCollectionData = { "title": $('#pName').val(), "short": $('#pShort').val(), "collection": $('#pColl').val() }
+    , method = $('#pID').val() == '' ? "post" : "put";
+
+  $.ajax({
+    method: method,
+    url: baseUrl + $('#pID').val(),
+    contentType: "application/json",
+    data: JSON.stringify(newCollectionData),
+    success: function ( data ) {
+      let url = new URL(window.location.href);
+      url.searchParams.delete("ed");
+      url.searchParams.append("pName", $('#pName').val()?.toString() ?? 'unknown');
+      url.searchParams.append("pShort", $('#pShort').val()?.toString() ?? 'unknown');
+      url.searchParams.append("pID", $('#pID').val()?.toString() ?? 'unknown');
+      url.searchParams.append("collection", data);
+      url.searchParams.append("ed", $('#pID').val()?.toString() ?? 'unknown');
+      window.location.href = url.toString();
+    },
+    error: function ( data ) {
+      $('#container').html("<p>" + data.responseText + "</p>");
+    }
+  });
+});
+
 // limit the number of concurrent PUT/POST requests to avoid lockups in eXist
 let uploadManager = (function() {
   const MAX_REQUESTS = 1;           // local test: produces Jetty errors (“blocking message ...”) for 2 or more...
