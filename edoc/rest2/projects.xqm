@@ -101,6 +101,9 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
       sm:chmod(xs:anyURI($subCollection), $collectionPermissions//@mode),
       sm:chown(xs:anyURI($newMetaPath), $metaPermissions//@owner || ":" || $metaPermissions//@group),
       sm:chmod(xs:anyURI($newMetaPath), $metaPermissions//@mode),
+      xmldb:create-collection($collection-uri, "texts"),
+      sm:chown(xs:anyURI($subCollection || '/texts'), $collectionPermissions//@owner || ":" || $collectionPermissions//@group),
+      sm:chmod(xs:anyURI($subCollection || '/texts'), $collectionPermissions//@mode),
       update insert attribute xml:id { $request?body?ed } into $meta/meta:projectMD,
       update replace $meta//meta:projectID[1]
           with <projectID xmlns="https://github.com/dariok/wdbplus/wdbmeta" type="main">{ $request?body?ed }</projectID>,
