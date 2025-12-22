@@ -2,7 +2,7 @@
 <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta">
     <projectID></projectID>
     <titleData>
-        <title></title>
+        <title type="main"></title>
         
         <!-- add child elements to describe persons or organizations involved in the creation of a project -->
         <!-- <involvement></involvement> -->
@@ -40,5 +40,7 @@
             <command type="xsl">resources/xsl/tei-transcript.xsl</command>
         </process>
     </processes>
-    <struct></struct>
+    <struct>
+        <import path="../wdbmeta.xml" />
+    </struct>
 </projectMD>

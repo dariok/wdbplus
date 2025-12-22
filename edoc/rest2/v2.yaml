@@ -189,27 +189,6 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/result'
-    post:
-      tags:
-        - projects
-      summary: Create a project without specifying an ID
-      description: Create a project with the meta data provided while auto-generating the ID
-      operationId: r2p:createProjectWithoutId
-      requestBody:
-        $ref: "#/components/requestBodies/project"
-      responses:
-        "201":
-          $ref: "#/components/responses/created"
-        "400":
-          $ref: "#/components/responses/invalidBody"
-        "409":
-          description: A project already exists in this location
-        "415":
-          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
-        "422":
-          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
-      security:
-        - cookieAuth: []
 
   # TODO: implement
   # /api/v2/projects/{ed}:
@@ -237,6 +216,36 @@ paths:
   #         description: The project has been deleted
   #       "404":
   #         description: This project was not found
+
+  /api/v2/projects/{parent}/subprojects:
+  # TODO: Implement
+    parameters:
+      - $ref: "#/components/parameters/parent"
+  #   get:
+  #     tags:
+  #       - projects
+  #     summary: Get a list of all subprojects of ${parent}
+    post:
+      tags:
+        - projects
+      summary: Create a project in ${parent} without specifying an ID
+      description: Create a project as child of ${parent} with the meta data provided in the body while auto-generating the ID. E.g., creating a new main project requires "data" as parent.
+      operationId: r2p:createProjectWithoutId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
+      security:
+        - cookieAuth: []
+  
+  # /api/v2/projects/{parent}/subprojects/{ed}:
   #   put:
   #     tags:
   #       - projects
@@ -678,7 +687,7 @@ components:
       name: wdbplus.login
       in: cookie
 
-  # parameters:
+  parameters:
   #   id:
   #     name: "id"
   #     in: path
@@ -700,6 +709,13 @@ components:
   #     schema:
   #       type: string
   #     required: true
+    parent:
+      name: "parent"
+      in: path
+      description: The ID of the parent project
+      schema:
+        type: string
+      required: true
   #   q:
   #     name: q
   #     in: query
@@ -1061,11 +1077,12 @@ components:
         id:
           type: string
           description: The ID of the project if it is to be created with a specific ID
-        path:
+        collection:
           type: string
-          description: The path where the project is to be created; defaults to the value of `id`.
+          description: The path where the project is to be created
       required:
         - title
+        - collection
 
     # entity-person:
     #   type: object

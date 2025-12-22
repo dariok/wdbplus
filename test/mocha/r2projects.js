@@ -62,15 +62,15 @@ describe("REST v2 projects – POST", function () {
     agent.close();
   });
 
-  it("POST /projects to create without ID and without login", function ( ) {
+  it("POST /projects/data/subprojects to create a new main project without ID and without login", function ( ) {
     return request.execute(baseUrl)
-        .post("/projects")
+        .post("/projects/data/subprojects")
         .send({ title: "test" })
         .then( ( res ) => {
           expect(res).to.have.status(401);
         } );
   });
-  it("POST /projects to create without ID with login, but send an ID", function ( ) {
+  it("POST /projects/data/subprojects to create without ID with login, but send an ID", function ( ) {
     return agent.post("/login")
         .set("Content-Type", "multipart/form-data")
         .field("user", "admin")
@@ -79,7 +79,7 @@ describe("REST v2 projects – POST", function () {
           expect(res).to.have.status(200);
           expect(res).to.have.cookie('JSESSIONID');
 
-          return agent.post("/projects")
+          return agent.post("/projects/data/subprojects")
               .set("Content-Type", "application/json")
               .send({
                 title: "New Project without ID",
@@ -92,13 +92,13 @@ describe("REST v2 projects – POST", function () {
               });
             });
   });
-  it("POST /projects to create without ID with login, but leave out a title", function ( ) {
+  it("POST /projects/data/subprojects to create without ID with login, but leave out a title", function ( ) {
     return agent.post("/login")
         .set("Content-Type", "multipart/form-data")
         .field("user", "admin")
         .field("password", "admin")
         .then( ( res ) => {
-          return agent.post("/projects")
+          return agent.post("/projects/data/subprojects")
               .set("Content-Type", "application/json")
               .send({
                 short: "Created by unit test",
@@ -109,13 +109,30 @@ describe("REST v2 projects – POST", function () {
               });
             });
   });
-  it("POST /projects to create without ID with login", function ( ) {
+  it("POST /projects/$parent/subprojects to create without ID, with login, but use a wrong parent", function () {
     return agent.post("/login")
         .set("Content-Type", "multipart/form-data")
         .field("user", "admin")
         .field("password", "admin")
         .then( ( res ) => {
-          return agent.post("/projects")
+          return agent.post("/projects/missing-parent/subprojects")
+              .set("Content-Type", "application/json")
+              .send({
+                title: "Created by unit test",
+                collection: "test21"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(404);
+              });
+            });
+  });
+  it("POST /projects/data/subprojects to create project without ID with login", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          return agent.post("/projects/data/subprojects")
               .set("Content-Type", "application/json")
               .set("X-Info", "true")
               .send({
@@ -124,7 +141,7 @@ describe("REST v2 projects – POST", function () {
                 collection: "test30"
               })
               .then(( res ) => {
-                expect(res).to.have.status(204);
+                expect(res).to.have.status(201);
                 // expect(res.body).to.have.property("error");
                 // expect(res.body.error).to.equal("Project ID is required.");
               });

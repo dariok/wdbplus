@@ -7,16 +7,49 @@ Accept: application/xml
 
 ###
 
-PATCH http://localhost:8080/exist/apps/edoc/api/v2/projects
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects
 Accept: application/json
 
 ###
 # supposed to fail – no media type given
-POST http://localhost:8080/exist/apps/edoc/api/v2/projects
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
 
 ###
 # supposed to fail – POST must not have an ID
-POST http://localhost:8080/exist/apps/edoc/api/v2/projects
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+Content-Type: application/json
+
+{
+  "title": "New Project",
+  "short": "short title",
+  "id": "newCollectionName"
+}
+
+###
+# supposed to fail – parent not found
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/dat/subprojects
+Content-Type: application/json
+
+{
+  "title": "New Project",
+  "short": "short title",
+  "collection": "newCollectionName"
+}
+
+###
+# supposed to succeed
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+Content-Type: application/json
+
+{
+  "title": "New Project",
+  "short": "short title",
+  "collection": "newCollectionName"
+}
+
+###
+# supposed to fail – project ID in use
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/documentation
 Content-Type: application/json
 
 {
