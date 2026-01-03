@@ -61,7 +61,7 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
       <meta name="wdb-template" content="(error page)" />
       <title>ERROR</title>
       <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
       <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
       <script src="$shared/js/function.js"/>
     </head>,

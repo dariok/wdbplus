@@ -7,10 +7,10 @@ xquery version "3.1";
 
 import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-(: import module namespace sm      = "http://exist-db.org/xquery/securitymanager" at "java:org.exist.xquery.functions.securitymanager.SecurityManagerModule";:)
 import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm";
 
-declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+declare namespace config = "https://github.com/dariok/wdbplus/config";
+declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -68,16 +68,29 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
 else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
-      <forward url="{$exist:controller}/modules/view.xql">
-			</forward>
+      <forward url="{$exist:controller}/modules/view.xql" />
     </view>
   </dispatch>
-else if ( contains($exist:path, "/$shared/") ) then
-  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
-      <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
-    </forward>
-  </dispatch>
+  (: generic resources :)
+  else if ( contains($exist:path, "/$shared/") ) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+      <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
+        {
+          for $header in $config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </dispatch>
+   (: instance specific resources :)
+   else if ( contains($exist:path, "/$global/") ) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+      <forward url="{$exist:controller}/data/resources/{substring-after($exist:path, '/$global/')}">
+        {
+          for $header in $config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </dispatch>
 else if ( ends-with($exist:path, ".xql") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <set-header name="Cache-Control" value="no-cache"/>

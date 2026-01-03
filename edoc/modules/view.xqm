@@ -112,11 +112,11 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
       else (
         <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
         if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/css/wdb.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
         if ( util:binary-doc-available($config:data || "/resources/css/view.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/css/view.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/view.css" />
           else (),
         wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
@@ -126,7 +126,7 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
         <script src="$shared/js/legal.js"></script>,
         <script src="$shared/js/function.js"></script>,
         if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
-          then <script src="data/resources/js/function.js"></script>
+          then <script src="$global/js/function.js"></script>
           else (),
         wdb:getProjectFiles($node, $model, 'js')
       )
