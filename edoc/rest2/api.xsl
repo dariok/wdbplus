@@ -9,16 +9,11 @@
    <xsl:template match="/">
       <map>
          <xsl:apply-templates select="*/@*" />
-         <xsl:choose>
-            <xsl:when test="*[self::*:result]">
-               <array key="{ local-name(*/*[1]) }">
-                  <xsl:apply-templates select="*/*"/>
+         <xsl:for-each-group select="*/*" group-by="local-name()">
+               <array key="{ current-grouping-key() }">
+                  <xsl:apply-templates select="current-group()"/>
                </array>
-            </xsl:when>
-            <xsl:otherwise>
-               <xsl:apply-templates select="*/*" />
-            </xsl:otherwise>
-         </xsl:choose>
+         </xsl:for-each-group>
       </map>
    </xsl:template>
    
