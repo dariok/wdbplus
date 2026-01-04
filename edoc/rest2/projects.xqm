@@ -15,7 +15,7 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
   let $projects := doc("/db/apps/edoc/index/project-index.xml")//index:project
 
   let $result :=
-    <result xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+    <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         start="1"
         total="{count($projects)}"
         id="{ $r2:base }{ $request?path }"
@@ -27,7 +27,7 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
               label="{ $project/@title }"
           />
       }
-    </result>
+    </list>
   
   return r2:returnXmlOrJson($result)
 };
@@ -173,7 +173,7 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
         type="views"
         start="1"
         length="3"
-        max="3">
+        max="3 ">
         <view name="default" label="returns an XML representation of the project"/>
         <view name="nav" label="returns a navigation structure for the project"/>
         <view name="start" label="returns a start page for the project"/>
