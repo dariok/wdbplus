@@ -287,11 +287,7 @@ paths:
       operationId: r2p:listProjectViews
       responses:
         "200":
-          description: a list of views
-          content:
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/listViews"
+          $ref: "#/components/responses/listViews"
 
   # /api/v2/projects/{ed}/views/{view}:
   #   parameters:
@@ -802,6 +798,15 @@ components:
             format: uri
     invalidBody:
       description: Request body is invalid or not wellformed
+    listViews:
+      description: a list of views
+      content:
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listViews"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listViews"
 
     # annotations:
     #   description: A list of annotations matching the query
