@@ -47,6 +47,22 @@ describe("REST v2 projects – GET", function () {
         expect(res.body.project[0]).to.have.property("label", "wdb+ main project collection");
       });
   });
+  it("GET /projects/data/views", function ( ) {
+    return request.execute(baseUrl)
+      .get("/projects/data/views")
+      .set("Accept", "application/xml")
+      .then(( res ) => {
+        expect(res).to.have.status(200);
+      });
+  });
+  it("GET /projects/dat/views", function ( ) {
+    return request.execute(baseUrl)
+      .get("/projects/dat/views")
+      .set("Accept", "application/xml")
+      .then(( res ) => {
+        expect(res).to.have.status(404);
+      });
+  });
 });
 
 describe("REST v2 projects – POST", function () {

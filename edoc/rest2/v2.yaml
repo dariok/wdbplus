@@ -277,11 +277,26 @@ paths:
         "422":
           description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
   
-  # TODO: implement as a view on the project instead (with parameter ?view=nav or similar)
-  # /api/v2/projects/{ed}/nav:
+  /api/v2/projects/{ed}/views:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    get:
+      tags:
+        - projects
+      summary: get a list of the views available for this project
+      operationId: r2p:listProjectViews
+      responses:
+        "200":
+          description: a list of views
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/listViews"
+
+  # /api/v2/projects/{ed}/views/{view}:
   #   parameters:
   #     - $ref: "#/components/parameters/ed"
-  #     - $ref: "#/components/parameters/modified"
+  #     - $ref: "#/components/parameters/view"
   #   get:
   #     tags:
   #       - projects
@@ -761,6 +776,13 @@ components:
   #     schema:
   #       type: string
   #       format: date-time
+    view:
+      name: view
+      in: path
+      description: Which view, if not the default view, is to be applied to a collection or resource
+      schema:
+        type: string
+      required: true
   
   responses:
     authenticate:
@@ -964,25 +986,29 @@ components:
     #             $ref: "#/components/schemas/id"
     #           label:
     #             $ref: "#/components/schemas/label"
-    # listViews:
-    #   description: A result set, containing a list of views for a file
-    #   type: object
-    #   xml:
-    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-    #     name: "result"
-    #   properties:
-    #     start:
-    #       $ref: "#/components/schemas/start"
-    #     total:
-    #       $ref: "#/components/schemas/total"
-    #     views:
-    #       type: array
-    #       items:
-    #         xml:
-    #           name: view
-    #         properties:
-    #           id:
-    #             $ref: "#/components/schemas/id"
+    listViews:
+      description: A result set, containing a list of views for a file
+      type: object
+      xml:
+        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+        name: "list"
+      properties:
+        start:
+          $ref: "#/components/schemas/start"
+        total:
+          $ref: "#/components/schemas/total"
+        for:
+          format: URI
+        type:
+          format: string
+        views:
+          type: array
+          items:
+            xml:
+              name: view
+            properties:
+              id:
+                $ref: "#/components/schemas/id"
 
     Result:
       description: A result set, containing a list of 0+ project(s), file(s) etc.

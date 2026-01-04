@@ -83,3 +83,8 @@ Content-Disposition: form-data; name="password"
 
 admin
 ------test------
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/views
+Accept: application/json

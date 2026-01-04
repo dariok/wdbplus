@@ -156,3 +156,26 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
     $r2:allOrigins
   )
 };
+
+(:~
+ : List all views for a project
+ : GET /projects/{$ed}/views
+ :)
+declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+  
+  return if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else
+    r2:returnXmlOrJson(<list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+        level="project"
+        for="{ $r2:base }/projects/{$request?parameters?ed}"
+        type="views"
+        start="1"
+        length="3"
+        max="3">
+        <view name="default" label="returns an XML representation of the project"/>
+        <view name="nav" label="returns a navigation structure for the project"/>
+        <view name="start" label="returns a start page for the project"/>
+      </list>)
+};
