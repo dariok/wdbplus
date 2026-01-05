@@ -188,17 +188,16 @@ paths:
       operationId: r2p:listProjects
       responses:
         "200":
-          $ref: '#/components/responses/result'
+          $ref: '#/components/responses/projects'
 
-  # TODO: implement
   # /api/v2/projects/{ed}:
   #   parameters:
   #     - $ref: "#/components/parameters/ed"
   #   get:
   #     tags:
   #       - projects
-  #     summary: Get project contents by ID
-  #     operationId: #TODO
+  #     summary: Get project contents (registered resources and subprojects) by ID
+  #     operationId: r2p:getProject
   #     responses:
   #       "200":
   #         $ref: "#/components/responses/projectContents"
@@ -287,7 +286,7 @@ paths:
       operationId: r2p:listProjectViews
       responses:
         "200":
-          $ref: "#/components/responses/listViews"
+          $ref: "#/components/responses/views"
 
   # /api/v2/projects/{ed}/views/{view}:
   #   parameters:
@@ -796,18 +795,10 @@ components:
           schema:
             type: string
             format: uri
+    
     invalidBody:
       description: Request body is invalid or not wellformed
-    listViews:
-      description: a list of views
-      content:
-        application/xml:
-          schema:
-            $ref: "#/components/schemas/listViews"
-        application/json:
-          schema:
-            $ref: "#/components/schemas/listViews"
-
+    
     # annotations:
     #   description: A list of annotations matching the query
     #   content:
@@ -836,15 +827,25 @@ components:
     #       schema:
     #         $ref: "#/components/schemas/listFiles"
     
-    result:
+    projects:
       description: A result set
       content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Result'
         application/xml:
           schema:
-            $ref: '#/components/schemas/Result'
+            $ref: '#/components/schemas/listProjects'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/listProjects'
+    views:
+      description: a list of views
+      content:
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listViews"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listViews"
+
   #   entities:
   #     description: A list of entities matching the query
   #     content:
@@ -868,17 +869,17 @@ components:
   #             - $ref: "#/components/schemas/entity-org"
   #             - $ref: "#/components/schemas/entity-bibl"
   #             - $ref: "#/components/schemas/entity-event"
-  #   projectContents:
-  #     description: Lists the registered contents of a project
-  #     content:
-  #       application/json:
-  #         schema:
-  #           xml:
-  #             name: contents
-  #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-  #           anyOf:
-  #             - $ref: "#/components/schemas/files"
-  #             - $ref: "#/components/schemas/projects"
+    # projectContents:
+    #   description: Lists the registered contents of a project
+    #   content:
+    #     application/json:
+    #       schema:
+    #         xml:
+    #           name: contents
+    #           namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+    #         anyOf:
+    #           - $ref: "#/components/schemas/files"
+    #           - $ref: "#/components/schemas/projects"
   #       application/xml:
   #         schema:
   #           xml:
@@ -991,48 +992,32 @@ components:
     #             $ref: "#/components/schemas/id"
     #           label:
     #             $ref: "#/components/schemas/label"
-    listViews:
-      description: A result set, containing a list of views for a file
-      type: object
-      xml:
-        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-        name: "list"
-      properties:
-        start:
-          $ref: "#/components/schemas/start"
-        total:
-          $ref: "#/components/schemas/total"
-        for:
-          format: URI
-        type:
-          format: string
-        views:
-          type: array
-          items:
-            xml:
-              name: view
-            properties:
-              id:
-                $ref: "#/components/schemas/id"
 
     Result:
       description: A result set, containing a list of 0+ project(s), file(s) etc.
       type: object
       xml:
-        name: result
+        name: list
         namespace: https://github.com/dariok/wdbplus/api/schema/v1
       oneOf:
-        - $ref: '#/components/schemas/ProjectResult'
+        - $ref: '#/components/schemas/listProjects'
+        - $ref: '#/components/schemas/listViews'
     ResultBase:
       type: object
       xml:
-        name: result
+        name: list
         namespace: https://github.com/dariok/wdbplus/api/schema/v1
       properties:
         start:
           $ref: '#/components/schemas/start'
         total:
           $ref: '#/components/schemas/total'
+        length:
+          $ref: '#/components/schemas/length'
+        level:
+          $ref: '#/components/schemas/level'
+        query:
+          $ref: '#/components/schemas/query'
       required:
         - start
         - total
@@ -1084,7 +1069,7 @@ components:
     #       id:
     #         $ref: "#/components/schemas/id"
     
-    ProjectResult:
+    listProjects:
       allOf:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
@@ -1107,6 +1092,27 @@ components:
       required:
         - id
         - label
+    
+    listViews:
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            view:
+              type: array
+              xml:
+                wrapped: false
+              items:
+                $ref: '#/components/schemas/View'
+    View:
+      description: a view
+      type: object
+      xml:
+        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+        name: "view"
+      properties:
+        id:
+          $ref: "#/components/schemas/id"
     
     projectMetadata:
       description: project meta data
@@ -1218,6 +1224,26 @@ components:
         attribute: true
     label:
       description: Title to be displayed for this entry
+      type: string
+      xml:
+        attribute: true
+    length:
+      description: The length of the current page of the result set
+      type: integer
+      default: 1
+      xml:
+        attribute: true
+    level:
+      description: For which type of content is this result produced
+      type: string
+      enum:
+        - "global"
+        - "project"
+        - "resource"
+      xml:
+        attribute: true
+    query:
+      description: the value of the query parameter passed to the endpoint
       type: string
       xml:
         attribute: true
