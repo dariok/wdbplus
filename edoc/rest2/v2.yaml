@@ -190,21 +190,21 @@ paths:
         "200":
           $ref: '#/components/responses/projects'
 
-  # /api/v2/projects/{ed}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/ed"
-  #   get:
-  #     tags:
-  #       - projects
-  #     summary: Get project contents (registered resources and subprojects) by ID
-  #     operationId: r2p:getProject
-  #     responses:
-  #       "200":
-  #         $ref: "#/components/responses/projectContents"
-  #       "204":
-  #         description: The project was found but currently has neither subprojects nor registered resources
-  #       "404":
-  #         description: No project found by this ID
+  /api/v2/projects/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    get:
+      tags:
+        - projects
+      summary: Get project contents (registered resources and subprojects) by ID
+      operationId: r2p:getProject
+      responses:
+        "200":
+          $ref: "#/components/responses/projectContents"
+        "204":
+          description: The project was found but currently has neither subprojects nor registered resources
+        "404":
+          description: No project found by this ID
   #   delete:
   #     tags:
   #       - projects
@@ -828,7 +828,7 @@ components:
     #         $ref: "#/components/schemas/listFiles"
     
     projects:
-      description: A result set
+      description: A list of projects
       content:
         application/xml:
           schema:
@@ -869,25 +869,15 @@ components:
   #             - $ref: "#/components/schemas/entity-org"
   #             - $ref: "#/components/schemas/entity-bibl"
   #             - $ref: "#/components/schemas/entity-event"
-    # projectContents:
-    #   description: Lists the registered contents of a project
-    #   content:
-    #     application/json:
-    #       schema:
-    #         xml:
-    #           name: contents
-    #           namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-    #         anyOf:
-    #           - $ref: "#/components/schemas/files"
-    #           - $ref: "#/components/schemas/projects"
-  #       application/xml:
-  #         schema:
-  #           xml:
-  #             name: contents
-  #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-  #           anyOf:
-  #             - $ref: "#/components/schemas/files"
-  #             - $ref: "#/components/schemas/projects"
+    projectContents:
+      description: Lists the registered contents of a project
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/contents'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/contents'
 
   requestBodies:
   #   annotation:
@@ -935,6 +925,16 @@ components:
 
 
   schemas:
+    contents:
+      type: object
+      xml:
+        name: contents
+        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+      allOf:
+        - $ref: "#/components/schemas/listFiles"
+        - $ref: "#/components/schemas/listProjects"
+      required:
+        - for
     login:
       type: object
       required: [ "user" ]
@@ -1009,31 +1009,20 @@ components:
         namespace: https://github.com/dariok/wdbplus/api/schema/v1
       properties:
         start:
-          $ref: '#/components/schemas/start'
+          $ref: '#/components/schemas/attStart'
         total:
-          $ref: '#/components/schemas/total'
+          $ref: '#/components/schemas/attTotal'
         length:
-          $ref: '#/components/schemas/length'
+          $ref: '#/components/schemas/attLength'
         level:
-          $ref: '#/components/schemas/level'
+          $ref: '#/components/schemas/attLevel'
         query:
-          $ref: '#/components/schemas/query'
+          $ref: '#/components/schemas/attQuery'
+        for:
+          $ref: '#/components/schemas/attFor'
       required:
         - start
         - total
-    # listFiles:
-    #   description: A result set, containing a list of files
-    #   type: object
-    #   xml:
-    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-    #     name: "result"
-    #   properties:
-    #     start:
-    #       $ref: "#/components/schemas/start"
-    #     total:
-    #       $ref: "#/components/schemas/total"
-    #     files:
-    #       $ref: "#/components/schemas/files"
     # listFragments:
     #   description: A result set, containing a list of fragments within a file
     #   type: object
@@ -1045,20 +1034,9 @@ components:
     #       $ref: "#/components/schemas/start"
     #     total:
     #       $ref: "#/components/schemas/total"
-    #     fragments:
-    #       $ref: "#/components/schemas/fragments"
+    #     fragment:
+    #       $ref: "#/components/schemas/fragment"
 
-    # files:
-    #   type: array
-    #   description: describes one file
-    #   items:
-    #     xml:
-    #       name: file
-    #     properties:
-    #       id:
-    #         $ref: "#/components/schemas/id"
-    #       label:
-    #         $ref: "#/components/schemas/label"
     # fragments:
     #   type: array
     #   description: describes a fragment within a file
@@ -1068,27 +1046,53 @@ components:
     #     properties:
     #       id:
     #         $ref: "#/components/schemas/id"
+    listFiles:
+      description: A result set, containing a list of files
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            files:
+              type: array
+              xml:
+                wrapped: false
+              items:
+                $ref: "#/components/schemas/File"
+    File:
+      description: one file
+      type: object
+      xml:
+        name: file
+      properties:
+        id:
+          $ref: "#/components/schemas/attId"
+        label:
+          $ref: "#/components/schemas/attLabel"
+      required:
+        - id
+        - label
     
     listProjects:
       allOf:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
           properties:
-            project:
+            projects:
               type: array
               xml:
                 wrapped: false
               items:
                 $ref: '#/components/schemas/Project'
     Project:
+      description: one project
       type: object
       xml:
         name: project
       properties:
         id:
-          $ref: '#/components/schemas/id'
+          $ref: '#/components/schemas/attId'
         label:
-          $ref: '#/components/schemas/label'
+          $ref: '#/components/schemas/attLabel'
       required:
         - id
         - label
@@ -1098,7 +1102,7 @@ components:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
           properties:
-            view:
+            views:
               type: array
               xml:
                 wrapped: false
@@ -1112,7 +1116,7 @@ components:
         name: "view"
       properties:
         id:
-          $ref: "#/components/schemas/id"
+          $ref: "#/components/schemas/attId"
     
     projectMetadata:
       description: project meta data
@@ -1216,24 +1220,30 @@ components:
     #   xml:
     #     attribute: true
     
-    id:
+    attId:
       description: ID of this entry
       type: string
       format: uri
       xml:
         attribute: true
-    label:
+    attFor:
+      description: ID of the content for which this result is produced
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attLabel:
       description: Title to be displayed for this entry
       type: string
       xml:
         attribute: true
-    length:
+    attLength:
       description: The length of the current page of the result set
       type: integer
       default: 1
       xml:
         attribute: true
-    level:
+    attLevel:
       description: For which type of content is this result produced
       type: string
       enum:
@@ -1242,18 +1252,18 @@ components:
         - "resource"
       xml:
         attribute: true
-    query:
+    attQuery:
       description: the value of the query parameter passed to the endpoint
       type: string
       xml:
         attribute: true
-    start:
+    attStart:
       description: from which position in a list the result set starts (1-based)
       type: integer
       default: 1
       xml:
         attribute: true
-    total:
+    attTotal:
       description: total number of entries in the result set
       type: integer
       xml:
