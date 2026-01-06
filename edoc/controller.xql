@@ -5,9 +5,9 @@
  :)
 xquery version "3.1";
 
-import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
-import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm";
+import module namespace login   = "http://exist-db.org/xquery/login"       at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace request = "http://exist-db.org/xquery/request"     at "java:org.exist.xquery.functions.request.RequestModule";
+import module namespace wdba    = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
@@ -19,6 +19,7 @@ declare variable $exist:prefix external;
 (: declare variable $exist:root external; :)
 
 declare variable $local:isget := request:get-method() = ("GET","get");
+declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
 util:log("info", "request:get-method(): " || request:get-method()),
 util:log("info", "exist:path: " || $exist:path),
@@ -76,7 +77,7 @@ else if ( ends-with($exist:resource, ".html") ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
       <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
         {
-          for $header in $config//config:header
+          for $header in $local:config//config:header
             return <set-header>{ $header/@* }</set-header>
         }
       </forward>
@@ -86,7 +87,7 @@ else if ( ends-with($exist:resource, ".html") ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
       <forward url="{$exist:controller}/data/resources/{substring-after($exist:path, '/$global/')}">
         {
-          for $header in $config//config:header
+          for $header in $local:config//config:header
             return <set-header>{ $header/@* }</set-header>
         }
       </forward>
