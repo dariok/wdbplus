@@ -179,3 +179,35 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
         <view name="start" label="returns a start page for the project"/>
       </list>)
 };
+
+(:~
+ : Get basic information about a project
+ : GET /projects/{$ed}
+ :)
+declare function r2p:getProject ( $request as map(*) ) as map(*) {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+  
+  return if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else
+    let $meta := doc( $project/@path || "/wdbmeta.xml" )
+    return r2:returnXmlOrJson(
+      <contents xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+        for="{ $r2:base }{ $request?path }"
+        start="1"
+        total="{ count($meta//meta:file) + count($meta//meta:ptr) }">
+        {
+          for $entry in $meta//meta:ptr return
+            <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+                id="{ $r2:base }/project/{ $entry/@xml:id }"
+                label="{ $meta//meta:struct[@file = $entry/@xml:id]/@label }" />
+        }
+        {
+          for $entry in $meta//meta:file return
+            <file xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+                id="{ $r2:base }/resource/{ $entry/@xml:id }"
+                label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
+        }
+      </contents>
+    )
+};

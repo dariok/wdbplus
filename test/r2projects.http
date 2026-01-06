@@ -87,4 +87,9 @@ admin
 ###
 
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/views
-Accept: application/json
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data
+Accept: application/xml
