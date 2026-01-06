@@ -211,3 +211,56 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
       </contents>
     )
 };
+
+(:~
+ : Delete a project
+ : DELETE /projects/{$ed}
+ :)
+declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
+  if ( not(exists($request?parameters?ed)) ) then
+    r2:response(400, 'text/plain', 'Bad Request\n parameter `ed` missing', $r2:allOrigins)
+  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+  else if ( not(r2:writeAllowed($request?user)) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else
+    let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+    return if ( not(exists($project)) ) then
+      r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+    else if ( not(sm:has-access($project/@path, "w")) ) then
+      r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+    else
+      let $projectPath := string($project/@path)
+        , $parentPath := replace($projectPath, "/[^/]+$", "")
+        , $parentMeta := if ( doc-available($parentPath || "/wdbmeta.xml") )
+            then doc($parentPath || "/wdbmeta.xml")
+            else ()
+        , $projectMeta := if ( doc-available($projectPath || "/wdbmeta.xml") )
+            then doc($projectPath || "/wdbmeta.xml")
+            else ()
+        , $fileIds := if ( $projectMeta )
+            then (
+              $projectMeta//meta:file/@xml:id/string(),
+              $projectMeta//meta:struct[@xml:id]/@xml:id/string()
+            )
+            else ()
+        , $collectionName := replace($projectPath, "^.*/", "")
+        , $projectIndex := doc("/db/apps/edoc/index/project-index.xml")
+        , $fileIndex := doc("/db/apps/edoc/index/file-index.xml")
+      
+      return r2:response(
+        204,
+        'text/plain',
+        (
+          if ( $parentMeta ) then (
+            update delete $parentMeta//meta:ptr[@xml:id = $request?parameters?ed],
+            update delete $parentMeta//meta:struct[@file = $request?parameters?ed]
+          ) else (),
+          update delete $projectIndex/id($request?parameters?ed),
+          for $id in $fileIds return update delete $fileIndex/id($id),
+          xmldb:remove($projectPath),
+          ''
+        )[last()],
+        $r2:allOrigins
+      )
+};

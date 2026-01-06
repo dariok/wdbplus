@@ -205,16 +205,16 @@ paths:
           description: The project was found but currently has neither subprojects nor registered resources
         "404":
           description: No project found by this ID
-  #   delete:
-  #     tags:
-  #       - projects
-  #     summary: Delete project
-  #     operationId: #TODO
-  #     responses:
-  #       "204":
-  #         description: The project has been deleted
-  #       "404":
-  #         description: This project was not found
+    delete:
+      tags:
+        - projects
+      summary: Delete project
+      operationId: r2p:deleteProject
+      responses:
+        "204":
+          description: The project has been deleted
+        "404":
+          description: This project was not found
 
   /api/v2/projects/{parent}/subprojects:
   # TODO: Implement

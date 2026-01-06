@@ -154,7 +154,7 @@ describe("REST v2 projects – POST", function () {
             });
   });
   it("PUT /projects/data/subprojects/project to create project with ID with login", function ( ) {
-    return agent.put("/login")
+    return agent.post("/login")
         .set("Content-Type", "multipart/form-data")
         .field("user", "admin")
         .field("password", "admin")
@@ -223,6 +223,63 @@ describe("REST v2 specific project – GET", function () {
       .set("Accept", "application/xml")
       .then(( res ) => {
         expect(res).to.have.status(404);
+      });
+  });
+});
+
+describe("REST v2 projects – DELETE", function () {
+  /**
+   * @type {ChaiHttp.Agent}
+   */
+  let agent;
+
+  before(() => {
+    agent = request.agent(baseUrl);
+  });
+
+  after(() => {
+    agent.close();
+  });
+
+  it("DELETE /projects/project without login", function ( ) {
+    return request.execute(baseUrl)
+      .delete("/projects/project")
+      .then(( res ) => {
+        expect(res).to.have.status(401);
+      });
+  });
+
+  it("DELETE /projects/missing-project with login", function ( ) {
+    return agent.post("/login")
+      .set("Content-Type", "multipart/form-data")
+      .field("user", "admin")
+      .field("password", "admin")
+      .then(( res ) => {
+        expect(res).to.have.status(200);
+        return agent.delete("/projects/missing-project")
+          .then(( res ) => {
+            expect(res).to.have.status(404);
+          });
+      });
+  });
+
+  it("DELETE /projects/project with login", function ( ) {
+    return agent.post("/login")
+      .set("Content-Type", "multipart/form-data")
+      .field("user", "admin")
+      .field("password", "admin")
+      .then(( res ) => {
+        expect(res).to.have.status(200);
+        return agent.delete("/projects/project")
+          .then(( res ) => {
+            expect(res).to.have.status(204);
+            return request.execute(baseUrl)
+              .get("/projects/project")
+              .set("Accept", "application/xml")
+              .then(( res ) => {
+                expect(res).to.have.status(404);
+              });
+          });
       });
   });
 });
