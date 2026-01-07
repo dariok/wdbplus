@@ -12,6 +12,11 @@ const expect  = chai.expect;
 const parser  = new xmldom.DOMParser();
 const select  = xpath.useNamespaces({ api: "https://github.com/dariok/wdbplus/api/schema/v1" });
 
+/**
+ * @type {string}
+ */
+let idCreatedByPost;
+
 describe("REST v2 projects – OPTIONS", function () {
   it("OPTIONS /projects", function ( ) {
     return request.execute(baseUrl)
@@ -147,9 +152,27 @@ describe("REST v2 projects – POST", function () {
                 collection: "test30"
               })
               .then(( res ) => {
+                idCreatedByPost = res.text;
                 expect(res).to.have.status(201);
-                // expect(res.body).to.have.property("error");
-                // expect(res.body.error).to.equal("Project ID is required.");
+              });
+            });
+  });
+  it("POST /projects/data/subprojects to create project without ID with login, with collection that’s already in use", function ( ) {
+    return agent.post("/login")
+        .set("Content-Type", "multipart/form-data")
+        .field("user", "admin")
+        .field("password", "admin")
+        .then( ( res ) => {
+          return agent.post("/projects/data/subprojects")
+              .set("Content-Type", "application/json")
+              .set("X-Info", "true")
+              .send({
+                title: "New Project without ID",
+                short: "Created by unit test",
+                collection: "test30"
+              })
+              .then(( res ) => {
+                expect(res).to.have.status(409);
               });
             });
   });
@@ -169,8 +192,6 @@ describe("REST v2 projects – POST", function () {
               })
               .then(( res ) => {
                 expect(res).to.have.status(201);
-                // expect(res.body).to.have.property("error");
-                // expect(res.body.error).to.equal("Project ID is required.");
               });
             });
   });
@@ -316,6 +337,11 @@ describe("REST v2 projects – DELETE", function () {
               .set("Accept", "application/xml")
               .then(( res ) => {
                 expect(res).to.have.status(404);
+                /* delete the project that has been created by POST above to avoid erroneous 409 */
+                return agent.delete("/projects/" + idCreatedByPost)
+                  .then(( res ) => {
+                    expect(res).to.have.status(204);
+                  });
               });
           });
       });

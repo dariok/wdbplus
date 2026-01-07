@@ -106,7 +106,7 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed) ) then
     r2:response(409, 'text/plain', 'A project with ID ' || $request?parameters?ed || ' already exists', $r2:allOrigins)
-  else if ( xmldb:collection-available(doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)/@path || $request?body?collection) ) then
+  else if ( xmldb:collection-available(doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)/@path || '/' || $request?body?collection) ) then
     r2:response(409, 'text/plain', 'A collection with name ' || $request?body?collection || ' already exists in project ' || $request?parameters?parent, $r2:allOrigins)
   else if ( not(r2:mapKeysAllowed($request?body, ('title', 'collection'), ('short'))) ) then
     r2:response(422, 'text/plain', 'Wrong content of project information found. Expected `title` and `collection`(mandatory), `short`.', $r2:allOrigins)
@@ -186,7 +186,7 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
           )
         else (),
 
-      $subCollection
+      $request?parameters?ed
     )[last()], (: create-collection() returns a string; we only want the path to the project collection :)
     $r2:allOrigins
   )
