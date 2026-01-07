@@ -31,7 +31,7 @@ tags:
 security:
   - cookieAuth: []
 paths:
-  /login:
+  /api/v2/login:
     post:
       summary: "User Login"
       description: "Start an authenticated session for the given user"
@@ -68,7 +68,7 @@ paths:
           description: "Wrong user or password"
       security:
         - cookieAuth: []
-  /logout:
+  /api/v2/logout:
     get:
       summary: User Logout
       description: End session of the current user
@@ -189,22 +189,7 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/result'
-    # TODO: implement
-    # post:
-    #   tags:
-    #     - projects
-    #   summary: Create a project without specifying an ID
-    #   description: Create a project with the meta data provided while auto-generating the ID
-    #   operationId: #TODO
-    #   requestBody:
-    #     $ref: "#/components/requestBodies/project"
-    #   responses:
-    #     "204":
-    #       $ref: "#/components/responses/created"
-    #     "400":
-    #       $ref: "#/components/responses/invalidBody"
-    #     "409":
-    #       description: A project already exists in this location
+
   # TODO: implement
   # /api/v2/projects/{ed}:
   #   parameters:
@@ -231,23 +216,66 @@ paths:
   #         description: The project has been deleted
   #       "404":
   #         description: This project was not found
-  #   put:
+
+  /api/v2/projects/{parent}/subprojects:
+  # TODO: Implement
+    parameters:
+      - $ref: "#/components/parameters/parent"
+  #   get:
   #     tags:
   #       - projects
-  #     summary: Create project with given ID
-  #     description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
-  #     operationId: #TODO
-  #     requestBody:
-  #       $ref: "#/components/requestBodies/project"
-  #     responses:
-  #       "204":
-  #         description: The project was created or updated
-  #       "400":
-  #         $ref: "#/components/responses/invalidBody"
-  #       "404":
-  #         description: Project $ed not found
-  #       "409":
-  #         description: A project exists with this ID in a different location or the location requested contains a project with a different ID
+  #     summary: Get a list of all subprojects of ${parent}
+    post:
+      tags:
+        - projects
+      summary: Create a project in ${parent} without specifying an ID
+      description: Create a project as child of ${parent} with the meta data provided in the body while auto-generating the ID. E.g., creating a new main project requires "data" as parent.
+      operationId: r2p:createProjectWithoutId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
+      security:
+        - cookieAuth: []
+  
+  /api/v2/projects/{parent}/subprojects/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/parent"
+      - $ref: "#/components/parameters/ed"
+    put:
+      tags:
+        - projects
+      summary: Create project with given ID
+      description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
+      operationId: r2p:createProjectWithId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
+        "409":
+          description: A project exists with this ID in a different location or the location requested contains a project with a different ID
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
   
   # TODO: implement as a view on the project instead (with parameter ?view=nav or similar)
   # /api/v2/projects/{ed}/nav:
@@ -672,7 +700,7 @@ components:
       name: wdbplus.login
       in: cookie
 
-  # parameters:
+  parameters:
   #   id:
   #     name: "id"
   #     in: path
@@ -680,13 +708,13 @@ components:
   #     schema:
   #       type: string
   #     required: true
-  #   ed:
-  #     name: "ed"
-  #     in: path
-  #     description: The ID of the project
-  #     schema:
-  #       type: string
-  #     required: true
+    ed:
+      name: "ed"
+      in: path
+      description: The ID of the project
+      schema:
+        type: string
+      required: true
   #   entity:
   #     name: "entity"
   #     in: path
@@ -694,6 +722,13 @@ components:
   #     schema:
   #       type: string
   #     required: true
+    parent:
+      name: "parent"
+      in: path
+      description: The ID of the parent project
+      schema:
+        type: string
+      required: true
   #   q:
   #     name: q
   #     in: query
@@ -728,23 +763,23 @@ components:
   #       format: date-time
   
   responses:
-    # created:
-    #   description: Annotation, file, etc. has been created
-    #   headers:
-    #     Location:
-    #       description: Location of the annotation, file etc.
-    #       schema:
-    #         type: string
-    #         format: uri
-    # invalidBody:
-    #   description: Request body is invalid or not wellformed
-    # authenticate:
-    #   description: Authentication necessary
-    #   headers:
-    #     WWW-Authenticate:
-    #       description: Challenge for authentication
-    #       schema:
-    #         type: string
+    authenticate:
+      description: Authentication necessary
+      headers:
+        WWW-Authenticate:
+          description: Challenge for authentication
+          schema:
+            type: string
+    created:
+      description: Annotation, file, etc. has been created
+      headers:
+        Location:
+          description: Location of the annotation, file etc.
+          schema:
+            type: string
+            format: uri
+    invalidBody:
+      description: Request body is invalid or not wellformed
 
     # annotations:
     #   description: A list of annotations matching the query
@@ -826,7 +861,7 @@ components:
   #             - $ref: "#/components/schemas/files"
   #             - $ref: "#/components/schemas/projects"
 
-  # requestBodies:
+  requestBodies:
   #   annotation:
   #     description: the full text annotation to be added
   #     required: true
@@ -837,16 +872,16 @@ components:
   #       application/xml:
   #         schema:
   #           $ref: "#/components/schemas/annotation.xml"
-  #   project:
-  #     description: The necessary data for the project to be created or updated
-  #     required: true
-  #     content:
-  #       application/json:
-  #         schema:
-  #           $ref: "#/components/schemas/projectMetadata"
-  #       application/xml:
-  #         schema:
-  #           $ref: "#/components/schemas/projectMetadata"
+    project:
+      description: The necessary data for the project to be created or updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
   #   entity:
   #     description: A (TEI) description of one entity
   #     required: true
@@ -1042,13 +1077,25 @@ components:
         - id
         - label
     
-    # projectMetadata:
-    #   description: project meta data
-    #   type: object
-    #   xml:
-    #     name: projectMD
-    #     namespace: "https://github.com/dariok/wdbmeta"
-      
+    projectMetadata:
+      description: project meta data
+      type: object
+      xml:
+        namespace: "https://github.com/dariok/wdbmeta"
+        name: project
+      properties:
+        title:
+          type: string
+          description: The Title of the project
+        id:
+          type: string
+          description: The ID of the project if it is to be created with a specific ID
+        collection:
+          type: string
+          description: The path where the project is to be created
+      required:
+        - title
+        - collection
 
     # entity-person:
     #   type: object

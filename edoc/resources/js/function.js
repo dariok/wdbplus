@@ -41,6 +41,7 @@ const wdb = (function() {
   };
 
   /* Login and logout */
+  /* TODO: this needs to be reworked completely */
   let login = function ( event, reload ) {
     event.preventDefault();
   
@@ -48,15 +49,18 @@ const wdb = (function() {
       , password = $('#password').val();
     wdb.report("info", "login request");
     Cookies.remove('wdbplus');
+
+    let formdata = new FormData();
+    formdata.append("user", username);
+    formdata.append("password", password);
     
     $.ajax({
-      url: 'login',
+      url: '../api/v2/login',
       method: 'post',
-      data: {
-        user: username,
-        password: password,
-        edition: $('#edition').val()
-      },
+      data: formdata,
+      processData: false,
+      contentType: false,
+      cache: false,
       success: function (data) {
         try {
           Cookies.set('wdbplus', btoa(username + ':' + password));
