@@ -3,8 +3,8 @@ xquery version "3.1";
 declare namespace index = "https://github.com/dariok/wdbplus/index";
 declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
 
-update replace doc("/db/apps/edoc/index/project-index.xml")/index:index with <index xmlns="https://github.com/dariok/wdbplus/index"/>,
-update replace doc("/db/apps/edoc/index/file-index.xml")/index:index with <index xmlns="https://github.com/dariok/wdbplus/index"/>,
+update delete doc("/db/apps/edoc/index/project-index.xml")/index:index/*,
+update delete doc("/db/apps/edoc/index/file-index.xml")/index:index/*,
 for $project in //meta:projectMD
   let $path := util:collection-name($project)
   where contains($path, '/data/')
