@@ -193,6 +193,7 @@ paths:
   /api/v2/projects/{ed}:
     parameters:
       - $ref: "#/components/parameters/ed"
+    # TODO: should this endpoint also return metadata?
     get:
       tags:
         - projects
@@ -217,13 +218,20 @@ paths:
           description: This project was not found
 
   /api/v2/projects/{parent}/subprojects:
-  # TODO: Implement
     parameters:
       - $ref: "#/components/parameters/parent"
-  #   get:
-  #     tags:
-  #       - projects
-  #     summary: Get a list of all subprojects of ${parent}
+    get:
+      tags:
+        - projects
+      summary: Get a list of all subprojects of ${parent}
+      operationId: r2p:listSubprojects
+      responses:
+        "200":
+          $ref: "#/components/responses/projects"
+        "204":
+          description: The project was found but currently has neither subprojects nor registered resources
+        "404":
+          description: Project $parent not found
     post:
       tags:
         - projects
@@ -305,6 +313,17 @@ paths:
   #             example: <struct xmlns="https://github.com/dariok/wdbmeta"><view label="..." id="..." /></struct>
   #           "text/html":
   #             example: <nav><ul></ul></nav>
+
+  # /ap/v2/projects/{ed}/resources
+  #   get:
+  #   post:
+  # /ap/v2/projects/{ed}/resources/{id}
+  #   put
+
+  # /api/v2/projects/{ed}/metadata
+  #   get:
+  #   patch:
+  #   put:
 
   # /api/v2/entities:
   #   get:

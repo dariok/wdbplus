@@ -33,6 +33,41 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
 };
 
 (:~
+ : List all subprojects of a project
+ : GET /projects/{$parent}/subprojects
+ :)
+declare function r2p:listSubprojects ( $request as map(*) ) as map(*) {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)
+  return if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?parent || ' not found', $r2:allOrigins)
+  else
+    let $meta := doc($project/@path || "/wdbmeta.xml")
+      , $subprojects := $meta//meta:ptr
+      , $labels := map:merge(
+          for $struct in $meta//meta:struct
+          let $file := string($struct/@file)
+          return map:entry($file, string($struct/@label))
+        )
+      , $result :=
+        <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+            start="1"
+            total="{ count($subprojects) }"
+            id="{ $r2:base }{ $request?path }">
+          {
+            for $entry in $subprojects
+            let $ed := string($entry/@xml:id)
+            return
+              <project
+                  id="{ $r2:base }/projects/{ $ed }"
+                  label="{ map:get($labels, $ed) }"
+              />
+          }
+        </list>
+
+    return r2:returnXmlOrJson($result)
+};
+
+(:~
  : Create a subproject, generating an ID
  : POST /projects/{$parent}/subprojects
  :)
@@ -199,7 +234,7 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
         {
           for $entry in $meta//meta:ptr return
             <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/project/{ $entry/@xml:id }"
+                id="{ $r2:base }/projects/{ $entry/@xml:id }"
                 label="{ $meta//meta:struct[@file = $entry/@xml:id]/@label }" />
         }
         {

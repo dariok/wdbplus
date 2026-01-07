@@ -227,6 +227,44 @@ describe("REST v2 specific project – GET", function () {
   });
 });
 
+describe("REST v2 subprojects – GET", function () {
+  it("GET /projects/data/subprojects XML", function ( ) {
+    return request.execute(baseUrl)
+      .get("/projects/data/subprojects")
+      .set("Accept", "application/xml")
+      .then(( res ) => {
+        expect(res).to.have.status(200);
+        expect(res).to.have.header("content-type", "application/xml");
+
+        let xml = parser.parseFromString(res.body.toString(), "application/xml");
+        expect(xml.documentElement.nodeName).to.equal("list");
+        let selected = select("//api:project[@label='New Project with ID']", xml);
+        expect(selected).not.to.be.empty;
+      });
+  });
+  it("GET /projects/data/subprojects JSON", function ( ) {
+    return request.execute(baseUrl)
+      .get("/projects/data/subprojects")
+      .set("Accept", "application/json")
+      .then(( res ) => {
+        expect(res).to.have.status(200);
+        expect(res).to.have.header("content-type", "application/json");
+        expect(res.body).to.have.property("projects");
+        expect(res.body.projects).to.be.an("array");
+        let filtered = res.body.projects.filter(el => el?.label === "New Project with ID");
+        expect(filtered).not.to.be.empty;
+      });
+  });
+  it("GET /projects/missing-parent/subprojects", function ( ) {
+    return request.execute(baseUrl)
+      .get("/projects/missing-parent/subprojects")
+      .set("Accept", "application/xml")
+      .then(( res ) => {
+        expect(res).to.have.status(404);
+      });
+  });
+});
+
 describe("REST v2 projects – DELETE", function () {
   /**
    * @type {ChaiHttp.Agent}

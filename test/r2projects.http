@@ -93,3 +93,8 @@ Accept: application/xml
 
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data
 Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001000/subprojects
+Accept: application/xml
