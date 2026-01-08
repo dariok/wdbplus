@@ -295,24 +295,33 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/views"
+        "404":
+          description: Project $ed not found
 
-  # /api/v2/projects/{ed}/views/{view}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/ed"
-  #     - $ref: "#/components/parameters/view"
-  #   get:
-  #     tags:
-  #       - projects
-  #     summary: Get project navigation
-  #     operationId: #TODO
-  #     responses:
-  #       "200":
-  #         description: Returning navigation
-  #         content:
-  #           "application/xml":
-  #             example: <struct xmlns="https://github.com/dariok/wdbmeta"><view label="..." id="..." /></struct>
-  #           "text/html":
-  #             example: <nav><ul></ul></nav>
+  /api/v2/projects/{ed}/views/{view}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/view"
+    get:
+      tags:
+        - projects
+      summary: Get project navigation
+      operationId: r2p:viewProject
+      responses:
+        "200":
+          description: Returning navigation
+          content:
+            "application/xml":
+              example: <struct xmlns="https://github.com/dariok/wdbmeta"><view label="..." id="..." /></struct>
+            "application/json":
+              example: 'struct { view [ { id: "...", label: "..."} ] }'
+            "text/html":
+              example: <nav><ul></ul></nav>
+        "404":
+          description: Project $ed not found
+        "406":
+          description: The media type requested in an 'Accept' header cannot be created for this view
+
 
   # /ap/v2/projects/{ed}/resources
   #   get:
@@ -793,7 +802,7 @@ components:
     view:
       name: view
       in: path
-      description: Which view, if not the default view, is to be applied to a collection or resource
+      description: Which view is to be applied to a resource
       schema:
         type: string
       required: true

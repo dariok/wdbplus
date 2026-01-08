@@ -209,9 +209,15 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
         start="1"
         length="3"
         max="3 ">
-        <view name="default" label="returns an XML representation of the project"/>
-        <view name="nav" label="returns a navigation structure for the project"/>
-        <view name="start" label="returns a start page for the project"/>
+        <view name="default"
+          label="returns an XML representation of the project"
+          href="{ $r2:base }/projects/{$request?parameters?ed}/views/default"/>
+        <view name="nav"
+          label="returns a navigation structure for the project"
+          href="{ $r2:base }/projects/{$request?parameters?ed}/views/navigation"/>
+        <view name="start"
+          label="returns a start page for the project"
+          href="{ $r2:base }/projects/{$request?parameters?ed}/views/start"/>
       </list>)
 };
 
@@ -246,6 +252,35 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
       </contents>
     )
 };
+(:
+
+          <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1">
+            <id>{ $r2:base }{ $request?path }</id>
+            <title>{ $meta//meta:title[@type = 'main'] }</title>
+            {
+              if ( exists($meta//meta:title[@type = 'sub']) ) then
+                <short>{ $meta//meta:title[@type = 'sub'] }</short>
+              else ()
+            }
+            <collections>
+              {
+                for $entry in $meta//meta:ptr return
+                  <project
+                      id="{ $r2:base }/projects/{ $entry/@xml:id }"
+                      label="{ $meta//meta:struct[@file = $entry/@xml:id]/@label }" />
+              }
+            </collections>
+            <files>
+              {
+                for $entry in $meta//meta:file return
+                  <file
+                      id="{ $r2:base }/resource/{ $entry/@xml:id }"
+                      label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
+              }
+            </files>
+          </project>
+
+:)
 
 (:~
  : Delete a project
@@ -298,4 +333,44 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
         )[last()],
         $r2:allOrigins
       )
+};
+
+declare function r2p:viewProject ( $request as map(*) ) as map(*) {
+  if ( not($request?parameters?view = ('default', 'navigation', 'start')) ) then
+    r2:response(400, 'text/plain', 'Bad value for parameter `view`
+      Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
+  else if ( ($request?parameters?view = 'default' and request:get-header('Accept') != 'application/xml')
+         or ($request?parameters?view = 'navigation' and request:get-header('Accept') != ('application/xml', 'application/json', 'text/html'))
+         or ($request?parameters?view = 'start' and request:get-header('Accept') != 'text/html') ) then
+    r2:response(406, 'text/plain', 'Available representations are:
+      for view "default": application/xml
+      for view "start": text/html
+      for view "navigation": application/xml, application/json, text/html', $r2:allOrigins)
+  else
+    let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+    return if ( not(exists($project)) ) then
+      r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+    else
+      r2:returnXmlOrJson(
+        r2p:projectView(map{
+          "path" : $project/@path || "/wdbmeta.xml",
+          "parameters": $request?parameters,
+          "Accept": request:get-header('Accept')
+        })
+      )
+};
+
+declare function r2p:projectView ( $request as map(*) ) as element() {
+  let $meta := doc($request?path)
+  return if ( $request?parameters?view = 'start' ) then
+      if ( doc-available('../data/resources/xsl/start.xsl') ) then
+        let $t := transform:transform($meta, doc('../data/resources/xsl/start.xsl'), ())
+          , $t0 := util:log("info", $t)
+        return $t
+      else
+        transform:transform($meta, doc('../resources/xsl/start.xsl'), ())
+    else if ( $request?parameters?view = 'navigation' ) then
+      ()
+    else
+      $meta
 };

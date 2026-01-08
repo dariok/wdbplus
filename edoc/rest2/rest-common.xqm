@@ -6,13 +6,12 @@ import module namespace router = "http://e-editiones.org/roaster/router";
 
 declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 
-declare variable $r2:acceptable := ("application/json", "application/xml");
+declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
 
 (:~
  : Base URL for the REST API
- : TODO: use config:rest and add an optional attribute version; usage of this parameter must be aware of versioning and use only [1]
  :)
-declare variable $r2:base := doc('../config.xml')//*:rest2;
+declare variable $r2:base := doc('../config.xml')//*:rest[@version = "2"];
 
 (:~
  : list of allowed origins
@@ -89,4 +88,8 @@ declare function r2:mapKeysAllowed(
     (every $r in $required  satisfies $r = $keys)
     and
     (every $k in $keys      satisfies $k = $allowed)
+};
+
+declare function r2:logMap ( $request as map(*) ) {
+  for $key in map:keys($request) return if ( $key = ('spec', 'config', 'schema') ) then () else ( util:log("info", $key || ':') , util:log("info", $request($key)))
 };
