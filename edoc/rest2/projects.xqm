@@ -2,7 +2,8 @@ xquery version "3.1";
 
 module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects";
 
-import module namespace r2 = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
+import module namespace r2  = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
+import module namespace wdb = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
 
 declare namespace index = "https://github.com/dariok/wdbplus/index";
 declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -340,7 +341,7 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
     r2:response(400, 'text/plain', 'Bad value for parameter `view`
       Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
   else if ( ($request?parameters?view = 'default' and request:get-header('Accept') != 'application/xml')
-         or ($request?parameters?view = 'navigation' and request:get-header('Accept') != ('application/xml', 'application/json', 'text/html'))
+         or ($request?parameters?view = 'navigation' and not(request:get-header('Accept') = ('application/xml', 'application/json', 'text/html')))
          or ($request?parameters?view = 'start' and request:get-header('Accept') != 'text/html') ) then
     r2:response(406, 'text/plain', 'Available representations are:
       for view "default": application/xml
@@ -360,17 +361,45 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
       )
 };
 
-declare function r2p:projectView ( $request as map(*) ) as element() {
+declare function r2p:projectView ( $request as map(*) ) as node() {
   let $meta := doc($request?path)
   return if ( $request?parameters?view = 'start' ) then
-      if ( doc-available('../data/resources/xsl/start.xsl') ) then
-        let $t := transform:transform($meta, doc('../data/resources/xsl/start.xsl'), ())
-          , $t0 := util:log("info", $t)
-        return $t
-      else
-        transform:transform($meta, doc('../resources/xsl/start.xsl'), ())
+      wdb:applySpecificXsl($meta, $request?path => substring-before('wdbmeta.xml'), "start.xsl")
     else if ( $request?parameters?view = 'navigation' ) then
-      ()
+      let $struct := $meta//meta:projectMD/meta:struct
+      let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$request?parameters?ed}">{(
+          $struct/@*
+          , $struct/*
+        )}</struct>
+      
+      let $response := if ( $struct/meta:import )
+        then r2p:imported($struct/meta:import, $content)
+        else $content
+
+      return if ( $request?Accept = 'text/html' )
+        then wdb:applySpecificXsl($response, $request?path => substring-before('wdbmeta.xml'), "nav.xsl")
+        else $response
     else
       $meta
+};
+
+declare %private function r2p:imported ( $import, $importerContent ) {
+  let $base-uri := base-uri($import)
+    , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path
+    , $importedMeta := doc($fullImportedPath)
+    , $importedContent := $importedMeta/meta:projectMD/meta:struct
+
+    let $conStructed := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+        { $importedContent/@* }
+        { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
+        { for $elem in $importedContent/* return
+            if ( $elem/@file = $importerContent/@ed )
+                then $importerContent
+                else $elem
+        }
+    </struct>
+
+    return if ( $importedContent/meta:import )
+      then r2p:imported($importedContent/meta:import, $conStructed)
+      else $conStructed
 };

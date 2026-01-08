@@ -30,7 +30,7 @@ declare variable $config:edocBaseURL := $config:configFile//config:server;
 (: ~
  : get the base URL for REST calls
  :)
-declare variable $config:restURL := $config:configFile//config:rest;
+declare variable $config:restURL := $config:configFile//config:rest[1];
 
 (:~
  :  the server role
