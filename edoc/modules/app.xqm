@@ -291,6 +291,16 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         "no process found for target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
       )
 };
+
+declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string ) as node() {
+  let $xsl := if ( doc-available($edPath || "/resources/xsl/" || $name) ) then
+        doc($edPath || "/resources/xsl/" || $name)
+      else if ( doc-available("/db/apps/edoc/data/resources/xsl/" || $name) ) then
+        doc("/db/apps/edoc/data/resources/xsl/" || $name)
+      else doc("/db/apps/edoc/resources/xsl/" || $name)
+   
+   return transform:transform($xml, $xsl, ())
+};
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
