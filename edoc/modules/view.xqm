@@ -63,6 +63,7 @@ function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view
           <html>
             {
               attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
+              comment { " Generated in view.xqm by " || $node/@data-template },
               templates:process($node/node(), $newModel)
             }
           </html>
@@ -195,7 +196,7 @@ declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   try {
     <main>
-      { wdbProc:getContent($model?id, $model?xslt, $model?view, $model) }
+      { (wdbProc:getContent($model?id, $model?xslt, $model?view, $model))?content }
       { wdbv:getLeftFooter($node, $model) }
     </main>
   } catch * { (util:log("error",

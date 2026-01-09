@@ -402,9 +402,9 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
     , $process := wdb:getXslFromWdbMeta($infoFileLoc, $id, $type, $view)
   
   let $status := if ( $infoFileLoc = "" )
-      then (404, "No file with ID " || $id || " found!")
+      then map { "status": 404, "content": "No file with ID " || $id || " found!" }
       else if ( not($process) )
-      then (400, "no process found for target type " || $type || " that has a view " || $view)
+      then map { "status": 400, "content": "no process found for target type " || $type || " that has a view " || $view }
       else wdbProc:getContent($id, $process, $view,
               map { 
                     'fileLoc': $pathInfo?collectionPath || '/' || $pathInfo?fileName,
@@ -412,18 +412,18 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
                   }
             )
   
-  let $namespace := if ($status[2] instance of element())
-    then $status[2]/*[1]/namespace-uri()
+  let $namespace := if ( $status?content instance of element())
+    then $status?content/*[1]/namespace-uri()
     else ""
   
   return ( 
     <rest:response>
-      <http:response status="{$status[1]}">
+      <http:response status="{ $status?status }">
         <http:header name="Access-Control-Allow-Origin" value="*" />
-        <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
+        <http:header name="Content-Type" value="{ wdb:getContentTypeFromExt($type, $namespace) }" />
       </http:response>
     </rest:response>,
-    $status[position() gt 1]
+    $status?content
   )
 };
 

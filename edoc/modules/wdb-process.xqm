@@ -6,37 +6,34 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
 
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
-declare function wdbProc:getContent($id as xs:string, $process as element(), $view as xs:string, $model as map(*)) as item()* {
+declare function wdbProc:getContent ( $id as xs:string, $process as element(), $view as xs:string, $model as map(*) ) as map(*) {
   (: TODO if multiple commands are defined, check that one is actually applicable – #395 :)
   (: TODO pass the position of this command on to the processing function or pass target and view on :)
   (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
-  (: TODO this should be moved to a more generic location (e.g. common.xq) as it is also used in app.xqm :)
-  let $type := $process[1]/meta:command/@type
-  return if ($type = "xsl")
-    then wdbProc:processXSL($id, $process, $model, $view)
-    else if ($type = "xquery")
-    then wdbProc:processXQuery($id, $process, $model)
-    else (500, "Invalid command type " || $type)
+  switch ( $process[1]/meta:command/@type )
+    case "xsl" return
+      map { "status": 200, "content": wdbProc:processXSL($id, $process, $model, $view) }
+    case "xquery" return
+      map { "status": 200, "content": wdbProc:processXQuery($id, $process, $model) }
+    default return
+      map { "status": 500, "content": "Invalid command type " || $type }
 };
 
-(: TODO: move this functions to a more generic location (e.g. common.xq) as is should also be used from app.xqm :)
 (: TODO: use parameter list as defined in app.xqm :)
 (: TODO: inject additional parameters? :)
-(: TODO: move this to a more generic location (e.g. common.xq) as it is also used in app.xqm :)
-declare function wdbProc:processXSL( $id as xs:string, $process as element(), $model as map(*), $view as xs:string ) as item()* {
+declare function wdbProc:processXSL ( $id as xs:string, $process as element(), $model as map(*), $view as xs:string ) as map(*) {
   let $content := try {
+    (: this is necessary to catch meta:struct with IDs (for a sub-corpus) :)
+    let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
+      then $model?fileLoc || '#' || $model?id
+      else $model?fileLoc
 
-  (: this is necessary to catch meta:struct with IDs (for a sub-corpus) :)
-  let $file := if ( ends-with($model?fileLoc, 'wdbmeta.xml') )
-    then $model?fileLoc || '#' || $model?id
-    else $model?fileLoc
-
-        (: do not stop transformation on ambiguous rule match and similar warnings :)
-    let $attr :=
+      (: do not stop transformation on ambiguous rule match and similar warnings :)
+      let $attr :=
           <attributes>
             <attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" />
           </attributes>
-      , $params :=
+        , $params :=
           <parameters>
             <param name="exist:stop-on-warn" value="no" />
             <param name="exist:stop-on-error" value="no" />
@@ -63,28 +60,31 @@ declare function wdbProc:processXSL( $id as xs:string, $process as element(), $m
           $attr,
           ""
         )
-    } catch * {
-      ("error",
-        $err:description,
-        util:log("error", "Processing " || $id || ": " || $err:description))
-    }
+  } catch * {
+    ("error",
+      $err:description,
+      util:log("error", "Processing " || $id || ": " || $err:description))
+  }
   
   return if ($content[1] = "error")
-    then (500, $content[2])
-    else (200, $content)
+    then map { "status": $content[1], "content": $content[2] }
+    else map { "status": 200, "content": $content }
 };
 
-(: TODO: move this to a more generic location (e.g. common.xq) as it is also used in app.xqm :)
-declare function wdbProc:processXQuery($id as xs:string, $process as element(), $model as map(*)) as item()* {
+declare function wdbProc:processXQuery ( $id as xs:string, $process as element(), $model as map(*) ) as map(*) {
   let $function := $process/meta:command/text()
-  return if (starts-with($function, 'http') or starts-with($function, '/'))
-  then () (: TODO :)
-  else
-    let $fn := wdb:findProjectFunction($model, $function, 2)
-    return if ($fn) then try {
-      (200, wdb:eval($function || "($id, $process)", false(), (xs:QName("id"), $id, xs:QName("process"), $process)))
-    } catch * {
-      (500, $err:description)
-    }
-    else (500, "function " || $function || " not found")
+
+  return if ( starts-with($function, 'http') or starts-with($function, '/') )
+    then () (: TODO :)
+    else if ( wdb:findProjectFunction($model, $function, 2) ) then
+      try {
+        map {
+          "status": 200,
+          "content": wdb:eval($function || "($id, $process)", false(), (xs:QName("id"), $id, xs:QName("process"), $process))
+        }
+      } catch * {
+        map { "status": 500, "content": $err:description }
+      }
+    else
+      map { "status": 500, "content": "function " || $function || " not found" }
 };
