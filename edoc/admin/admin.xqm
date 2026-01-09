@@ -24,9 +24,11 @@ function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) 
   wdbm:populateModel((), $ed, "", "", "")
 };
 
-declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as element(meta) {
-  <meta name="ed" content="{ $model?ed }" />
-};
+declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as item()+ {(
+  comment { "Created in admin.xqm for "|| $node/@data-template },
+  <meta name="ed" content="{ $model?ed }" />,
+  <meta name="path" content="{ $model?pathToEd }" />
+)};
 
 declare function wdbAdmin:heading ($node as node(), $model as map(*)) {
   let $opts := if (request:get-parameter('job', '') != '')
