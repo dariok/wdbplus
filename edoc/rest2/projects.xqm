@@ -253,6 +253,36 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
       </contents>
     )
 };
+
+(:~
+ : List all resources of a project
+ : GET /projects/{$ed}/resources
+ :)
+declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+  return if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else
+    let $meta := doc( $project/@path || "/wdbmeta.xml" )
+      , $views := $meta//meta:view
+      , $result :=
+        <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+            start="1"
+            total="{ count($views) }"
+            id="{ $r2:base }{ $request?path }">
+          {
+            for $entry in $views
+            let $id := string($entry/@file)
+            return
+              <file
+                  id="{ $r2:base }/projects/{ $request?parameters?ed }/resources/{ $id }"
+                  label="{ normalize-space($entry/@label) }"
+              />
+          }
+        </list>
+    return r2:returnXmlOrJson($result)
+};
+
 (:
 
           <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1">
