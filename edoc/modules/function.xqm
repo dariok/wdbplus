@@ -30,10 +30,14 @@ declare
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed as xs:string?, $p as xs:string,
     $q as xs:string ) as item()* {
   try {
-    let $newModel := map:merge((
-          wdbm:populateModel($id, $ed, "", $p, $q),
-          $model
-        ))
+    let $newModel := if ( request:exists() and  contains(request:get-url(), 'addins') ) then
+          map {
+            "pathToEd": "/db/apps/edoc/addins/" || substring-before(substring-after(request:get-uri(), 'addins/'), '/') || '/'
+          }
+        else map:merge((
+            wdbm:populateModel($id, $ed, "", $p, $q),
+            $model
+          ))
       , $language := if ( $newModel?language != "" )
           then $newModel?language
           else "sco"
