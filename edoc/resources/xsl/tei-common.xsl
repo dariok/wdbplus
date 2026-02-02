@@ -133,6 +133,7 @@
 
    <xsl:template match="tei:p">
       <p>
+         <xsl:apply-templates select="@style" />
          <xsl:attribute name="id">
             <xsl:choose>
                <xsl:when test="@xml:id">
@@ -710,4 +711,6 @@
   <xsl:template match="@xml:lang">
     <xsl:attribute name="lang" select="."/>
   </xsl:template>
+  
+  <xsl:template match="@xml:space" />
 </xsl:stylesheet>
