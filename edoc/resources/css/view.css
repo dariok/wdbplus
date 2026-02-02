@@ -134,12 +134,12 @@ div.footnote {
   display: table-row;
 }
 
-/* footnote number within the main text */
+/* footnote number within the main text
 .fnNumber {
   font-size: 0.9em;
   vertical-align: super;
   line-height: 0;
-}
+} */
 
 /* footnote number within apparatus */
 .footnotes .fnNumber {
@@ -171,9 +171,11 @@ div.footnote {
 
 /* footnote links */
 button[aria-label].footnoteNumber {
-  vertical-align: super;
-  font-size: 0.75rem;
+  display: inline-block;
+  font-size: 0.9rem;
   line-height: 0;
+  text-indent: 0;
+  vertical-align: super;
 }
 
 /* Spans acting as buttons to display entity information */
