@@ -292,12 +292,27 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
       )
 };
 
+(:~
+ : Apply a project specific XSLT to some XML
+ :
+ : @param $xml The XML to be transformed
+ : @param $edPath The path to the project
+ : @param $name The name of the XSLT file to be applied
+ :
+ : @returns The transformed XML
+ :
+ : The lookup order is:
+ : 1) project resources
+ : 2) instance resources
+ : 3) global resources
+ :)
 declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string ) as node() {
   let $xsl := if ( doc-available($edPath || "/resources/xsl/" || $name) ) then
         doc($edPath || "/resources/xsl/" || $name)
       else if ( doc-available("/db/apps/edoc/data/resources/xsl/" || $name) ) then
         doc("/db/apps/edoc/data/resources/xsl/" || $name)
-      else doc("/db/apps/edoc/resources/xsl/" || $name)
+      else
+        doc("/db/apps/edoc/resources/xsl/" || $name)
    
    return transform:transform($xml, $xsl, ())
 };
