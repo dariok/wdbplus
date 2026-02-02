@@ -72,9 +72,12 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
        processing (#394) :)
     let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
       then
-        (: TODO nav.xsl: use edoc/resources/xsl/nav.xsl if none in data/resources :)
         <meta:process target="html">
-          <meta:command type="xsl">{ xs:anyURI($config:data || '/resources/xsl/nav.xsl') }</meta:command>
+          <meta:command type="xsl">{ 
+            if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
+              then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
+              else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
+          }</meta:command>
         </meta:process>
       else
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
