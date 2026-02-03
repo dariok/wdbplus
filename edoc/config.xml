@@ -28,7 +28,8 @@
    <server>http://localhost:8080/exist/apps/edoc</server>
 
    <!-- Full path for the instance’s REST base URL -->
-   <rest>http://localhost:8080/exist/restxq/edoc/</rest>
+   <rest version="1">http://localhost:8080/exist/restxq/edoc/</rest>
+   <rest version="2">https://localhost/exist/apps/edoc/api/v2/</rest>
 
    <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
      default: /db/apps/edoc/data -->
