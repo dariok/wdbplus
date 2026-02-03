@@ -37,11 +37,18 @@
 
    <!-- standard HTTP reponse headers for HTML files -->
    <headers>
+      <header name="Content-Security-Policy" value="default-src https:;
+         connect-src 'self' https://example.org;
+         frame-src 'self' https://example.org;
+         img-src 'self' data: https://example.org;
+         script-src 'self' https://example.org 'sha256-i5FN1OSK7gDNa3opBmzMU9YJGHPyoa6XHjjunO2922g=';
+         style-src 'self' 'unsafe-inline' https://example.org;" />
       <header name="Permissions-Policy" value="geolocation=(self), fullscreen=(self)"/>
       <header name="Referrer-Policy" value="no-referrer-when-downgrade"/>
       <header name="X-Content-Type-Options" value="nosniff"/>
       <header name="X-Frame-Options" value="DENY"/>
       <header name="X-XSS-Protection" value="1; mode=block"/>
+      <header name="Strict-Transport-Security" value="max-age=31536000" />
    </headers>
 
    <!-- Allowed origins for CORS requests – these may be necessary when wdb+ is behind a rewriting proxy
