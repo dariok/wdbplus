@@ -12,11 +12,13 @@ declare function wdbProc:getContent ( $id as xs:string, $process as element(), $
   (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
   switch ( $process[1]/meta:command/@type )
     case "xsl" return
-      map { "status": 200, "content": wdbProc:processXSL($id, $process, $model, $view) }
+      let $content := wdbProc:processXSL($id, $process, $model, $view)
+      return map { "status": $content?status, "content": $content?content }
     case "xquery" return
-      map { "status": 200, "content": wdbProc:processXQuery($id, $process, $model) }
+      let $content := wdbProc:processXQuery($id, $process, $model)
+      return map { "status": $content?status, "content": $content?content }
     default return
-      map { "status": 500, "content": "Invalid command type " || $type }
+      map { "status": 500, "content": "Invalid command type " || ($process[1]/meta:command/@type, '?')[1] }
 };
 
 (: TODO: use parameter list as defined in app.xqm :)
@@ -28,12 +30,12 @@ declare function wdbProc:processXSL ( $id as xs:string, $process as element(), $
       then $model?fileLoc || '#' || $model?id
       else $model?fileLoc
 
-      (: do not stop transformation on ambiguous rule match and similar warnings :)
-      let $attr :=
-          <attributes>
-            <attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" />
-          </attributes>
-        , $params :=
+    (: do not stop transformation on ambiguous rule match and similar warnings :)
+    let $attr :=
+        <attributes>
+          <attr name="http://saxon.sf.net/feature/recoveryPolicyName" value="recoverSilently" />
+        </attributes>
+      , $params :=
           <parameters>
             <param name="exist:stop-on-warn" value="no" />
             <param name="exist:stop-on-error" value="no" />
@@ -41,13 +43,13 @@ declare function wdbProc:processXSL ( $id as xs:string, $process as element(), $
             <param name="ed" value="{$model?ed}" />
             {
               if ( $view != '' )
-              then <param name="view" value="{$view}" />
-              else ()
+                then <param name="view" value="{$view}" />
+                else ()
             }
             {
               if ($model?p != '')
-              then <param name="p" value="{$model?p}" />
-              else ()
+                then <param name="p" value="{$model?p}" />
+                else ()
             }
             <param name="xml" value="{$file}" />
             <param name="xsl" value="{normalize-space($process/meta:command)}" />
@@ -61,12 +63,14 @@ declare function wdbProc:processXSL ( $id as xs:string, $process as element(), $
           ""
         )
   } catch * {
-    ("error",
+    (
+      500,
       $err:description,
-      util:log("error", "Processing " || $id || ": " || $err:description))
+      util:log("error", "Processing " || $id || ": " || $err:description)
+    )
   }
   
-  return if ($content[1] = "error")
+  return if ( $content[1] = "error" )
     then map { "status": $content[1], "content": $content[2] }
     else map { "status": 200, "content": $content }
 };
