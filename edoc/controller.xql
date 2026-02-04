@@ -69,7 +69,12 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
 else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
-      <forward url="{$exist:controller}/modules/view.xql" />
+      <forward url="{$exist:controller}/modules/view.xql">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
     </view>
   </dispatch>
   (: generic resources :)
@@ -82,8 +87,8 @@ else if ( ends-with($exist:resource, ".html") ) then
         }
       </forward>
     </dispatch>
-   (: instance specific resources :)
-   else if ( contains($exist:path, "/$global/") ) then
+  (: instance specific resources :)
+  else if ( contains($exist:path, "/$global/") ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
       <forward url="{$exist:controller}/data/resources/{substring-after($exist:path, '/$global/')}">
         {
