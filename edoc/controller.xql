@@ -21,15 +21,15 @@ declare variable $exist:prefix external;
 declare variable $local:isget := request:get-method() = ("GET","get");
 declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
-util:log("info", "request:get-method(): " || request:get-method()),
-util:log("info", "exist:path: " || $exist:path),
+util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " -> resource: " || $exist:resource),
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
 if (
-    ( $local:isget and $exist:path eq "/apiv2.html" ) or 
-    ( $local:isget and matches($exist:path, "^/[^/]+\.json$", "s") )
+    ( $local:isget and $exist:resource = ('v2.json', 'apiv2.html') )
 ) then
-  <dispatch xmlns="http://exist.sourceforge.net/NS/exist" />
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/{$exist:resource}"/>
+  </dispatch>
 (: login :)
 else if ( $exist:resource = 'login' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
