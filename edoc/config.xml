@@ -59,6 +59,8 @@
 
    <!-- Sources for some Blobs -->
    <externalSources>
-      <source name="jquery" path="$shared/jquery-3.6.3.min.js" />
+      <source name="jquery" path="$shared/js/jquery-4.0.0.min.js" />
+      <source name="jquery-ui-js" path="$shared/js/jquery-ui.min.js" />
+      <source name="jquery-ui-css" path="$shared/css/jquery-ui.min.css" />
    </externalSources>
 </config>
