@@ -4,8 +4,8 @@ module namespace wdbRs = "https://github.com/dariok/wdbplus/RestSearch";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config"     at "../modules/wdb-config.xqm";
 import module namespace kwic     = "http://exist-db.org/xquery/kwic";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"        at "../modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "../modules/wdb-files.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -90,7 +90,6 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
   else 
     let $coll := (wdbFiles:getFullPath($ed))?projectPath
       , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
-      , $xsl := wdbRCo:getXSLT($coll, 'xsl/search.xsl')
     
     let $params := 
       <parameters>
@@ -109,7 +108,7 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
           <http:header name="Cache-Controle" value="no-cache" />
         </http:response>
       </rest:response>,
-      transform:transform($searchResult, doc($xsl), $params)
+      wdb:applySpecificXsl($searchResult[self::*:results], $coll, 'search.xsl', $params)
     )
     else
       <rest:response>
@@ -193,7 +192,6 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
   else
     let $file := (collection($config:data)/id($id))[self::tei:TEI][1]
       , $coll := (wdbFiles:getFullPath($id))?projectPath
-      , $xsl := wdbRCo:getXSLT($coll, 'xsl/search.xsl')
       
     let $params :=
       <parameters>
@@ -210,7 +208,7 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
             <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
       </rest:response>,
-      transform:transform($searchResult, doc($xsl), $params)
+      wdb:applySpecificXsl($searchResult, $coll, 'search.xsl', $params)
     )
     else
       <rest:response>
