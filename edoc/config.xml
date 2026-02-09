@@ -37,14 +37,20 @@
 
    <!-- standard HTTP reponse headers for HTML files -->
    <headers>
-      <header name="Content-Security-Policy" value="default-src https:;
+      <header name="Content-Security-Policy" value="
+         base-uri 'self';
          connect-src 'self' https://example.org;
-         frame-src 'self' https://example.org;
+         default-src 'self';
+         form-action 'self';
+         frame-ancestors 'none';
+         frame-src 'self';
          img-src 'self' data: https://example.org;
+         object-src 'none';
          script-src 'self' https://example.org 'sha256-i5FN1OSK7gDNa3opBmzMU9YJGHPyoa6XHjjunO2922g=';
-         style-src 'self' 'unsafe-inline' https://example.org;" />
+         style-src 'self' 'unsafe-inline' https://example.org;
+         upgrade-insecure-requests;" />
       <header name="Permissions-Policy" value="geolocation=(self), fullscreen=(self)"/>
-      <header name="Referrer-Policy" value="no-referrer-when-downgrade"/>
+      <header name="Referrer-Policy" value="strict-origin-when-cross-origin"/>
       <header name="X-Content-Type-Options" value="nosniff"/>
       <header name="X-Frame-Options" value="DENY"/>
       <header name="X-XSS-Protection" value="1; mode=block"/>
