@@ -192,25 +192,40 @@ declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element
  : return the body
  :)
 declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
-  (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   try {
     <main>
       { (wdbProc:getContent($model?id, $model?xslt, $model?view, $model))?content }
       { wdbv:getLeftFooter($node, $model) }
     </main>
-  } catch * { (util:log("error",
-    <report>
-      <file>{$model?fileLoc}</file>
-      <xslt>{$model?xslt}</xslt>
-      <error>{$err:code || ': ' || $err:description}</error>
-      <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
-      <additional>{$err:additional}</additional>
-    </report>),
-    wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "error": map {
-        "code": $err:code, "desc": $err:description, "module": $err:module, "line": $err:line-number,
-        "col": $err:column-number, "add": $err:additional
-    }}))
+  } catch err:XPTY0004 {
+    wdbErr:error(
+      map {
+        "code": "wdbErr:wdb0002",
+        "model": $model,
+        "error": map {
+          "code": $err:code,
+          "desc": $err:description,
+          "module": $err:module,
+          "line": $err:line-number,
+          "col": $err:column-number,
+          "add": $err:additional
+        }
+      }
+    )//main
+  } catch * {
+    wdbErr:error(
+      map{
+        "code": "wdbErr:wdb1001",
+        "model": $model,
+        "error": map {
+          "code": $err:code,
+          "desc": $err:description,
+          "module": $err:module,
+          "line": $err:line-number,
+          "col": $err:column-number,
+          "add": $err:additional
+    }})
   }
 };
 

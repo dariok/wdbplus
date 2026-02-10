@@ -80,6 +80,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
           }</meta:command>
         </meta:process>
       else
+        (: TODO: this should get the process, both XSLT and XQUery, and hence the key in the map should be process :)
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
     let $xslt := if ( not($xsl) instance of element(meta:process) )
