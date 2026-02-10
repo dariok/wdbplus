@@ -7,7 +7,6 @@ xquery version "3.1";
 
 import module namespace login   = "http://exist-db.org/xquery/login"       at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request = "http://exist-db.org/xquery/request"     at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth" at "modules/auth.xqm";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
