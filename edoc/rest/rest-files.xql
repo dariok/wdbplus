@@ -2,14 +2,15 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
-import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
-import module namespace wdbProc  = "https://github.com/dariok/wdbplus/Process"     at "../modules/wdb-process.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
+import module namespace config     = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
+import module namespace wdb        = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
+import module namespace wdbFiles   = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
+import module namespace wdbm       = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbProc    = "https://github.com/dariok/wdbplus/Process"     at "../modules/wdb-process.xqm";
+import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "modules/wdb-request.xqm";
+import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
+import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -94,7 +95,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
         $errNoID := count($fileEntry) = 0
     
     (: parse data an try to get the intended path :)
-    let $parsed := wdb:parseMultipart($data, $header)
+    let $parsed := wdbRequest:parseMultipart($data, $header)
       , $path := normalize-space($parsed?filename?body)
       , $pathEntry := collection($config:data)//meta:file[@path = $path]
       , $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)

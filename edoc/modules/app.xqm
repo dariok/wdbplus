@@ -337,38 +337,6 @@ declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $n
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $header ) {
-  let $boundary := $header => substring-after('boundary=') => translate('"', '')
-  return map:merge(
-    for $m in tokenize($data, "--" || $boundary) return
-      if (string-length($m) lt 6)
-      then ()
-      else
-        let $parts := (tokenize($m, "(^\s*$){2}", "m"))[normalize-space() != ""]
-        let $header := map:merge( 
-          for $line in tokenize($parts[1], "\n") return
-            if (normalize-space($line) eq "")
-            then ()
-            else
-              let $val := $line => substring-after(': ') => normalize-space()
-              let $value := if (contains($val, '; '))
-                then map:merge( 
-                  for $entry in tokenize($val, '; ') return
-                    if (contains($entry, '='))
-                    then map:entry ( substring-before($entry, '='), translate(substring-after($entry, '='), '"', '') )
-                    else map:entry ( "text", $entry )
-                )
-                else $val
-              return map:entry(substring-before($line, ': '), $value)
-        )
-        
-        (: empty lines in the body will also cause splitting; hence, recombine everything except the header :)
-        return map:entry(($header?Content-Disposition?name, 'name')[1],
-            map { "header" : $header, "body" : string-join($parts[position() > 1], '\n') }
-        )
-  )
-};
-
 (:~
  : Get a MIME type from an extension and an optional XML namespace
  :

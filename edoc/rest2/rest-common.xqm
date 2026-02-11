@@ -54,7 +54,7 @@ declare function r2:response ( $status as xs:integer, $mediaType as xs:string, $
 
 declare function r2:parseBody ( $request as map(*) ) as item() {
   let $mediaType := $request?media-type
-    , $t1 := util:log("info", $request?body)
+    (: , $t1 := util:log("info", $request?body) :)
     (: , $checkMediaType := $mediaType = $r2:acceptable :)
     (: , $t0 := util:log("info", $mediaType || ': ' || $checkMediaType) :)
 
