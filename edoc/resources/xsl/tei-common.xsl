@@ -114,7 +114,11 @@
       
       <xsl:if test="//tei:note[@type = ('fn', 'footnote', 'annotation')]">
         <section aria-label="contains full text footnotes for this text" id="footnote_container">
-          <xsl:apply-templates select="//tei:note[@type = ('fn', 'footnote', 'annotation')]" mode="fnText" />
+          <xsl:apply-templates
+              select="//tei:note[@type = ('fn', 'footnote')],
+                      //tei:note[@type = 'annotation'],
+                      //tei:note[@type = 'comment']"
+              mode="fnText"/>
         </section>
       </xsl:if>
     </article>
@@ -616,7 +620,7 @@
       </xsl:apply-templates>
     </xsl:variable>
     
-    <button id="{$position}{$type}{$number}" data-note="{$type}{$number}" class="footnoteNumber"
+    <button id="{$position}{$type}{$number}" data-note="{(@xml:id, $type||$number)[1]}" class="footnoteNumber"
       aria-label="opens a footnote">
       <xsl:value-of select="$number"/>
     </button>
@@ -624,6 +628,9 @@
   
   <!-- general representation of notes -->
   <xsl:template match="*" mode="fnText">
+    <xsl:if test="@type != preceding::tei:note[@type][1]/@type">
+      <hr/>
+    </xsl:if>
     <div class="annotation">
       <xsl:attribute name="id">
         <xsl:choose>
