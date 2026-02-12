@@ -8,6 +8,7 @@
      functions/templates can be overwritten -->
 <xsl:stylesheet
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:html="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="#all" version="3.0">
@@ -75,6 +76,8 @@
        In case you wish to change any behaviour, you can either
        – copy this file to your project an edit it there;
        – import this stylesheet via xsl:import and overwrite any template you like, especially those mentioned above -->
+  <xsl:variable name="fnTypes-Footnote" as="xs:string+" select="('fn', 'footnote','annotation','comment')"/>
+  <xsl:variable name="fnTypes-Critical" as="xs:string+" select="('crit', 'crit_app', 'critical', 'apparatus')"/>
   
   <!-- basic outline is created via templating in templates/layout.html. The following templates create a semantic
     outline (see above);  requirements may change for different projects or types of texts (e.g. for transcriptions,
@@ -112,12 +115,12 @@
         <xsl:apply-templates />
       </section>
       
-      <xsl:if test="//tei:note[@type = ('fn', 'footnote', 'annotation')]">
+      <xsl:if test="//tei:note[@type = ($fnTypes-Footnote, $fnTypes-Critical)]">
         <section aria-label="contains full text footnotes for this text" id="footnote_container">
           <xsl:apply-templates
-              select="//tei:note[@type = ('fn', 'footnote')],
-                      //tei:note[@type = 'annotation'],
-                      //tei:note[@type = 'comment']"
+              select="//tei:note[@type = $fnTypes-Footnote],
+                      //tei:note[@type = $fnTypes-Critical],
+                      //tei:note[@type and not(@type = $fnTypes-Footnote or @type = $fnTypes-Critical)]"
               mode="fnText"/>
         </section>
       </xsl:if>
@@ -423,7 +426,7 @@
   <xsl:template match="@rend" />
   
   <!-- Handling of footnotes -->
-  <xsl:template match="tei:note[@type = ('fn', 'footnote', 'annotation')]">
+  <xsl:template match="tei:note[@type = ($fnTypes-Footnote, $fnTypes-Critical)]">
     <xsl:apply-templates select="." mode="fnLink" />
   </xsl:template>
   
@@ -663,10 +666,10 @@
     <xsl:param name="type" />
     
     <xsl:choose>
-      <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
+      <xsl:when test="$type = $fnTypes-Critical">
         <xsl:apply-templates select="." mode="fnumberAlph" />
       </xsl:when>
-      <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
+      <xsl:when test="$type = $fnTypes-Footnote">
         <xsl:apply-templates select="." mode="fnumberNumeric" />
       </xsl:when>
       <xsl:otherwise>
@@ -687,7 +690,7 @@
       | tei:subst
       | tei:add[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
       | tei:del[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
-      | tei:note[@type='crit_app']
+      | tei:note[@type=$fnTypes-Critical]
       | tei:seg[@hand or @resp]
       | tei:unclear[@extent]"/>
   </xsl:template>
