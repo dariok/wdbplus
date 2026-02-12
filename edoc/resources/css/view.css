@@ -94,12 +94,8 @@ body > aside {
   overflow: initial;
 }
 
-#ann {
+aside > div {
   position: absolute;
-}
-
-#fac {
-  height: 100%;
 }
 
 q {
