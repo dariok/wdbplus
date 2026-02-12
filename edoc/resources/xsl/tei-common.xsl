@@ -97,10 +97,42 @@
     </header>
   </xsl:template>
   <xsl:template match="tei:teiHeader" mode="footer">
+    <xsl:apply-templates select="tei:fileDesc//tei:publicationStmt"/>
+  </xsl:template>
+  
+  <xsl:template match="tei:publicationStmt">
     <footer>
-      <xsl:apply-templates select="tei:fileDesc//tei:publicationStmt" />
+      <xsl:apply-templates select="tei:publisher, tei:pubPlace, tei:availability"/>
     </footer>
   </xsl:template>
+  <xsl:template match="tei:publicationStmt/tei:publisher">
+    <a>
+      <xsl:if test="@ref or */@ref">
+        <xsl:attribute name="href" select="(@ref, */æref)[1]" />
+      </xsl:if>
+      <xsl:apply-templates />
+    </a>
+    <br/>
+  </xsl:template>
+  <xsl:template match="tei:pubPlace">
+    <xsl:value-of select="."/>
+    <xsl:if test="following-sibling::tei:date">
+      <xsl:text> (</xsl:text>
+      <xsl:value-of select="((following-sibling::tei:date[@type='published'], following-sibling::tei:date)[1]/@when => analyze-string('\d{4}'))//*:match[1]"/>
+      <xsl:text>)</xsl:text>
+    </xsl:if>
+    <xsl:if test="following-sibling::tei:idno">
+      <xsl:text> – PID: </xsl:text>
+      <xsl:value-of select="following-sibling::tei:idno"/>
+    </xsl:if>
+    <br/>
+  </xsl:template>
+  <xsl:template match="tei:availability">
+    <a href="{tei:licence/@target}">
+      <xsl:apply-templates select="tei:licence/node()"/>
+    </a>
+  </xsl:template>
+  
   <xsl:template match="tei:text">
     <!-- TODO check usage of removed id="wdbContent" and rewrite these occurrences -->
     <article>
