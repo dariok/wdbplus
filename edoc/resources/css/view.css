@@ -168,7 +168,7 @@ div.footnote {
 /* footnote links */
 button[aria-label].footnoteNumber {
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   line-height: 0;
   text-indent: 0;
   vertical-align: super;
