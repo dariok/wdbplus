@@ -94,7 +94,6 @@ declare function r2p:createProjectWithoutId ( $request as map(*) ) as map(*) {
  : also called by r2p:createProjectWithoutId
  :)
 declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
-  r2:logMap($request),
   if ( not(exists($request?parameters?parent)) or not(exists($request?parameters?ed)) ) then
     r2:response(400, 'text/plain', 'Bad Request\n parameter `parent` or `ed` missing', $r2:allOrigins)
   else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
@@ -281,6 +280,95 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
           }
         </list>
     return r2:returnXmlOrJson($result)
+};
+
+(:~
+ : Create an XML resource in a project (no ID given)
+ : This is used for XML files only. Non-XML files need to be created with a full path via PUT, so that the path information is available for the processing of the file.
+ : POST /projects/{$ed}/resources
+ :)
+declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+    , $meta := doc( $project/@path || "/wdbmeta.xml" )
+    , $xml := try { parse-xml($request?body?file?data) } catch * { <false/> }
+    , $id := ($xml/*[1]/@xml:id, '_' || util:uuid())[1]
+    , $uuid := util:uuid($xml)
+
+  return if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
+    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
+  else if ( not($xml instance of document-node()) ) then
+    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
+  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+  else if ( not(r2:writeAllowed($request?user)) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( not(sm:has-access($project/@path, "w")) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
+  else if ( $meta//meta:file[@xml:id = $id] ) then
+    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
+  else if ( $meta//meta:file[@uuid = $uuid] ) then
+    r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
+  else
+    (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
+    r2:createXmlResource(
+      map{
+        "parameters": map:merge((
+            $request?parameters,
+            map:entry("id", $id)
+          )),
+        "body": $request?body,
+        "user": $request?user
+      }
+    )
+};
+
+(:~
+ : Create a resource in a project (ID given – this does not overwrite an existing resource)
+ : PUT /projects/{$ed}/resources/{$id}
+ :)
+declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
+  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+    , $meta := doc( $project/@path || "/wdbmeta.xml" )
+    , $xml := try { parse-xml($request?body?file?data) } catch * { false() }
+    , $id := $request?parameters?id
+    , $uuid := try { util:uuid($xml) } catch * { false() }
+  
+  return if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
+    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
+  else if ( not(exists($project)) ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not($xml instance of document-node()) ) then
+    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
+  else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $id ) then
+    r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $id || ').', $r2:allOrigins)
+  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+  else if ( not(r2:writeAllowed($request?user)) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( not(sm:has-access($project/@path, "w")) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path and @xml:id != $id] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $id, $r2:allOrigins)
+  else if ( $meta//meta:file[@xml:id = $id and @path != $request?body?path] ) then
+    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path, $r2:allOrigins)
+  else if ( $meta//meta:file[@uuid = $uuid] ) then
+    r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
+  else 
+  (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
+    r2:createXmlResource(
+      map{
+        "parameters": map:merge((
+            $request?parameters,
+            map:entry("id", $id)
+          )),
+        "body": $request?body,
+        "user": $request?user
+      }
+    )
 };
 
 (:
