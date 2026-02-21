@@ -2,8 +2,9 @@ xquery version "3.1";
 
 module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects";
 
-import module namespace r2  = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
-import module namespace wdb = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
+import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
 
 declare namespace index = "https://github.com/dariok/wdbplus/index";
 declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -38,11 +39,12 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
  : GET /projects/{$parent}/subprojects
  :)
 declare function r2p:listSubprojects ( $request as map(*) ) as map(*) {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)
-  return if ( not(exists($project)) ) then
+  let $project := try { wdbFiles:getFullPath($request?parameters?parent) } catch * { $err:code }
+
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?parent || ' not found', $r2:allOrigins)
   else
-    let $meta := doc($project/@path || "/wdbmeta.xml")
+    let $meta := doc($project?collectionPath || "/wdbmeta.xml")
       , $subprojects := $meta//meta:ptr
       , $labels := map:merge(
           for $struct in $meta//meta:struct
@@ -94,25 +96,28 @@ declare function r2p:createProjectWithoutId ( $request as map(*) ) as map(*) {
  : also called by r2p:createProjectWithoutId
  :)
 declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
-  if ( not(exists($request?parameters?parent)) or not(exists($request?parameters?ed)) ) then
+  let $parent := try { wdbFiles:getFullPath($request?parameters?parent) } catch * { $err:code }
+    , $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+
+  return if ( not(exists($request?parameters?parent)) or not(exists($request?parameters?ed)) ) then
     r2:response(400, 'text/plain', 'Bad Request\n parameter `parent` or `ed` missing', $r2:allOrigins)
   else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
     r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
   else if ( not(r2:writeAllowed($request?user)) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)) ) then
+  else if ( $parent instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?parent || ' not found', $r2:allOrigins)
-  else if ( not(sm:has-access(doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)/@path, "w")) ) then
+  else if ( not(sm:has-access($parent?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed) ) then
+  else if ( $project instance of map(*) and exists($project?collectionPath) ) then
     r2:response(409, 'text/plain', 'A project with ID ' || $request?parameters?ed || ' already exists', $r2:allOrigins)
-  else if ( xmldb:collection-available(doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)/@path || '/' || $request?body?collection) ) then
+  else if ( xmldb:collection-available($parent?collectionPath || '/' || $request?body?collection) ) then
     r2:response(409, 'text/plain', 'A collection with name ' || $request?body?collection || ' already exists in project ' || $request?parameters?parent, $r2:allOrigins)
   else if ( not(r2:mapKeysAllowed($request?body, ('title', 'collection'), ('short'))) ) then
     r2:response(422, 'text/plain', 'Wrong content of project information found. Expected `title` and `collection`(mandatory), `short`.', $r2:allOrigins)
   else
   
-  let $parentCollection := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?parent)/@path
+  let $parentCollection := $parent?collectionPath
     , $parentMeta := doc( $parentCollection || "/wdbmeta.xml" )
     , $subCollection := xmldb:create-collection($parentCollection, $request?body?collection)
     , $newMetaPath := xmldb:copy-resource("/db/apps/edoc/admin/project-template", "wdbmeta.xml", $subCollection, "wdbmeta.xml")
@@ -197,9 +202,9 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
  : GET /projects/{$ed}/views
  :)
 declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
   
-  return if ( not(exists($project)) ) then
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else
     r2:returnXmlOrJson(<list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
@@ -226,12 +231,12 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
  : GET /projects/{$ed}
  :)
 declare function r2p:getProject ( $request as map(*) ) as map(*) {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
   
-  return if ( not(exists($project)) ) then
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else
-    let $meta := doc( $project/@path || "/wdbmeta.xml" )
+    let $meta := doc( $project?collectionPath || "/wdbmeta.xml" )
     return r2:returnXmlOrJson(
       <contents xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         for="{ $r2:base }{ $request?path }"
@@ -258,11 +263,11 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
  : GET /projects/{$ed}/resources
  :)
 declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
-  return if ( not(exists($project)) ) then
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else
-    let $meta := doc( $project/@path || "/wdbmeta.xml" )
+    let $meta := doc( $project?collectionPath || "/wdbmeta.xml" )
       , $views := $meta//meta:view
       , $result :=
         <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
@@ -288,13 +293,13 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
  : POST /projects/{$ed}/resources
  :)
 declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
-    , $meta := doc( $project/@path || "/wdbmeta.xml" )
-    , $xml := try { parse-xml($request?body?file?data) } catch * { <false/> }
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
+    , $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
     , $id := ($xml/*[1]/@xml:id, '_' || util:uuid())[1]
     , $uuid := util:uuid($xml)
 
-  return if ( not(exists($project)) ) then
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
     r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
@@ -304,12 +309,12 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
     r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
   else if ( not(r2:writeAllowed($request?user)) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project/@path, "w")) ) then
+  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( $meta//meta:file[@path = $request?body?path] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
   else if ( $meta//meta:file[@xml:id = $id] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
+    r2:response(409, 'text/plain', 'A resource with ID ' |vpn.hrz.tu-darmstadt.de| $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $uuid] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
   else
@@ -321,7 +326,8 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
             map:entry("id", $id)
           )),
         "body": $request?body,
-        "user": $request?user
+        "user": $request?user,
+        "project": $project
       }
     )
 };
@@ -331,15 +337,15 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
  : PUT /projects/{$ed}/resources/{$id}
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
-  let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
-    , $meta := doc( $project/@path || "/wdbmeta.xml" )
-    , $xml := try { parse-xml($request?body?file?data) } catch * { false() }
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
+    , $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
     , $id := $request?parameters?id
     , $uuid := try { util:uuid($xml) } catch * { false() }
   
   return if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
     r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( not(exists($project)) ) then
+  else if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else if ( not($xml instance of document-node()) ) then
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
@@ -349,7 +355,7 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
   else if ( not(r2:writeAllowed($request?user)) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project/@path, "w")) ) then
+  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( $meta//meta:file[@path = $request?body?path and @xml:id != $id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $id, $r2:allOrigins)
@@ -366,7 +372,8 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
             map:entry("id", $id)
           )),
         "body": $request?body,
-        "user": $request?user
+        "user": $request?user,
+        "project": $project
       }
     )
 };
@@ -406,20 +413,21 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
  : DELETE /projects/{$ed}
  :)
 declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
-  if ( not(exists($request?parameters?ed)) ) then
-    r2:response(400, 'text/plain', 'Bad Request\n parameter `ed` missing', $r2:allOrigins)
-  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
-    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
-  else if ( not(r2:writeAllowed($request?user)) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else
-    let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
-    return if ( not(exists($project)) ) then
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
+
+  return if ( not(exists($request?parameters?ed)) ) then
+      r2:response(400, 'text/plain', 'Bad Request\n parameter `ed` missing', $r2:allOrigins)
+    else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+      r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+    else if ( not(r2:writeAllowed($request?user)) ) then
+      r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+    else if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
-    else if ( not(sm:has-access($project/@path, "w")) ) then
+    else if ( not(sm:has-access($project?collectionPath, "w")) ) then
       r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
     else
-      let $projectPath := string($project/@path)
+      let $projectPath := string($project?collectionPath)
         , $parentPath := replace($projectPath, "/[^/]+$", "")
         , $parentMeta := if ( doc-available($parentPath || "/wdbmeta.xml") )
             then doc($parentPath || "/wdbmeta.xml")
@@ -466,13 +474,13 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
       for view "start": text/html
       for view "navigation": application/xml, application/json, text/html', $r2:allOrigins)
   else
-    let $project := doc("/db/apps/edoc/index/project-index.xml")/id($request?parameters?ed)
-    return if ( not(exists($project)) ) then
+    let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    return if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
     else
       r2:returnXmlOrJson(
         r2p:projectView(map{
-          "path" : $project/@path || "/wdbmeta.xml",
+          "path" : $project?collectionPath || "/wdbmeta.xml",
           "parameters": $request?parameters,
           "Accept": request:get-header('Accept')
         })
