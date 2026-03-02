@@ -2,9 +2,12 @@ xquery version "3.1";
 
 module namespace r2 = "https://github.com/dariok/wdbplus/rest2/common";
 
-import module namespace router = "http://e-editiones.org/roaster/router";
+import module namespace router     = "http://e-editiones.org/roaster/router";
+import module namespace wdb        = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
 
-declare namespace sm = "http://exist-db.org/xquery/securitymanager";
+declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
+declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
 declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
 
@@ -90,6 +93,133 @@ declare function r2:mapKeysAllowed(
     (every $k in $keys      satisfies $k = $allowed)
 };
 
-declare function r2:logMap ( $request as map(*) ) {
-  for $key in map:keys($request) return if ( $key = ('spec', 'config', 'schema') ) then () else ( util:log("info", $key || ':') , util:log("info", $request($key)))
+(:~
+ : Function to create a new XML resource or update an existing XML, used for POST and PUT requests.
+ : XML files are always entered into a wdbmeta file
+ :)
+declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
+  (: functions in r2p parse the XML to check for valid data type and ID, and thus pass on a parsed XML.
+     all checks should have been carried out in r2p and r2f functions; hence, we don’t catch :)
+  let $namespace := namespace-uri($request?body?xml/*[1])
+    , $extension := tokenize($request?body?file?name, '\.')[last()]
+    , $tryType := wdb:getContentTypeFromExt($extension, $namespace)
+    , $mimeType := if ( $tryType != 'application/octet-stream' )
+        then $tryType
+        else if ( exists($request?body?file?type) )
+        then $request?body?file?type
+        else error()
+    
+    , $meta := doc($request?project?collectionPath || "/wdbmeta.xml")
+      (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
+    , $existing := $meta//id($request?parameters?id)
+    
+    , $targetPath := $request?project?collectionPath || $request?body?path
+    
+    , $store := (
+        r2:store($targetPath, $request?body?file?name, $request?body?xml, $mimeType),
+        r2:enterMetaForXml($request)
+      )
+
+    , $status := if ( exists($existing) ) then 204 else 201
+
+  return router:response($status, $mimeType, $store, $r2:allOrigins)
+};
+
+declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string ) as xs:string {
+  (: all checks should have been carried out by the higher API functions in r2p and r2f.
+     Hence, we assume everything’s okay and do not catch errors :)
+  (
+    xmldb:store($collection, $resource-name, $contents, $mime-type),
+    sm:chmod(xs:anyURI(string-join(($collection, $resource-name), '/')), if ( ends-with($resource-name, 'xql') ) then "rwxrwxr-x" else "rw-rw-r--"),
+    sm:chown(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdb"),
+    sm:chgrp(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdbusers")
+  )
+};
+
+declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
+  let $meta := doc($info?project?collectionPath || '/wdbmeta.xml')
+    , $uuid := $info?body?hash
+    , $relPath := $info?body?path || '/' || $info?body?file?name
+    , $id := $info?parameters?id
+    , $metaFile := ( 
+        $meta/id($id),
+        $meta//meta:file[@path = $relPath]
+      )
+
+    , $errorNonMatch := if ( count($metaFile) eq 0 )
+        then false()
+        else not($metaFile[1] is $metaFile[2])
+    , $errorNum := count($metaFile) > 2
+    , $errors := if ( $errorNonMatch or $errorNum ) 
+        then
+          if ( $errorNonMatch ) then error("Conflicting entries for ID " || $id || " and path " || $info?project?collectionPath || $info?body?path || '/' || $info?body?file?name || " in " || base-uri($meta))
+          else if ( $errorNum ) then error("More than 2 entries found for ID " || $id || " and path " || $info?project?collectionPath || $info?body?path || '/' || $info?body?file?name || " in " || base-uri($meta))
+          else error("unknown error")
+        else ()
+      
+    , $file := if ( count($metaFile) = 0 )
+        then
+          (: no entry in wdbmeta: create file and view entries :)
+          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+            xml:id="{ $id }"
+            path="{ $relPath }"
+            date="{ current-dateTime() }"
+            uuid="{ $uuid }"
+          />
+        else $metaFile
+    , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?project}, "getRestView", 1) )
+        then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
+        else
+          <view xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+              file="{ $id }"
+              label="{ normalize-space(($info?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $info?body?xml//tei:titleStmt/tei:title[1])[1]) }">
+            {
+              if ( $info?body?xml//tei:titleStmt/tei:title[@type eq 'num'] )
+                then attribute order { normalize-space($info?body?xml//tei:titleStmt/tei:title[@type eq 'num']) }
+                else ()
+            }
+          </view>
+    , $errorContent := map { "errors": $errors, "file": $file, "view": $view }
+
+    return if ( not($errors) and count($metaFile) = 0 ) then
+      (
+        update insert $file into $meta//meta:files,
+        update insert $view into $meta/meta:projectMD/meta:struct
+      )
+    else if ( not($errors) and count($metaFile) = (1, 2) ) then
+      (
+        update replace $metaFile[1] with $file,
+        update replace $meta//meta:view[@file = $id] with $view
+      )
+    else (
+      r2:logMap($errorContent, 0),
+      error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
+    )
+};
+
+declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {
+  let $c := for $key in map:keys($request) return
+      let $ind := string-join((string-join((1 to $depth) ! '  ', '') || $key, ': '), '')
+      return if( $request($key) instance of map(*) ) then
+         ( $ind, r2:logMap($request($key), $depth + 1))
+      else if ( $request($key) instance of array(*) ) then
+        $ind || 'Array[' || array:size($request($key)) || ']'
+      else if ( $request($key) instance of document-node() or $request($key) instance of element() ) then
+        $ind || 'XML[' || string-length($request($key)) || ']'
+      else if ( $request($key) instance of xs:string ) then
+        $ind || 'String[' || string-length($request($key)) || ']'
+      else if ( $request($key) castable as xs:double ) then
+        $ind || 'number = ' || string($request($key))
+      else if ( $request($key) instance of xs:boolean ) then
+        $ind || 'boolean = ' || string($request($key))
+      else
+        $ind || ($request($key))
+        
+  return if ( $depth = 0 ) then
+    util:log("info", "Request content:
+" || string-join($c, '
+'))
+  else
+    string-join($c, '
+')
 };

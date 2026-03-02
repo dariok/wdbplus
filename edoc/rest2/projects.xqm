@@ -301,6 +301,10 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
 
   return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not(starts-with($request?header?Content-Type, "multipart/form-data")) ) then
+    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
+        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
+    )
   else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
     r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
   else if ( not($xml instance of document-node()) ) then
@@ -311,10 +315,10 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || '/' || $request?body?file?name || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
   else if ( $meta//meta:file[@xml:id = $id] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' |vpn.hrz.tu-darmstadt.de| $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
+    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $uuid] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
   else
@@ -325,7 +329,11 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
             $request?parameters,
             map:entry("id", $id)
           )),
-        "body": $request?body,
+        "body": map:merge((
+            $request?body,
+            map:entry("xml", $xml),
+            map:entry("hash", $uuid)
+          )),
         "user": $request?user,
         "project": $project
       }
@@ -333,7 +341,12 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) )  {
 };
 
 (:~
- : Create a resource in a project (ID given – this does not overwrite an existing resource)
+ : Create a resource in a project (ID given – this may overwrite an existing resource)
+ : If no entry with this ID, this path, and this hash exists, creates a new resource with the given ID.
+  : If an entry with this ID but a different path exists, returns a 409 Conflict,
+  : If an entry with this path but a different ID exists, returns a 409 Conflict,
+  : If an entry with this hash but a different ID and path exists, returns a 409 Conflict.
+  : If all three match an existing entry, return 204
  : PUT /projects/{$ed}/resources/{$id}
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
@@ -343,10 +356,14 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     , $id := $request?parameters?id
     , $uuid := try { util:uuid($xml) } catch * { false() }
   
-  return if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
-    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( $project instance of xs:QName ) then
+  return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not(starts-with($request?header?Content-Type, "multipart/form-data")) ) then
+    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
+        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
+    )
+  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
+    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
   else if ( not($xml instance of document-node()) ) then
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
   else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $id ) then
@@ -357,12 +374,16 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path and @xml:id != $id] ) then
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name and @xml:id = $id and @uuid = $uuid] ) then
+    r2:response(204, 'text/plain', '', $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name and @xml:id != $id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $id and @path != $request?body?path] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path, $r2:allOrigins)
+  else if ( $meta//meta:file[@xml:id = $id and @path != $request?body?path || '/' || $request?body?file?name] ) then
+    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $uuid] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
+  else if ( $meta//id($id)[self::meta:struct] ) then
+    r2:response(409, 'text/plain', 'ID ' || $id || ' is already in use for a struct ' || $meta/id($id)/@label || $meta/id($id)/meta:label, $r2:allOrigins)
   else 
   (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
     r2:createXmlResource(
@@ -371,7 +392,11 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
             $request?parameters,
             map:entry("id", $id)
           )),
-        "body": $request?body,
+        "body": map:merge((
+            $request?body,
+            map:entry("xml", $xml),
+            map:entry("hash", $uuid)
+          )),
         "user": $request?user,
         "project": $project
       }
