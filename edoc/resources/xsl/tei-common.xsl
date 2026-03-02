@@ -213,6 +213,7 @@
     <xsl:variable name="att" as="attribute()*">
       <xsl:attribute name="class" select="string-join(('entity', @type), ' ')" />
       <xsl:attribute name="data-ref" select="$ref" />
+      <xsl:attribute name="data-type" select="@type" />
       <xsl:attribute name="aria-label">opens information about an entity</xsl:attribute>
     </xsl:variable>
     
@@ -745,10 +746,6 @@
        <xsl:apply-templates select="@xml:lang, @style, node()" />
     </span>
   </xsl:template>
-  
-  <!--<xsl:template match="*[@xml:lang = 'grc-Grek']//text()">
-    <xsl:value-of select="translate(., 'θ', 'ϑ')" />
-  </xsl:template>-->
   
   <xsl:template match="@xml:lang">
     <xsl:attribute name="lang" select="."/>
