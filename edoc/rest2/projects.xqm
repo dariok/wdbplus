@@ -441,8 +441,10 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
   let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
     , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
 
-  return if ( not(exists($request?parameters?ed)) ) then
-      r2:response(400, 'text/plain', 'Bad Request\n parameter `ed` missing', $r2:allOrigins)
+  return if ( not(exists($request?parameters?ed)) or $request?parameters?ed = '' ) then
+      r2:response(400, 'text/plain', 'Bad Request: parameter `ed` missing', $r2:allOrigins)
+    else if ( $request?parameters?ed = 'data' ) then
+      r2:response(400, 'text/plain', 'Forbidden: main project "data" cannot be deleted', $r2:allOrigins)
     else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
       r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
     else if ( not(r2:writeAllowed($request?user)) ) then
