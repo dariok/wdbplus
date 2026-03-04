@@ -96,7 +96,7 @@ Accept: application/xml
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001000/subprojects
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/none/subprojects
 Accept: application/xml
 
 ###
@@ -108,3 +108,58 @@ Accept: application/xml
 
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/start
 Accept: text/html
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/navigation
+Accept: text/html
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/resources
+Accept: application/xml
+
+###
+
+DELETE http://localhost:8080/exist/apps/edoc/api/v2/projects/project
+
+###
+
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001741/resources
+Content-Type: multipart/form-data; boundary=wdb
+
+--wdb
+Content-Disposition: form-data; name="path"
+
+edition
+--wdb
+Content-Disposition: form-data; name="file"; filename="17410105.xml"
+Content-Type: application/xml
+
+#< ../edoc/webstart.xql
+< ../edoc/config.xml
+#< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml
+--wdb--
+
+###
+
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001741/resources/pb001741-0105
+Content-Type: multipart/form-data; boundary=wdb
+
+--wdb
+Content-Disposition: form-data; name="path"
+
+edition/01
+--wdb
+Content-Disposition: form-data; name="file"; filename="17410105.xml"
+Content-Type: application/xml
+
+# < ../edoc/config.xml
+< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml
+--wdb--
+
+###
+
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001174/resources/pb001174-0001
+Content-Type: application/xml
+
+< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml

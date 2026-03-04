@@ -10,7 +10,101 @@ chai.config.includeStack = true;
 const baseUrl = "http://localhost:8080/exist/apps/edoc/api/v2";
 const expect  = chai.expect;
 const parser  = new xmldom.DOMParser();
-const select  = xpath.useNamespaces({ api: "https://github.com/dariok/wdbplus/api/schema/v1" });
+const select  = xpath.useNamespaces({
+    api: "https://github.com/dariok/wdbplus/api/schema/v1",
+    index: "https://github.com/dariok/wdbplus/index"
+  });
+const unsupportedResourceContentType = "application/json";
+const sharedResourceProjectId = "project";
+const sharedResourceCollection = "test40";
+const defaultResourcePath = "/edition";
+
+function uniqueSuffix() {
+  return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+function teiXml(title, xmlId) {
+  const idAttr = xmlId ? ` xml:id="${xmlId}"` : "";
+  return `<TEI xmlns="http://www.tei-c.org/ns/1.0"${idAttr}><teiHeader><fileDesc><titleStmt><title level="a">${title}</title></titleStmt><publicationStmt><p>test</p></publicationStmt><sourceDesc><p>test</p></sourceDesc></fileDesc></teiHeader><text><body><p>${title}</p></body></text></TEI>`;
+}
+
+
+/**
+ * @param {import("superagent/lib/node").Request} req
+ * @param {string} path
+ * @param {string} name
+ * @param {string} xml
+ */
+function uploadResourceMultipart( req, path, name, xml, extraFields = {} ) {
+  req.set("Content-Type", "multipart/form-data");
+
+  let multipartReq = req.field("path", path);
+  
+  for ( const [key, value] of Object.entries(extraFields) ) {
+    multipartReq = multipartReq.field(key, String(value));
+  }
+
+  return multipartReq.attach("file", Buffer.from(String(xml), "utf8"), name);
+}
+
+/**
+ * @param {ChaiHttp.Agent} agent
+ */
+function loginAsAdmin( agent ) {
+  return loginAs(agent, "admin", "admin");
+}
+
+/**
+ * @param {ChaiHttp.Agent} agent
+ * @param {string} user
+ * @param {string} password
+ */
+function loginAs( agent, user, password ) {
+  return agent.post("/login")
+    .set("Content-Type", "multipart/form-data")
+    .field("user", user)
+    .field("password", password)
+    .then((res) => {
+      expect(res).to.have.status(200);
+      expect(res).to.have.cookie("JSESSIONID");
+      return res;
+    });
+}
+
+/**
+ * 
+ * @param {ChaiHttp.Agent} agent 
+ * @returns 
+ */
+function ensureSharedProject( agent ) {
+  return request.execute(baseUrl)
+    .get(`/projects/${sharedResourceProjectId}`)
+    .set("Accept", "application/xml")
+    .then((res) => {
+      if (res.status === 200) {
+        return res;
+      }
+
+      if (res.status === 404) {
+        return loginAsAdmin(agent)
+          .then(() => {
+            return agent.put(`/projects/data/subprojects/${sharedResourceProjectId}`)
+              .set("Content-Type", "application/json")
+              .send({
+                title: `Shared resource tests ${sharedResourceProjectId}`,
+                short: "Created by mocha",
+                collection: sharedResourceCollection
+              });
+          })
+          .then((createRes) => {
+            expect([201, 409]).to.include(createRes.status);
+            return createRes;
+          });
+      }
+
+      throw new Error(`Unexpected status while checking shared project: ${res.status}`);
+    });
+}
 
 /**
  * @type {string}
@@ -286,6 +380,448 @@ describe("REST v2 subprojects – GET", function () {
   });
 });
 
+describe("REST v2 project resources – POST", function () {
+  /**
+   * @type {ChaiHttp.Agent}
+   */
+  let agent;
+  let projectId = sharedResourceProjectId;
+
+  before(function () {
+    agent = request.agent(baseUrl);
+    return loginAsAdmin(agent)
+      .then(() => ensureSharedProject(agent));
+  });
+
+  after(function () {
+    if (agent) {
+      agent.close();
+    }
+  });
+
+  it("POST /projects/$ed/resources without login", function () {
+    return uploadResourceMultipart(
+      request.execute(baseUrl).post(`/projects/${projectId}/resources`),
+      defaultResourcePath,
+      `unauth-${uniqueSuffix()}.xml`,
+      teiXml("unauthorized post", "unauth-post")
+    )
+      .then((res) => {
+        expect(res).to.have.status(401);
+      });
+  });
+
+  it("POST /projects/$ed/resources with unsupported media type", function () {
+    const name = `unsupported-${uniqueSuffix()}.xml`;
+    const xml = teiXml("unsupported media type post");
+    return agent.post(`/projects/${projectId}/resources`)
+      .set("Content-Type", unsupportedResourceContentType)
+      .send({ path: defaultResourcePath, file: { name, type: "application/xml", data: xml } })
+      .then((res) => {
+        console.log(res);
+        expect(res).to.have.status(415);
+      });
+  });
+
+  it("POST /projects/$ed/resources with non-privileged user", function () {
+    const testAgent = request.agent(baseUrl);
+    return loginAs(testAgent, "test", "test")
+      .then(() => {
+        return uploadResourceMultipart(
+          testAgent.post(`/projects/${projectId}/resources`),
+          defaultResourcePath,
+          `forbidden-${uniqueSuffix()}.xml`,
+          teiXml("forbidden post")
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(403);
+      })
+      .finally(() => {
+        testAgent.close();
+      });
+  });
+
+  it("POST /projects/$ed/resources with a missing project", function () {
+    return uploadResourceMultipart(
+      request.execute(baseUrl).post(`/projects/missing-${uniqueSuffix()}/resources`),
+      defaultResourcePath,
+      `missing-project-${uniqueSuffix()}.xml`,
+      teiXml("missing project post", "missing-post")
+    )
+      .then((res) => {
+        expect(res).to.have.status(404);
+      });
+  });
+
+  it("POST /projects/$ed/resources with wrong payload keys", function () {
+    return uploadResourceMultipart(
+      agent.post(`/projects/${projectId}/resources`),
+      defaultResourcePath,
+      `wrong-keys-${uniqueSuffix()}.xml`,
+      teiXml("wrong keys"),
+      { id: "not-allowed" }
+    )
+      .then((res) => {
+        expect(res).to.have.status(422);
+      });
+  });
+
+  it("POST /projects/$ed/resources with invalid XML", function () {
+    return uploadResourceMultipart(
+      agent.post(`/projects/${projectId}/resources`),
+      defaultResourcePath,
+      `invalid-${uniqueSuffix()}.xml`,
+      "<broken><xml>"
+    )
+      .then((res) => {
+        expect(res).to.have.status(422);
+      });
+  });
+
+  it("POST /projects/$ed/resources creates a new XML resource", function () {
+    const path = defaultResourcePath;
+    const name = `created-${uniqueSuffix()}.xml`;
+    const xml = teiXml("created by POST without ID");
+    
+    return uploadResourceMultipart(
+      agent.post(`/projects/${projectId}/resources`),
+      path,
+      name,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+      });
+  });
+
+  it("POST /projects/$ed/resources returns 409 for duplicate xml:id", function () {
+    const xmlId = `duplicate-id-${uniqueSuffix()}`;
+    const firstPath = defaultResourcePath;
+    const firstName = `id1-${uniqueSuffix()}.xml`;
+    const firstXml = teiXml("first duplicate id", xmlId);
+    const secondPath = defaultResourcePath;
+    const secondName = `id2-${uniqueSuffix()}.xml`;
+    const secondXml = teiXml("second duplicate id", xmlId);
+
+    return uploadResourceMultipart(
+      agent.post(`/projects/${projectId}/resources`),
+      firstPath,
+      firstName,
+      firstXml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.post(`/projects/${projectId}/resources`),
+          secondPath,
+          secondName,
+          secondXml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(409);
+      });
+  });
+
+  it("POST /projects/$ed/resources returns 409 for duplicate hash", function () {
+    const xml = teiXml(`hash-duplicate-${uniqueSuffix()}`);
+    const firstPath = defaultResourcePath;
+    const firstName = `hash1-${uniqueSuffix()}.xml`;
+    const secondPath = defaultResourcePath;
+    const secondName = `hash2-${uniqueSuffix()}.xml`;
+
+    return uploadResourceMultipart(
+      agent.post(`/projects/${projectId}/resources`),
+      firstPath,
+      firstName,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.post(`/projects/${projectId}/resources`),
+          secondPath,
+          secondName,
+          xml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(409);
+      });
+  });
+});
+
+describe("REST v2 project resources – PUT", function () {
+  /**
+   * @type {ChaiHttp.Agent}
+   */
+  let agent;
+  /**
+   * @type {String}
+   */
+  let projectId = sharedResourceProjectId;
+
+  before(function () {
+    agent = request.agent(baseUrl);
+    return loginAsAdmin(agent)
+      .then(() => ensureSharedProject(agent));
+  });
+
+  after(function () {
+    if (agent) {
+      agent.close();
+    }
+  });
+
+  it("PUT /projects/$ed/resources/$id without login", function () {
+    return uploadResourceMultipart(
+      request.execute(baseUrl).put(`/projects/${projectId}/resources/no-login-${uniqueSuffix()}`),
+      defaultResourcePath,
+      `unauth-put-${uniqueSuffix()}.xml`,
+      teiXml("unauthorized put")
+    )
+      .then((res) => {
+        expect(res).to.have.status(401);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with unsupported media type", function () {
+    const name = `unsupported-put-${uniqueSuffix()}.xml`;
+    const xml = teiXml("unsupported media type put");
+    return agent.put(`/projects/${projectId}/resources/unsupported-${uniqueSuffix()}`)
+      .set("Content-Type", unsupportedResourceContentType)
+      .send({ path: defaultResourcePath, file: { name, type: "application/xml", data: xml } })
+      .then((res) => {
+        expect(res).to.have.status(415);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with non-privileged user", function () {
+    const testAgent = request.agent(baseUrl);
+    return loginAs(testAgent, "test", "test")
+      .then(() => {
+        return uploadResourceMultipart(
+          testAgent.put(`/projects/${projectId}/resources/forbidden-${uniqueSuffix()}`),
+          defaultResourcePath,
+          `forbidden-put-${uniqueSuffix()}.xml`,
+          teiXml("forbidden put")
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(403);
+      })
+      .finally(() => {
+        testAgent.close();
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with wrong payload keys", function () {
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/wrong-keys-${uniqueSuffix()}`),
+      defaultResourcePath,
+      `wrong-keys-put-${uniqueSuffix()}.xml`,
+      teiXml("wrong keys put"),
+      { invalid: true }
+    )
+      .then((res) => {
+        expect(res).to.have.status(422);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with a missing project", function () {
+    return uploadResourceMultipart(
+      request.execute(baseUrl).put(`/projects/missing-${uniqueSuffix()}/resources/missing-id-${uniqueSuffix()}`),
+      defaultResourcePath,
+      `missing-project-put-${uniqueSuffix()}.xml`,
+      teiXml("missing project put")
+    )
+      .then((res) => {
+        expect(res).to.have.status(404);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with invalid XML", function () {
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/invalid-xml-${uniqueSuffix()}`),
+      defaultResourcePath,
+      `invalid-xml-put-${uniqueSuffix()}.xml`,
+      "<broken><xml>"
+    )
+      .then((res) => {
+        expect(res).to.have.status(422);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id with mismatching xml:id in content", function () {
+    const urlId = `url-id-${uniqueSuffix()}`;
+    const xmlId = `xml-id-${uniqueSuffix()}`;
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${urlId}`),
+      defaultResourcePath,
+      `mismatch-${uniqueSuffix()}.xml`,
+      teiXml("id mismatch", xmlId)
+    )
+      .then((res) => {
+        expect(res).to.have.status(422);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id creates a new XML resource (201)", function () {
+    const id = `put-created-${uniqueSuffix()}`;
+    const path = defaultResourcePath;
+    const name = `created-${uniqueSuffix()}.xml`;
+    const xml = teiXml("put created");
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${id}`),
+      path,
+      name,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id returns 204 for identical content", function () {
+    const id = `put-identical-${uniqueSuffix()}`;
+    const path = defaultResourcePath;
+    const name = `identical-${uniqueSuffix()}.xml`;
+    const xml = teiXml("put identical");
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${id}`),
+      path,
+      name,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.put(`/projects/${projectId}/resources/${id}`),
+          path,
+          name,
+          xml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(204);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id returns 204 for same ID/path with changed content", function () {
+    const id = `put-update-${uniqueSuffix()}`;
+    const path = defaultResourcePath;
+    const name = `update-${uniqueSuffix()}.xml`;
+    const firstXml = teiXml("put update v1");
+    const secondXml = teiXml("put update v2");
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${id}`),
+      path,
+      name,
+      firstXml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.put(`/projects/${projectId}/resources/${id}`),
+          path,
+          name,
+          secondXml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(204);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id returns 409 for existing path with different ID", function () {
+    const existingId = `path-existing-${uniqueSuffix()}`;
+    const otherId = `path-other-${uniqueSuffix()}`;
+    const path = defaultResourcePath;
+    const name = `path-conflict-${uniqueSuffix()}.xml`;
+    const xml = teiXml("path conflict");
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${existingId}`),
+      path,
+      name,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.put(`/projects/${projectId}/resources/${otherId}`),
+          path,
+          name,
+          xml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(409);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id returns 409 for existing ID with different path", function () {
+    const id = `id-conflict-${uniqueSuffix()}`;
+    const name = `id-conflict-${uniqueSuffix()}.xml`;
+    const firstPath = defaultResourcePath;
+    const firstXml = teiXml("id conflict v1");
+    const secondPath = "/texts2";
+    const secondXml = teiXml("id conflict v2");
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${id}`),
+      firstPath,
+      name,
+      firstXml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.put(`/projects/${projectId}/resources/${id}`),
+          secondPath,
+          name,
+          secondXml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(409);
+      });
+  });
+
+  it("PUT /projects/$ed/resources/$id returns 409 for existing hash with different ID and path", function () {
+    const id1 = `hash-existing-${uniqueSuffix()}`;
+    const id2 = `hash-other-${uniqueSuffix()}`;
+    const xml = teiXml("hash conflict put");
+    const firstPath = defaultResourcePath;
+    const firstName = `hash-put-1-${uniqueSuffix()}.xml`;
+    const secondPath = "/texts2";
+    const secondName = `hash-put-2-${uniqueSuffix()}.xml`;
+
+    return uploadResourceMultipart(
+      agent.put(`/projects/${projectId}/resources/${id1}`),
+      firstPath,
+      firstName,
+      xml
+    )
+      .then((res) => {
+        expect(res).to.have.status(201);
+        return uploadResourceMultipart(
+          agent.put(`/projects/${projectId}/resources/${id2}`),
+          secondPath,
+          secondName,
+          xml
+        );
+      })
+      .then((res) => {
+        expect(res).to.have.status(409);
+      });
+  });
+});
+
 describe("REST v2 projects – DELETE", function () {
   /**
    * @type {ChaiHttp.Agent}
@@ -343,6 +879,10 @@ describe("REST v2 projects – DELETE", function () {
                     expect(res).to.have.status(204);
                   });
               });
+              /* add further calls to ensure that the project has been deleted:
+               * GET projects should not contain project other than data and documentation
+               * GET projects/data/ should not return any subprojects
+               */
           });
       });
   });

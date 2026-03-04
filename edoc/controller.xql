@@ -7,7 +7,6 @@ xquery version "3.1";
 
 import module namespace login      = "http://exist-db.org/xquery/login"          at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace request    = "http://exist-db.org/xquery/request"        at "java:org.exist.xquery.functions.request.RequestModule";
-import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request" at "modules/wdb-request.xqm";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
@@ -45,20 +44,7 @@ else if ( $exist:resource = 'logout' ) then
 (: REST API :)
 else if ( contains($exist:path, 'api/v2') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/rest2/api.xq">
-      {
-        (: we need to do some manual work here as eXist only parses multipart content for PIST requests, not for PUT
-        : In order for PUT or PATCH to work though roaster, we need to set the request parameters here, taking them
-        : from the multipart content :)
-        if ( request:get-method() = ("PUT", "put", "PATCH", "patch")
-            and starts-with(request:get-header('Content-Type'), "multipart/form-data" ) ) then
-          let $parsed := wdbRequest:parseMultipart(request:get-data(), request:get-header('Content-Type'))
-          return
-            for $entry in map:keys($parsed)
-              return <add-parameter name="{$entry}" value="{$parsed($entry)?body}"/>
-        else ()
-      }
-    </forward>
+    <forward url="{$exist:controller}/rest2/api.xq"/>
   </dispatch>
 else if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

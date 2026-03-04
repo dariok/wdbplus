@@ -323,11 +323,106 @@ paths:
           description: The media type requested in an 'Accept' header cannot be created for this view
 
 
-  # /ap/v2/projects/{ed}/resources
-  #   get:
-  #   post:
-  # /ap/v2/projects/{ed}/resources/{id}
-  #   put
+  /api/v2/projects/{ed}/resources:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    get:
+      tags:
+        - projects
+      summary: List resources in a project
+      operationId: r2p:listProjectResources
+      responses:
+        "200":
+          $ref: "#/components/responses/files"
+        "204":
+          description: The project was found but currently has no registered resources
+        "404":
+          description: Project $ed not found
+    post:
+      tags:
+        - projects
+      summary: Create a resource in a project (create an ID if necessary)
+      operationId: r2p:createProjectResourceWithoutId
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - path
+                - file
+              properties:
+                path:
+                  type: string
+                  description: Relative path inside the project (e.g. "texts/foo.xml")
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "403":
+          description: Forbidden
+        "404":
+          description: Project $ed not found
+        "409":
+          description: A file with this ID or file name is already present
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Invalid or incomplete information in the request body
+      security:
+        - cookieAuth: []
+
+  /api/v2/projects/{ed}/resources/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/id"
+    put:
+      tags:
+        - projects
+      summary: Create a resource in a project (with a given ID – this does not update resources)
+      operationId: r2p:createProjectResourceWithId
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - path
+                - file
+              properties:
+                path:
+                  type: string
+                  description: Relative path inside the project (e.g. "texts/foo.xml")
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "403":
+          description: Forbidden
+        "404":
+          description: File $id not found in project $ed
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Invalid or incomplete information in the request body
+      security:
+        - cookieAuth: []
 
   # /api/v2/projects/{ed}/metadata
   #   get:
@@ -739,13 +834,13 @@ components:
       in: cookie
 
   parameters:
-  #   id:
-  #     name: "id"
-  #     in: path
-  #     description: The ID of the
-  #     schema:
-  #       type: string
-  #     required: true
+    id:
+      name: "id"
+      in: path
+      description: The ID of the resource
+      schema:
+        type: string
+      required: true
     ed:
       name: "ed"
       in: path
@@ -845,15 +940,15 @@ components:
     #     application/xml:
     #       schema:
     #         $ref: "#/components/schemas/listFragments"
-    # files:
-    #   description: A list of fragments within a file matching the query
-    #   content:
-    #     application/json:
-    #       schema:
-    #         $ref: "#/components/schemas/listFiles"
-    #     application/xml:
-    #       schema:
-    #         $ref: "#/components/schemas/listFiles"
+    files:
+      description: A list of files
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listFiles"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listFiles"
     
     projects:
       description: A list of projects
