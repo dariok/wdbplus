@@ -23,7 +23,11 @@ function uniqueSuffix() {
   return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
 
-function teiXml(title, xmlId) {
+/**
+ * @param {string} title
+ * @param {string | undefined} [xmlId]
+ */
+function teiXml( title, xmlId ) {
   const idAttr = xmlId ? ` xml:id="${xmlId}"` : "";
   return `<TEI xmlns="http://www.tei-c.org/ns/1.0"${idAttr}><teiHeader><fileDesc><titleStmt><title level="a">${title}</title></titleStmt><publicationStmt><p>test</p></publicationStmt><sourceDesc><p>test</p></sourceDesc></fileDesc></teiHeader><text><body><p>${title}</p></body></text></TEI>`;
 }
@@ -418,7 +422,6 @@ describe("REST v2 project resources – POST", function () {
       .set("Content-Type", unsupportedResourceContentType)
       .send({ path: defaultResourcePath, file: { name, type: "application/xml", data: xml } })
       .then((res) => {
-        console.log(res);
         expect(res).to.have.status(415);
       });
   });
@@ -877,12 +880,27 @@ describe("REST v2 projects – DELETE", function () {
                 return agent.delete("/projects/" + idCreatedByPost)
                   .then(( res ) => {
                     expect(res).to.have.status(204);
+                    return request.execute(baseUrl)
+                      .get("/projects")
+                      .set("Accept", "application/xml")
+                      .then(( res ) => {
+                        expect(res).to.have.status(200);
+                        let xml = parser.parseFromString(res.body.toString(), "application/xml");
+                        let projectNodes = Array.from(xml.getElementsByTagName("project"));
+                        let projectIds = projectNodes.map(node => node.getAttribute("id")?.split("/").at(-1)).sort();
+                        expect(projectIds).to.deep.equal(["data", "documentation"]);
+
+                        return request.execute(baseUrl)
+                          .get("/projects/data/subprojects")
+                          .set("Accept", "application/xml")
+                          .then(( res ) => {
+                            expect(res).to.have.status(200);
+                            let subprojects = parser.parseFromString(res.body.toString(), "application/xml");
+                            expect(subprojects.documentElement.getAttribute('total')).to.equal('0');
+                          });
+                      });
                   });
               });
-              /* add further calls to ensure that the project has been deleted:
-               * GET projects should not contain project other than data and documentation
-               * GET projects/data/ should not return any subprojects
-               */
           });
       });
   });

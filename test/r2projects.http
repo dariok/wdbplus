@@ -60,13 +60,13 @@ Content-Type: application/json
 
 ###
 # supposed to succeed
-PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/namedProject
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/project
 Content-Type: application/json
 
 {
-  "title": "new named project",
-  "short": "NewName",
-  "collection": "nnp"
+  "title": "New Project with ID",
+  "short": "Created by unit test",
+  "collection": "test40"
 }
 
 ###
@@ -96,7 +96,7 @@ Accept: application/xml
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/none/subprojects
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
 Accept: application/xml
 
 ###

@@ -459,7 +459,7 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
       r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
     else
       let $projectPath := string($project?collectionPath)
-        , $parentPath := replace($projectPath, "/[^/]+$", "")
+        , $parentPath := $project?parentProject
         , $parentMeta := if ( doc-available($parentPath || "/wdbmeta.xml") )
             then doc($parentPath || "/wdbmeta.xml")
             else ()

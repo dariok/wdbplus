@@ -93,7 +93,8 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "projectPath": $projectPath,
         "collectionPath": $projectPath,
         "fileName": "wdbmeta.xml",
-        "mainProject": wdbFiles:findMainProject($projectPath)
+        "mainProject": wdbFiles:findMainProject($projectPath),
+        "parentProject": wdbFiles:findParentProject($projectPath, $id)
       }
     else if ( starts-with($file/@path, '$') ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
@@ -113,6 +114,22 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         "fileName": functx:substring-after-last($path, '/'),
         "mainProject": wdbFiles:findMainProject($projectPath)
       }
+};
+
+(:~
+ : Find the parent project: if a wdbmeta.xml imports the current project, use it; else, ascend and look for an import
+ : there. Use if present. Ulitmately, if even $wdb:data/wdbmeta.xml does not exist, panic.
+ :
+ : @param $projectPath a string representation of the path to the project
+ : @returns the path to the main project
+ :)
+declare function wdbFiles:findParentProject ( $projectPath as xs:string, $id as xs:string ) as xs:string {
+  if ( doc-available($projectPath || "/wdbmeta.xml") and doc($projectPath || "/wdbmeta.xml")//meta:ptr[@xml:id = $id] ) then
+    $projectPath
+  else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
+    "/db/apps/edoc/data/"
+  else
+    wdbFiles:findParentProject(functx:substring-before-last($projectPath, '/'), $id)
 };
 
 (:~
