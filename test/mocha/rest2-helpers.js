@@ -5,8 +5,7 @@ const expect = chai.expect;
 
 const baseUrl = "http://localhost:8080/exist/apps/edoc/api/v2";
 const unsupportedResourceContentType = "application/json";
-const sharedResourceProjectId = "project";
-const sharedResourceCollection = "test40";
+
 const defaultResourcePath = "/edition";
 
 function uniqueSuffix() {
@@ -51,15 +50,17 @@ function loginAs( agent, user, password ) {
  * @param {ChaiHttp.Agent} agent
  */
 function loginAsAdmin( agent ) {
-  return loginAs(agent, "admin", "admin");
+  return loginAs(agent, "wdbadmin", "wdbadmin");
 }
 
 /**
  * @param {ChaiHttp.Agent} agent
+ * @param {string} sharedProjectId
+ * @param {string} sharedCollection
  */
-function ensureSharedProject( agent ) {
+function ensureSharedProject( agent, sharedProjectId, sharedCollection ) {
   return request.execute(baseUrl)
-    .get(`/projects/${sharedResourceProjectId}`)
+    .get(`/projects/${sharedProjectId}`)
     .set("Accept", "application/xml")
     .then((res) => {
       if (res.status === 200) {
@@ -69,12 +70,12 @@ function ensureSharedProject( agent ) {
       if (res.status === 404) {
         return loginAsAdmin(agent)
           .then(() => {
-            return agent.put(`/projects/data/subprojects/${sharedResourceProjectId}`)
+            return agent.put(`/projects/data/subprojects/${sharedProjectId}`)
               .set("Content-Type", "application/json")
               .send({
-                title: `Shared resource tests ${sharedResourceProjectId}`,
+                title: `Shared resource tests ${sharedProjectId}`,
                 short: "Created by mocha",
-                collection: sharedResourceCollection
+                collection: sharedCollection
               });
           })
           .then((createRes) => {
@@ -93,8 +94,6 @@ export {
   ensureSharedProject,
   loginAs,
   loginAsAdmin,
-  sharedResourceCollection,
-  sharedResourceProjectId,
   uniqueSuffix,
   unsupportedResourceContentType,
   uploadResourceMultipart

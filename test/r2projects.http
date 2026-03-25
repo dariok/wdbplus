@@ -77,11 +77,11 @@ Content-Type: multipart/form-data; boundary=----test----
 ------test----
 Content-Disposition: form-data; name="user"
 
-admin
+wdbadmin
 ------test----
 Content-Disposition: form-data; name="password"
 
-admin
+wdbadmin
 ------test------
 
 ###

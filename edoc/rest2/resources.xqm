@@ -65,7 +65,10 @@ declare %private function r2r:getStoredContent ( $path as xs:string ) as item()?
 };
 
 declare %private function r2r:requireWritableResource ( $request as map(*) ) as map(*) {
-  let $resource := r2r:getResourceInfo($request?parameters?id)
+  let $resource := try {
+          r2r:getResourceInfo($request?parameters?id)
+        } catch * { () }
+  
   return
     if ( not(exists($request?user)) or $request?user?fullName = "guest" ) then
       map { "error": r2:response(401, "text/plain", "Unauthorized", $r2:allOrigins) }
@@ -177,7 +180,7 @@ declare function r2r:putResource ( $request as map(*) ) as item() {
     else if ( exists($upload?xml/*[1]/@xml:id) and $upload?xml/*[1]/@xml:id != $request?parameters?id ) then
       r2:response(400, "text/plain", "ID in the XML content (" || $upload?xml/*[1]/@xml:id || ") does not match the ID in the URL (" || $request?parameters?id || ").", $r2:allOrigins)
     else if ( $upload?relativePath != string($resource?entry/@path) ) then
-      r2:response(409, "text/plain", "A file with this ID is present in a different location: " || $resource?entry/@path, $r2:allOrigins)
+      r2:response(409, "text/plain", "A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path, $r2:allOrigins)
     else
       let $existingDoc := try { doc($resource?path) } catch * { () }
         , $existingHash := if ( exists($existingDoc) ) then util:uuid($existingDoc) else ()
