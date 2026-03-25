@@ -14,6 +14,7 @@ declare namespace request = "http://exist-db.org/xquery/request";
 declare namespace sm      = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei     = "http://www.tei-c.org/ns/1.0";
 declare namespace util    = "http://exist-db.org/xquery/util";
+declare namespace wdbErr  = "https://github.com/dariok/wdbplus/errors";
 declare namespace xmldb   = "http://exist-db.org/xquery/xmldb";
 
 declare variable $r2r:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
@@ -46,7 +47,9 @@ declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
 declare %private function r2r:getMimeType ( $path as xs:string, $content as item()? ) as xs:string {
   let $mimeType := xmldb:get-mime-type($path)
   return
-    if ( $mimeType = "application/xml" and $content instance of document-node() and $content/*[1]/namespace-uri() = "http://www.tei-c.org/ns/1.0" ) then
+    if ( $mimeType = "application/xml"
+          and $content instance of document-node()
+          and $content/*[1]/namespace-uri() = "http://www.tei-c.org/ns/1.0" ) then
       "application/tei+xml"
     else
       $mimeType
@@ -271,42 +274,44 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
   return if ( empty($resource) ) then
     r2:response(404, "text/plain", "The resource was not found", $r2:allOrigins)
   else
+    let $type := if ( exists($request?parameters?accept) )
+            then $request?parameters?accept
+            else "text/html"
+        , $process := try {
+              r2r:resolveProcess($resource, $request?parameters?view, $type)
+            } catch wdbErr:wdb0002 { () }
+
     let $modified := request:get-header("If-Modified-Since")
       , $status := if ( exists($modified) and $modified != "" )
-                      then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
-                      else 200
-    return if ( $status = 304 ) then
+            then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
+            else 200
+
+    return if ( empty($process) ) then
+      r2:response(406, "application/xml", r2r:getViewsXml($resource), $r2:allOrigins)
+    else if ( $status = 304 ) then
       r2:response(304, "text/plain", "", $r2:allOrigins)
     else
-      let $type := if ( exists($request?parameters?accept) )
-                      then $request?parameters?accept
-                      else "text/html"
-        , $process := r2r:resolveProcess($resource, $request?parameters?view, $type)
-
-      return if ( empty($process) ) then
-        r2:response(404, "text/plain", "The view was not found", $r2:allOrigins)
-      else
-        let $viewParam := string($process/@view)
-          , $result := wdbProc:getContent(
-              $request?parameters?id,
-              $process,
-              $viewParam,
-              map {
-                "id": $request?parameters?id,
-                "process": $process,
-                "view": $viewParam,
-                "fileLoc": $resource?path,
-                "pathToEd": $resource?projectPath,
-                "ed": tokenize(normalize-space($resource?projectPath), "/")[last()],
-                "xslt": $process
-              }
-            )
-          , $body := $result?content
-          , $namespace := if ( $body instance of document-node() or $body instance of element() )
-                            then namespace-uri(($body/*[1], $body)[1])
-                            else ()
-          , $mimeType := wdb:getContentTypeFromExt(string($process/@target), $namespace)
-        return router:response($result?status, $mimeType, $body, $r2:allOrigins)
+      let $viewParam := string($process/@view)
+        , $result := wdbProc:getContent(
+            $request?parameters?id,
+            $process,
+            $viewParam,
+            map {
+              "id": $request?parameters?id,
+              "process": $process,
+              "view": $viewParam,
+              "fileLoc": $resource?path,
+              "pathToEd": $resource?projectPath,
+              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()],
+              "xslt": $process
+            }
+          )
+        , $body := $result?content
+        , $namespace := if ( $body instance of document-node() or $body instance of element() )
+                          then namespace-uri(($body/*[1], $body)[1])
+                          else ()
+        , $mimeType := wdb:getContentTypeFromExt(string($process/@target), $namespace)
+      return router:response($result?status, $mimeType, $body, $r2:allOrigins)
 };
 
 declare function r2r:getResourceByPid ( $request as map(*) ) as item() {

@@ -328,12 +328,12 @@ describe("REST v2 resources – GET", function() {
       });
   });
 
-  it("GET /resources/$id/views/{view} returns 404 for missing views", function () {
+  it("GET /resources/$id/views/{view} returns 406 for missing views", function () {
     return request.execute(baseUrl)
       .get(`/resources/${sharedGetResource.id}/views/missing-view-${uniqueSuffix()}`)
       .set("Accept", "application/xml")
       .then((res) => {
-        expect(res).to.have.status(404);
+        expect(res).to.have.status(406);
       });
   });
 
