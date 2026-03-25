@@ -206,7 +206,10 @@ declare function wdbFiles:evaluateIfModifiedSince ( $id as xs:string, $requested
  :)
 declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string, $fileName as xs:string, $requestedModified as xs:string+ ) as xs:double {
   let $modifiedWithoutMillisecs := wdbFiles:getModificationDate($collectionPath, $fileName)
-    , $requestedModifiedParsed := parse-ietf-date(string-join($requestedModified))
+    , $requestedModifiedParsed :=
+        if ( $requestedModified castable as xs:dateTime )
+          then $requestedModified
+          else parse-ietf-date(string-join($requestedModified))
   
   return if ( $requestedModifiedParsed lt $modifiedWithoutMillisecs )
     then 200
@@ -214,9 +217,9 @@ declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string
 };
 
 (:~
- : format da given datetime as IETF date
+ : format a given datetime as IETF date
  :
- : @param gmtDateTime an xs:dataTime adjust to GMT
+ : @param gmtDateTime an xs:dataTime adjusted to GMT
  : @returns xs:string formated as an IETF date
  :)
 declare function wdbFiles:ietfDate ( $gmtDateTime as xs:dateTime ) as xs:string {
