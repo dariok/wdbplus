@@ -119,6 +119,7 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
         r2:store($targetPath, $request?body?file?name, $request?body?xml, $mimeType),
         r2:enterMetaForXml($request)
       )
+      (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
 
     , $status := if ( exists($existing) ) then 204 else 201
 

@@ -624,162 +624,164 @@ paths:
   #       "404":
   #         description: The project was not found
 
-  # /api/v2/resources/{id}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/id"
-  #   get:
-  #     tags:
-  #       - resources
-  #     summary: Get resource by ID
-  #     operationId: #TODO
-  #     responses:
-  #       "200":
-  #         description: Resource by ID
-  #         content:
-  #           "application/tei+xml":
-  #             schema:
-  #               $ref: "#/components/schemas/TEI"
-  #       "404":
-  #         description: No resource found by this ID
-  #   put:
-  #     tags:
-  #       - resources
-  #     summary: Create or update a file
-  #     operationId: #TODO
-  #     requestBody:
-  #       description: Create or replace a file with the ID given in id and the content in the request body
-  #       required: true
-  #       content:
-  #         multipart/form-data:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               path:
-  #                 type: string
-  #               file:
-  #                 type: string
-  #                 format: binary
-  #     responses:
-  #       "201":
-  #         $ref: "#/components/responses/created"
-  #       "204":
-  #         description: File has been updated
-  #       "400":
-  #         $ref: "#/components/responses/invalidBody"
-  #       "404":
-  #         description: File $id not found
-  #       "409":
-  #         description: A file with this ID is present in a different location or a file in this location exists with a different ID
-  #   patch:
-  #     tags:
-  #       - resources
-  #     summary: Change a fragment from a file
-  #     operationId: #TODO
-  #     requestBody:
-  #       description: The replacement XML fragment 
-  #       required: true
-  #       content:
-  #         application/xml:
-  #           #schema: #TODO or use an example
-  #     responses:
-  #       "204":
-  #         description: File has been updated
-  #       "400":
-  #         $ref: "#/components/responses/invalidBody"
-  #       "404":
-  #         description: File $id not found
-  #   head:
-  #     tags:
-  #       - resources
-  #     summary: Preflight request
-  #     operationId: #TODO
-  #     responses:
-  #       "204":
-  #         description: File was found
-  #       "404":
-  #         description: File $id not found
-  #       "409":
-  #         description: A file with this ID is present in a different location or a file in this location exists with a different ID
-  #   options:
-  #     tags:
-  #       - resources
-  #     summary: Preflight request
-  #     operationId: #TODO
-  #     responses:
-  #       "204":
-  #         description: File was found
-  #       "404":
-  #         description: File $id not found
-  #   delete:
-  #     tags:
-  #       - resources
-  #     summary: delete a file
-  #     operationId: #TODO
-  #     responses:
-  #       "204":
-  #         description: File was deleted
-  #       "404":
-  #         description: File $id not found
-  # /api/v2/resources/{id}/views:
-  #   parameters:
-  #     - $ref: "#/components/parameters/id"
-  #   get:
-  #     tags:
-  #       - resources
-  #     summary: List views for a file
-  #     operationId: #TODO
-  #     responses:
-  #       "200":
-  #         description: Returns a list of available views
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/components/schemas/listViews"
-  #           application/xml:
-  #             schema:
-  #               $ref: "#/components/schemas/listViews"
-  # /api/v2/resources/{id}/views/{view}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/id"
-  #     - $ref: "#/components/parameters/modified"
-  #     - name: view
-  #       in: path
-  #       description: The ID of the view to be invoked
-  #       schema:
-  #         type: string
-  #       required: true
-  #   get:
-  #     tags:
-  #       - resources
-  #     summary: Get resource as represented by view
-  #     operationId: #TODO
-  #     responses:
-  #       200:
-  #         description: The resource in the selected representation
-  #       404:
-  #         description: The resource or view was not found
-  # /api/v2/resources/byPid/{pid}:
-  #   parameters:
-  #     - name: "pid"
-  #       in: path
-  #       description: The externally defined persistend ID of a file
-  #       schema:
-  #         type: string
-  #       required: true
-  #   get:
-  #     tags:
-  #       - resources
-  #     summary: Return our ID for a external PID
-  #     operationId: #TODO
-  #     responses:
-  #       200:
-  #         description: The internal ID for this PID
-  #         content:
-  #           text/plain:
-  #             schema:
-  #               type: string
-  #       404:
-  #         description: This external PID was not found
+  /api/v2/resources/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - resources
+      summary: Get resource by ID
+      operationId: "r2r:getResource"
+      responses:
+        "200":
+          description: Resource by ID
+          content:
+            "application/tei+xml":
+              schema:
+                $ref: "#/components/schemas/TEI"
+        "404":
+          description: No resource found by this ID
+    put:
+      tags:
+        - resources
+      summary: Create or update a file
+      operationId: "r2r:putResource"
+      requestBody:
+        description: Create or replace a file with the ID given in id and the content in the request body
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "404":
+          description: File $id not found
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+    patch:
+      tags:
+        - resources
+      summary: Change a fragment from a file
+      operationId: "r2r:patchResource"
+      requestBody:
+        description: The replacement XML fragment 
+        required: true
+        content:
+          "application/xml":
+            example: "<div xml:id='d1'>…</div>"
+      responses:
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "404":
+          description: File $id not found
+    head:
+      tags:
+        - resources
+      summary: Preflight request
+      operationId: "r2r:headResource"
+      responses:
+        "204":
+          description: File was found
+        "404":
+          description: File $id not found
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+    options:
+      tags:
+        - resources
+      summary: Preflight request
+      operationId: "r2r:optionsResource"
+      responses:
+        "204":
+          description: File was found
+        "404":
+          description: File $id not found
+    delete:
+      tags:
+        - resources
+      summary: delete a file
+      operationId: "r2r:deleteResource"
+      responses:
+        "204":
+          description: File was deleted
+        "404":
+          description: File $id not found
+  /api/v2/resources/{id}/views:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - resources
+      summary: List views for a file
+      operationId: "r2r:listResourceViews"
+      responses:
+        "200":
+          description: Returns a list of available views
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/listViews"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/listViews"
+  /api/v2/resources/{id}/views/{view}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+      - $ref: "#/components/parameters/modified"
+      - $ref: "#/components/parameters/view"
+      - $ref: "#/components/parameters/accept"
+      - name: view
+        in: path
+        description: The ID of the view to be invoked
+        schema:
+          type: string
+        required: true
+    get:
+      tags:
+        - resources
+      summary: Get resource as represented by view
+      operationId: "r2r:getResourceView"
+      responses:
+        200:
+          description: The resource in the selected representation
+        404:
+          description: The resource or view was not found
+  /api/v2/resources/byPid/{pid}:
+    parameters:
+      - name: "pid"
+        in: path
+        description: The externally defined persistend ID of a file
+        schema:
+          type: string
+        required: true
+    get:
+      tags:
+        - resources
+      summary: Return our ID for a external PID
+      operationId: "r2r:getResourceByPid"
+      responses:
+        200:
+          description: The internal ID for this PID
+          content:
+            text/plain:
+              schema:
+                type: string
+        404:
+          description: This external PID was not found
 
   # /api/v2/search/ft/project/{ed}:
   #   parameters:
@@ -834,13 +836,12 @@ components:
       in: cookie
 
   parameters:
-    id:
-      name: "id"
-      in: path
-      description: The ID of the resource
+    accept:
+      name: accept
+      in: header
+      description: Which content type should be created for this view
       schema:
         type: string
-      required: true
     ed:
       name: "ed"
       in: path
@@ -855,6 +856,13 @@ components:
   #     schema:
   #       type: string
   #     required: true
+    id:
+      name: "id"
+      in: path
+      description: The ID of the resource
+      schema:
+        type: string
+      required: true
     parent:
       name: "parent"
       in: path
@@ -888,12 +896,12 @@ components:
   #     schema:
   #       type: integer
   #       default: 1
-  #   modified:
-  #     name: "If-Modified-Since"
-  #     in: header
-  #     schema:
-  #       type: string
-  #       format: date-time
+    modified:
+      name: "If-Modified-Since"
+      in: header
+      schema:
+        type: string
+        format: date-time
     view:
       name: view
       in: path
@@ -1068,12 +1076,12 @@ components:
         password:
           type: string
           format: password
-    # TEI:
-    #   description: A full TEI file
-    #   type: object
-    #   xml:
-    #     namespace: "http://www.tei-c.org/ns/1.0"
-    #     name: "TEI"
+    TEI:
+      description: A full TEI file
+      type: object
+      xml:
+        namespace: "http://www.tei-c.org/ns/1.0"
+        name: "TEI"
 
     # listAnnotations:
     #   description: A result set, containing a list of pointers to annotations

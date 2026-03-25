@@ -247,11 +247,14 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
 };
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as element(process)? {
   let $metaFile := doc($infoFileLoc)
-    , $process := (
-        $metaFile//meta:process[@target = $target and @view = $view],
-        $metaFile//meta:process[@target = $target],
-        $metaFile//meta:process[1]
-      )[1]
+    , $process := if ( $view != '' )
+        then (
+            $metaFile//meta:process[@target = $target and @view = $view],
+            $metaFile//meta:process[@target = $target]
+          )[1]
+        else (
+            $metaFile//meta:process[@target = $target and not(@view)]
+          )[1]
     , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
   
   let $sel := if ( $process/meta:command )
@@ -276,7 +279,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
-    else ( util:log("error", $metaFile) )
+    else ()
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return if ( $sel[1] instance of element(meta:process) )
@@ -288,7 +291,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
     else
       error(
         QName('wdbRErr', 'wdb0002'),
-        "no process found for target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+        "no process found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
       )
 };
 
@@ -347,42 +350,30 @@ declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $n
 declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace as xs:anyURI? ) as xs:string {
   switch ( $extension )
     case 'css'
-      return
-        'text/css'
+      return 'text/css'
     case 'js'
-      return
-        'application/javascript'
+      return 'application/javascript'
     case 'xql'
     case 'xqm'
-      return
-          'application/xquery'
+      return 'application/xquery'
     case 'html'
-      return
-        'text/html'
+      return 'text/html'
     case 'gif'
-      return
-        'image/gif'
+      return 'image/gif'
     case 'png'
-      return
-        'image/png'
+      return 'image/png'
     case 'json'
-      return
-        'application/json'
+      return 'application/json'
     case 'zip'
-      return
-        'application/zip'
+      return 'application/zip'
     case 'xml'
-      return
-        if ( $namespace = 'http://www.tei-c.org/ns/1.0' ) then
-          'application/tei+xml'
-        else
-          'application/xml'
+      return if ( $namespace = 'http://www.tei-c.org/ns/1.0' )
+          then 'application/tei+xml'
+          else 'application/xml'
     case 'xsl'
-      return
-        'application/xslt+xml'
+      return 'application/xslt+xml'
     default
-      return
-        'application/octet-stream'
+      return 'application/octet-stream'
 };
 
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {

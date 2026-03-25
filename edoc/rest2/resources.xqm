@@ -1,0 +1,319 @@
+xquery version "3.1";
+
+module namespace r2r = "https://github.com/dariok/wdbplus/rest2/resources";
+
+import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
+import module namespace wdbProc  = "https://github.com/dariok/wdbplus/Process"      at "../modules/wdb-process.xqm";
+import module namespace router   = "http://e-editiones.org/roaster/router";
+
+declare namespace index   = "https://github.com/dariok/wdbplus/index";
+declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace request = "http://exist-db.org/xquery/request";
+declare namespace sm      = "http://exist-db.org/xquery/securitymanager";
+declare namespace tei     = "http://www.tei-c.org/ns/1.0";
+declare namespace util    = "http://exist-db.org/xquery/util";
+declare namespace xmldb   = "http://exist-db.org/xquery/xmldb";
+
+declare variable $r2r:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
+
+declare %private function r2r:headersWithAllow () as map(*) {
+  map:merge((
+    $r2:allOrigins,
+    map {
+      "Allow": $r2r:allow,
+      "Access-Control-Allow-Methods": $r2r:allow
+    }
+  ))
+};
+
+declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
+  try {
+    let $resource := wdbFiles:getFullPath($id)
+      , $meta := doc($resource?projectPath || "/wdbmeta.xml")
+      , $entry := $meta/id($id)[self::meta:file][1]
+    return
+      if ( exists($entry) ) then
+        map:merge((
+          $resource,
+          map {
+            "meta": $meta,
+            "entry": $entry,
+            "path": $resource?collectionPath || "/" || $resource?fileName
+          }
+        ))
+      else ()
+  } catch * {
+    ()
+  }
+};
+
+declare %private function r2r:getMimeType ( $path as xs:string, $content as item()? ) as xs:string {
+  let $mimeType := xmldb:get-mime-type($path)
+  return
+    if ( $mimeType = "application/xml" and $content instance of document-node() and $content/*[1]/namespace-uri() = "http://www.tei-c.org/ns/1.0" ) then
+      "application/tei+xml"
+    else
+      $mimeType
+};
+
+declare %private function r2r:getStoredContent ( $path as xs:string ) as item()? {
+  if ( doc-available($path) ) then
+    doc($path)
+  else if ( util:binary-doc-available($path) ) then
+    util:binary-doc($path)
+  else
+    ()
+};
+
+declare %private function r2r:requireWritableResource ( $request as map(*) ) as map(*) {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+  return
+    if ( not(exists($request?user)) or $request?user?fullName = "guest" ) then
+      map { "error": r2:response(401, "text/plain", "Unauthorized", r2r:headersWithAllow()) }
+    else if ( not(r2:writeAllowed($request?user)) ) then
+      map { "error": r2:response(403, "text/plain", "Forbidden", r2r:headersWithAllow()) }
+    else if ( empty($resource) ) then
+      map { "error": r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", r2r:headersWithAllow()) }
+    else if ( not(sm:has-access($resource?path, "w")) ) then
+      map { "error": r2:response(403, "text/plain", "Forbidden", r2r:headersWithAllow()) }
+    else
+      $resource
+};
+
+declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
+  if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
+    map { "error": r2:response(415, "text/plain", "Unsupported Media Type. Expected multipart/form-data with a file field.", r2r:headersWithAllow()) }
+  else if ( not(r2:mapKeysAllowed($request?body, ("path", "file"), ())) ) then
+    map { "error": r2:response(400, "text/plain", "Wrong content of resource information found. Expected `path` and `file`.", r2r:headersWithAllow()) }
+  else
+    let $xml := try { parse-xml($request?body?file?data) } catch * { () }
+    return
+      if ( empty($xml) ) then
+        map { "error": r2:response(400, "text/plain", "File content is not valid XML.", r2r:headersWithAllow()) }
+      else
+        map {
+          "xml": $xml,
+          "hash": util:uuid($xml),
+          "relativePath": $request?body?path || "/" || $request?body?file?name
+        }
+};
+
+declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(list) {
+  let $processes := $resource?meta//meta:process[@target]
+  return
+    <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+        level="resource"
+        for="{ $r2:base }/resources/{ $resource?entry/@xml:id }"
+        type="views"
+        start="1"
+        total="{ count($processes) }">
+      {
+        for $process in $processes
+          let $viewName := string(($process/@view, 'default')[1])
+          return
+            <view
+                id="{ $r2:base }resources/{ $resource?entry/@xml:id }/views/{ $viewName }"
+                view="{ $viewName }"
+                content-type="{ string(($process/@label, $process/@target)[1]) }"
+            />
+      }
+    </list>
+};
+
+declare %private function r2r:resolveProcess ( $resource as map(*), $view as xs:string, $target as xs:string ) as element(meta:process)? {
+  try {
+    wdb:getXslFromWdbMeta(
+      $resource?projectPath || "/wdbmeta.xml",
+      $resource?entry/@xml:id,
+      substring-after($target, '/'), (: target is now evaluated from the Accept header which will be a full MIME type :)
+      if ( $view = 'default' ) then () else $view (: process in wdbmeta may not have @view, which means it is default :)
+    )
+  } catch * {
+    ()
+  }
+};
+
+declare function r2r:getResource ( $request as map(*) ) as item() {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+  return if ( empty($resource) ) then
+    r2:response(404, "text/plain", "No resource found by this ID", r2r:headersWithAllow())
+  else
+    let $content := r2r:getStoredContent($resource?path)
+      , $lastModified := wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName))
+      , $mimeType := r2r:getMimeType($resource?path, $content)
+    return if ( empty($content) ) then
+      r2:response(404, "text/plain", "No resource found by this ID", r2r:headersWithAllow())
+    else
+      router:response(
+        200,
+        $mimeType,
+        $content,
+        map:merge((r2r:headersWithAllow(), map { "Last-Modified": $lastModified }))
+      )
+};
+
+declare function r2r:putResource ( $request as map(*) ) as item() {
+  let $resource := r2r:requireWritableResource($request)
+  return if ( exists($resource?error) ) then
+    $resource?error
+  else
+    let $upload := r2r:parseUpload($request)
+    return if ( exists($upload?error) ) then
+      $upload?error
+    else if ( exists($upload?xml/*[1]/@xml:id) and $upload?xml/*[1]/@xml:id != $request?parameters?id ) then
+      r2:response(400, "text/plain", "ID in the XML content (" || $upload?xml/*[1]/@xml:id || ") does not match the ID in the URL (" || $request?parameters?id || ").", r2r:headersWithAllow())
+    else if ( $upload?relativePath != string($resource?entry/@path) ) then
+      r2:response(409, "text/plain", "A file with this ID is present in a different location: " || $resource?entry/@path, r2r:headersWithAllow())
+    else
+      let $existingDoc := try { doc($resource?path) } catch * { () }
+        , $existingHash := if ( exists($existingDoc) ) then util:uuid($existingDoc) else ()
+      return if ( exists($existingHash) and $existingHash = $upload?hash ) then
+        r2:response(204, "text/plain", "", r2r:headersWithAllow())
+      else
+        r2:createXmlResource(
+          map{
+            "parameters": map {
+              "id": $request?parameters?id
+            },
+            "body": map:merge((
+              $request?body,
+              map {
+                "xml": $upload?xml,
+                "hash": $upload?hash
+              }
+            )),
+            "user": $request?user,
+            "project": map {
+              "collectionPath": $resource?projectPath
+            }
+          }
+        )
+};
+
+declare function r2r:patchResource ( $request as map(*) ) as item() {
+  let $resource := r2r:requireWritableResource($request)
+  return if ( exists($resource?error) ) then
+    $resource?error
+  else
+    let $content := try { doc($resource?path) } catch * { () }
+      , $patch := if ( $request?body instance of document-node() ) then $request?body else try { parse-xml($request?body) } catch * { () }
+    return if ( empty($content) ) then
+      r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", r2r:headersWithAllow())
+    else if ( empty($patch) or empty($patch/*[1]/@xml:id) ) then
+      r2:response(400, "text/plain", "Patch body must be a well-formed XML fragment with xml:id.", r2r:headersWithAllow())
+    else
+      let $target := $content/id($patch/*[1]/@xml:id)
+      return if ( empty($target) ) then
+        r2:response(400, "text/plain", "No fragment with xml:id " || $patch/*[1]/@xml:id || " found in resource " || $request?parameters?id, r2r:headersWithAllow())
+      else
+        let $updated := (
+            update replace $target with $patch/*[1],
+            xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path))
+          )
+        return r2:response(204, "text/plain", "", r2r:headersWithAllow())
+};
+
+declare function r2r:headResource ( $request as map(*) ) as item() {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+  return if ( empty($resource) ) then
+    r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", r2r:headersWithAllow())
+  else
+    r2:response(
+      204,
+      "text/plain",
+      "",
+      map:merge((
+        r2r:headersWithAllow(),
+        map { "Last-Modified": wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName)) }
+      ))
+    )
+};
+
+declare function r2r:optionsResource ( $request as map(*) ) as item() {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+    , $t := util:log("info", "OPTIONS request for resource with ID " || $request?parameters?id || ". Resource found: " || empty($resource))
+  return if ( empty($resource) ) then
+    r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", r2r:headersWithAllow())
+  else
+    r2:response(204, "text/plain", "", r2r:headersWithAllow())
+};
+
+declare function r2r:deleteResource ( $request as map(*) ) as item() {
+  let $resource := r2r:requireWritableResource($request)
+  return if ( exists($resource?error) ) then
+    $resource?error
+  else
+    r2:response(
+      204,
+      "text/plain",
+      (
+        xmldb:remove($resource?collectionPath, $resource?fileName),
+        update delete $resource?meta//meta:file[@xml:id = $request?parameters?id],
+        update delete $resource?meta//meta:view[@file = $request?parameters?id],
+        update delete doc("/db/apps/edoc/index/file-index.xml")/index:index/id($request?parameters?id),
+        ""
+      )[last()],
+      r2r:headersWithAllow()
+    )
+};
+
+declare function r2r:listResourceViews ( $request as map(*) ) as item() {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+  return if ( empty($resource) ) then
+    r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", r2r:headersWithAllow())
+  else
+    r2:returnXmlOrJson(r2r:getViewsXml($resource))
+};
+
+declare function r2r:getResourceView ( $request as map(*) ) as item() {
+  let $resource := r2r:getResourceInfo($request?parameters?id)
+  return if ( empty($resource) ) then
+    r2:response(404, "text/plain", "The resource was not found", r2r:headersWithAllow())
+  else
+    let $modified := request:get-header("If-Modified-Since")
+      , $status := if ( exists($modified) and $modified != "" )
+                      then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
+                      else 200
+    return if ( $status = 304 ) then
+      r2:response(304, "text/plain", "", r2r:headersWithAllow())
+    else
+      let $type := if ( exists($request?parameters?accept) )
+                      then $request?parameters?accept
+                      else "text/html"
+        , $process := r2r:resolveProcess($resource, $request?parameters?view, $type)
+
+      return if ( empty($process) ) then
+        r2:response(404, "text/plain", "The view was not found", r2r:headersWithAllow())
+      else
+        let $viewParam := string($process/@view)
+          , $result := wdbProc:getContent(
+              $request?parameters?id,
+              $process,
+              $viewParam,
+              map {
+                "id": $request?parameters?id,
+                "process": $process,
+                "view": $viewParam,
+                "fileLoc": $resource?path,
+                "pathToEd": $resource?projectPath,
+                "ed": tokenize(normalize-space($resource?projectPath), "/")[last()],
+                "xslt": $process
+              }
+            )
+          , $body := $result?content
+          , $namespace := if ( $body instance of document-node() or $body instance of element() )
+                            then namespace-uri(($body/*[1], $body)[1])
+                            else ()
+          , $mimeType := wdb:getContentTypeFromExt(string($process/@target), $namespace)
+        return router:response($result?status, $mimeType, $body, r2r:headersWithAllow())
+};
+
+declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
+  let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
+  return if ( count($matches) = 1 ) then
+    r2:response(200, "text/plain", string($matches[1]/@xml:id), r2r:headersWithAllow())
+  else
+    r2:response(404, "text/plain", "This external PID was not found", r2r:headersWithAllow())
+};

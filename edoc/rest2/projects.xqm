@@ -408,6 +408,10 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
 };
 
 (:
+TODO: - add a function to update project information (e.g. title, short title) → PATCH
+
+TODO: - check whether we need a uniform “descriptor” element for both projects and files in the project metadata
+ (, so that we can have a single endpoint for listing all resources of a project (instead of separate ones for subprojects and files). This would also make it easier to maintain the order of resources in the project metadata, which is currently not possible with the separate <meta:ptr> and <meta:file> elements.)
 
           <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1">
             <id>{ $r2:base }{ $request?path }</id>

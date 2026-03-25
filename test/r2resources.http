@@ -1,0 +1,11 @@
+OPTIONS http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-options-1774388081581-22273
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774394619113-47399/views
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774391490064-57314/views/default
+Accept: application/epub

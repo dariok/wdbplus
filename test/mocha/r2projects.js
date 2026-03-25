@@ -3,25 +3,27 @@ import { default as chaiHttp, request } from "chai-http";
 import * as xmldom from "@xmldom/xmldom";
 import { JSDOM } from "jsdom";
 import * as xpath from "xpath";
+import {
+  baseUrl,
+  defaultResourcePath,
+  ensureSharedProject,
+  loginAs,
+  loginAsAdmin,
+  uniqueSuffix,
+  unsupportedResourceContentType,
+  uploadResourceMultipart,
+  sharedResourceProjectId
+} from "./rest2-helpers.js";
 
 chai.use(chaiHttp);
 chai.config.includeStack = true;
 
-const baseUrl = "http://localhost:8080/exist/apps/edoc/api/v2";
 const expect  = chai.expect;
 const parser  = new xmldom.DOMParser();
 const select  = xpath.useNamespaces({
     api: "https://github.com/dariok/wdbplus/api/schema/v1",
     index: "https://github.com/dariok/wdbplus/index"
   });
-const unsupportedResourceContentType = "application/json";
-const sharedResourceProjectId = "project";
-const sharedResourceCollection = "test40";
-const defaultResourcePath = "/edition";
-
-function uniqueSuffix() {
-  return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-}
 
 /**
  * @param {string} title
@@ -30,84 +32,6 @@ function uniqueSuffix() {
 function teiXml( title, xmlId ) {
   const idAttr = xmlId ? ` xml:id="${xmlId}"` : "";
   return `<TEI xmlns="http://www.tei-c.org/ns/1.0"${idAttr}><teiHeader><fileDesc><titleStmt><title level="a">${title}</title></titleStmt><publicationStmt><p>test</p></publicationStmt><sourceDesc><p>test</p></sourceDesc></fileDesc></teiHeader><text><body><p>${title}</p></body></text></TEI>`;
-}
-
-
-/**
- * @param {import("superagent/lib/node").Request} req
- * @param {string} path
- * @param {string} name
- * @param {string} xml
- */
-function uploadResourceMultipart( req, path, name, xml, extraFields = {} ) {
-  req.set("Content-Type", "multipart/form-data");
-
-  let multipartReq = req.field("path", path);
-  
-  for ( const [key, value] of Object.entries(extraFields) ) {
-    multipartReq = multipartReq.field(key, String(value));
-  }
-
-  return multipartReq.attach("file", Buffer.from(String(xml), "utf8"), name);
-}
-
-/**
- * @param {ChaiHttp.Agent} agent
- */
-function loginAsAdmin( agent ) {
-  return loginAs(agent, "admin", "admin");
-}
-
-/**
- * @param {ChaiHttp.Agent} agent
- * @param {string} user
- * @param {string} password
- */
-function loginAs( agent, user, password ) {
-  return agent.post("/login")
-    .set("Content-Type", "multipart/form-data")
-    .field("user", user)
-    .field("password", password)
-    .then((res) => {
-      expect(res).to.have.status(200);
-      expect(res).to.have.cookie("JSESSIONID");
-      return res;
-    });
-}
-
-/**
- * 
- * @param {ChaiHttp.Agent} agent 
- * @returns 
- */
-function ensureSharedProject( agent ) {
-  return request.execute(baseUrl)
-    .get(`/projects/${sharedResourceProjectId}`)
-    .set("Accept", "application/xml")
-    .then((res) => {
-      if (res.status === 200) {
-        return res;
-      }
-
-      if (res.status === 404) {
-        return loginAsAdmin(agent)
-          .then(() => {
-            return agent.put(`/projects/data/subprojects/${sharedResourceProjectId}`)
-              .set("Content-Type", "application/json")
-              .send({
-                title: `Shared resource tests ${sharedResourceProjectId}`,
-                short: "Created by mocha",
-                collection: sharedResourceCollection
-              });
-          })
-          .then((createRes) => {
-            expect([201, 409]).to.include(createRes.status);
-            return createRes;
-          });
-      }
-
-      throw new Error(`Unexpected status while checking shared project: ${res.status}`);
-    });
 }
 
 /**
@@ -322,7 +246,7 @@ describe("REST v2 specific project – GET", function () {
         // console.log(res.body);
         expect(res.body).to.have.property("projects");
         expect(res.body.projects).to.be.an("array");
-        let filtered = res.body.projects.filter(el => el?.label === "New Project with ID");
+        let filtered = res.body.projects.filter((/** @type {{ label: string; }} */ el) => el?.label === "New Project with ID");
         expect(filtered).not.to.be.empty; 
       });
   });
@@ -370,7 +294,7 @@ describe("REST v2 subprojects – GET", function () {
         expect(res).to.have.header("content-type", "application/json");
         expect(res.body).to.have.property("projects");
         expect(res.body.projects).to.be.an("array");
-        let filtered = res.body.projects.filter(el => el?.label === "New Project with ID");
+        let filtered = res.body.projects.filter((/** @type {{ label: string; }} */ el) => el?.label === "New Project with ID");
         expect(filtered).not.to.be.empty;
       });
   });
