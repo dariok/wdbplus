@@ -31,17 +31,25 @@ declare %private function r2r:headersWithAllow () as map(*) {
 
 declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
   let $resource := wdbFiles:getFullPath($id)
-    , $meta := doc($resource?projectPath || "/wdbmeta.xml")
-    , $entry := $meta/id($id)[self::meta:file][1]
   
-  return map:merge((
-        $resource,
-        map {
-          "meta": $meta,
-          "entry": $entry,
-          "path": $resource?collectionPath || "/" || $resource?fileName
-        }
-      ))
+  return
+    if ( $resource?kind != "file" ) then
+      ()
+    else
+      let $meta := doc($resource?projectPath || "/wdbmeta.xml")
+        , $entry := $meta/id($id)[self::meta:file][1]
+      return
+        if ( empty($entry) ) then
+          ()
+        else
+          map:merge((
+            $resource,
+            map {
+              "meta": $meta,
+              "entry": $entry,
+              "path": $resource?collectionPath || "/" || $resource?fileName
+            }
+          ))
 };
 
 declare %private function r2r:getMimeType ( $path as xs:string, $content as item()? ) as xs:string {

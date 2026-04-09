@@ -36,6 +36,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     let $filePathInfo := if ( not($ed or $id) or $ed = "data" ) (: no specific file/project requested; use data :)
           then
             map {
+              "kind": "project",
               "projectPath": $config:data,
               "collectionPath": $config:data,
               "fileName": "wdbmeta.xml",
@@ -43,7 +44,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
             }
           else
             wdbFiles:getFullPath( ($id, $ed)[1] )    (: $id and $ed should never be present at the same time :)
-      , $pathToFile := if ( map:keys($filePathInfo) = 'fileURL' ) (: fileURL: URL to a file located on a peer :)
+      , $pathToFile := if ( $filePathInfo?kind = 'peer' ) (: fileURL: URL to a file located on a peer :)
           then $filePathInfo?fileURL
           else $filePathInfo?collectionPath || '/' || $filePathInfo?fileName
     
@@ -70,7 +71,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     
     (: even though it’s called xsl, we use the whole meta:process element here so that later we can use multi-command
        processing (#394) :)
-    let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
+    let $xsl := if ( $filePathInfo?kind = "project" )
       then
         <meta:process target="html">
           <meta:command type="xsl">{ 
