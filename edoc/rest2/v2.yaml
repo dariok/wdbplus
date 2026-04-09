@@ -644,10 +644,10 @@ paths:
     put:
       tags:
         - resources
-      summary: Create or update a file
+      summary: Replace a file
       operationId: "r2r:putResource"
       requestBody:
-        description: Create or replace a file with the ID given in id and the content in the request body
+        description: Replace a file in-place
         required: true
         content:
           multipart/form-data:
