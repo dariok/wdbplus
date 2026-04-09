@@ -142,15 +142,18 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
     , $uuid := $info?body?hash
     , $relPath := $info?body?path || '/' || $info?body?file?name
     , $id := $info?parameters?id
-    , $metaFile := ( 
-        $meta/id($id),
-        $meta//meta:file[@path = $relPath]
-      )[1]
-
-    , $errorNonMatch := if ( count($metaFile) eq 0 )
-        then false()
-        else not($metaFile[1] is $metaFile[2])
-    , $errorNum := count($metaFile) > 2
+    , $metaFileById := $meta/id($id)[self::meta:file]
+    , $metaFileByPath := $meta//meta:file[@path = $relPath]
+    , $metaFile := if ( empty($metaFileById) ) then
+        $metaFileByPath
+      else if ( empty($metaFileByPath) ) then
+        $metaFileById
+      else if ( $metaFileById[1] is $metaFileByPath[1] ) then
+        $metaFileById[1]
+      else
+        ($metaFileById, $metaFileByPath)
+    , $errorNonMatch := count($metaFile) = 2
+    , $errorNum := count($metaFileById) > 1 or count($metaFileByPath) > 1
     , $errors := if ( $errorNonMatch or $errorNum ) 
         then
           if ( $errorNonMatch ) then error("Conflicting entries for ID " || $id || " and path " || $info?project?collectionPath || $info?body?path || '/' || $info?body?file?name || " in " || base-uri($meta))
@@ -158,16 +161,20 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
           else error("unknown error")
         else ()
       
-    , $file := if ( count($metaFile) = 0 )
-        then
-          (: no entry in wdbmeta: create file and view entries :)
-          <file xmlns="https://github.com/dariok/wdbplus/wdbmeta"
-            xml:id="{ $id }"
-            path="{ $relPath }"
-            date="{ current-dateTime() }"
-            uuid="{ $uuid }"
-          />
-        else $metaFile
+    , $file := element { QName("https://github.com/dariok/wdbplus/wdbmeta", "file") } {
+        if ( count($metaFile) = 1 ) then
+          for $attr in $metaFile[1]/@*
+          return if (
+              (namespace-uri($attr) = "http://www.w3.org/XML/1998/namespace" and local-name($attr) = "id")
+              or (namespace-uri($attr) = "" and local-name($attr) = ("path", "date", "uuid"))
+            ) then ()
+            else $attr
+        else (),
+        attribute xml:id { $id },
+        attribute path { $relPath },
+        attribute date { current-dateTime() },
+        attribute uuid { $uuid }
+      }
     , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?project}, "getRestView", 1) )
         then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
         else
@@ -187,7 +194,7 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
         update insert $file into $meta//meta:files,
         update insert $view into $meta/meta:projectMD/meta:struct
       )
-    else if ( not($errors) and count($metaFile) = (1, 2) ) then
+    else if ( not($errors) and count($metaFile) = 1 ) then
       (
         update replace $metaFile[1] with $file,
         update replace $meta//meta:view[@file = $id] with $view
