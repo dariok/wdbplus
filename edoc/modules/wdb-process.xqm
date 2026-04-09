@@ -7,15 +7,25 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare function wdbProc:getContent ( $id as xs:string, $process as element(), $view as xs:string, $model as map(*) ) as map(*) {
+  let $effectiveModel := map:merge((
+        map:remove($model, ("id", "process", "view", "xslt")),
+        map {
+          "id": ($model?id, $id)[1],
+          "process": ($model?process, $process)[1],
+          "view": ($model?view, $view)[1],
+          "xslt": ($model?xslt, $process)[1]
+        }
+      ))
+
   (: TODO if multiple commands are defined, check that one is actually applicable – #395 :)
   (: TODO pass the position of this command on to the processing function or pass target and view on :)
   (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
   switch ( $process[1]/meta:command/@type )
     case "xsl" return
-      let $content := wdbProc:processXSL($model)
+      let $content := wdbProc:processXSL($effectiveModel)
       return map { "status": $content?status, "content": $content?content }
     case "xquery" return
-      let $content := wdbProc:processXQuery($model)
+      let $content := wdbProc:processXQuery($effectiveModel)
       return map { "status": $content?status, "content": $content?content }
     default return
       map { "status": 500, "content": "Invalid command type " || ($process[1]/meta:command/@type, '?')[1] }
