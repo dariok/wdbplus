@@ -251,7 +251,7 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
         {
           for $entry in $meta//meta:file return
             <file xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/resource/{ $entry/@xml:id }"
+                id="{ $r2:base }/resources/{ $entry/@xml:id }"
                 label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
         }
       </contents>
@@ -433,7 +433,7 @@ TODO: - check whether we need a uniform “descriptor” element for both projec
               {
                 for $entry in $meta//meta:file return
                   <file
-                      id="{ $r2:base }/resource/{ $entry/@xml:id }"
+                      id="{ $r2:base }/resources/{ $entry/@xml:id }"
                       label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
               }
             </files>

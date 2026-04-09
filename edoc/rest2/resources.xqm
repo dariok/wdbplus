@@ -114,7 +114,7 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
           let $viewName := string(($process/@view, 'default')[1])
           return
             <view
-                id="{ $r2:base }resources/{ $resource?entry/@xml:id }/views/{ $viewName }"
+                id="{ $r2:base }/resources/{ $resource?entry/@xml:id }/views/{ $viewName }"
                 view="{ $viewName }"
                 content-type="{ string(($process/@label, $process/@target)[1]) }"
             />
