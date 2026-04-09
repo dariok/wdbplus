@@ -145,7 +145,7 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
     , $metaFile := ( 
         $meta/id($id),
         $meta//meta:file[@path = $relPath]
-      )
+      )[1]
 
     , $errorNonMatch := if ( count($metaFile) eq 0 )
         then false()
