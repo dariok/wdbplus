@@ -108,7 +108,7 @@
   <xsl:template match="tei:publicationStmt/tei:publisher">
     <a>
       <xsl:if test="@ref or */@ref">
-        <xsl:attribute name="href" select="(@ref, */æref)[1]" />
+        <xsl:attribute name="href" select="(@ref, */@ref)[1]" />
       </xsl:if>
       <xsl:apply-templates />
     </a>
