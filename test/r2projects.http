@@ -60,13 +60,13 @@ Content-Type: application/json
 
 ###
 # supposed to succeed
-PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/namedProject
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/project
 Content-Type: application/json
 
 {
-  "title": "new named project",
-  "short": "NewName",
-  "collection": "nnp"
+  "title": "New Project with ID",
+  "short": "Created by unit test",
+  "collection": "test40"
 }
 
 ###
@@ -77,9 +77,89 @@ Content-Type: multipart/form-data; boundary=----test----
 ------test----
 Content-Disposition: form-data; name="user"
 
-admin
+wdbadmin
 ------test----
 Content-Disposition: form-data; name="password"
 
-admin
+wdbadmin
 ------test------
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/views
+Accept: application/json
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001000/views/default
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/start
+Accept: text/html
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/navigation
+Accept: text/html
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/resources
+Accept: application/xml
+
+###
+
+DELETE http://localhost:8080/exist/apps/edoc/api/v2/projects/project
+
+###
+
+POST http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001741/resources
+Content-Type: multipart/form-data; boundary=wdb
+
+--wdb
+Content-Disposition: form-data; name="path"
+
+edition
+--wdb
+Content-Disposition: form-data; name="file"; filename="17410105.xml"
+Content-Type: application/xml
+
+#< ../edoc/webstart.xql
+< ../edoc/config.xml
+#< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml
+--wdb--
+
+###
+
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001741/resources/pb001741-0105
+Content-Type: multipart/form-data; boundary=wdb
+
+--wdb
+Content-Disposition: form-data; name="path"
+
+edition/01
+--wdb
+Content-Disposition: form-data; name="file"; filename="17410105.xml"
+Content-Type: application/xml
+
+# < ../edoc/config.xml
+< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml
+--wdb--
+
+###
+
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001174/resources/pb001174-0001
+Content-Type: application/xml
+
+< /home/kampkaspar/git/dat/steps/50_tokenized/1741/17410105.xml

@@ -5,12 +5,11 @@
  :)
 xquery version "3.1";
 
-import module namespace login   = "http://exist-db.org/xquery/login"           at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
-import module namespace request = "http://exist-db.org/xquery/request"         at "java:org.exist.xquery.functions.request.RequestModule";
-(: import module namespace sm      = "http://exist-db.org/xquery/securitymanager" at "java:org.exist.xquery.functions.securitymanager.SecurityManagerModule";:)
-import module namespace wdba    = "https://github.com/dariok/wdbplus/auth"     at "modules/auth.xqm";
+import module namespace login      = "http://exist-db.org/xquery/login"          at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace request    = "http://exist-db.org/xquery/request"        at "java:org.exist.xquery.functions.request.RequestModule";
 
-declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+declare namespace config = "https://github.com/dariok/wdbplus/config";
+declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -19,16 +18,17 @@ declare variable $exist:prefix external;
 (: declare variable $exist:root external; :)
 
 declare variable $local:isget := request:get-method() = ("GET","get");
+declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
-util:log("info", "request:get-method(): " || request:get-method()),
-util:log("info", "exist:path: " || $exist:path),
+util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " -> resource: " || $exist:resource),
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
 if (
-    ( $local:isget and $exist:path eq "/apiv2.html" ) or 
-    ( $local:isget and matches($exist:path, "^/[^/]+\.json$", "s") )
+    ( $local:isget and $exist:resource = ('v2.json', 'apiv2.html') )
 ) then
-  <dispatch xmlns="http://exist.sourceforge.net/NS/exist" />
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/{$exist:resource}"/>
+  </dispatch>
 (: login :)
 else if ( $exist:resource = 'login' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -69,15 +69,33 @@ else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/modules/view.xql">
-			</forward>
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
     </view>
   </dispatch>
-else if ( contains($exist:path, "/$shared/") ) then
-  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
-      <set-header name="Cache-Control" value="max-age=604800, must-revalidate"/>
-    </forward>
-  </dispatch>
+  (: generic resources :)
+  else if ( contains($exist:path, "/$shared/") ) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+      <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/$shared/')}">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </dispatch>
+  (: instance specific resources :)
+  else if ( contains($exist:path, "/$global/") ) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+      <forward url="{$exist:controller}/data/resources/{substring-after($exist:path, '/$global/')}">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </dispatch>
 else if ( ends-with($exist:path, ".xql") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <set-header name="Cache-Control" value="no-cache"/>

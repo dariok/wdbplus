@@ -12,7 +12,7 @@ module namespace wdbm = "https://github.com/dariok/wdbplus/model";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
-import module namespace wdbErr  = "https://github.com/dariok/wdbplus/errors"  at "error.xqm";
+import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 
 declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -33,9 +33,10 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
                                        $view as xs:string, $p as xs:string, $q as xs:string ) as item()* {
   try {
     (: get the file path info :)
-    let $filePathInfo := if ( not($ed or $id) )
+    let $filePathInfo := if ( not($ed or $id) or $ed = "data" ) (: no specific file/project requested; use data :)
           then
             map {
+              "kind": "project",
               "projectPath": $config:data,
               "collectionPath": $config:data,
               "fileName": "wdbmeta.xml",
@@ -43,7 +44,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
             }
           else
             wdbFiles:getFullPath( ($id, $ed)[1] )    (: $id and $ed should never be present at the same time :)
-      , $pathToFile := if ( map:keys($filePathInfo) = 'fileURL' ) (: fileURL: URL to a file located on a peer :)
+      , $pathToFile := if ( $filePathInfo?kind = 'peer' ) (: fileURL: URL to a file located on a peer :)
           then $filePathInfo?fileURL
           else $filePathInfo?collectionPath || '/' || $filePathInfo?fileName
     
@@ -70,13 +71,17 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     
     (: even though it’s called xsl, we use the whole meta:process element here so that later we can use multi-command
        processing (#394) :)
-    let $xsl := if ( $filePathInfo?fileName = "wdbmeta.xml" )
+    let $xsl := if ( $filePathInfo?kind = "project" )
       then
-        (: TODO nav.xsl: use edoc/resources/xsl/nav.xsl if none in data/resources :)
         <meta:process target="html">
-          <meta:command type="xsl">{ xs:anyURI($config:data || '/resources/xsl/nav.xsl') }</meta:command>
+          <meta:command type="xsl">{ 
+            if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
+              then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
+              else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
+          }</meta:command>
         </meta:process>
       else
+        (: TODO: this should get the process, both XSLT and XQUery, and hence the key in the map should be process :)
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
     let $xslt := if ( not($xsl) instance of element(meta:process) )

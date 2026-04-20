@@ -2,14 +2,15 @@ xquery version "3.1";
 
 module namespace wdbRf = "https://github.com/dariok/wdbplus/RestFiles";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
-import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
-import module namespace wdbProc  = "https://github.com/dariok/wdbplus/Process"     at "../modules/wdb-process.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
+import module namespace config     = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
+import module namespace wdb        = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
+import module namespace wdbFiles   = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
+import module namespace wdbm       = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbProc    = "https://github.com/dariok/wdbplus/Process"     at "../modules/wdb-process.xqm";
+import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "../modules/wdb-request.xqm";
+import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
+import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -94,7 +95,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
         $errNoID := count($fileEntry) = 0
     
     (: parse data an try to get the intended path :)
-    let $parsed := wdb:parseMultipart($data, $header)
+    let $parsed := wdbRequest:parseMultipart($data, $header)
       , $path := normalize-space($parsed?filename?body)
       , $pathEntry := collection($config:data)//meta:file[@path = $path]
       , $errNonMatch := count($pathEntry) = 1 and not($pathEntry/@xml:id = $id)
@@ -402,9 +403,9 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
     , $process := wdb:getXslFromWdbMeta($infoFileLoc, $id, $type, $view)
   
   let $status := if ( $infoFileLoc = "" )
-      then (404, "No file with ID " || $id || " found!")
+      then map { "status": 404, "content": "No file with ID " || $id || " found!" }
       else if ( not($process) )
-      then (400, "no process found for target type " || $type || " that has a view " || $view)
+      then map { "status": 400, "content": "no process found for target type " || $type || " that has a view " || $view }
       else wdbProc:getContent($id, $process, $view,
               map { 
                     'fileLoc': $pathInfo?collectionPath || '/' || $pathInfo?fileName,
@@ -412,18 +413,18 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
                   }
             )
   
-  let $namespace := if ($status[2] instance of element())
-    then $status[2]/*[1]/namespace-uri()
+  let $namespace := if ( $status?content instance of element())
+    then $status?content/*[1]/namespace-uri()
     else ""
   
   return ( 
     <rest:response>
-      <http:response status="{$status[1]}">
+      <http:response status="{ $status?status }">
         <http:header name="Access-Control-Allow-Origin" value="*" />
-        <http:header name="Content-Type" value="{wdb:getContentTypeFromExt($type, $namespace)}" />
+        <http:header name="Content-Type" value="{ wdb:getContentTypeFromExt($type, $namespace) }" />
       </http:response>
     </rest:response>,
-    $status[position() gt 1]
+    $status?content
   )
 };
 

@@ -247,12 +247,20 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
 };
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as element(process)? {
   let $metaFile := doc($infoFileLoc)
-    , $process := (
-        $metaFile//meta:process[@target = $target and @view = $view],
-        $metaFile//meta:process[@target = $target],
-        $metaFile//meta:process[1]
-      )[1]
-    , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
+    , $process := if ( $view != '' )
+        then $metaFile//meta:process[@target = $target and @view = $view]
+        else $metaFile//meta:process[@target = $target and not(@view)]
+    , $base := if ( count($process) = 1 )
+        then substring-before(base-uri($metaFile), 'wdbmeta.xml')
+        else if ( count($process) = 0 ) 
+        then error(
+            QName('wdbRErr', 'wdb0002'),
+            "no process found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+          )
+        else error(
+            QName('wdbRErr', 'wdb0012'),
+            "multiple processes found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+          )
   
   let $sel := if ( $process/meta:command )
     then
@@ -276,7 +284,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
-    else ( util:log("error", $metaFile) )
+    else ()
   
   (: As we check from most specific to default, the first command in the sequence is the right one :)
   return if ( $sel[1] instance of element(meta:process) )
@@ -288,44 +296,55 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
     else
       error(
         QName('wdbRErr', 'wdb0002'),
-        "no process found for target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
+        "no process found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
       )
+};
+
+(:~
+ : Apply a project specific XSLT to some XML
+ :
+ : @param $xml The XML to be transformed
+ : @param $edPath The path to the project
+ : @param $name The name of the XSLT file to be applied
+ :
+ : @returns The transformed XML
+ :
+ : The lookup order is:
+ : 1) project resources
+ : 2) instance resources
+ : 3) global resources
+ :)
+declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string ) as node() {
+  wdb:applySpecificXsl($xml, $edPath, $name, ())
+};
+(:~
+ : Apply a project specific XSLT to some XML
+ :
+ : @param $xml The XML to be transformed
+ : @param $edPath The path to the project
+ : @param $name The name of the XSLT file to be applied
+ : @param $parameters (optional) parameters to be passed to the XSLT
+ :
+ : @returns The transformed XML
+ :
+ : The lookup order is:
+ : 1) project resources
+ : 2) instance resources
+ : 3) global resources
+ :)
+declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string, $parameters as element(parameters)? ) as node() {
+  let $xsl := if ( doc-available($edPath || "/resources/xsl/" || $name) ) then
+        doc($edPath || "/resources/xsl/" || $name)
+      else if ( doc-available("/db/apps/edoc/data/resources/xsl/" || $name) ) then
+        doc("/db/apps/edoc/data/resources/xsl/" || $name)
+      else
+        doc("/db/apps/edoc/resources/xsl/" || $name)
+   
+   return transform:transform($xml, $xsl, $parameters)
 };
 (: END LOCAL HELPER FUNCTIONS :)
 
 (: HELPERS FOR REST AND HTTP REQUESTS :)
-declare function wdb:parseMultipart ( $data, $header ) {
-  let $boundary := $header => substring-after('boundary=') => translate('"', '')
-  return map:merge(
-    for $m in tokenize($data, "--" || $boundary) return
-      if (string-length($m) lt 6)
-      then ()
-      else
-        let $parts := (tokenize($m, "(^\s*$){2}", "m"))[normalize-space() != ""]
-        let $header := map:merge( 
-          for $line in tokenize($parts[1], "\n") return
-            if (normalize-space($line) eq "")
-            then ()
-            else
-              let $val := $line => substring-after(': ') => normalize-space()
-              let $value := if (contains($val, '; '))
-                then map:merge( 
-                  for $entry in tokenize($val, '; ') return
-                    if (contains($entry, '='))
-                    then map:entry ( substring-before($entry, '='), translate(substring-after($entry, '='), '"', '') )
-                    else map:entry ( "text", $entry )
-                )
-                else $val
-              return map:entry(substring-before($line, ': '), $value)
-        )
-        
-        (: empty lines in the body will also cause splitting; hence, recombine everything except the header :)
-        return map:entry(($header?Content-Disposition?name, 'name')[1],
-            map { "header" : $header, "body" : string-join($parts[position() > 1], '\n') }
-        )
-  )
-};
-
 (:~
  : Get a MIME type from an extension and an optional XML namespace
  :
@@ -336,42 +355,30 @@ declare function wdb:parseMultipart ( $data, $header ) {
 declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace as xs:anyURI? ) as xs:string {
   switch ( $extension )
     case 'css'
-      return
-        'text/css'
+      return 'text/css'
     case 'js'
-      return
-        'application/javascript'
+      return 'application/javascript'
     case 'xql'
     case 'xqm'
-      return
-          'application/xquery'
+      return 'application/xquery'
     case 'html'
-      return
-        'text/html'
+      return 'text/html'
     case 'gif'
-      return
-        'image/gif'
+      return 'image/gif'
     case 'png'
-      return
-        'image/png'
+      return 'image/png'
     case 'json'
-      return
-        'application/json'
+      return 'application/json'
     case 'zip'
-      return
-        'application/zip'
+      return 'application/zip'
     case 'xml'
-      return
-        if ( $namespace = 'http://www.tei-c.org/ns/1.0' ) then
-          'application/tei+xml'
-        else
-          'application/xml'
+      return if ( $namespace = 'http://www.tei-c.org/ns/1.0' )
+          then 'application/tei+xml'
+          else 'application/xml'
     case 'xsl'
-      return
-        'application/xslt+xml'
+      return 'application/xslt+xml'
     default
-      return
-        'application/octet-stream'
+      return 'application/octet-stream'
 };
 
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {

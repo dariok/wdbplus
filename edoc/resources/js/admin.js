@@ -7,8 +7,8 @@ const wdbAdmin = {
       url: url,
       cache: false,
       dataType: "json",
-      success: function (data) {
-        wdbAdmin.getPaths(data);
+      success: function ( data ) {
+        wdbAdmin.getPaths();
         $("input[type='submit']").prop("disabled", false);
       },
       error: function ( response ) {
@@ -19,19 +19,10 @@ const wdbAdmin = {
     $('#selectTarget').show();
   },
   
-  getPaths: function ( data ) {
-    if (data instanceof Array) {
-      data.forEach(function( subcollection ) {
-        if (subcollection == "texts") {
-          $('#selectTarget select').append('<option selected="selected">' + subcollection + '</option>');
-        } else {
-          $('#selectTarget select').append("<option>" + subcollection + "</option>");
-        }
-      });
-    } else {
-      // only one entry
-      $('#selectTarget select').append('<option selected="selected">' + data + '</option>');
-    }
+  getPaths: function ( ) {
+    $('#selectTarget select').append('<option selected="selected">edition</option>');
+    $('#selectTarget select').append("<option>pages</option>");
+    $('#selectTarget select').append('<option>resources</option>');
   },
 
   // execute a job and show results
@@ -207,15 +198,17 @@ const wdbAdmin = {
   },
 
   files: {},
-  setFiles: function ( fileList ) {
+  setFiles: function ( /** @type { FileList } */ fileList ) {
     this.files = fileList;
     
     $('#results').children().remove();
     $('#results').append("<tr><th>Local file</th><th>Target path</th><th>Status</th>");
-    for (let file of fileList) {
-      let task = $('#selectTask input:checked').attr("id"),
-          filePath = task == "fi" ? file.name : file.webkitRelativePath,
-          targetPath = $('pre').text() + "/" + $('select').val() + "/" + filePath;
+    
+    for ( let file of fileList ) {
+      let task = $('#selectTask input:checked').attr("id")
+        , filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
+        , delim = $('pre').text().endsWith('/') ? '' : '/'
+        , targetPath = $('pre').text() + delim + $('select').val() + "/" + filePath;
       
       $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath + "</td><td></td>");
     }
@@ -310,20 +303,9 @@ $(function() {
   if ( filename === "directoryForm.html" && wdb.meta.ed !== "" ) {
     let delim = wdb.meta.rest.substr(wdb.meta.rest.length - 1) === '/' ? "" : "/"
       , url = wdb.meta.rest + delim + "collection/" + wdb.meta.ed + "/structure.json";
-    $.ajax({
-      method: "get",
-      url: url,
-      success: function ( data ) {
-        let key = Object.keys(data)[0];
-        $('#selectTarget pre').first().text(key);
-        wdbAdmin.getPaths(data[key]);
-        $("input[type='submit']").prop("disabled", false);
-      },
-      error: function ( response ) {
-        wdb.report("error", "When trying to create upload form for project " + wdb.parameters.ed + ": ",
-          response.responseText, $('aside'));
-      }
-    });
+    wdbAdmin.getPaths();
+    $('pre').text(wdb.meta.path);
+    
     $('#selectTarget').show();
 
     // dirupload() is called by the form’s formaction handler

@@ -30,10 +30,14 @@ declare
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed as xs:string?, $p as xs:string,
     $q as xs:string ) as item()* {
   try {
-    let $newModel := map:merge((
-          wdbm:populateModel($id, $ed, "", $p, $q),
-          $model
-        ))
+    let $newModel := if ( request:exists() and  contains(request:get-url(), 'addins') ) then
+          map {
+            "pathToEd": "/db/apps/edoc/addins/" || substring-before(substring-after(request:get-uri(), 'addins/'), '/') || '/'
+          }
+        else map:merge((
+            wdbm:populateModel($id, $ed, "", $p, $q),
+            $model
+          ))
       , $language := if ( $newModel?language != "" )
           then $newModel?language
           else "sco"
@@ -98,11 +102,11 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
       else (
         <link rel="stylesheet" type="text/css" href="./$shared/css/wdb.css"/>,
         if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/css/wdb.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="./$shared/css/{$templateFile}.css" />,
         if ( util:binary-doc-available($config:data || "/resources/css/" || $templateFile || ".css") )
-          then <link rel="stylesheet" type="text/css" href="{$config:edocBaseURL}/data/resources/css/{$templateFile}.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/{$templateFile}.css" />
           else (),
         wdbfp:get('css', $model?pathToEd, $model),
         wdb:getBlob($node, $model, 'jquery'),
@@ -194,7 +198,7 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
         then <link rel="stylesheet" type="text/css" href="{wdb:getUrl($edPath)}/addin.css" />
         else()
       let $ins := if ( util:binary-doc-available($config:data || "/resources/css/" || $name || ".css") )
-        then <link rel="stylesheet" type="text/css" href="{$config:data}/resources/css/{$name}.css" />
+        then <link rel="stylesheet" type="text/css" href="$global/css/{$name}.css" />
         else ()
       return ($fun, $gen, $ins, $pro, $add)
     case "js" return
@@ -208,10 +212,10 @@ function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
         then <script src="{wdb:getUrl($edPath)}/addin.js" />
         else()
       let $ins := if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
-          then <script src="{$config:data}/resources/js/function.js" />
+          then <script src="$global/js/function.js" />
           else ()
       let $spec := if ( util:binary-doc-available($config:data || "/resources/js/" || $name || ".js") )
-        then <link rel="stylesheet" type="text/css" href="{$config:data}/resources/js/{$name}.js" />
+        then <link rel="stylesheet" type="text/css" href="$global/js/{$name}.js" />
         else ()
       return ($ins, $gen, $pro, $add, $spec)
     default return <meta name="specFile" value="{$name}" />

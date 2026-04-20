@@ -39,36 +39,42 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
     else 418
   
   let $errorContent := if ( $statusCode = 404 )
-    then
-        <div>
-            <h1>Seite nicht gefunden</h1>
-            <p>Leider konnten wir die angegebene Seite nicht finden</p>
-        </div>
-    else 
-        <div>
-          <h1>Something has gone wrong...</h1>
-          <p>{$error}</p>
-          { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
-        </div>
+    then (
+      <h2>Seite nicht gefunden</h2>,
+      <p>Leider konnten wir die angegebene Seite nicht finden</p>
+    )
+    else (
+      <h2>Something has gone wrong...</h2>,
+      <p>{$error}</p>,
+      <details>
+        <summary>Logged error details:</summary>
+        { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
+      </details>
+    )
 
   return (
     util:log("error", $error),
     util:log("info", $data),
-    wdbErr:store("error", $error, $data),
     if ( response:exists() ) then response:set-status-code($statusCode) else (),
+    (: TODO we need to check whether we already have a page at this point and only need to return a div or whether we
+       need a complete HTML file :)
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
       <meta name="wdb-template" content="(error page)" />
       <title>ERROR</title>
       <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
+      <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
       <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
       <script src="$shared/js/function.js"/>
     </head>,
     <body>
       <header>head</header>
       <main>
-        { $errorContent }
+        <div>{ $errorContent }</div>
+        <div>
+          <h2>The following error was logged:</h2>
+          { wdbErr:store("error", $error, $data) }
+        </div>
       </main>
     </body>
   )

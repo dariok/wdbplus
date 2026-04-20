@@ -2,20 +2,21 @@ xquery version "3.1";
 
 module namespace wdbRc = "https://github.com/dariok/wdbplus/RestCollections";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"      at "../modules/error.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
-import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
-import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
-import module namespace wdbRMi   = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
+import module namespace config     = "https://github.com/dariok/wdbplus/config"      at "../modules/wdb-config.xqm";
+import module namespace wdb        = "https://github.com/dariok/wdbplus/wdb"         at "../modules/app.xqm";
+import module namespace wdbFiles   = "https://github.com/dariok/wdbplus/files"       at "../modules/wdb-files.xqm";
+import module namespace wdbm       = "https://github.com/dariok/wdbplus/model"       at "../modules/model.xqm";
+import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
+import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "../modules/wdb-request.xqm";
+import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
+import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 declare variable $wdbRc:acceptable := ("application/json", "application/xml");
 
@@ -175,7 +176,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
         then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "no data provided")
       else ()
     
-    let $parsed      := wdb:parseMultipart($data, $header),
+    let $parsed      := wdbRequest:parseMultipart($data, $header),
         $path        := normalize-space($parsed?filename?body),
         $contentType := $parsed?file?header?Content-Type
     let $err :=

@@ -63,6 +63,7 @@ function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view
           <html>
             {
               attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
+              comment { " Generated in view.xqm by " || $node/@data-template },
               templates:process($node/node(), $newModel)
             }
           </html>
@@ -112,11 +113,11 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
       else (
         <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
         if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/css/wdb.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
           else (),
         <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
         if ( util:binary-doc-available($config:data || "/resources/css/view.css") )
-          then <link rel="stylesheet" type="text/css" href="data/resources/css/view.css" />
+          then <link rel="stylesheet" type="text/css" href="$global/css/view.css" />
           else (),
         wdb:getBlob($node, $model, 'jquery-ui-css'),
         wdb:getProjectFiles($node, $model, 'css'),
@@ -126,7 +127,7 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
         <script src="$shared/js/legal.js"></script>,
         <script src="$shared/js/function.js"></script>,
         if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
-          then <script src="data/resources/js/function.js"></script>
+          then <script src="$global/js/function.js"></script>
           else (),
         wdb:getProjectFiles($node, $model, 'js')
       )
@@ -191,25 +192,40 @@ declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element
  : return the body
  :)
 declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
-  (: TODO: use generic processXSL function (currently in restFiles.xql but to be moved) so there is only one way of doing things :)
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   try {
     <main>
-      { wdbProc:getContent($model?id, $model?xslt, $model?view, $model) }
+      { (wdbProc:getContent($model?id, $model?xslt, $model?view, $model))?content }
       { wdbv:getLeftFooter($node, $model) }
     </main>
-  } catch * { (util:log("error",
-    <report>
-      <file>{$model?fileLoc}</file>
-      <xslt>{$model?xslt}</xslt>
-      <error>{$err:code || ': ' || $err:description}</error>
-      <error>{$err:module || '@' || $err:line-number ||':'||$err:column-number}</error>
-      <additional>{$err:additional}</additional>
-    </report>),
-    wdbErr:error(map{"code": "wdbErr:wdb1001", "model": $model, "error": map {
-        "code": $err:code, "desc": $err:description, "module": $err:module, "line": $err:line-number,
-        "col": $err:column-number, "add": $err:additional
-    }}))
+  } catch err:XPTY0004 {
+    wdbErr:error(
+      map {
+        "code": "wdbErr:wdb0002",
+        "model": $model,
+        "error": map {
+          "code": $err:code,
+          "desc": $err:description,
+          "module": $err:module,
+          "line": $err:line-number,
+          "col": $err:column-number,
+          "add": $err:additional
+        }
+      }
+    )//main
+  } catch * {
+    wdbErr:error(
+      map{
+        "code": "wdbErr:wdb1001",
+        "model": $model,
+        "error": map {
+          "code": $err:code,
+          "desc": $err:description,
+          "module": $err:module,
+          "line": $err:line-number,
+          "col": $err:column-number,
+          "add": $err:additional
+    }})
   }
 };
 

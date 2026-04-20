@@ -1,0 +1,22 @@
+OPTIONS http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-options-1774388081581-22273
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774394619113-47399/views
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301/views/md
+Accept: text/html
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT
+
+###
+
+HEAD http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT

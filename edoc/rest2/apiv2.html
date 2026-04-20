@@ -3,8 +3,8 @@
         <meta charset="utf-8"/>
         <title>wdb+ - OpenAPI</title>
         <link rel="icon" type="image/png" href="static/roaster-router-logo.png" />
-        <link rel="stylesheet" href="resources/css/swagger-ui.css"/>
-        <script src="resources/js/swagger-ui-bundle.js" charset="UTF-8"></script>
+        <link rel="stylesheet" href="$shared/css/swagger-ui.css"/>
+        <script src="$shared/js/swagger-ui-bundle.js" charset="UTF-8"></script>
     </head>
     <body>
         <div id="basic"/>
@@ -12,7 +12,7 @@
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 SwaggerUIBundle({
-                    url: 'rest2/v2.json',
+                    url: '$shared/../rest2/v2.json',
                     dom_id: '#basic',
                     displayOperationId: true,
                     displayRequestDuration: true,
