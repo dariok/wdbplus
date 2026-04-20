@@ -217,7 +217,7 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
         <view name="default"
           label="returns an XML representation of the project"
           href="{ $r2:base }/projects/{$request?parameters?ed}/views/default"/>
-        <view name="nav"
+        <view name="navigation"
           label="returns a navigation structure for the project"
           href="{ $r2:base }/projects/{$request?parameters?ed}/views/navigation"/>
         <view name="start"
