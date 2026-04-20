@@ -187,7 +187,6 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
                 else ()
             }
           </view>
-    , $errorContent := map { "errors": $errors, "file": $file, "view": $view }
 
     return if ( not($errors) and count($metaFile) = 0 ) then
       (
@@ -199,10 +198,12 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
         update replace $metaFile[1] with $file,
         update replace $meta//meta:view[@file = $id] with $view
       )
-    else (
-      r2:logMap($errorContent, 0),
-      error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
-    )
+    else
+      let $errorContent := map { "errors": $errors, "file": $file, "view": $view }
+      return (
+        r2:logMap($errorContent, 0),
+        error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
+      )
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {

@@ -230,12 +230,12 @@ declare function r2r:patchResource ( $request as map(*) ) as item() {
       let $target := $content/id($patch/*[1]/@xml:id)
       return if ( empty($target) ) then
         r2:response(400, "text/plain", "No fragment with xml:id " || $patch/*[1]/@xml:id || " found in resource " || $request?parameters?id, $r2:allOrigins)
-      else
-        let $updated := (
-            update replace $target with $patch/*[1],
-            xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path))
-          )
-        return r2:response(204, "text/plain", "", $r2:allOrigins)
+      else return (
+          update replace $target with $patch/*[1],
+          xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path)),
+          
+          r2:response(204, "text/plain", "", $r2:allOrigins)
+        )[last()]
 };
 
 declare function r2r:optionsResource ( $request as map(*) ) as item() {
