@@ -476,6 +476,9 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
               $projectMeta//meta:struct[@xml:id]/@xml:id/string()
             )
             else ()
+        , $subProjectIds := if ( $projectMeta )
+            then $projectMeta//meta:ptr/@xml:id/string()
+            else ()
         , $collectionName := replace($projectPath, "^.*/", "")
         , $projectIndex := doc("/db/apps/edoc/index/project-index.xml")
         , $fileIndex := doc("/db/apps/edoc/index/file-index.xml")
@@ -484,6 +487,12 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
         204,
         'text/plain',
         (
+          if ( subProjectIds ) then
+            for $id in $subProjectIds return r2p:deleteProject(map{
+              "parameters": map{ "ed": $id },
+              "user": $request?user
+            })
+          else (),
           if ( $parentMeta ) then (
             update delete $parentMeta//meta:ptr[@xml:id = $request?parameters?ed],
             update delete $parentMeta//meta:struct[@file = $request?parameters?ed]
