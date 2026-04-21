@@ -203,7 +203,7 @@ declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string 
                   <td>externe PID</td>
                   <td>{if ($entry/@pid = $pid)
                     then "OK: " || string($entry/@pid)
-                    else <a href="javascript:job('pid', '{$id}'">PID aus Datei übernehmen</a>
+                    else <a href="javascript:job('pid', '{$id}')">PID aus Datei übernehmen</a>
                   }</td>
                 </tr>,
                 <tr>

@@ -230,7 +230,7 @@ declare function r2r:patchResource ( $request as map(*) ) as item() {
       let $target := $content/id($patch/*[1]/@xml:id)
       return if ( empty($target) ) then
         r2:response(400, "text/plain", "No fragment with xml:id " || $patch/*[1]/@xml:id || " found in resource " || $request?parameters?id, $r2:allOrigins)
-      else return (
+      else (
           update replace $target with $patch/*[1],
           xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path)),
           
@@ -326,6 +326,7 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
 };
 
 declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
+  (: TODO: range index based on white space separated values – or, introduce a child element to meta:file :)
   let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
   return if ( count($matches) = 1 ) then
     r2:response(200, "text/plain", string($matches[1]/@xml:id), $r2:allOrigins)
