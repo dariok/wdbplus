@@ -6,7 +6,6 @@ import module namespace config   = "https://github.com/dariok/wdbplus/config" at
 import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
 import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
@@ -29,8 +28,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
       let $metaFile := doc($metaPath)
       
       let $relativePath := substring-after($file, $model?pathToEd || '/')
-      let $subColl := xstring:substring-before-last($file, '/')
-      let $resource := xstring:substring-after-last($file, '/')
+      let $subColl := if (starts-with($file, '/'))
+        then '/' || string-join(tokenize(normalize-space($file), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($file), '/')[position() lt last()], '/')
+      let $resource := tokenize(normalize-space($file), '/')[last()]
       let $fileEntry := $metaFile//meta:file[@path = $relativePath]
       let $xml := doc($file)
       

@@ -15,7 +15,6 @@ import module namespace config    = "https://github.com/dariok/wdbplus/config"  
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
 import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "../data/instance.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace main = "https://github.com/dariok/wdbplus";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -118,7 +117,12 @@ declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
  : @return the path
  :)
 declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) as xs:string {
-  let $tok := tokenize(xstring:substring-after($path, $config:edocBaseDB||'/'), '/')
+  let $tok := tokenize(
+    if (contains($path, $config:edocBaseDB || '/'))
+    then substring-after($path, $config:edocBaseDB || '/')
+    else $path,
+    '/'
+  )
   
   let $pa := for $i in 1 to count($tok)
     let $t := $config:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
@@ -206,7 +210,12 @@ declare function wdb:findProjectFile ( $path as xs:string, $fileName as xs:strin
   else if ( substring-after($path, $config:data) = '' ) then
     xs:anyURI("")
   else
-    wdb:findProjectFile(xstring:substring-before-last($path, '/'), $fileName)
+    wdb:findProjectFile(
+      if (starts-with($path, '/'))
+      then '/' || string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/')
+      else string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/'),
+      $fileName
+    )
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
@@ -280,7 +289,9 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         else () (: neither refs nor regex match and no default given :)
     (: if no command is defined, traverse up the project ancestors :)
     else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
-      let $path := xstring:substring-before-last($infoFileLoc, '/')
+      let $path := if (starts-with($infoFileLoc, '/'))
+        then '/' || string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)

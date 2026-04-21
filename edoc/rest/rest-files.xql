@@ -10,7 +10,6 @@ import module namespace wdbProc    = "https://github.com/dariok/wdbplus/Process"
 import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "../modules/wdb-request.xqm";
 import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
 import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -104,7 +103,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
     let $user := sm:id()//sm:real/sm:username
     
-    let $resourceName := xstring:substring-after-last($fullPath, '/')
+    let $resourceName := tokenize(normalize-space($fullPath), '/')[last()]
     let $contentType := $parsed?file?header?Content-Type
     
     let $prepped := wdbRMi:replaceWs($parsed?file?body),
@@ -156,7 +155,9 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
 
     else
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
-      let $collectionPath := xstring:substring-before-last($fullPath, '/')
+      let $collectionPath := if (starts-with($fullPath, '/'))
+        then '/' || string-join(tokenize(normalize-space($fullPath), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($fullPath), '/')[position() lt last()], '/')
       
       let $store := wdbRMi:store($collectionPath, $resourceName, $contents, $contentType),
           $meta := 
@@ -651,7 +652,9 @@ function wdbRf:getFileManifest ($id as xs:string) {
     "label": $title,
     "description": [map{
       "@value": $title,
-      "@language": xstring:substring-before($meta//meta:language[1], '-')
+      "@language": if (contains($meta//meta:language[1], '-'))
+        then substring-before($meta//meta:language[1], '-')
+        else $meta//meta:language[1]
     }],
     "viewingDirection": "left-to-right",
     "viewingHint": "paged",
