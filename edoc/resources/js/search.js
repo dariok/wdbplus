@@ -1,4 +1,16 @@
 $(() => {
+  const base = wdb.meta.get('rest').get('2');
+
+  $('#fts').on('submit', ( event ) => {
+    event.preventDefault();
+
+    let ed = event.target.children.namedItem('ed')?.value
+      , q = event.target.children.namedItem('q')?.value
+      , p = event.target.children.namedItem('p')?.value; 
+
+    wdbDocument.loadContent(`${base}search/ft/project/${ed}?q=${q}&p=${p}`, 'searchResults', '<void/>');
+  });
+
   $(document).on('click', '.loadSearchResult', ( event ) => {
     let id = event.target.dataset.target
       , q = event.target.dataset.query

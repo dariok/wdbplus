@@ -2,13 +2,14 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:exist="http://exist.sourceforge.net/NS/exist"
+  xmlns:api="https://github.com/dariok/wdbplus/api/schema/v1"
   exclude-result-prefixes="#all" version="3.0">
   
   <xsl:param name="title" />
   <xsl:param name="rest" />
   <xsl:param name="baseURL" />
-  
-  <xsl:template match="/results">
+    
+  <xsl:template match="/*:results">
     <xsl:variable name="p" select="parse-json(@p)" />
     <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
      
@@ -84,6 +85,16 @@
       </a>
       <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}" title="Show results">→</button>
       <div id="{@id}" class="results" style="display: none;"/>
+    </li>
+  </xsl:template>
+  
+  <xsl:template match="api:file">
+    <li>
+      <a href="view.html?id={ @xml:id }" title="go to document">
+        <xsl:value-of select="@title"/>
+      </a>
+      <button class="loadSearchResult" data-target="{ @id }" data-query="{ ../@q }" data-link="{ @href }" title="Show results">&#x2BAF;</button>
+      <div id="{ @id }" class="results" style="display: none;"/>
     </li>
   </xsl:template>
   

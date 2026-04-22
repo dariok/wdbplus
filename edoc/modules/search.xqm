@@ -16,7 +16,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
   return (
     <div>
       <h1>Volltextsuche</h1>
-      <form action="search.html">
+      <form id="fts">
         { $options }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
         <input type="hidden" name="p">
@@ -29,7 +29,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
     <hr />,
     <div>
       <h1>Registersuche</h1>
-      <form action="search.html">
+      <form action="search.html" id="searchEntities">
         { $options }
         { wdbSearch:listEnt("search") }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
@@ -39,7 +39,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
     <hr />,
     <div>
       <h1>Registerliste</h1>
-      <form action="search.html">
+      <form action="search.html" id="listEntities">
         { $options }
         { wdbSearch:listEnt("entries") }
         <select name="q">{
@@ -53,6 +53,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
   )
 };
 
+(: TODO: retire this function and use the new API with JS-based loading instead. :)
 declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
   let $job := if ( $model?p instance of map(*) )
     then $model?p?job
@@ -68,7 +69,8 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
       response:set-header("Cache-Control", "no-cache"),
       switch ( $job )
         case "fts"
-          return wdbRs:collectionHtml($model?ed, $model?q, $start)
+          (: should not be the case with the new API and JS-based loading :)
+          return response:set-status-code(415)
         case "search"
           return wdbRe:scanHtml($model?ed, $model?p?type, $model?q)
         case "list"
@@ -78,7 +80,8 @@ declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
         default
           return response:set-status-code(400)
     )
-  else <div />
+    (: this can then be included in search.html :)
+  else <div id="searchResults" />
 };
 
 declare
