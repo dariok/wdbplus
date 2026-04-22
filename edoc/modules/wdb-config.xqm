@@ -29,8 +29,16 @@ declare variable $config:edocBaseURL := $config:configFile//config:server;
 
 (: ~
  : get the base URL for REST calls
+ : 2026-04-22: as there may be different versions of the REST API, use a map o identify each version’s URL
  :)
-declare variable $config:restURL := $config:configFile//config:rest[1];
+declare variable $config:restURL := $config:configFile//config:rest ! map:entry(@version, normalize-space()) => map:merge();
+
+(:~
+ : create the meta element for the REST API URLs, including the version number if specified in the config file.
+ : This can be used in the HTML head to make the REST API URLs available to JavaScript.
+ :)
+declare variable $config:restMetaElement := <meta name="rest"
+      content="{ $config:configFile//config:rest ! string-join((@version, normalize-space()), ': ') => string-join('; ') }" />;
 
 (:~
  :  the server role

@@ -8,9 +8,18 @@
 
 const wdb = (function() {
   // all meta elements
-  let meta = {};
-  for (let m of document.getElementsByTagName("meta")) {
-    meta[m.name] = m.content;
+  let meta = new Map();
+  for ( let m of document.getElementsByTagName("meta") ) {
+    if ( m.name == 'rest' ) { 
+      let contents = m.content.split('; ')
+        , values = new Map();
+      for ( let c of contents ) {
+        let url = c.split(': ');
+        values.set(url[0], url[1]);
+      }
+      meta.set("rest", values);
+    }
+    else meta.set(m.name, m.content);
   }
 
   // will be used to store headers
@@ -497,7 +506,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
           dataType: 'html',
           success: function (data) {
               $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
+              $('#' + target).slideDown();
               $(me).html('↑').attr('title', 'Hide results');
           },
           error: function (xhr, status, error) {
@@ -717,10 +726,11 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       
       if ($("header nav").text() === "") {
         $("header nav").text("lädt...");
-        let edition = wdb.meta.ed;
+        let edition = wdb.meta.get('ed;')
         
         $.ajax({
-          url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
+          // TODO: use new API
+          url: wdb.URLJoin(wdb.meta.get('rest').get('1'), "collection/", edition, "/nav.html"),
           success: function (data) {
             $("header nav").replaceWith($(data));
           },
@@ -746,7 +756,8 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
-        url: wdb.meta.rest + "collection/" + ed + "/nav.html",
+        // TODO: use new API
+        url: wdb.meta.get('rest').get('1') + "collection/" + ed + "/nav.html",
         success:  ( data ) => {
           let replacement = $(data).find('#' + ed).prev().addBack();
           if ( replacement.length > 0 ) {
@@ -888,7 +899,7 @@ $( () => {
   }
 
   // if a search word is present, highlight it
-  if ( wdb.meta.wdbTemplate !== 'templates/function.html' && wdb.parameters.hasOwnProperty('q') ) {
+  if ( wdb.meta.get('wdbTemplate') !== 'templates/function.html' && wdb.parameters.hasOwnProperty('q') ) {
     wdbDocument.highlightSearch(wdb.parameters.q, 'yellow');
   }
 

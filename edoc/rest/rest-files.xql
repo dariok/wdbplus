@@ -176,7 +176,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
             <http:header name="Location" value="{$store[2]}" />
           </http:response>
         </rest:response>,
-        $config:restURL || "/resource/" || $id
+        $config:restURL?1 || "/resource/" || $id
       )
     else if ($store[1]//http:response/@status != "200")
     then $store
@@ -444,11 +444,11 @@ declare
     let $projectFileAvailable := wdb:findProjectFunction($map, "getImages", 2)
     let $resource := if ($projectFileAvailable)
       then wdb:eval("wdbPF:getImages($fileID, $page)", false(), (xs:QName("fileID"), $fileID, xs:QName("page"), $page))
-      else $config:restURL || "file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
+      else $config:restURL?1 || "file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
     
     let $sid := if ($projectFileAvailable = true())
       then substring-before($resource, '/full')
-      else $config:restURL || "file/iiif/" || $fileID || "/images/" || $page
+      else $config:restURL?1 || "file/iiif/" || $fileID || "/images/" || $page
     
     let $tiles := map {
           "scaleFactors": [1, 2, 4, 8, 16],
@@ -470,13 +470,13 @@ declare
       }
       
       (:map {
-        "@id": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page,
+        "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page,
         "@type": "sc:Canvas",
         "label": "S. " || $page,
         "height": xs:int($fa/@lry),
         "width": xs:int($fa/@lrx),
         "images": [map{
-            "@id": $config:restURL || "file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
+            "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
             "@type": "oa:Annotation",
             "motivation": "sc:painting",
             "resource": map {
@@ -488,22 +488,22 @@ declare
                      "profile" : "http://iiif.io/api/image/2/level2.json"
                 }
             },
-            "on": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
+            "on": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page
         }],
         "otherContent": [
             map {
-                "@id": $config:restURL || "file/iiif/" || $fileID || "/list/" || $page,
+                "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/list/" || $page,
                 "@type": "sc:AnnotationList",
                 "resources": [
                     map {
                         "@type": "oa:Annotation",
                         "motivation": "sc:painting",
                         "resource": map {
-                            "@id": $config:restURL || "file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
+                            "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
                             "@type": "dctypes:text",
                             "format": "application/xml"
                         },
-                        "on": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
+                        "on": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page
                     }
                 ]
             }
@@ -622,7 +622,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
       if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
         map {
             "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
-            "value": "<a href='" || $config:restURL || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
+            "value": "<a href='" || $config:restURL?1 || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
         } else (),
       if ($meta//meta:language) then 
         map {
@@ -647,7 +647,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
   then $errors
   else map {
     "@context": "http://iiif.io/api/presentation/2/context.json",
-    "@id": $config:restURL || "file/iiif/" || $id || "/manifest",
+    "@id": $config:restURL?1 || "file/iiif/" || $id || "/manifest",
     "@type": "sc:Manifest",
     "label": $title,
     "description": [map{
@@ -666,9 +666,9 @@ function wdbRf:getFileManifest ($id as xs:string) {
     "metadata": $md,
     "sequences": [
       map {
-        "@id": $config:restURL || "file/iiif/" || $id || "/sequence/normal",
+        "@id": $config:restURL?1 || "file/iiif/" || $id || "/sequence/normal",
         "@type": "sc:Sequence",
-        "startCanvas": $config:restURL || "file/iiif/" || $id || "/canvas/p1",
+        "startCanvas": $config:restURL?1 || "file/iiif/" || $id || "/canvas/p1",
         "canvases": $canv
       }
     ]

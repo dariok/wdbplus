@@ -232,7 +232,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
                 <http:header name="Location" value="{$store[2]}" />
               </http:response>
             </rest:response>,
-            $config:restURL || "/resource/" || $id
+            $config:restURL?1 || "/resource/" || $id
           )
         else if ($store[1]//http:response/@status != "200")
         then $store

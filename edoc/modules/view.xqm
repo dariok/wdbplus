@@ -103,7 +103,7 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
     <meta name="id" content="{ $model?id }"/>
     <meta name="ed" content="{ $model?ed }" />
     <meta name="path" content="{ $model?fileLoc }"/>
-    <meta name="rest" content="{ $config:restURL }" />
+    { $config:restMetaElement }
     <meta name="xslt" content="{ $model?xslt }" />
     <title>{ $model("title") } – { normalize-space($config:configFile//config:short) }</title>
 

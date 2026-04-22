@@ -93,7 +93,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     <meta name="wdbTemplate" content="templates/{$templateFile}.html"/>
     <meta name="id" content="{$model("id")}" />
     <meta name="ed" content="{$model("ed")}" />
-    <meta name="rest" content="{$config:restURL}" />
+    { $config:restMetaElement }
     <title>{$model("title")}</title>
     {
       if ( wdb:findProjectFunction($model, "wdbPF:overrideFunctionCssJs", 2) ) then
