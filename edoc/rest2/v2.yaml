@@ -789,14 +789,16 @@ paths:
       summary: Return our ID for a external PID
       operationId: "r2r:getResourceByPid"
       responses:
-        200:
-          description: The internal ID for this PID
-          content:
-            text/plain:
+        "303":
+          description: PID resolved; the canonical resource URL is given in the Location header.
+          headers:
+            Location:
+              description: Canonical URL of the resolved resource.
               schema:
                 type: string
-        404:
-          description: This external PID was not found
+                format: uri
+        "404":
+          description: No resource could be resolved for this PID.
 
   /api/v2/search/ft/project/{ed}:
     parameters:

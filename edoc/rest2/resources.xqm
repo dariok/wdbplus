@@ -327,9 +327,10 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
 
 declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
   (: TODO: range index based on white space separated values – or, introduce a child element to meta:file :)
+  (: TODO: add a unit test for this; use the documentation :)
   let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
   return if ( count($matches) = 1 ) then
-    r2:response(200, "text/plain", string($matches[1]/@xml:id), $r2:allOrigins)
+    r2:response(303, "text/plain", "", map:merge(($r2:allOrigins, map { "Location": $r2:base || "resources/" || string($matches[1]/@xml:id) })))
   else
     r2:response(404, "text/plain", "This external PID was not found", $r2:allOrigins)
 };
