@@ -1,0 +1,15 @@
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/data?q=fichte
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/data?q=fichte
+Accept: application/json
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/data?q=fichte
+Accept: text/html
+
+###
+
+GET https://tueditions.localhost/v/api/v2/search/ft/file/pa000032-0194?q=fichte&amp;start=1&amp;max=10

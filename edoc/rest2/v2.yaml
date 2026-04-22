@@ -255,7 +255,6 @@ paths:
           description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
       security:
         - cookieAuth: []
-  
   /api/v2/projects/{parent}/subprojects/{ed}:
     parameters:
       - $ref: "#/components/parameters/parent"
@@ -297,7 +296,6 @@ paths:
           $ref: "#/components/responses/views"
         "404":
           description: Project $ed not found
-
   /api/v2/projects/{ed}/views/{view}:
     parameters:
       - $ref: "#/components/parameters/ed"
@@ -321,7 +319,6 @@ paths:
           description: Project $ed not found
         "406":
           description: The media type requested in an 'Accept' header cannot be created for this view
-
 
   /api/v2/projects/{ed}/resources:
     parameters:
@@ -378,7 +375,6 @@ paths:
           description: Invalid or incomplete information in the request body
       security:
         - cookieAuth: []
-
   /api/v2/projects/{ed}/resources/{id}:
     parameters:
       - $ref: "#/components/parameters/ed"
@@ -783,25 +779,25 @@ paths:
         404:
           description: This external PID was not found
 
-  # /api/v2/search/ft/project/{ed}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/ed"
-  #     - $ref: "#/components/parameters/q"
-  #     - $ref: "#/components/parameters/start"
-  #   get:
-  #     tags:
-  #       - search
-  #     summary: List files in project containing text
-  #     operationId: #TODO
-  #     responses:
-  #       200:
-  #         $ref: "#/components/responses/files"
-  #       204:
-  #         description: Search result list is empty
-  #       400:
-  #         description: An error was found in the query
-  #       404:
-  #         description: project not found
+  /api/v2/search/ft/project/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/start"
+    get:
+      tags:
+        - search
+      summary: List files in project containing text
+      operationId: "r2s:searchProjects"
+      responses:
+        200:
+          $ref: "#/components/responses/files"
+        204:
+          description: Search result list is empty
+        400:
+          description: An error was found in the query
+        404:
+          description: project not found
   # /api/v2/search/ft/resource/{id}:
   #   parameters:
   #     - $ref: "#/components/parameters/id"
@@ -870,13 +866,13 @@ components:
       schema:
         type: string
       required: true
-  #   q:
-  #     name: q
-  #     in: query
-  #     required: true
-  #     schema:
-  #       type: string
-  #     description: query or filter by name / title
+    q:
+      name: q
+      in: query
+      required: true
+      schema:
+        type: string
+      description: query or filter by name / title
   #   type:
   #     name: type
   #     in: query
@@ -889,13 +885,13 @@ components:
   #         - bib
   #         - evt
   #     required: true
-  #   start:
-  #     name: start
-  #     in: query
-  #     description: from which position in a list to start (1-based)
-  #     schema:
-  #       type: integer
-  #       default: 1
+    start:
+      name: start
+      in: query
+      description: from which position in a list to start (1-based)
+      schema:
+        type: integer
+        default: 1
     modified:
       name: "If-Modified-Since"
       in: header
