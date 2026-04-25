@@ -133,6 +133,14 @@ declare %private function r2s:fileResults ( $hits as element()*, $q as xs:string
       "query": $q,
       "job": "fts"
     },
-    $hits
+    for $match in $hits//exist:match
+      group by $structure := $match/ancestor::*
+          ! (if ( local-name(.) = ('text', 'w') ) then () else local-name(.) || (if ( ./@xml:id ) then '#'||@xml:id else ()))
+          => string-join('/')
+      return <fragment xmlns="https://github.com/dariok/wdbplus/api/schema/v1" path="{$structure}" n="{count($match)}">{
+          if ( $match[1]/..[self::tei:w] )
+            then kwic:summarize($match[1]/../.., <config xmlns="" width="40"/>)
+            else kwic:summarize($match[1]/.., <config xmlns="" width="40"/>)
+      }</fragment>
   )
 };
