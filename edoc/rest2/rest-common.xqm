@@ -9,6 +9,9 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
+(:~
+ : Standard content types supported by the API
+ :)
 declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
 
 (:~
@@ -204,6 +207,13 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
         r2:logMap($errorContent, 0),
         error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
       )
+};
+
+declare function r2:resultsWrapper ( $values as map(*), $contents as element()* ) as element(results) {
+  <results xmlns="https://github.com/dariok/wdbplus/api/schema/v1">
+    { map:keys($values) ! attribute { . } { $values(.) } }
+    { $contents }
+  </results>
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {
