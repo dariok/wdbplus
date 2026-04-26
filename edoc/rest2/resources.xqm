@@ -33,7 +33,7 @@ declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
   let $resource := wdbFiles:getFullPath($id)
   
   return
-    if ( $resource?kind != "file" ) then
+    if ( $resource?type != "file" ) then
       ()
     else
       let $meta := doc($resource?projectPath || "/wdbmeta.xml")

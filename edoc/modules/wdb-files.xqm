@@ -59,7 +59,7 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : project collection) and its file name
  :
  : @param $id as xs:string: the ID of the file (which should be unique)
- : @return map(string, string) with keys including "kind", "projectPath", "collectionPath", and "fileName"
+ : @return map(string, string) with keys including "type", "projectPath", "collectionPath", and "fileName"
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
@@ -88,9 +88,9 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         map { "id": $id, "request": $request }
       )
     else if ( $file[self::meta:projectMD or self::meta:struct] ) then
-      let $projectPath := base-uri($file[self::meta:projectMD or self::meta:struct]) => substring-before("wdbmeta.xml")
+      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
       return map {
-        "kind": "project",
+        "type": "project",
         "projectPath": $projectPath,
         "collectionPath": $projectPath,
         "fileName": "wdbmeta.xml",
@@ -102,7 +102,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         , $peer := $file => substring(2) => substring-before('/')
         , $id := $file => substring-after('/')
       return map {
-        "kind": "peer",
+        "type": "peer",
         "projectPath": $projectPath,
         "fileURL": doc("../config.xml")/id($peer) || '/' || $id
       }
@@ -111,7 +111,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         , $path := $projectPath || $file[self::meta:file]/@path
 
       return map {
-        "kind": "file",
+        "type": "file",
         "projectPath": $projectPath,
         "collectionPath": functx:substring-before-last($path, '/') ,
         "fileName": functx:substring-after-last($path, '/'),
