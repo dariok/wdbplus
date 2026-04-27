@@ -786,7 +786,7 @@ paths:
     get:
       tags:
         - resources
-      summary: Return our ID for a external PID
+      summary: Resolve an external PID to the canonical resource URL.
       operationId: "r2r:getResourceByPid"
       responses:
         "303":
@@ -804,7 +804,9 @@ paths:
     parameters:
       - $ref: "#/components/parameters/ed"
       - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/accept"
       - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
     get:
       tags:
         - search
@@ -819,11 +821,15 @@ paths:
           description: An error was found in the query
         404:
           description: project not found
+        406:
+          description: Unsupported media type requested
   /api/v2/search/ft/resource/{id}:
     parameters:
       - $ref: "#/components/parameters/id"
+      - $ref: "#/components/parameters/accept"
       - $ref: "#/components/parameters/q"
       - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
     get:
       tags:
         - search
@@ -838,6 +844,8 @@ paths:
           description: An error was found in the query
         404:
           description: File not found
+        406:
+          description: Unsupported media type request
 
   # TODO
   # /api/v2/oai
@@ -859,31 +867,32 @@ components:
       description: Which content type should be created for this view
       schema:
         type: string
+      required: true
     ed:
       name: "ed"
       in: path
-      description: The ID of the project
+      description: The ID of a project
       schema:
         type: string
       required: true
   #   entity:
   #     name: "entity"
   #     in: path
-  #     description: The ID of the entity
+  #     description: The ID of an entity
   #     schema:
   #       type: string
   #     required: true
     id:
       name: "id"
       in: path
-      description: The ID of the resource
+      description: The ID of a resource
       schema:
         type: string
       required: true
     parent:
       name: "parent"
       in: path
-      description: The ID of the parent project
+      description: The ID of a parent project
       schema:
         type: string
       required: true
@@ -893,7 +902,7 @@ components:
       required: true
       schema:
         type: string
-      description: query or filter by name / title
+      description: general query or filter parameter
   #   type:
   #     name: type
   #     in: query
@@ -913,6 +922,16 @@ components:
       schema:
         type: integer
         default: 1
+        minimum: 1
+    max:
+      name: max
+      in: query
+      description: the maximum number of elements to return in a list
+      schema:
+        type: integer
+        minimum: 1
+        default: 25
+        maximum: 100
     modified:
       name: "If-Modified-Since"
       in: header
@@ -1156,22 +1175,21 @@ components:
         name: result
         namespace: https://github.com/dariok/wdbplus/api/schema/v1
       properties:
-        start:
-          $ref: '#/components/schemas/attStart'
         total:
           $ref: '#/components/schemas/attTotal'
+        start:
+          $ref: '#/components/schemas/attStart'
         length:
           $ref: '#/components/schemas/attLength'
-        level:
-          $ref: '#/components/schemas/attLevel'
         query:
           $ref: '#/components/schemas/attQuery'
-        id:
-          $ref: '#/components/schemas/attId'
+        self:
+          $ref: '#/components/schemas/attSelf'
+        from:
+          $ref: '#/components/schemas/attFrom'
       required:
-        - start
         - total
-        - id
+        - self
     
     listFragments:
       description: A non-empty result set containing fragments within a file. If no matching fragments exist, the endpoint returns 204 without a response body.
@@ -1220,6 +1238,8 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/attId"
+        details:
+          $ref: "#components/schemas/attDetails"
         label:
           $ref: "#/components/schemas/attLabel"
       required:
@@ -1392,19 +1412,25 @@ components:
       format: uri
       xml:
         attribute: true
-    # attFor:
-    #   description: ID of the content for which this result is produced
-    #   type: string
-    #   format: uri
-    #   xml:
-    #     attribute: true
+    attDetails:
+      description: A link to a more detailed description, e.g. dearch in a file
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attFrom:
+      description: URI of the content (project, resource) from which this result is taken or for which a list is valid
+      type: string
+      format: uri
+      xml:
+        attribute: true
     attLabel:
       description: Title to be displayed for this entry
       type: string
       xml:
         attribute: true
     attLength:
-      description: The length of the current page of the result set
+      description: The (maximum) length of a page of the result set
       type: integer
       default: 1
       xml:
@@ -1423,8 +1449,14 @@ components:
       type: string
       xml:
         attribute: true
+    attSelf:
+      description: A backlink to the query that created a result set
+      type: string
+      format: URI
+      xml:
+        attribute: true
     attStart:
-      description: from which position in a list the result set starts (1-based)
+      description: from which position in a paginated list the result set starts (1-based)
       type: integer
       default: 1
       xml:

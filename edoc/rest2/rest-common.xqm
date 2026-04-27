@@ -42,6 +42,27 @@ declare variable $r2:mediaTypes := map {
   "AllowPost": string-join($r2:acceptable, ' ')
 };
 
+declare variable $r2:defaultResponseLength := 25;
+
+declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathToEd as xs:string, $function as xs:string ) as map(*) {
+  try {
+    if ( $mediaType = "application/json" ) then
+      router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
+    else if ( $mediaType = "text/html" ) then
+      router:response(200, "text/html", wdb:applySpecificXsl($data, $pathToEd, $function || ".xsl"), $r2:allOrigins)
+    else if ( $mediaType = $r2:acceptable ) then
+      router:response(200, $mediaType, $data, $r2:allOrigins)
+    else
+      router:response(406, "text/plain", "Type" || $mediaType || " cannot be served", $r2:allOrigins)
+  } catch * {
+    util:log("info", map{
+      "location":  $err:module || '@' || $err:line-number
+    }),
+    util:log("info", trace($err:description)),
+    r2:response(500, 'text/plain', "an unknown error occurred when preparing response", $r2:allOrigins)
+  }
+};
+
 declare function r2:returnXmlOrJson ( $data as item() ) as item() {
   let $mediaType := request:get-header("Accept")
   return

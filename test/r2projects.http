@@ -115,8 +115,8 @@ GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/navigat
 Accept: text/html
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/resources
-Accept: application/xml
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pa000032/resources
+Accept: application/json
 
 ###
 

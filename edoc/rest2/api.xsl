@@ -22,7 +22,7 @@
       <map>
          <xsl:apply-templates select="@*"/>
          <xsl:for-each-group select="*" group-by="local-name()">
-            <array key="{ if ( current-grouping-key() = ('view', 'file', 'project') ) then current-grouping-key() || 's' else current-grouping-key() }">
+            <array key="{ if ( current-grouping-key() = ('view', 'file', 'project', 'fragment') ) then current-grouping-key() || 's' else current-grouping-key() }">
                <xsl:apply-templates select="current-group()"/>
             </array>
          </xsl:for-each-group>

@@ -1,4 +1,11 @@
-GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/data?q=fichte
+# Supposed to be successful (200 or 204)
+# TODO: When documentation is present, use this as a use case
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/data?q=rahn
+Accept: application/xml
+
+###
+# supposed to return 404
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/project/datas?q=rahn
 Accept: application/xml
 
 ###
@@ -12,4 +19,13 @@ Accept: text/html
 
 ###
 
-GET https://tueditions.localhost/v/api/v2/search/ft/file/pa000032-0194?q=fichte&amp;start=1&amp;max=10
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/resource/pa000032-0194?q=fichte
+Accept: application/xml
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/resource/pa000032-0210?q=rahn
+Accept: application/json
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/search/ft/resource/pa000032-0210?q=rahn
+Accept: text/html
