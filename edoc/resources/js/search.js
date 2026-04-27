@@ -8,28 +8,18 @@ $(() => {
       , q = event.target.children.namedItem('q')?.value
       , p = event.target.children.namedItem('p')?.value; 
 
-    wdbDocument.loadContent(`${base}search/ft/project/${ed}?q=${q}&p=${p}`, 'searchResults', '<void/>');
+    wdbDocument.loadContent(`${base}search/ft/project/${ed}?q=${q}&p=${p}`, 'searchResults');
+  });
+
+  // a button for paginated results, e.g. of a full text search
+  $('main').on('click', 'button[data-start]', ( event ) => {
+    wdbDocument.loadContent(event.target.dataset.query + '&start=' + event.target.dataset.start, 'searchResults');
   });
 
   $(document).on('click', '.loadSearchResult', ( event ) => {
-    let id = event.target.dataset.target
-      , q = event.target.dataset.query
-      , p = JSON.parse(decodeURIComponent(wdb.parameters.p));
-    
-    if ( q !== undefined && p.job == 'fts' ) {
-      wdbDocument.loadContent(wdb.meta.rest + 'search/file/' + id + '.html?q=' + q, id, event.target);
-    } else if ( q !== undefined && ( p.job == 'search' || p.job == 'entries' ) ) {
-      let url;
-      
-      if ( $(event.target).parents('ul').length == 1 ) {
-         url = 'entities/collection/' + wdb.meta.ed + '/' + p.type + '/' + id + '.html';
-      } else {
-         url = 'entities/file/' + id + '/' + p.type + '/' + q + '.html';
-      }
-      
-      wdbDocument.loadContent(wdb.meta.rest + url, id, event.target);
-    } else {
-      wdbDocument.loadContent("", id, event.target);
-    }
+    wdbDocument.loadContent(event.target.dataset.link, event.target.dataset.file.toString(), event.target, 'div > dl');
+  //   } else {
+  //     wdbDocument.loadContent("", id, event.target);
+  //   }
   });
 });

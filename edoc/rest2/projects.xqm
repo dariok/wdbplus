@@ -511,7 +511,7 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
     r2:response(400, 'text/plain', 'Bad value for parameter `view`
       Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
   else if ( ($request?parameters?view = 'default' and request:get-header('Accept') != 'application/xml')
-         or ($request?parameters?view = 'navigation' and not(request:get-header('Accept') = ('application/xml', 'application/json', 'text/html')))
+         or ($request?parameters?view = 'navigation' and not(request:get-header('Accept') = $r2:acceptable))
          or ($request?parameters?view = 'start' and request:get-header('Accept') != 'text/html') ) then
     r2:response(406, 'text/plain', 'Available representations are:
       for view "default": application/xml

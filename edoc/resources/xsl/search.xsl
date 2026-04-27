@@ -1,136 +1,134 @@
 <xsl:stylesheet
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:tei="http://www.tei-c.org/ns/1.0"
-  xmlns:exist="http://exist.sourceforge.net/NS/exist"
-  xmlns:api="https://github.com/dariok/wdbplus/api/schema/v1"
-  exclude-result-prefixes="#all" version="3.0">
-  
-  <xsl:param name="title" />
-  <xsl:param name="rest" />
-  <xsl:param name="baseURL" />
-    
-  <xsl:template match="/*:results">
-    <xsl:variable name="p" select="parse-json(@p)" />
-    <xsl:variable name="val">, "type": "<xsl:value-of select="@type"/>", "job": "<xsl:value-of select="@job"/>"</xsl:variable>
-     
-     <xsl:variable name="max" select="number(@count)" />
-    
-    <div>
-      <h1>Suchergebnisse für »<xsl:value-of select="@q"/>«</h1>
-      <xsl:if test="$max gt 25 and (@from != '' and @from &gt; 1)">
-        <xsl:variable name="f1">
-          <xsl:text>{"start": </xsl:text>
-          <xsl:value-of select="$val"/>
-          <xsl:text>}</xsl:text>
-        </xsl:variable>
-        <xsl:variable name="f2">
-          <xsl:text>{"start": </xsl:text>
-          <xsl:value-of select="if(@from &gt; 25) then @from - 25 else 1"/>
-          <xsl:value-of select="$val"/>
-          <xsl:text>}</xsl:text>
-        </xsl:variable>
-        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">[1]</a>
-        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[<xsl:value-of select="@from - 25"/>–<xsl:value-of select="@from - 1"/>]</a>
-      </xsl:if>
-      <span>
-        <xsl:choose>
-          <xsl:when test="$max gt 0">
-            <xsl:text> – Treffer </xsl:text>
-            <xsl:value-of select="@from"/>
-            <xsl:text> bis </xsl:text>
-            <xsl:value-of select="if(@from + 24 &gt; $max) then $max else @from + 24"/>
-            <xsl:text> von insgesamt </xsl:text>
-            <xsl:value-of select="$max"/>
-            <xsl:text> Texten – </xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text> – keine Treffer – </xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </span>
-      <xsl:if test="$max gt 25 and @from + 25 lt $max">
-        <xsl:variable name="f1">
-          <xsl:text>{"start": </xsl:text>
-          <xsl:value-of select="@from + 25"/>
-          <xsl:value-of select="$val"/>
-          <xsl:text>}</xsl:text>
-        </xsl:variable>
-        <xsl:variable name="f2">
-          <xsl:text>{"start": </xsl:text>
-          <xsl:value-of select="if ( $max gt 25 ) then floor($max div 25) * 25 + 1 else 1"/>
-          <xsl:value-of select="$val"/>
-          <xsl:text>}</xsl:text>
-        </xsl:variable>
-        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f1)}">
-          <xsl:text>[</xsl:text>
-          <xsl:value-of select="@from + 25"/>
-          <xsl:text>–</xsl:text>
-          <xsl:value-of select="if(@from + 49 lt $max) then @from + 49 else $max"/>
-          <xsl:text>]</xsl:text>
-        </a>
-        <a href="search.html?ed={@id}&amp;q={@q}&amp;p={encode-for-uri($f2)}">[Ende]</a>
-      </xsl:if>
-      <ul>
-        <xsl:apply-templates/>
-      </ul>
-    </div>
-  </xsl:template>
-  
-  <xsl:template match="file">
-    <li>
-      <a href="view.html?id={@id}">
-        <xsl:value-of select="tei:titleStmt/tei:title[1]"/>
-          <xsl:text>&amp;q=</xsl:text>
-          <xsl:value-of select="/results/@q"/>
-      </a>
-      <button class="loadSearchResult" data-target="{@id}" data-query="{ancestor::results/@q}" title="Show results">→</button>
-      <div id="{@id}" class="results" style="display: none;"/>
-    </li>
-  </xsl:template>
-  
-  <xsl:template match="api:file">
-    <li>
-      <a href="view.html?id={ @xml:id }" title="go to document">
-        <xsl:value-of select="@title"/>
-      </a>
-      <button class="loadSearchResult" data-target="{ @id }" data-query="{ ../@q }" data-link="{ @href }" title="Show results">&#x2BAF;</button>
-      <div id="{ @id }" class="results" style="display: none;"/>
-    </li>
-  </xsl:template>
-  
-   <xsl:template match="result">
-      <xsl:variable name="ids" select="descendant::*:match/ancestor::*[@xml:id][1]/@xml:id"/>
-      <xsl:variable name="i" select="string-join($ids, ',')"/>
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:tei="http://www.tei-c.org/ns/1.0"
+   xmlns:exist="http://exist.sourceforge.net/NS/exist"
+   xmlns:err="http://www.w3.org/2005/xqt-errors"
+   xmlns:api="https://github.com/dariok/wdbplus/api/schema/v1"
+   exclude-result-prefixes="#all" version="3.0">
+   
+   <xsl:param name="title" />
+   <xsl:param name="rest" />
+   <xsl:param name="baseURL" />
+   
+   <xsl:template match="api:results[api:file]">
+      <xsl:variable name="max" select="number(@total)" />
+      <xsl:variable name="start" select="number(@start)" />
+      <xsl:variable name="lastPage" select="@total idiv 25 * 25 + 1" />
+      
+      <div>
+         <h1>Suchergebnisse für »<xsl:value-of select="@query"/>«</h1>
+         <p>
+            <xsl:if test="$start gt 1">
+               <button data-query="{ @self }" data-start="{ 1 }" title="go to page">
+                  <xsl:text>[1–</xsl:text>
+                  <xsl:value-of select="min((25, $max))"/>
+                  <xsl:text>]《</xsl:text>
+               </button>
+            </xsl:if>
+            <xsl:if test="$max gt 50 and $start gt 50">
+               <xsl:variable name="prevPage" select="($start idiv 25 - 1) * 25 + 1"/>
+               <button data-query="{ @self }" data-start="{ $prevPage }" title="go to page">
+                  <xsl:text>[</xsl:text>
+                  <xsl:value-of select="$prevPage"/>
+                  <xsl:text>–</xsl:text>
+                  <xsl:value-of select="$prevPage + 24"/>
+                  <xsl:text>]〈</xsl:text>
+               </button>
+            </xsl:if>
+            
+            <span>
+               <xsl:choose>
+                  <xsl:when test="@total and not(@start)" />
+                  <xsl:when test="$max gt 0">
+                     <xsl:text> – Treffer </xsl:text>
+                     <xsl:value-of select="@start"/>
+                     <xsl:text> bis </xsl:text>
+                     <xsl:value-of select="if ( @start + 24 gt $max ) then $max else @start + 24"/>
+                     <xsl:text> von insgesamt </xsl:text>
+                     <xsl:value-of select="$max"/>
+                     <xsl:text> Texten – </xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                     <xsl:text> – keine Treffer – </xsl:text>
+                  </xsl:otherwise>
+               </xsl:choose>
+            </span>
+            
+            <xsl:if test="$max gt 25 and @start + 25 lt $max and $start + 25 lt $lastPage">
+               <button data-query="{ @self }" data-start="{ @start + 25 }" title="go to page">
+                  <xsl:text>〉[</xsl:text>
+                  <xsl:value-of select="@start + 25"/>
+                  <xsl:text>–</xsl:text>
+                  <xsl:value-of select="if(@start + 49 lt $max) then @start + 49 else $max"/>
+                  <xsl:text>]</xsl:text>
+               </button>
+            </xsl:if>
+            <xsl:if test="$start lt $lastPage">
+               <button data-query="{ @self }" data-start="{ $lastPage }" title="go to page">
+                  <xsl:text>》[</xsl:text>
+                  <xsl:value-of select="$lastPage"/>
+                  <xsl:text>–</xsl:text>
+                  <xsl:value-of select="@total"/>
+                  <xsl:text>]</xsl:text>
+               </button>
+            </xsl:if>
+         </p>
+         <ul>
+            <xsl:apply-templates/>
+         </ul>
+      </div>
+   </xsl:template>
+   
+   <xsl:template match="api:results[api:fragment]">
+      <div>
+         <dl>
+            <xsl:apply-templates />
+         </dl>
+      </div>
+   </xsl:template>
+   
+   <xsl:template match="api:file">
+      <xsl:variable name="id" select="substring-after(@id, 'resources/')" />
       <li>
-         <a>
-            <xsl:attribute name="href">
-               <xsl:text>view.html?id=</xsl:text>
-               <xsl:value-of select="/results/@id"/>
-               <xsl:text>&amp;q=</xsl:text>
-               <xsl:value-of select="/results/@q" />
-               <xsl:text>#</xsl:text>
-               <xsl:value-of select="@fragment"/>
-            </xsl:attribute>
-            <xsl:value-of select="@fragment"/>
+         <a href="view.html?id={ $id }" title="go to document">
+            <xsl:value-of select="@label"/>
          </a>
-         <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
-         <button class="loadSearchResult" data-target="{parent::results/@id}{@fragment}" title="Show results">→</button>
-         <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
-            <xsl:apply-templates select="*"/>
-         </div>
+         <button class="loadSearchResult"
+               data-file="{ $id }"
+               data-link="{ @details }" title="Show results">⮯</button>
+         <div id="{ $id }" class="results" style="display: none;"/>
       </li>
    </xsl:template>
-  
-  <xsl:template match="match | *:p">
-    <p>
-      <xsl:apply-templates/>
-    </p>
-  </xsl:template>
-  
-  <xsl:template match="exist:match | *:span[@class eq 'hi']">
-    <span class="fts-match">
+   
+   <xsl:template match="api:fragment">
+      <xsl:variable name="xpath" select="@path => tokenize('/')"/>
+      <dt>
+         <xsl:choose>
+            <xsl:when test="contains($xpath[last()], '#')">
+               <a href="view.html?id={ substring-after(../@from, 'resources/') }#{ substring-after($xpath[last()], '#')}">
+                  <xsl:value-of select="@path" />
+               </a>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:value-of select="@path"/>
+            </xsl:otherwise>
+         </xsl:choose>
+      </dt>
       <xsl:apply-templates />
-    </span>
+   </xsl:template>
+   
+  <xsl:template match="api:fragment/p">
+    <dd>
+      <span class="kwic">
+         <xsl:apply-templates select="span[@class = 'previous']"/>
+      </span>
+      <span class="kwic match">
+         <xsl:apply-templates select="span[@class = 'hi']"/>
+      </span>
+      <span class="kwic">
+         <xsl:apply-templates select="span[@class = 'following']"/>
+      </span>
+    </dd>
   </xsl:template>
   
   <xsl:template match="tei:w | tei:pc">

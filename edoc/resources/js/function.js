@@ -497,31 +497,45 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
   },
 
   // generic laoding function
-  loadContent: function ( url, target, me ) {
-    if ( url.length > 0 && $('#' + target).children().length == 0 ) {
-      $.ajax(
-        {
-          url: url,
-          headers: wdb.restHeaders,
-          dataType: 'html',
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideDown();
-              $(me).html('↑').attr('title', 'Hide results');
-          },
-          error: function (xhr, status, error) {
-            wdb.report("error", "Error loading " + url + " : " + status, error);
-          }
+  /**
+   * @param url { string }
+   * @param target { string }
+   * @param me { Element }
+   */
+  loadContent: function ( url, target, me = document.createElement('div'), selector = "") {
+    if ( !me.isConnected ) { // nothing to toggle, so replace contents
+      $.ajax({
+        url: url,
+        method: 'get',
+        headers: wdb.restHeaders,
+        dataType: 'html',
+        success: function ( data ) {
+          let newContent = selector !== '' ? $(data).children(selector) : data;
+          $('#' + target).html(newContent);
+        },
+        error: function ( xhr, status, error ) {
+          wdb.report("error", "Error loading " + url + " : " + status, error);
         }
-      );
-    } else if ( $('#' + target).css('display') == 'none' ) {
+      });
+    } else if ( $('#' + target).children().length == 0 ) { // no children: load and show
+      $.ajax({
+        url: url,
+        method: 'get',
+        headers: wdb.restHeaders,
+        dataType: 'html',
+        success: function ( data ) {
+          let newContent = selector !== '' ? $(data).children(selector) : data;
+          $('#' + target).html(newContent);
+          $('#' + target).slideDown();
+          $(me).html('⮭').attr('title', 'Hide results');
+        },
+        error: function ( xhr, status, error ) {
+          wdb.report("error", "Error loading " + url + " : " + status, error);
+        }
+      });
+    } else { // children already present: toggle visibility
       $('#' + target).slideToggle();
-      $(me).html('↑').attr('title', 'Hide results');
-    } else {
-      $('#' + target).slideToggle();
-      if ( me !== undefined ) {
-        $(me).html('→').attr('title', 'Show results');
-      }
+      $(me).html($(me).visible ? '⮭' : '⮯').attr('title', $(me).visible ? 'Hide results' : 'Show results');
     }
   },
 
