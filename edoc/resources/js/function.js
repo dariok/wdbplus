@@ -138,13 +138,13 @@ const wdb = (function() {
           report = [shortInfo + "\n" + longInfo, ...args];
 
       if ( reportType == "error" ) {
-        console.error(...report);
         console.trace();
+        console.error(...report);
         symbol = "✕";
       } else if ( reportType == "warn" ) {
+        console.trace();
         symbol = "❗";
         console.warn(...report);
-        console.trace();
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
         console.info(...report);
@@ -152,6 +152,7 @@ const wdb = (function() {
         symbol = "✓";
         console.info(...report);
       } else {
+        console.trace();
         console.log(...report);
       }
 
