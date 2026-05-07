@@ -20,7 +20,7 @@ declare variable $api:definitions := ("rest2/v2.json");
  : The name is expected to be a QName, e.g. "rest:listProjects".
  :)
 declare function api:lookup ( $name as xs:string ) {
-    function-lookup(xs:QName($name), 1)
+  function-lookup(xs:QName($name), 1)
 };
 
 declare function api:addHeader ( $request as map(*), $response as map(*)) as map(*)+ {
@@ -31,7 +31,8 @@ declare function api:addHeader ( $request as map(*), $response as map(*)) as map
 };
 
 declare variable $api:use := (
-  api:addHeader#2
+  auth:use-authorization($auth:DEFAULT_STRATEGIES),
+  api:addHeader#2  
 );
 
 roaster:route($api:definitions, api:lookup#1, $api:use)
