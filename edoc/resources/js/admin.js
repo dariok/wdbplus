@@ -50,12 +50,12 @@ const wdbAdmin = {
     /* NB: if a file with fileID exists in a different collection or in this collection but under a different name,
      * a 409 will be returned upon POST or PUT */
     let collectionContent = {}
-      , delimiter = (wdb.meta.get('get('rest')').get('1').substr(wdb.meta.get('get('rest')').get('1').length - 1)) == '/' ? "" : "/";
+      , delimiter = (wdb.meta.get('rest').get('1').substr(wdb.meta.get('rest').get('1').length - 1)) == '/' ? "" : "/";
     
     await $.ajax({
       method: "get",
       dataType: "json",
-      url: wdb.meta.get('get('rest')').get('1') + delimiter + "collection/" + wdb.parameters.ed,
+      url: wdb.meta.get('rest').get('1') + delimiter + "collection/" + wdb.parameters.ed,
       success: function ( data, textStatus, jqXHR ) {
         if ( jqXHR.status == 204 ) {
           collectionContent = { resources: [] };
@@ -131,7 +131,7 @@ const wdbAdmin = {
 
         wdb.report("info", "parsed file’s ID: " + fileID);
 
-        let delimiter = (wdb.meta.get('get('rest')').get('1').substr(wdb.meta.get('get('rest')').get('1').length - 1)) == '/' ? "" : "/";
+        let delimiter = (wdb.meta.get('rest').get('1').substr(wdb.meta.get('rest').get('1').length - 1)) == '/' ? "" : "/";
 
         let formdata = new FormData(),
             mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
@@ -230,7 +230,7 @@ $(document).on("submit", "#newProjectForm", ( event ) => {
   event.preventDefault();
   /* TODO adjust for RESTv2 meta */
   let rest = window.location.pathname.substring(0, window.location.pathname.indexOf('admin')) + "api/v2/"
-    , baseUrl = rest + "projects/" + wdb.meta.get('ed + "/subprojects/"')
+    , baseUrl = rest + "projects/" + wdb.meta.get('ed') + "/subprojects/"
     , newCollectionData = { "title": $('#pName').val(), "short": $('#pShort').val(), "collection": $('#pColl').val() }
     , method = $('#pID').val() == '' ? "post" : "put";
 
@@ -297,14 +297,15 @@ let uploadManager = (function() {
 })();
 
 $(function() {
-  let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+  let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1)
+    , restUrl = wdb.meta.get('rest').get('2');
 
-  // admin.xqm will set wdb.meta.get('ed to the empty string if wdbErr:wdb0200 (no project) is caught')
-  if ( filename === "directoryForm.html" && wdb.meta.get('ed !== "" ) {')
-    let delim = wdb.meta.get('rest').get('1').substr(wdb.meta.get('rest').get('1').length - 1) === '/' ? "" : "/"
-      , url = wdb.meta.get('rest').get('1') + delim + "collection/" + wdb.meta.get('ed + "/structure').json";
+  // admin.xqm will set wdb.meta.get('ed') to the empty string if wdbErr:wdb0200 (no project) is caught
+  if ( filename === "directoryForm.html" && wdb.meta.get('ed') !== "" ) {
+    let delim = restUrl.substr(restUrl.length - 1) === '/' ? "" : "/"
+      , url = restUrl + delim + "collection/" + wdb.meta.get('ed') + "/structure.json";
     wdbAdmin.getPaths();
-    $('pre').text(wdb.meta.get('path);')
+    $('pre').text(wdb.meta.get('path'));
     
     $('#selectTarget').show();
 
@@ -314,7 +315,7 @@ $(function() {
     // ingestAction() is called by the fieldset’s change handler
     $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
   } else if ( filename === "directoryForm.html" ) {
-    $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.get('ed + "</td></tr>");')
+    $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.get('ed') + "</td></tr>");
     $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
     $("input[type='submit']").prop("disabled", true);
     $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.ed + ' gefunden</h1>');
