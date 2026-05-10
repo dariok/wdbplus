@@ -154,7 +154,13 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
     , $t := util:log("info", $fileNameBase)
     
     , $store := (
-        if ( not(xmldb:collection-available($targetPath)) ) then xmldb:create-collection($request?project?collectionPath, $relPath) else (),
+        if ( not(xmldb:collection-available($targetPath)) )
+          then (
+            xmldb:create-collection($request?project?collectionPath, $relPath),
+            sm:chown(xs:anyURI($targetPath), "wdb"),
+            sm:chgrp(xs:anyURI($targetPath), "wdbusers")
+          )
+          else (),
         r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType),
         r2:enterMetaForXml(map{
           "collectionPath": $request?project?collectionPath,
