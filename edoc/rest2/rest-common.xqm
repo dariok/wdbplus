@@ -146,11 +146,15 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
     
     , $relPath := substring-before($request?body?path, $request?body?file?name)
     , $targetPath := $request?project?collectionPath || $relPath
-    , $fileNameMod := $request?body?file?name => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
+    , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+    , $fileNameMod := $fileNameBase => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
                  => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
                  => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
+    , $t := util:log("info", $request?body?path || ' - ' || $request?body?file?name || ' = ' || $targetPath)
+    , $t := util:log("info", $fileNameBase)
     
     , $store := (
+        if ( not(xmldb:collection-available($targetPath)) ) then xmldb:create-collection($request?project?collectionPath, $relPath) else (),
         r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType),
         r2:enterMetaForXml(map{
           "collectionPath": $request?project?collectionPath,

@@ -56,7 +56,6 @@ const wdb = (function() {
   
     let username = $('#user').val()
       , password = $('#password').val();
-    wdb.report("info", "login request");
     Cookies.remove('wdbplus');
 
     let formdata = new FormData();
@@ -78,12 +77,11 @@ const wdb = (function() {
           $('#logout').on('click', () => {
             wdb.logout();
           });
-          wdb.report("info", "logged in");
           if ( reload ) {
-             location.reload();
+            location.reload();
           }
         } catch ( e ) {
-          wdb.report("error", "error logging in", e);
+          wdb.report("error", "error logging in", e.toString(), $('#auth')[0]);
         }
       },
       dataType: 'text'
@@ -133,7 +131,15 @@ const wdb = (function() {
     logout:         logout,
 
     /* usually used internally to signal errors */
-    report: function ( reportType, shortInfo, longInfo, targetElement, ...args ) {
+    /**
+     * 
+     * @param { String } reportType 
+     * @param { String } shortInfo 
+     * @param { String } longInfo 
+     * @param { Element } targetElement 
+     * @param  {...String} args 
+     */
+    report: function ( reportType, shortInfo, longInfo = '', targetElement, ...args ) {
       let symbol,
           report = [shortInfo + "\n" + longInfo, ...args];
 

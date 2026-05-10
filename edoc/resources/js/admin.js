@@ -71,9 +71,7 @@ const wdbAdmin = {
     $("input[type='submit']").prop("disabled", false);
   },
 
-  uploadFiles: async function ( /** @type { Event } */ event ) {
-    event.preventDefault();
-
+  uploadFiles: async function ( ) {
     if ( !files || files.length === 0 ) return;
 
     const selectedFiles = Array.from(files);
@@ -153,12 +151,13 @@ const wdbAdmin = {
       wdb.report("error", "ID missing", "no @xml:id found in " + file.name, statusCell);
       return;
     }
-    wdb.report("info", "parsed file’s ID: " + fileID);
+    wdb.report("info", "parsed file’s ID: " + fileID, '', $('<oid/>')[0]);
 
     let mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
     let filename = file.webkitRelativePath == "" ? $('select').val() + '/' + file.name
-                                                 : $('select').val() + '/' + file.webkitRelativePath;
+                                                 : $('select').val() + '/' + file.webkitRelativePath.substring(0, file.webkitRelativePath.indexOf(file.name)) + file.webkitRelativePath;
+                                                   /* file.filename in the payload will be wdbkitRelativePath; as we need the subdirectory in rest-common.xqm, we need to add it here */
     let formdata = new FormData();
     formdata.append("file", file);
     formdata.append("path", filename);
@@ -245,11 +244,7 @@ const wdbAdmin = {
 };
 Object.freeze(wdbAdmin);
 
-$( ( ) => {
-  let rest = wdb.meta.get('rest').get('2')
-    , delimiter = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
-  restUrl = rest + delimiter;
-
+function uploadHandlers ( ) {
   /**
    * @type { HTMLInputElement | null }
    */
@@ -265,7 +260,39 @@ $( ( ) => {
     wdbAdmin.setFiles(event);
   });
 
-  $(document).on("submit", "#newProjectForm", ( event ) => {
+  // admin.xqm will set wdb.meta.get('ed') to the empty string if wdbErr:wdb0200 (no project) is caught
+  if ( wdb.meta.get('ed') !== "" ) {
+    let delim = restUrl.substring(restUrl.length - 1) === '/' ? "" : "/"
+      , url = restUrl + delim + "collection/" + wdb.meta.get('ed') + "/structure.json";
+    wdbAdmin.getPaths();
+    
+    $('pre').text(wdb.meta.get('path'));
+    $('#selectTarget').show();
+
+    $('form').on("submit", ( event ) => {
+      event.preventDefault();
+      wdbAdmin.uploadFiles();
+    });
+    
+    // ingestAction() is called by the fieldset’s change handler
+    $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
+  } else {
+    $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.get('ed') + "</td></tr>");
+    $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
+    $("input[type='submit']").prop("disabled", true);
+    $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.ed + ' gefunden</h1>');
+    wdb.report("error", wdb.parameters.ed + " nicht gefunden",
+      "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+      $('aside')[0]);
+  }
+}
+
+function newProjectHandlers ( ) {
+  let newProjectForm =  $("#newProjectForm");
+  
+  if ( newProjectForm.length === 0 ) return;
+  
+  newProjectForm.on("submit", ( event ) => {
     event.preventDefault();
 
     let baseUrl = restUrl + "projects/" + wdb.meta.get('ed') + "/subprojects/"
@@ -292,29 +319,13 @@ $( ( ) => {
       }
     });
   });
+}
 
-  let filename = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+$( ( ) => {
+  let rest = wdb.meta.get('rest').get('2')
+    , delimiter = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
+  restUrl = rest + delimiter;
 
-  // admin.xqm will set wdb.meta.get('ed') to the empty string if wdbErr:wdb0200 (no project) is caught
-  if ( filename === "directoryForm.html" && wdb.meta.get('ed') !== "" ) {
-    let delim = restUrl.substr(restUrl.length - 1) === '/' ? "" : "/"
-      , url = restUrl + delim + "collection/" + wdb.meta.get('ed') + "/structure.json";
-    wdbAdmin.getPaths();
-    $('pre').text(wdb.meta.get('path'));
-    
-    $('#selectTarget').show();
-
-    $('form').on("submit", ( event ) => { wdbAdmin.uploadFiles(event); });
-    
-    // ingestAction() is called by the fieldset’s change handler
-    $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
-  } else if ( filename === "directoryForm.html" ) {
-    $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.get('ed') + "</td></tr>");
-    $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
-    $("input[type='submit']").prop("disabled", true);
-    $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.ed + ' gefunden</h1>');
-    wdb.report("error", wdb.parameters.ed + " nicht gefunden",
-      "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
-      $('aside'));
-  }
+  uploadHandlers();
+  newProjectHandlers();
 });
