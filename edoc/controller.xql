@@ -5,8 +5,8 @@
  :)
 xquery version "3.1";
 
-import module namespace login      = "http://exist-db.org/xquery/login"          at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
-import module namespace request    = "http://exist-db.org/xquery/request"        at "java:org.exist.xquery.functions.request.RequestModule";
+import module namespace login   = "http://exist-db.org/xquery/login"   at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace request = "http://exist-db.org/xquery/request" at "java:org.exist.xquery.functions.request.RequestModule";
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
@@ -44,8 +44,21 @@ else if ( $exist:resource = 'logout' ) then
 (: REST API :)
 else if ( contains($exist:path, 'api/v2') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/rest2/api.xq"/>
+    <forward url="{$exist:controller}/rest2/api.xq">
+      {
+        (: we currently need this workaround here as Jetty snatches all OPTIONS requests before the can be parsed by roaster :)
+        if ( request:get-method() = ('options', 'OPTIONS') and $local:config//config:origin = request:get-header('origin') )
+        then (
+          <set-header name="Access-Control-Allow-Origin" value="{ request:get-header('origin') }" />,
+          <set-header name="Access-Control-Allow-Methods" value="{ request:get-method() }" />,
+          <set-header name="Access-Control-Allow-Headers" value="authorization" />,
+          <set-header name="Access-Control-Allow-Credentials" value="true" />
+        )
+        else ()
+      }
+    </forward>
   </dispatch>
+(: global index.html :)
 else if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/global/index.html"/>
