@@ -48,8 +48,8 @@ let $chmod := (
   for $s in xmldb:get-child-collections($targetCollection)
     return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
   sm:chmod(xs:anyURI($targetCollection || '/global'), 'rwxrwxr-x'),
-  sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb'),
-  sm:chgrp(xs:anyURI($targetCollection || '/annotations'), 'wdbusers')
+  sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb:wdbusers'),
+  sm:chown(xs:anyURI($targetCollection || '/data'), 'wdb:wdbusers')
 )
 
 let $reindex := (
