@@ -342,6 +342,16 @@ paths:
   /api/v2/projects/{ed}/resources:
     parameters:
       - $ref: "#/components/parameters/ed"
+    options:
+      tags:
+        - projetcs
+      summary: Preflight request before uploading
+      operationId: r2p:optionsResource
+      responses:
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: Project $ed not found
     get:
       tags:
         - projects

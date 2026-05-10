@@ -15,6 +15,11 @@ declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
 
 (:~
+ : list of allowed operations
+ :)
+declare variable $r2:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
+
+(:~
  : Base URL for the REST API
  :)
 declare variable $r2:base := doc('../config.xml')//*:rest[@version = "2"];
@@ -32,10 +37,16 @@ declare variable $r2:allOrigins := if ( request:get-header('origin') != '' )
   else map {
     "Access-Control-Allow-Origin" : "*"
   };
-(: ,
-  "Access-Control-Allow-Methods" : "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers" : "Content-Type, Authorization",
-  "Access-Control-Max-Age"       : "86400" :)
+
+declare function r2:headersWithAllow ( ) as map(*) {
+  map:merge((
+    $r2:allOrigins,
+    map {
+      "Allow": $r2:allow,
+      "Access-Control-Allow-Methods": $r2:allow
+    }
+  ))
+};
 
 declare variable $r2:mediaTypes := map {
   "Access-Control-Allow-Origin": "*",
@@ -104,11 +115,7 @@ declare function r2:writeAllowed ( $user as map(*) ) as xs:boolean {
   $user?groups = ('dba', 'wdbadmin')
 };
 
-declare function r2:mapKeysAllowed(
-  $m as map(*) ,
-  $required as xs:string*,
-  $optional as xs:string*
-) as xs:boolean {
+declare function r2:mapKeysAllowed( $m as map(*), $required as xs:string*, $optional as xs:string* ) as xs:boolean {
   let $keys := map:keys($m)
   let $allowed := ($required, $optional)
   return
@@ -137,11 +144,23 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
       (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
     , $existing := $meta//id($request?parameters?id)
     
-    , $targetPath := $request?project?collectionPath || $request?body?path
+    , $relPath := substring-before($request?body?path, $request?body?file?name)
+    , $targetPath := $request?project?collectionPath || $relPath
+    , $fileNameMod := $request?body?file?name => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
+                 => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
+                 => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
     
     , $store := (
-        r2:store($targetPath, $request?body?file?name, $request?body?xml, $mimeType),
-        r2:enterMetaForXml($request)
+        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType),
+        r2:enterMetaForXml(map{
+          "collectionPath": $request?project?collectionPath,
+          "targetPath": $relPath,
+          "filename": $fileNameMod,
+          "hash": $request?body?hash,
+          "id": $request?parameters?id,
+          "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
+          "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
+        })
       )
       (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
 
@@ -162,10 +181,11 @@ declare function r2:store ( $collection as xs:string, $resource-name as xs:strin
 };
 
 declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
-  let $meta := doc($info?project?collectionPath || '/wdbmeta.xml')
-    , $uuid := $info?body?hash
-    , $relPath := $info?body?path || '/' || $info?body?file?name
-    , $id := $info?parameters?id
+  let $meta := doc($info?collectionPath || '/wdbmeta.xml')
+    , $uuid := $info?hash
+    , $delimiter := if ( ends-with($info?targetPath, '/') ) then '' else '/'
+    , $relPath := $info?targetPath || $delimiter || $info?filename
+    , $id := $info?id
     , $metaFileById := $meta/id($id)[self::meta:file]
     , $metaFileByPath := $meta//meta:file[@path = $relPath]
     , $metaFile := if ( empty($metaFileById) ) then
@@ -185,29 +205,31 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
           else error("unknown error")
         else ()
       
-    , $file := element { QName("https://github.com/dariok/wdbplus/wdbmeta", "file") } {
-        if ( count($metaFile) = 1 ) then
-          for $attr in $metaFile[1]/@*
-          return if (
-              (namespace-uri($attr) = "http://www.w3.org/XML/1998/namespace" and local-name($attr) = "id")
-              or (namespace-uri($attr) = "" and local-name($attr) = ("path", "date", "uuid"))
-            ) then ()
-            else $attr
-        else (),
-        attribute xml:id { $id },
-        attribute path { $relPath },
-        attribute date { current-dateTime() },
-        attribute uuid { $uuid }
-      }
-    , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?project}, "getRestView", 1) )
+    , $file :=
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+            xml:id="{ $id }"
+            path="{ $relPath }"
+            date="{ current-dateTime() }"
+            uuid="{ $uuid }"
+        >{
+          if ( count($metaFile) = 1 ) then
+            for $attr in $metaFile[1]/@*
+            return if (
+                (namespace-uri($attr) = "http://www.w3.org/XML/1998/namespace" and local-name($attr) = "id")
+                or (namespace-uri($attr) = "" and local-name($attr) = ("path", "date", "uuid"))
+              ) then ()
+              else $attr
+          else ()
+        }</file>
+    , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?collectionPath}, "getRestView", 1) )
         then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
         else
           <view xmlns="https://github.com/dariok/wdbplus/wdbmeta"
               file="{ $id }"
-              label="{ normalize-space(($info?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $info?body?xml//tei:titleStmt/tei:title[1])[1]) }">
+              label="{ $info?mainTitle }">
             {
               if ( $info?body?xml//tei:titleStmt/tei:title[@type eq 'num'] )
-                then attribute order { normalize-space($info?body?xml//tei:titleStmt/tei:title[@type eq 'num']) }
+                then attribute order { normalize-space($info?numberingTitle) }
                 else ()
             }
           </view>

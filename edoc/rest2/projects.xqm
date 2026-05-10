@@ -288,58 +288,37 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
 };
 
 (:~
+ : Preflight request before creating a resource
+ : OPTIONS /projects/{$ed}/resources
+ :)
+declare function r2p:optionsResource ( $request as map(*) ) as item() {
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    , $t := util:log("info", "OPTIONS request for project with ID " || $request?parameters?ed || ". Project found: " || ($resource instance of map(*)))
+  return if ( $project instance of xs:QName ) then
+    r2:response(404, "text/plain", "Project " || $request?parameters?ed || " not found", $r2:allOrigins)
+  else
+    r2:response(204, "text/plain", "", r2:headersWithAllow())
+};
+
+(:~
  : Create an XML resource in a project (no ID given)
  : This is used for XML files only. Non-XML files need to be created with a full path via PUT, so that the path information is available for the processing of the file.
  : POST /projects/{$ed}/resources
  :)
 declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as map(*) {
-  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
-    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
-    , $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
+  let $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
     , $id := if ( $xml instance of node() )
         then ($xml/*[1]/@xml:id, '_' || util:uuid())[1]
         else ()
     , $uuid := util:uuid($xml)
+    , $combine := function($k, $v) {
+        if ( $k = 'parameters' )
+          then map:entry("parameters", map:merge(($v, map{"id": $id})))
+          else map:entry($k, $v)
+        }
+    , $newMap := map:merge(map:for-each($request, $combine))
 
-  return if ( $project instance of xs:QName ) then
-    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
-  else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
-    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
-        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
-    )
-  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
-    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( not($xml instance of document-node()) ) then
-    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
-  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
-    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
-  else if ( not(r2:writeAllowed($request?user)) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || '/' || $request?body?file?name || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $id] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
-  else if ( $meta//meta:file[@uuid = $uuid] ) then
-    r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
-  else
-    (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
-    r2:createXmlResource(
-      map{
-        "parameters": map:merge((
-            $request?parameters,
-            map:entry("id", $id)
-          )),
-        "body": map:merge((
-            $request?body,
-            map:entry("xml", $xml),
-            map:entry("hash", $uuid)
-          )),
-        "user": $request?user,
-        "project": $project
-      }
-    )
+  return r2p:createProjectResourceWithId($newMap)
 };
 
 (:~
@@ -363,7 +342,8 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
         map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
     )
-  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
+          (: `path` and `file` are required and in the message body; `meta` is an optional query parameter :)
+  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ('meta'))) ) then
     r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
   else if ( not($xml instance of document-node()) ) then
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
@@ -375,11 +355,11 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
+  (: else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
             and @xml:id = $request?parameters?id
             and @uuid = $uuid
           ] ) then
-    r2:response(204, 'text/plain', '', $r2:allOrigins)
+    r2:response(204, 'text/plain', '', $r2:allOrigins) :)
   else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
   else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || $request?body?file?name] ) then
