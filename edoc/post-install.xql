@@ -1,12 +1,13 @@
 xquery version "3.1";
 
 let $targetCollection := '/db/apps/edoc'
+  , $collsr := ("/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl")
 
-(: let $cp := xmldb:copy-collection($targetCollection || '/config/edoc', '/db/system/config/db/apps') :)
-(: It seems that copying and then re-indexing does not suffice. A workaround reported in
- : https://github.com/eXist-db/exist/issues/5099#issuecomment-1775120346 suggests that storing
- : a collection.xconf might help. :)
-let $indexConfig := (
+return (
+  (: let $cp := xmldb:copy-collection($targetCollection || '/config/edoc', '/db/system/config/db/apps') :)
+  (: It seems that copying and then re-indexing does not suffice. A workaround reported in
+  : https://github.com/eXist-db/exist/issues/5099#issuecomment-1775120346 suggests that storing
+  : a collection.xconf might help. :)
   xmldb:create-collection("/db/system/config/db/apps", "edoc"),
   xmldb:create-collection("/db/system/config/db/apps/edoc", "addins"),
   xmldb:create-collection("/db/system/config/db/apps/edoc", "annotations"),
@@ -17,14 +18,8 @@ let $indexConfig := (
   xmldb:store("/db/system/config/db/apps/edoc/annotations", "collection.xconf", doc($targetCollection || "/config/edoc/annotations/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/data", "collection.xconf", doc($targetCollection || "/config/edoc/data/collection.xconf")),
   xmldb:store("/db/system/config/db/apps/edoc/rest", "collection.xconf", doc($targetCollection || "/config/edoc/rest/collection.xconf")),
-  xmldb:store("/db/system/config/db/apps/edoc/data/documentation", "collection.xconf", doc($targetCollection || "/config/edoc/data/documentation/collection.xconf"))
-)
+  xmldb:store("/db/system/config/db/apps/edoc/data/documentation", "collection.xconf", doc($targetCollection || "/config/edoc/data/documentation/collection.xconf")),
 
-let $collsr := (
-  "/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl"
-)
-
-let $chmod := (
   for $coll in $collsr
     let $resources := xmldb:get-child-resources($targetCollection || $coll)
     return for $resource in $resources
@@ -49,15 +44,11 @@ let $chmod := (
     return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
   sm:chmod(xs:anyURI($targetCollection || '/global'), 'rwxrwxr-x'),
   sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb:wdbusers'),
-  sm:chown(xs:anyURI($targetCollection || '/data'), 'wdb:wdbusers')
-)
+  sm:chown(xs:anyURI($targetCollection || '/data'), 'wdb:wdbusers'),
 
-let $reindex := (
   xmldb:reindex($targetCollection || '/data'),
   xmldb:reindex($targetCollection || '/rest'),
   xmldb:reindex($targetCollection || '/annotations'),
   xmldb:reindex($targetCollection || '/addins'),
   xmldb:reindex($targetCollection || '/admin')
 )
-
-return ($reindex, $chmod)
