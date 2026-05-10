@@ -121,7 +121,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       "id":               $id,
       "infoFileLoc":      $filePathInfo?projectPath || '/wdbmeta.xml',
       "language":         $language,
-      "mainEd":           $filePathInfo?mainProject,
+      "mainEd":           doc($filePathInfo?mainProject || '/wdbmeta.xml')/meta:projectMD/@xml:id,
       "p":                $parsedParam,
       "pathToEd":         $filePathInfo?projectPath,
       "projectFile":      $projectFile,
