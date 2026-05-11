@@ -88,8 +88,8 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
     "Error: no query content!"
   )
   else 
-    let $coll := (wdbFiles:getFullPath($ed))?projectPath
-      , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
+    let $pathInfo := wdbFiles:getFullPath($ed)
+      , $md := doc($pathInfo?projectPath || '/wdbmeta.xml')/*[self::meta:projectMD]
     
     let $params := 
       <parameters>
@@ -108,7 +108,7 @@ function wdbRs:collectionHtml ( $ed as xs:string*, $q as xs:string*, $start as x
           <http:header name="Cache-Controle" value="no-cache" />
         </http:response>
       </rest:response>,
-      wdb:applySpecificXsl($searchResult[self::*:results], $coll, 'search.xsl', $params)
+      wdb:applySpecificXsl($searchResult[self::*:results], $pathInfo, 'search.xsl', $params)
     )
     else
       <rest:response>
@@ -191,7 +191,7 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
   )
   else
     let $file := (collection($config:data)/id($id))[self::tei:TEI][1]
-      , $coll := (wdbFiles:getFullPath($id))?projectPath
+      , $pathInfo := wdbFiles:getFullPath($id)
       
     let $params :=
       <parameters>
@@ -208,7 +208,7 @@ function wdbRs:fileHtml ( $id as xs:string*, $q as xs:string*, $start as xs:int*
             <http:header name="Access-Control-Allow-Origin" value="*"/>
         </http:response>
       </rest:response>,
-      wdb:applySpecificXsl($searchResult, $coll, 'search.xsl', $params)
+      wdb:applySpecificXsl($searchResult, $pathInfo, 'search.xsl', $params)
     )
     else
       <rest:response>

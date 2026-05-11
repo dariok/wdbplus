@@ -62,7 +62,7 @@ declare function r2s:searchProjects ( $request as map(*) ) as map(*) {
             session:set-attribute("query", $query),
             session:set-attribute("ed", $request?parameters?ed)
           ) else (),
-          r2:returnResponse($response, $request?headers?Accept, $pathInfo?projectPath, "search")
+          r2:returnResponse($response, $request?headers?Accept, $pathInfo, "search")
         )
   } catch wdbErr:wdb0000 | wdb0000 {
     util:log("error", $err:description),
@@ -118,7 +118,7 @@ declare function r2s:searchFile ( $request as map(*) ) as map(*) {
       
       return if ( count($result) = 0 )
         then r2:response(204, 'text/plain', "No results found.", $r2:allOrigins)
-        else r2:returnResponse($response, $request?headers?Accept, $pathInfo?projectPath, "search")
+        else r2:returnResponse($response, $request?headers?Accept, $pathInfo, "search")
   } catch *:wdb0000 {
     r2:response(404, 'text/plain', 'File ' || $request?parameters?id || ' not found', $r2:allOrigins)
   }

@@ -502,19 +502,18 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
     return if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
     else
-      r2:returnXmlOrJson(
-        r2p:projectView(map{
-          "path" : $project?collectionPath || "/wdbmeta.xml",
-          "parameters": $request?parameters,
-          "Accept": request:get-header('Accept')
-        })
-      )
+      r2p:projectView(map{
+        "path" : $project?collectionPath || "/wdbmeta.xml",
+        "parameters": $request?parameters,
+        "Accept": request:get-header('Accept')
+      })
 };
 
-declare function r2p:projectView ( $request as map(*) ) as node() {
+declare function r2p:projectView ( $request as map(*) ) as map(*) {
   let $meta := doc($request?path)
+    , $pathInfo := wdbFiles:getFullPath($request?parameters?ed)
   return if ( $request?parameters?view = 'start' ) then
-      wdb:applySpecificXsl($meta, $request?path => substring-before('wdbmeta.xml'), "start.xsl")
+      r2:returnResponse($meta, $request?Accept, $fullPath, "start")
     else if ( $request?parameters?view = 'navigation' ) then
       let $struct := $meta//meta:projectMD/meta:struct
       let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$request?parameters?ed}">{(
@@ -526,9 +525,7 @@ declare function r2p:projectView ( $request as map(*) ) as node() {
         then r2p:imported($struct/meta:import, $content)
         else $content
 
-      return if ( $request?Accept = 'text/html' )
-        then wdb:applySpecificXsl($response, $request?path => substring-before('wdbmeta.xml'), "nav.xsl")
-        else $response
+      return r2:returnResponse($response, $request?Accept, $fullPath, "nav")
     else
       $meta
 };

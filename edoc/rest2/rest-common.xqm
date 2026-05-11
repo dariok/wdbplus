@@ -55,16 +55,18 @@ declare variable $r2:mediaTypes := map {
 
 declare variable $r2:defaultResponseLength := 25;
 
-declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathToEd as xs:string, $function as xs:string ) as map(*) {
+declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathInfo as map(*), $function as xs:string ) as map(*) {
   try {
-    if ( $mediaType = "application/json" ) then
-      router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
-    else if ( $mediaType = "text/html" ) then
-      router:response(200, "text/html", wdb:applySpecificXsl($data, $pathToEd, $function || ".xsl"), $r2:allOrigins)
-    else if ( $mediaType = $r2:acceptable ) then
-      router:response(200, $mediaType, $data, $r2:allOrigins)
-    else
-      router:response(406, "text/plain", "Type" || $mediaType || " cannot be served", $r2:allOrigins)
+    switch ( $mediaType )
+      case "application/json"
+        return router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
+      case "text/html"
+        return router:response(200, "text/html", wdb:applySpecificXsl($data, $pathInfo, $function || ".xsl"), $r2:allOrigins)
+      case "application/xml"
+      case "application/tei+xml"
+        return router:response(200, $mediaType, $data, $r2:allOrigins)
+      default
+        return router:response(406, "text/plain", "Type" || $mediaType || " cannot be served", $r2:allOrigins)
   } catch * {
     util:log("info", map{
       "location":  $err:module || '@' || $err:line-number

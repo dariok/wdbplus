@@ -325,8 +325,8 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
  : 2) instance resources
  : 3) global resources
  :)
-declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string ) as node() {
-  wdb:applySpecificXsl($xml, $edPath, $name, ())
+declare function wdb:applySpecificXsl ( $xml as node(), $pathInfo as map(*), $name as xs:string ) as node() {
+  wdb:applySpecificXsl($xml, $pathInfo, $name, ())
 };
 (:~
  : Apply a project specific XSLT to some XML
@@ -343,15 +343,15 @@ declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $n
  : 2) instance resources
  : 3) global resources
  :)
-declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string, $parameters as element(parameters)? ) as node() {
-  let $xsl := if ( doc-available($edPath || "/resources/xsl/" || $name) ) then
-        doc($edPath || "/resources/xsl/" || $name)
+declare function wdb:applySpecificXsl ( $xml as node(), $pathInfo as map(*), $name as xs:string, $parameters as element(parameters)? ) as node() {
+  let $xsl := if ( doc-available($pathInfo?mainProject || "resources/xsl/" || $name) ) then
+        doc($pathInfo?mainProject || "resources/xsl/" || $name)
       else if ( doc-available("/db/apps/edoc/data/resources/xsl/" || $name) ) then
         doc("/db/apps/edoc/data/resources/xsl/" || $name)
       else
         doc("/db/apps/edoc/resources/xsl/" || $name)
-   
-   return transform:transform($xml, $xsl, $parameters)
+  
+  return transform:transform($xml, $xsl, $parameters)
 };
 (: END LOCAL HELPER FUNCTIONS :)
 
