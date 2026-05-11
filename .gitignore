@@ -19,3 +19,4 @@ edoc/rest2/v2.json
 # node-reladted stuff
 node_modules/
 
+.codex

@@ -69,7 +69,8 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
     , $file := ( doc($file-hint[1]/@project)/id($id), doc($project-hint[1]/@path || "/wdbmeta.xml")/id($id) )
     , $request := if ( request:exists() ) then request:get-url() else 'no request context'
 
-  return if ( count($file) = 0 ) then
+  return
+    if ( count($file) = 0 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0000'),
         "no file with ID " || $id,

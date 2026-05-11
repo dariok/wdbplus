@@ -7,6 +7,11 @@ Accept: application/xml
 
 ###
 
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+Accept: application/xml
+
+###
+
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects
 Accept: application/json
 
@@ -114,7 +119,7 @@ Accept: text/html
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/navigation
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/views/navigation
 Accept: text/html
 ###
 
