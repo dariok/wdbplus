@@ -7,7 +7,7 @@
       <text qname="tei:text"/>
       
       <!-- notes usually contain text that is outside the main text’s flow; hence, they must be handled separately. -->
-      <ignore qname="tei:note[@type]" />
+      <ignore qname="tei:note" />
       <text qname="tei:note" />
       
       <!-- headings will often be used for filtering and thus an additional index is created; unlike notes, however,
@@ -51,11 +51,11 @@
       </create> -->
            
        <!-- entities -->
-      <create qname="tei:listPerson//tei:persName" type="xs:string" />
-      <create qname="tei:listPlace//tei:placeName" type="xs:string" />
-      <create qname="tei:listOrg//tei:orgName" type="xs:string" />
-      <create qname="tei:listEvent//tei:eventName" type="xs:string" />
-      <create qname="tei:listBibl/tei:title" type="xs:string" />
+      <create qname="tei:persName" type="xs:string" />
+      <create qname="tei:placeName" type="xs:string" />
+      <create qname="tei:orgName" type="xs:string" />
+      <create qname="tei:eventName" type="xs:string" />
+      <create qname="tei:title" type="xs:string" />
       
       <!-- attributes for semantic elements -->
       <create qname="@ref" type="xs:string"/>
