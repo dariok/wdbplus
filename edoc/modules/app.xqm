@@ -259,17 +259,7 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
     , $process := if ( $view != '' )
         then $metaFile//meta:process[@target = $target and @view = $view]
         else $metaFile//meta:process[@target = $target and not(@view)]
-    , $base := if ( count($process) = 1 )
-        then substring-before(base-uri($metaFile), 'wdbmeta.xml')
-        else if ( count($process) = 0 ) 
-        then error(
-            QName('wdbRErr', 'wdb0002'),
-            "no process found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
-          )
-        else error(
-            QName('wdbRErr', 'wdb0012'),
-            "multiple processes found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
-          )
+    , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
   
   let $sel := if ( $process/meta:command )
     then
