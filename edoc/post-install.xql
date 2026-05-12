@@ -39,7 +39,6 @@ return (
   sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
   sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/data/instance.xqm'), 'rw-rw-r--'),
-  sm:chmod(xs:anyURI($targetCollection || '/include/xstring/string-pack.xql'), 'r-xr-xr-x'),
   for $s in xmldb:get-child-collections($targetCollection)
     return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
   sm:chmod(xs:anyURI($targetCollection || '/global'), 'rwxrwxr-x'),
