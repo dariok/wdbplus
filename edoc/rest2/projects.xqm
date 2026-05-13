@@ -187,9 +187,15 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
             
             xmldb:copy-resource("/db/apps/edoc/admin/project-template", "project.xqm", $subCollection, "project.xqm"),
             sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdb:wdbusers"),
-            sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x")
+            sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x"),
+
+            (: we assume that main projects do no import globally as this would comlpetely overwhelm navigation :)
+            update delete $meta//meta:struct/meta:import
           )
-        else (),
+        else (
+          (: sub-projects will by default use process inheritance :)
+          update delete $meta//meta:process[@target = 'html']/meta:command
+        ),
 
       $request?parameters?ed
     )[last()], (: create-collection() returns a string; we only want the path to the project collection :)
@@ -490,9 +496,9 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
   if ( not($request?parameters?view = ('default', 'navigation', 'start')) ) then
     r2:response(400, 'text/plain', 'Bad value for parameter `view`
       Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
-  else if ( ($request?parameters?view = 'default' and request:get-header('Accept') != 'application/xml')
-         or ($request?parameters?view = 'navigation' and not(request:get-header('Accept') = $r2:acceptable))
-         or ($request?parameters?view = 'start' and request:get-header('Accept') != 'text/html') ) then
+  else if ( ($request?parameters?view = 'default' and $request?headers?Accept != 'application/xml')
+         or ($request?parameters?view = 'navigation' and not($request?headers?Accept = $r2:acceptable))
+         or ($request?parameters?view = 'start' and $request?headers?Accept != 'text/html') ) then
     r2:response(406, 'text/plain', 'Available representations are:
       for view "default": application/xml
       for view "start": text/html
@@ -505,7 +511,7 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
       r2p:projectView(map{
         "path" : $project?collectionPath || "/wdbmeta.xml",
         "parameters": $request?parameters,
-        "Accept": request:get-header('Accept')
+        "Accept": $request?headers?Accept
       })
 };
 
@@ -513,7 +519,7 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
   let $meta := doc($request?path)
     , $pathInfo := wdbFiles:getFullPath($request?parameters?ed)
   return if ( $request?parameters?view = 'start' ) then
-      r2:returnResponse($meta, $request?Accept, $fullPath, "start")
+      r2:returnResponse($meta, $request?Accept, $pathInfo, "start")
     else if ( $request?parameters?view = 'navigation' ) then
       let $struct := $meta//meta:projectMD/meta:struct
       let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$request?parameters?ed}">{(
@@ -525,7 +531,7 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
         then r2p:imported($struct/meta:import, $content)
         else $content
 
-      return r2:returnResponse($response, $request?Accept, $fullPath, "nav")
+      return r2:returnResponse($response, $request?Accept, $pathInfo, "nav")
     else
       $meta
 };
@@ -536,17 +542,18 @@ declare %private function r2p:imported ( $import, $importerContent ) {
     , $importedMeta := doc($fullImportedPath)
     , $importedContent := $importedMeta/meta:projectMD/meta:struct
 
-    let $conStructed := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-        { $importedContent/@* }
-        { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
-        { for $elem in $importedContent/* return
-            if ( $elem/@file = $importerContent/@ed )
-                then $importerContent
-                else $elem
-        }
+  let $conStructed :=
+    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+      { $importedContent/@* }
+      { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
+      { for $elem in $importedContent/* return
+          if ( $elem/@file = $importerContent/@ed )
+              then $importerContent
+              else $elem
+      }
     </struct>
 
-    return if ( $importedContent/meta:import )
-      then r2p:imported($importedContent/meta:import, $conStructed)
-      else $conStructed
+  return if ( $importedContent/meta:import )
+    then r2p:imported($importedContent/meta:import, $conStructed)
+    else $conStructed
 };
