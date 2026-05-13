@@ -777,8 +777,8 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
-        // TODO: use new API
-        url: wdb.meta.get('rest').get('1') + "collection/" + ed + "/nav.html",
+        url: wdb.meta.get('rest').get('2') + "projects/" + ed + "/views/navigation",
+        dataType: "html",
         success:  ( data ) => {
           let replacement = $(data).find('#' + ed).prev().addBack();
           if ( replacement.length > 0 ) {
