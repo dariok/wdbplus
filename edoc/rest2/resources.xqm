@@ -109,7 +109,9 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
 };
 
 declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(list) {
-  let $processes := $resource?meta//meta:process[@target]
+  let $processes := r2r:allViews($resource)
+  (: TODO: reduce this list so that evey view+content-type combination occurs only once :)
+
   return
     <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         level="resource"
@@ -128,6 +130,19 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
             />
       }
     </list>
+};
+
+declare %private function r2r:allViews ( $resource as map(*) ) as element()* {
+  let $metaFile := $resource?meta
+    , $parent := $metaFile/meta:projectMD/meta:struct/meta:import[1]
+    , $parentMeta := doc($resource?projectPath || '/' || $parent/@path)
+
+  return (
+    $metaFile//meta:process,
+    if ( exists($parent) ) then
+      r2r:allViews(map{ "meta": $parentMeta, "projectPath": substring-before(base-uri($parentMeta), '/wdbmeta.xml') })
+    else ()
+  )
 };
 
 declare %private function r2r:resolveProcess ( $resource as map(*), $view as xs:string, $target as xs:string ) as element(meta:process)? {
@@ -286,8 +301,8 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
   return if ( empty($resource) ) then
     r2:response(404, "text/plain", "The resource was not found", $r2:allOrigins)
   else
-    let $type := if ( exists($request?parameters?accept) )
-            then $request?parameters?accept
+    let $type := if ( exists($request?header?accept) )
+            then $request?header?Accept
             else "text/html"
         , $process := try {
               r2r:resolveProcess($resource, $request?parameters?view, $type)
