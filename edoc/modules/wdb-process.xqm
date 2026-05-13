@@ -20,7 +20,7 @@ declare function wdbProc:getContent ( $id as xs:string, $process as element(), $
   (: TODO if multiple commands are defined, check that one is actually applicable – #395 :)
   (: TODO pass the position of this command on to the processing function or pass target and view on :)
   (: TODO once dev on wdbmeta, -- steps -- is done, implement these here – #394:)
-  switch ( $process[1]/meta:command/@type )
+  return switch ( $process[1]/meta:command/@type )
     case "xsl" return
       let $content := wdbProc:processXSL($effectiveModel)
       return map { "status": $content?status, "content": $content?content }
