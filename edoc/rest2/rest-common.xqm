@@ -66,7 +66,7 @@ declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $
       case "application/tei+xml"
         return router:response(200, $mediaType, $data, $r2:allOrigins)
       default
-        return router:response(406, "text/plain", "Type" || $mediaType || " cannot be served", $r2:allOrigins)
+        return router:response(406, "text/plain", "Type " || $mediaType || " cannot be served", $r2:allOrigins)
   } catch * {
     util:log("info", map{
       "location":  $err:module || '@' || $err:line-number
@@ -152,8 +152,6 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
     , $fileNameMod := $fileNameBase => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
                  => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
                  => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
-    , $t := util:log("info", $request?body?path || ' - ' || $request?body?file?name || ' = ' || $targetPath)
-    , $t := util:log("info", $fileNameBase)
     
     , $store := (
         if ( not(xmldb:collection-available($targetPath)) )

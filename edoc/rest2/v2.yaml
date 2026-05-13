@@ -344,7 +344,7 @@ paths:
       - $ref: "#/components/parameters/ed"
     options:
       tags:
-        - projetcs
+        - projects
       summary: Preflight request before uploading
       operationId: r2p:optionsResource
       responses:
@@ -785,6 +785,8 @@ paths:
           description: The resource in the selected representation
         404:
           description: The resource or view was not found
+        406:
+          description: No representation could be created for the requested media type
   /api/v2/resources/byPid/{pid}:
     parameters:
       - name: "pid"
