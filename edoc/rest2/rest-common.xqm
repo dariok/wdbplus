@@ -10,11 +10,6 @@ declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
 (:~
- : Standard content types supported by the API
- :)
-declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
-
-(:~
  : list of allowed operations
  :)
 declare variable $r2:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
@@ -57,11 +52,6 @@ declare function r2:headersWithAllow ( ) as map(*) {
   ))
 };
 
-declare variable $r2:mediaTypes := map {
-  "Access-Control-Allow-Origin": "*",
-  "AllowPost": string-join($r2:acceptable, ' ')
-};
-
 declare variable $r2:defaultResponseLength := 25;
 
 declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathInfo as map(*), $function as xs:string ) as map(*) {
@@ -90,9 +80,8 @@ declare function r2:returnXmlOrJson ( $data as item() ) as item() {
   return
     if ( $mediaType = "application/json" ) then
       router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
-    else if ( $mediaType = $r2:acceptable ) then (
-      router:response(200, $mediaType, $data, $r2:allOrigins)
-    )
+    else if ( $mediaType = "application/xml" ) then
+      router:response(200, "application/xml", $data, $r2:allOrigins)
     else
       router:response(406, "text/plain", "Not acceptable", $r2:allOrigins)
 };
@@ -103,17 +92,9 @@ declare function r2:response ( $status as xs:integer, $mediaType as xs:string, $
 
 declare function r2:parseBody ( $request as map(*) ) as item() {
   let $mediaType := $request?media-type
-    (: , $t1 := util:log("info", $request?body) :)
-    (: , $checkMediaType := $mediaType = $r2:acceptable :)
-    (: , $t0 := util:log("info", $mediaType || ': ' || $checkMediaType) :)
 
   return
     (: Roaster should handle unsupported media types and return 415 :)
-    (: if ( not($checkMediaType) ) then
-      ( util:log("error", "unsupported: " || $mediaType),
-      r2:response(415, 'text/plain', 'Unsupported Media Type', $r2:mediaTypes)
-      )
-    else :)
      if ( $mediaType = "application/json" and $request?body instance of map(*) ) then
       $request?body?title
     else if ( $mediaType = "application/xml" ) then

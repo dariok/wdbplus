@@ -270,7 +270,7 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
  :)
 declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
   let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
-  
+
   return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
   else if ( $request?headers?Accept != ('application/xml', 'application/json') )
@@ -500,7 +500,7 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
     r2:response(400, 'text/plain', 'Bad value for parameter `view`
       Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
   else if ( ($request?parameters?view = 'default' and $request?headers?Accept != 'application/xml')
-         or ($request?parameters?view = 'navigation' and not($request?headers?Accept = $r2:acceptable))
+         or ($request?parameters?view = 'navigation' and not($request?headers?Accept = ('application/json', 'application/xml', 'text/html')))
          or ($request?parameters?view = 'start' and $request?headers?Accept != 'text/html') ) then
     r2:response(406, 'text/plain', 'Available representations are:
       for view "default": application/xml
