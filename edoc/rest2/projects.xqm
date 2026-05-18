@@ -25,7 +25,7 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
       {
         for $project in $projects return
           <project
-              id="{ $r2:base }{ $request?path }/{ $project/@xml:id }"
+              id="{ $r2:base }{ $r2:urls?projects }{ $project/@xml:id }"
               label="{ $project/@title }"
           />
       }
@@ -61,7 +61,7 @@ declare function r2p:listSubprojects ( $request as map(*) ) as map(*) {
             let $ed := string($entry/@xml:id)
             return
               <project
-                  id="{ $r2:base }/projects/{ $ed }"
+                  id="{ $r2:base }{ $r2:urls?projects }{ $ed }"
                   label="{ map:get($labels, $ed) }"
               />
           }
@@ -215,20 +215,20 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
   else
     r2:returnXmlOrJson(<list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         level="project"
-        for="{ $r2:base }/projects/{$request?parameters?ed}"
+        for="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}"
         type="views"
         start="1"
         length="3"
         max="3 ">
         <view name="default"
           label="returns an XML representation of the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/default"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/default"/>
         <view name="navigation"
           label="returns a navigation structure for the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/navigation"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/navigation"/>
         <view name="start"
           label="returns a start page for the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/start"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/start"/>
       </list>)
 };
 
@@ -251,13 +251,13 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
         {
           for $entry in $meta//meta:ptr return
             <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/projects/{ $entry/@xml:id }"
+                id="{ $r2:base }{ $r2:urls?projects }{ $entry/@xml:id }"
                 label="{ $meta//meta:struct[@file = $entry/@xml:id]/@label }" />
         }
         {
           for $entry in $meta//meta:file return
             <file xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/resources/{ $entry/@xml:id }"
+                id="{ $r2:base }{ $r2:urls?resources }{ $entry/@xml:id }"
                 label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
         }
       </contents>
@@ -285,7 +285,7 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
             let $id := string($entry/@file)
             return
               <file
-                  id="{ $r2:base }/projects/{ $request?parameters?ed }/resources/{ $id }"
+                  id="{ $r2:base }{ $r2:urls?resources }{ $id }"
                   label="{ normalize-space($entry/@label) }"
               />
           }
@@ -533,7 +533,7 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
 
       return r2:returnResponse($response, $request?Accept, $pathInfo, "nav")
     else
-      $meta
+      r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
 declare %private function r2p:imported ( $import, $importerContent ) {

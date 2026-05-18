@@ -25,6 +25,15 @@ declare variable $r2:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
 declare variable $r2:base := doc('../config.xml')//*:rest[@version = "2"];
 
 (:~
+ : Paths for endpoint groups 
+ :)
+declare variable $r2:urls := map {
+  "projects": "/api/v2/projects/",
+  "resources": "/api/v2/resources/",
+  "search": "/api/v2/search/"
+};
+
+(:~
  : list of allowed origins
  :)
 declare variable $r2:origins := doc('../config.xml')//*:origins/*;

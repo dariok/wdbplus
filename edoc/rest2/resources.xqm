@@ -115,7 +115,7 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
   return
     <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         level="resource"
-        for="{ $r2:base }/resources/{ $resource?entry/@xml:id }"
+        for="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }"
         type="views"
         start="1"
         total="{ count($processes) }">
@@ -124,7 +124,7 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
           let $viewName := string(($process/@view, 'default')[1])
           return
             <view
-                id="{ $r2:base }/resources/{ $resource?entry/@xml:id }/views/{ $viewName }"
+                id="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }/views/{ $viewName }"
                 view="{ $viewName }"
                 content-type="{ string(($process/@label, $process/@target)[1]) }"
             />
@@ -346,7 +346,10 @@ declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
   (: TODO: add a unit test for this; use the documentation :)
   let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
   return if ( count($matches) = 1 ) then
-    r2:response(303, "text/plain", "", map:merge(($r2:allOrigins, map { "Location": $r2:base || "resources/" || string($matches[1]/@xml:id) })))
+    r2:response(303, "text/plain", "", map:merge((
+        $r2:allOrigins,
+        map { "Location": $r2:base || $r2:urls?resources || string($matches[1]/@xml:id) }
+    )))
   else
     r2:response(404, "text/plain", "This external PID was not found", $r2:allOrigins)
 };

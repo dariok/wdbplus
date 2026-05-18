@@ -36,7 +36,7 @@ declare function r2s:searchProjects ( $request as map(*) ) as map(*) {
       
       , $response :=  r2:resultsWrapper(
           map {
-            "self": concat($r2:base, 'search/ft/project/', $request?parameters?ed, '?q=', $query),
+            "self": concat($r2:base, $request?path, '?q=', $query),
             "from": $r2:base || 'project/' || $request?parameters?ed,
             "total": count($result),
             "start": $start,
@@ -46,8 +46,8 @@ declare function r2s:searchProjects ( $request as map(*) ) as map(*) {
           },
           $subsequence !
             <file xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-              id="{ $r2:base }resources/{ string(./ancestor::tei:TEI/@xml:id) }"
-              details="{ $r2:base }search/ft/resource/{ string(./ancestor::tei:TEI/@xml:id) }?q={ $query }"
+              id="{ $r2:base }{ $r2:urls?resources }{ string(./ancestor::tei:TEI/@xml:id) }"
+              details="{ $r2:base }{ $r2:urls?search }ft/resource/{ string(./ancestor::tei:TEI/@xml:id) }?q={ $query }"
               label="{ string(./ancestor::tei:TEI//tei:titleStmt/*[1]) }"
             />
         )
