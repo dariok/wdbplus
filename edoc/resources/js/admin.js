@@ -21,8 +21,8 @@ const wdbAdmin = {
         $("input[type='submit']").prop("disabled", false);
       },
       error: function ( response ) {
-        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
-          response, $('aside'));
+        wdb.report("error", "Kein Projekt mit der ID " + wdb.parameters.get('ed') + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+          response.responseText, $('aside')[0]);
       }
     });
     $('#selectTarget').show();
@@ -182,7 +182,7 @@ const wdbAdmin = {
     statusCell.textContent = "…";
     let method = fileAlreadyOnServer ? "PUT" : "POST"
       , uploadUrl = fileAlreadyOnServer ? restUrl + "resources/" + fileID
-                                        : restUrl + "projects/" + wdb.parameters.ed + "/resources";
+                                        : restUrl + "projects/" + wdb.parameters.get('ed') + "/resources";
     try {
       await wdbAdmin.doUpload(method, uploadUrl + mdMode, wdb.restHeaders, formdata, statusCell, stats);
     } catch ( e ) {
@@ -278,11 +278,11 @@ function uploadHandlers ( ) {
     $('#selectTask input').on("change", ( event ) => { wdbAdmin.ingestAction(event); });
   } else {
     $('#results').append("<tr><td>meta.ed</td><td>" + wdb.meta.get('ed') + "</td></tr>");
-    $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.ed + "</td></tr>");
+    $('#results').append("<tr><td>parameters.ed</td><td>" + wdb.parameters.get('ed') + "</td></tr>");
     $("input[type='submit']").prop("disabled", true);
-    $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.ed + ' gefunden</h1>');
-    wdb.report("error", wdb.parameters.ed + " nicht gefunden",
-      "Kein Projekt mit der ID " + wdb.parameters.ed + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
+    $('#results').before('<h1>Kein Projekt mit der ID ' + wdb.parameters.get('ed') + ' gefunden</h1>');
+    wdb.report("error", wdb.parameters.get('ed') + " nicht gefunden",
+      "Kein Projekt mit der ID " + wdb.parameters.get('ed') + " gefunden oder Projekt für den aktuellen Benutzer nicht lesbar.",
       $('aside')[0]);
   }
 }

@@ -25,15 +25,6 @@ const wdb = (function() {
   // will be used to store headers
   let restHeaderVal = { };
   
-  // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
-  /* TODO https://github.com/dariok/wdbplus/issues/429
-      current support data: c. 91% should support URLSearchParams – switch when support > 95% */
-  let params = {};
-  for (let ar of window.location.search.substr(1).split("&")) {
-    let te = ar.split("=");
-    params[te[0]] = te[1];
-  }
-  
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
   let getUniqueId = function () {
@@ -123,7 +114,7 @@ const wdb = (function() {
 
   return {
     meta:           meta,
-    parameters:     params,
+    parameters:     new URLSearchParams(window.location.search),
     restHeaders:    restHeaderVal,
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
@@ -908,20 +899,24 @@ const wdbUser = {
  ***/
 $( () => {
   // highlight a range of elements given by the »l« query parameter and scroll there
-  if (wdb.parameters.hasOwnProperty('l')) {
-    wdbDocument.highlightRange(wdb.parameters.l);
+  if ( wdb.parameters.has('l') ) {
+    wdbDocument.highlightRange(wdb.parameters.get('l'));
   }
 
   // highlight several elements given by a comma separated list in the »i« query parametter
-  if (wdb.parameters.hasOwnProperty('i')) {
-    for (let ids of wdb.parameters.i.split(',')) {
-      $('#' + ids).css('background-color', 'lightblue');
+  if ( wdb.parameters.has('i') ) {
+    const ids = wdb.parameters.get('i');
+    if ( ids !== null && ids !== '' ) {
+      for ( let id of ids.split(',') ) {
+        if ( id === '' ) continue;
+        $('#' + id).css('background-color', 'lightblue');
+      }
     }
   }
 
   // if a search word is present, highlight it
-  if ( wdb.meta.get('wdbTemplate') !== 'templates/function.html' && wdb.parameters.hasOwnProperty('q') ) {
-    wdbDocument.highlightSearch(wdb.parameters.q, 'yellow');
+  if ( wdb.meta.get('wdbTemplate') !== 'templates/function.html' && wdb.parameters.has('q') ) {
+    wdbDocument.highlightSearch(wdb.parameters.get('q'), 'yellow');
   }
 
   // load image for target page (or first page if no fragment requested)
