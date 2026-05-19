@@ -6,6 +6,13 @@
 let files;
 
 const wdbAdmin = {
+  // we assume that all admin functions are done without proxying
+  restUrl: new URL('../api/v2/', window.location.href).toString(),
+
+  /**
+   * Display contents for a function in the main part…?
+   * @param { String } url 
+   */
   displayRight: function ( url ) {
     $.ajax({
       method: "get",
@@ -162,7 +169,7 @@ const wdbAdmin = {
     try {
       await $.ajax({
         method: "HEAD",
-        url: new URL("resources/" + fileID, wdb.restUrl)
+        url: new URL("resources/" + fileID, wdbAdmin.restUrl)
       });
       fileAlreadyOnServer = true;
     } catch ( response ) {
@@ -177,10 +184,10 @@ const wdbAdmin = {
 
     statusCell.textContent = "…";
     let method = fileAlreadyOnServer ? "PUT" : "POST"
-      , uploadUrl = fileAlreadyOnServer ? new URL("resources/" + fileID, wdb.restUrl)
-                                        : new URL("projects/" + wdb.parameters.get('ed') + "/resources", wdb.restUrl);
+      , uploadUrl = fileAlreadyOnServer ? new URL("resources/" + fileID, wdbAdmin.restUrl)
+                                        : new URL("projects/" + wdb.parameters.get('ed') + "/resources", wdbAdmin.restUrl);
     try {
-      await wdbAdmin.doUpload(method, uploadUrl.toString() + mdMode, wdb.restHeaders, formdata, statusCell, stats);
+      await wdbAdmin.doUpload(method, uploadUrl.toString() + mdMode, {}, formdata, statusCell, stats);
     } catch ( e ) {
       // doUpload reports upload failures and updates stats in its error callback.
       return;
@@ -294,7 +301,7 @@ function newProjectHandlers ( ) {
 
     $.ajax({
       method: method,
-      url: new URL("projects/" + wdb.meta.get('ed') + "/subprojects/" + $('#pID').val(), wdb.restUrl).toString(),
+      url: new URL("projects/" + wdb.meta.get('ed') + "/subprojects/" + $('#pID').val(), wdbAdmin.restUrl).toString(),
       contentType: "application/json",
       data: JSON.stringify(newCollectionData),
       success: function ( data ) {
