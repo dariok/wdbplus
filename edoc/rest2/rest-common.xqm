@@ -151,7 +151,7 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
             sm:chgrp(xs:anyURI($targetPath), "wdbusers")
           )
           else (),
-        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType),
+        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType, $existing),
         r2:enterMetaForXml(map{
           "collectionPath": $request?project?collectionPath,
           "targetPath": $relPath,
@@ -169,14 +169,22 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
   return router:response($status, $mimeType, $store, $r2:allOrigins)
 };
 
-declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string ) as xs:string {
+declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(),
+                            $mime-type as xs:string, $existing as element(meta:file)? ) as xs:string {
   (: all checks should have been carried out by the higher API functions in r2p and r2f.
      Hence, we assume everything’s okay and do not catch errors :)
   (
     xmldb:store($collection, $resource-name, $contents, $mime-type),
-    sm:chmod(xs:anyURI(string-join(($collection, $resource-name), '/')), if ( ends-with($resource-name, 'xql') ) then "rwxrwxr-x" else "rw-rw-r--"),
-    sm:chown(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdb"),
-    sm:chgrp(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdbusers")
+    if ( empty($existing) ) then
+      (
+        sm:chmod(
+            xs:anyURI($collection || '/' || $resource-name),
+            if ( ends-with($resource-name, 'xql') ) then "rwxrwxr-x" else "rw-rw-r--"
+          ),
+        sm:chown(xs:anyURI($collection || '/' || $resource-name), "wdb"),
+        sm:chgrp(xs:anyURI($collection || '/' || $resource-name), "wdbusers")
+      )
+    else ()
   )
 };
 
