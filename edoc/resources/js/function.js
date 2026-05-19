@@ -21,23 +21,11 @@ const wdb = (function() {
     }
     else meta.set(m.name, m.content);
   }
-
-  // will be used to store headers
-  let restHeaderVal = { };
   
   // unique IDs
   let internalUniqueId = 0;               // basis for globally unique IDs
   let getUniqueId = function () {
     return 'wdb' + ('000' + internalUniqueId++).substring(-4);
-  };
-
-  function setAuthorizationHeader () {
-    let cred = Cookies.get("wdbplus");
-    if ( typeof cred === "undefined" || cred.length === 0 ) {
-      delete restHeaderVal.Authorization;
-    } else {
-      restHeaderVal.Authorization = "Basic " + cred;
-    } 
   };
 
   /* Login and logout */
@@ -64,7 +52,6 @@ const wdb = (function() {
         try {
           Cookies.set('wdbplus', btoa(username + ':' + password));
           $('#auth').replaceWith(data);
-          setAuthorizationHeader();
           $('#logout').on('click', () => {
             wdb.logout();
           });
@@ -96,7 +83,6 @@ const wdb = (function() {
             event.preventDefault();
             wdb.login(event);
           });
-          setAuthorizationHeader();
           wdb.report("info", "logging off");
         } catch (e) {
           wdb.report("error", "error logging out", e);
@@ -109,15 +95,11 @@ const wdb = (function() {
 
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
-  // function to set REST headers
-  setAuthorizationHeader();
 
   return {
     meta:           meta,
     parameters:     new URLSearchParams(window.location.search),
     restUrl:        new URL("api/v2/", meta.get('rest').get('2')).toString(),
-    restHeaders:    restHeaderVal,
-    setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
     login:          login,
     logout:         logout,
@@ -497,7 +479,6 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       $.ajax({
         url: url,
         method: 'get',
-        headers: wdb.restHeaders,
         dataType: 'html',
         success: function ( data ) {
           let newContent = selector !== '' ? $(data).children(selector) : data;
@@ -511,7 +492,6 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       $.ajax({
         url: url,
         method: 'get',
-        headers: wdb.restHeaders,
         dataType: 'html',
         success: function ( data ) {
           let newContent = selector !== '' ? $(data).children(selector) : data;
