@@ -4,10 +4,6 @@
  * @type { FileList | null }
  */
 let files;
-/**
- * @type { String }
- */
-let restUrl;
 
 const wdbAdmin = {
   displayRight: function ( url ) {
@@ -157,7 +153,7 @@ const wdbAdmin = {
 
     let filename = file.webkitRelativePath == "" ? $('select').val() + '/' + file.name
                                                  : $('select').val() + '/' + file.webkitRelativePath.substring(0, file.webkitRelativePath.indexOf(file.name)) + file.webkitRelativePath;
-                                                   /* file.filename in the payload will be wdbkitRelativePath; as we need the subdirectory in rest-common.xqm, we need to add it here */
+                                                   /* file.filename in the payload will be webkitRelativePath; as we need the subdirectory in rest-common.xqm, we need to add it here */
     let formdata = new FormData();
     formdata.append("file", file);
     formdata.append("path", filename);
@@ -166,7 +162,7 @@ const wdbAdmin = {
     try {
       await $.ajax({
         method: "HEAD",
-        url: restUrl + "resources/" + fileID
+        url: new URL("resources/" + fileID, wdb.restUrl)
       });
       fileAlreadyOnServer = true;
     } catch ( response ) {
@@ -181,10 +177,10 @@ const wdbAdmin = {
 
     statusCell.textContent = "…";
     let method = fileAlreadyOnServer ? "PUT" : "POST"
-      , uploadUrl = fileAlreadyOnServer ? restUrl + "resources/" + fileID
-                                        : restUrl + "projects/" + wdb.parameters.get('ed') + "/resources";
+      , uploadUrl = fileAlreadyOnServer ? new URL("resources/" + fileID, wdb.restUrl)
+                                        : new URL("projects/" + wdb.parameters.get('ed') + "/resources", wdb.restUrl);
     try {
-      await wdbAdmin.doUpload(method, uploadUrl + mdMode, wdb.restHeaders, formdata, statusCell, stats);
+      await wdbAdmin.doUpload(method, uploadUrl.toString() + mdMode, wdb.restHeaders, formdata, statusCell, stats);
     } catch ( e ) {
       // doUpload reports upload failures and updates stats in its error callback.
       return;
@@ -262,8 +258,6 @@ function uploadHandlers ( ) {
 
   // admin.xqm will set wdb.meta.get('ed') to the empty string if wdbErr:wdb0200 (no project) is caught
   if ( wdb.meta.get('ed') !== "" ) {
-    let delim = restUrl.substring(restUrl.length - 1) === '/' ? "" : "/"
-      , url = restUrl + delim + "collection/" + wdb.meta.get('ed') + "/structure.json";
     wdbAdmin.getPaths();
     
     $('pre').text(wdb.meta.get('path'));
@@ -295,13 +289,12 @@ function newProjectHandlers ( ) {
   newProjectForm.on("submit", ( event ) => {
     event.preventDefault();
 
-    let baseUrl = restUrl + "projects/" + wdb.meta.get('ed') + "/subprojects/"
-      , newCollectionData = { "title": $('#pName').val(), "short": $('#pShort').val(), "collection": $('#pColl').val() }
+    let newCollectionData = { "title": $('#pName').val(), "short": $('#pShort').val(), "collection": $('#pColl').val() }
       , method = $('#pID').val() == '' ? "post" : "put";
 
     $.ajax({
       method: method,
-      url: baseUrl + $('#pID').val(),
+      url: new URL("projects/" + wdb.meta.get('ed') + "/subprojects/" + $('#pID').val(), wdb.restUrl).toString(),
       contentType: "application/json",
       data: JSON.stringify(newCollectionData),
       success: function ( data ) {
@@ -322,10 +315,6 @@ function newProjectHandlers ( ) {
 }
 
 $( ( ) => {
-  let rest = wdb.meta.get('rest').get('2')
-    , delimiter = (rest.substr(rest.length - 1)) == '/' ? "" : "/";
-  restUrl = rest + delimiter;
-
   uploadHandlers();
   newProjectHandlers();
 });
