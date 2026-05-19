@@ -22,9 +22,6 @@ const wdb = (function() {
     else meta.set(m.name, m.content);
   }
 
-  const rest = meta.get('rest').get('2')
-      , delimiter = (rest.substr(-1)) == '/' ? "" : "/";;
-
   // will be used to store headers
   let restHeaderVal = { };
   
@@ -118,7 +115,7 @@ const wdb = (function() {
   return {
     meta:           meta,
     parameters:     new URLSearchParams(window.location.search),
-    restUrl:        rest + delimiter + "api/v2/",
+    restUrl:        new URL("api/v2/", meta.get('rest').get('2')).toString(),
     restHeaders:    restHeaderVal,
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
@@ -160,18 +157,7 @@ const wdb = (function() {
       if ( targetElement ) {
         $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
-    },
-
-    /* taken from https://github.com/30-seconds/30-seconds-of-code/blob/master/snippets/URLJoin.md */
-    URLJoin: ( ...args ) =>
-      args
-        .join('/')
-        .replace(/[\/]+/g, '/')
-        .replace(/^(.+):\//, '$1://')
-        .replace(/^file:/, 'file:/')
-        .replace(/\/(\?|&|#[^!])/g, '$1')
-        .replace(/\?/g, '&')
-        .replace('&', '?')
+    }
   };
 })();
 Object.freeze(wdb);
