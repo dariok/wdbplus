@@ -722,20 +722,19 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
 // group navigation related methods
   nav: {
     // load navigation if necessary and toggle visibility
-    toggleNavigation: function( target) {
-      if ($("header nav").css("display") == "none") {
+    toggleNavigation: function( ) {
+      if ( $("header nav").css("display") === "none" ) {
         $("#showNavLink").text("Navigation ausblenden");
       } else {
         $("#showNavLink").text("Navigation einblenden");
       }
       
-      if ($("header nav").text() === "") {
+      if ( $("header nav").text() === "" ) {
         $("header nav").text("lädt...");
         let edition = wdb.meta.get('ed;')
         
         $.ajax({
-          // TODO: use new API
-          url: wdb.URLJoin(wdb.meta.get('rest').get('1'), "collection/", edition, "/nav.html"),
+          url: new URL("projects/" + wdb.meta.get('ed') + "/views/navigation", wdb.restUrl).toString(),
           success: function (data) {
             $("header nav").replaceWith($(data));
           },
