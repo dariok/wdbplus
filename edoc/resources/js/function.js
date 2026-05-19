@@ -22,6 +22,9 @@ const wdb = (function() {
     else meta.set(m.name, m.content);
   }
 
+  const rest = meta.get('rest').get('2')
+      , delimiter = (rest.substr(-1)) == '/' ? "" : "/";;
+
   // will be used to store headers
   let restHeaderVal = { };
   
@@ -115,6 +118,7 @@ const wdb = (function() {
   return {
     meta:           meta,
     parameters:     new URLSearchParams(window.location.search),
+    restUrl:        rest + delimiter + "api/v2/",
     restHeaders:    restHeaderVal,
     setRestHeaders: setAuthorizationHeader,
     getUniqueId:    getUniqueId,
@@ -203,6 +207,8 @@ const wdbDocument = {
     let from = range.split('-')[0],
         to = range.split('-')[1];
     
+    if ( document.getElementById(from) === null ) return;
+
     this.highlightElements (from, to, 'red', '');
 
     let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
@@ -563,6 +569,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
    /* TODO use the Range API to make this easier and more comprehensible */
   // highlight a range of elements between a start and an end marker, using a given color and an alternative text
   highlightElements: function (startMarker, endMarker, color, alt) {
+    if ( startMarker === undefined || endMarker === undefined ) return;
     // set defaults
     color = (color === "undefined") ? "#FFEF19" : color;
     
@@ -768,7 +775,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
-        url: wdb.meta.get('rest').get('2') + "projects/" + ed + "/views/navigation",
+        url: wdb.restUrl + "projects/" + ed + "/views/navigation",
         dataType: "html",
         success:  ( data ) => {
           let replacement = $(data).find('#' + ed).prev().addBack();
@@ -898,6 +905,7 @@ const wdbUser = {
  * includes highlighting and image loading functions
  ***/
 $( () => {
+
   // highlight a range of elements given by the »l« query parameter and scroll there
   if ( wdb.parameters.has('l') ) {
     wdbDocument.highlightRange(wdb.parameters.get('l'));
@@ -980,7 +988,7 @@ $( () => {
  *  event handlers on window properties
  ***/
 // load image when jumping to target
-$(window).bind('hashchange', function () {
+$(window).on('hashchange', function () {
   wdbDocument.loadTargetImage();
 });
 
@@ -991,7 +999,7 @@ $(window).on('load resize', function () {
 });
 
 /* preparations to show some loading animation while doing AJAX requests */
-$(document).bind({
+$(document).on({
 	ajaxStart: function() {
     $("body").addClass("loading");
   },
