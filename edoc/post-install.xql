@@ -49,5 +49,7 @@ return (
   xmldb:reindex($targetCollection || '/rest'),
   xmldb:reindex($targetCollection || '/annotations'),
   xmldb:reindex($targetCollection || '/addins'),
-  xmldb:reindex($targetCollection || '/admin')
+  xmldb:reindex($targetCollection || '/admin'),
+
+  sm:create-group("wdbadmin", "admin", "Administrators for this installation")
 )
