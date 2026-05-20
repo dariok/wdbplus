@@ -63,12 +63,12 @@ const wdbAdmin = {
     $('#results').append("<tr><th>Local file</th><th>Target path</th><th>Status</th>");
     
     for ( let file of files ) {
-      let task = $('#selectTask input:checked').attr("id")
-        , filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
-        , delim = $('pre').text().endsWith('/') ? '' : '/'
-        , targetPath = $('pre').text() + delim + $('select').val() + "/" + filePath;
+      let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
+        , val = $('select').val()
+        , targetCollection = val === undefined ? '' : String(val)
+        , targetPath = new URL(targetCollection + '/' + filePath, 'xmldb:/' + $('pre').text()).toString();
 
-      $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath + "</td><td></td>");
+      $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath.substring(7) + "</td><td></td>");
     }
 
     $("input[type='submit']").prop("disabled", false);
@@ -158,18 +158,17 @@ const wdbAdmin = {
 
     let mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
-    let filename = file.webkitRelativePath == "" ? $('select').val() + '/' + file.name
-                                                 : $('select').val() + '/' + file.webkitRelativePath.substring(0, file.webkitRelativePath.indexOf(file.name)) + file.webkitRelativePath;
-                                                   /* file.filename in the payload will be webkitRelativePath; as we need the subdirectory in rest-common.xqm, we need to add it here */
+    let f = $('select').val()
+      , filename = f === undefined ? '' : $('select').val()
     let formdata = new FormData();
     formdata.append("file", file);
-    formdata.append("path", filename);
+    formdata.append("path", String(filename));
     
     let fileAlreadyOnServer;
     try {
       await $.ajax({
         method: "HEAD",
-        url: new URL("resources/" + fileID, wdbAdmin.restUrl)
+        url: new URL("resources/" + fileID, wdbAdmin.restUrl).toString()
       });
       fileAlreadyOnServer = true;
     } catch ( response ) {
