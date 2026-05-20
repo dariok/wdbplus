@@ -301,8 +301,8 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
   return if ( empty($resource) ) then
     r2:response(404, "text/plain", "The resource was not found", $r2:allOrigins)
   else
-    let $type := if ( exists($request?header?accept) )
-            then $request?header?Accept
+    let $type := if ( exists($request?headers?Accept) )
+            then $request?headers?Accept
             else "text/html"
         , $process := try {
               r2r:resolveProcess($resource, $request?parameters?view, $type)
