@@ -51,8 +51,8 @@ else if ( contains($exist:path, 'api/v2') ) then
         if ( request:get-method() = ('options', 'OPTIONS') and $local:config//config:origin = request:get-header('origin') )
         then (
           <set-header name="Access-Control-Allow-Origin" value="{ request:get-header('origin') }" />,
-          <set-header name="Access-Control-Allow-Methods" value="{ request:get-method() }" />,
-          <set-header name="Access-Control-Allow-Headers" value="authorization" />,
+          <set-header name="Access-Control-Allow-Methods" value="GET, PUT, POST, PATCH, OPTIONS, HEAD" />,
+          <set-header name="Access-Control-Allow-Headers" value="Authorization, Content-Type" />,
           <set-header name="Access-Control-Allow-Credentials" value="true" />
         )
         else ()
