@@ -7,7 +7,7 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace xsl  = "http://www.w3.org/1999/XSL/Transform";
 
-declare function wdbProc:process ( $input as node(), $commands as element(meta:command)+, $params as element(parameters) ) as map(*) {
+declare function wdbProc:process ( $input as node(), $commands as element(meta:step)+, $params as element(parameters) ) as map(*) {
   fold-left(
     $commands,
     $input,
@@ -50,7 +50,7 @@ declare function wdbProc:getContent ( $model as map(*) ) as map(*) {
           </parameters>
 
     return try {
-      let $content := wdbProc:process($input, $model?process/*, $params)
+      let $content := wdbProc:process($input, $model?process//meta:step, $params)
       return map { "status": $content?status, "content": $content?content }
     } catch * {
       map { "status": 500, "content": $err:description }

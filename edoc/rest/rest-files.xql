@@ -407,10 +407,11 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
       then map { "status": 404, "content": "No file with ID " || $id || " found!" }
       else if ( not($process) )
       then map { "status": 400, "content": "no process found for target type " || $type || " that has a view " || $view }
-      else wdbProc:getContent($id, $process, $view,
+      else wdbProc:getContent(
               map { 
                     'fileLoc': $pathInfo?collectionPath || '/' || $pathInfo?fileName,
-                    'pathToEd': $pathInfo?projectPath
+                    'pathToEd': $pathInfo?projectPath,
+                    "process": $process
                   }
             )
   

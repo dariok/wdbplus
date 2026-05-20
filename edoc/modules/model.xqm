@@ -72,11 +72,13 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     let $proc := if ( $filePathInfo?type = "project" )
       then
         <meta:process target="html">
-          <meta:command type="xsl">{ 
-            if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
-              then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
-              else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
-          }</meta:command>
+          <meta:command>
+            <meta:step type="xsl">{ 
+              if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
+                then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
+                else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
+            }</meta:step>
+          </meta:command>
         </meta:process>
       else
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
@@ -121,13 +123,13 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       "mainEd":           doc($filePathInfo?mainProject || '/wdbmeta.xml')/meta:projectMD/@xml:id,
       "p":                $parsedParam,
       "pathToEd":         $filePathInfo?projectPath,
+      "process":          $process,
       "projectFile":      $projectFile,
       "projectResources": $filePathInfo?mainProject || "/resources/",
       "q":                $q,
       "requestUrl":       $requestUrl,
       "title":            $title,
-      "view":             $view,
-      "process":          $process
+      "view":             $view
     }
   } catch *:wdb0000 {                       (: wdb-files.xqm: no file with ID :)
     error(
@@ -140,7 +142,9 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
         "p":           $p,
         "q":           $q,
         "wdb:data":    $config:data,
-        "request":     if ( request:exists() ) then request:get-url() else ""
+        "request":     if ( request:exists() ) then request:get-url() else "",
+        "errLocation": $err:module || '@' || $err:line-number || ':' || $err:column-number,
+        "additional":  $err:additional
       }
     )
   } catch * {                                   (: TODO: add more descriptions:)

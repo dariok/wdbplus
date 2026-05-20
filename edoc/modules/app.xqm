@@ -265,21 +265,20 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
   
   let $sel := if ( $process/meta:command )
     then
-    (: Also for wdbmeta: the attributes to narrow selection should actually be children of process, not command.
-        This is semantically better and it allows to have multiple commands for one process (see #394) :)
+    (: A command contains 1+ steps; we check command/@* to find the correct command and return it :)
       for $c in $process/meta:command
         return if ( $c/@refs ) then
           (: if a list of IDREFS is given, this command matches if $id is part of that list :)
           let $map := tokenize($c/@refs, ' ')
-          return if ( $map = $id ) then $base || $c else ()
+          return if ( $map = $id ) then $c else ()
         else if ( $c/@regex and matches($id, $c/@regex) )
           (: if a regex is given and $id matches that regex, the command matches :)
-          then $base || $c
+          then $c
         else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
-          then $base || $c
+          then $c
         else if ( not($c/@refs or $c/@regex or $c/@group) )
           (: if no selection method is given, the command is considered the default :)
-          then $base || $c
+          then $c
         else () (: neither refs nor regex match and no default given :)
     (: if no command is defined, traverse up the project ancestors :)
     else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
@@ -291,13 +290,17 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
     else ()
   
-  (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return if ( $sel[1] instance of element(meta:process) )
+  (: As we check from most specific to default, the first command in the sequence is the right one.
+     We add the base-uri as attribute to the command so the path can later be evaluated :)
+  return if ( $sel[1] instance of element(meta:command) )
+    then <process target="{ $target }" view="{ $view }" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+            <command base="{ $base }">{ 
+              for $step in $sel[1]/*
+                return <step type="{ $step/@type }">{ $base || normalize-space($step) }</step>
+            }</command>
+         </process>
+    else if ( $sel[1] instance of element(meta:process) )
     then $sel[1]
-    else if ( $sel[1] instance of xs:string )
-      then <meta:process target="{$target}" view="{$view}">
-              <meta:command type="{$process/meta:command/@type}">{$sel[1]}</meta:command>
-           </meta:process>
     else
       error(
         QName('wdbRErr', 'wdb0002'),

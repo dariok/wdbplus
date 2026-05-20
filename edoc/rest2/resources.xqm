@@ -318,11 +318,10 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
     else if ( $status = 304 ) then
       r2:response(304, "text/plain", "", $r2:allOrigins)
     else
-      let $viewParam := string($process/@view)
-        , $result := wdbProc:getContent(map {
+      let $result := wdbProc:getContent(map {
               "id": $request?parameters?id,
               "process": $process,
-              "view": $viewParam,
+              "view": $request?parameters?view,
               "fileLoc": $resource?path,
               "pathToEd": $resource?projectPath,
               "ed": tokenize(normalize-space($resource?projectPath), "/")[last()]
@@ -338,6 +337,7 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
 declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
   (: TODO: range index based on white space separated values – or, introduce a child element to meta:file :)
   (: TODO: add a unit test for this; use the documentation :)
+  (: TODO: handle the case that multiple representations exist for a PID :)
   let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
   return if ( count($matches) = 1 ) then
     r2:response(303, "text/plain", "", map:merge((
