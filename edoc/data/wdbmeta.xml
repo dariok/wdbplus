@@ -24,7 +24,9 @@
     <files></files>
     <processes>
         <process target="">
-            <command type=""></command>
+            <command>
+                <step type=""/>
+            </command>
         </process>
     </processes>
     <struct></struct>
