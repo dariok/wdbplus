@@ -97,6 +97,11 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
     map { "error": r2:response(400, "text/plain", "Wrong content of resource information found. Expected `path` and `file`.", $r2:allOrigins) }
   else
     let $xml := try { parse-xml($request?body?file?data) } catch * { () }
+      , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
+      , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+      , $targetPath := $fullTargetPath => substring-before($fileNameBase)
+      , $relPath := $targetPath => substring-after($request?project?collectionPath)
+
     return
       if ( empty($xml) ) then
         map { "error": r2:response(400, "text/plain", "File content is not valid XML.", $r2:allOrigins) }
@@ -104,7 +109,7 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
         map {
           "xml": $xml,
           "hash": util:uuid($xml),
-          "relativePath": $request?body?path
+          "relativePath": $relPath || $fileNameBase
         }
 };
 
@@ -192,12 +197,13 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
       )
 };
 
-declare function r2r:putResource ( $request as map(*) ) as item() {
+declare function r2r:putResource ( $request as map(*) ) as map(*) {
   let $resource := r2r:requireWritableResource($request)
   return if ( exists($resource?error) ) then
     $resource?error
   else
     let $upload := r2r:parseUpload($request)
+    , $t := util:log("warn", "Error storing file under " || $upload?relativePath || ": A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path)
 
     return if ( exists($upload?error) ) then
       $upload?error
