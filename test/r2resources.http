@@ -31,3 +31,29 @@ GET http://localhost:8080/exist/apps/edoc/api/v2/resources/byPid/12345
 ###
 
 DELETE http://localhost:8080/exist/apps/edoc/api/v2/resource/pb006001-0101
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views
+Accept: text/html
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views/md
+Accept: text/html
+
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views/md
+Accept: text/html
+If-Modified-Since: Wed, 13 May 2026 08:09:45 GMT
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106
+If-Modified-Since: Wed, 13 May 2026 08:09:45 GMT
+
+###
+
+HEAD https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pa000019-0004
