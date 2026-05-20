@@ -302,7 +302,7 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
  :)
 declare function r2p:optionsResource ( $request as map(*) ) as item() {
   let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
-    , $t := util:log("info", "OPTIONS request for project with ID " || $request?parameters?ed || ". Project found: " || ($resource instance of map(*)))
+  
   return if ( $project instance of xs:QName ) then
     r2:response(404, "text/plain", "Project " || $request?parameters?ed || " not found", $r2:allOrigins)
   else
