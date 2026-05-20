@@ -124,7 +124,7 @@ Accept: text/html
 ###
 
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/resources
-Accept: application/json
+Accept: text/html
 
 ###
 

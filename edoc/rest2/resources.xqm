@@ -180,7 +180,7 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
       , $status := if ( exists($modified) and $modified != "" )
                       then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
                       else 200
-      
+    
     return if ( empty($content) ) then
       r2:response(204, "", "", $r2:allOrigins)
     else

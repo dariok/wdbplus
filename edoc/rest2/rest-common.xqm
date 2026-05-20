@@ -136,14 +136,15 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
       (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
     , $existing := $meta//id($request?parameters?id)
     
-    , $relPath := substring-before($request?body?path, $request?body?file?name)
-    , $targetPath := $request?project?collectionPath || $relPath
+    , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
     , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+    , $targetPath := $fullTargetPath => substring-before($fileNameBase)
+    , $relPath := $targetPath => substring-after($request?project?collectionPath)
     , $fileNameMod := $fileNameBase => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
                  => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
                  => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
     
-    , $store := (
+  let $store := (
         if ( not(xmldb:collection-available($targetPath)) )
           then (
             xmldb:create-collection($request?project?collectionPath, $relPath),

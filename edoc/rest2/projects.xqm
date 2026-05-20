@@ -347,6 +347,12 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   
   return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+  else if ( not(r2:writeAllowed($request?user)) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
     r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
         map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
@@ -358,17 +364,11 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
   else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $request?parameters?id ) then
     r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
-  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
-    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
-  else if ( not(r2:writeAllowed($request?user)) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  (: else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
             and @xml:id = $request?parameters?id
             and @uuid = $uuid
           ] ) then
-    r2:response(204, 'text/plain', '', $r2:allOrigins) :)
+    r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
   else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
   else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || $request?body?file?name] ) then
@@ -476,7 +476,7 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
         204,
         'text/plain',
         (
-          if ( subProjectIds ) then
+          if ( $subProjectIds ) then
             for $id in $subProjectIds return r2p:deleteProject(map{
               "parameters": map{ "ed": $id },
               "user": $request?user

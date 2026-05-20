@@ -61,6 +61,7 @@ describe("REST v2 projects", function () {
         .get("/projects")
         .set("Accept", "application/xml")
         .then(( res ) => {
+          if ( res.status !== 200 ) { console.log(res.body.toString()); }
           expect(res).to.have.status(200);
           expect(res).to.have.header("content-type", "application/xml");
           let doc = parser.parseFromString(res.body.toString(), "application/xml");
@@ -596,11 +597,11 @@ describe("REST v2 projects", function () {
       const xml = teiXml("put identical");
 
       return uploadResourceMultipart(
-        agent.put(`/projects/${sharedProjectId}/resources/${id}`),
-        path,
-        name,
-        xml
-      )
+          agent.put(`/projects/${sharedProjectId}/resources/${id}`),
+          path,
+          name,
+          xml
+        )
         .then((res) => {
           expect(res).to.have.status(201);
           return uploadResourceMultipart(
