@@ -69,9 +69,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       , $instanceFunctions := for $function in doc($config:data || "/instance-functions.xml")//function
           return $function/@name || '#' || count($function/argument)
     
-    (: even though it’s called xsl, we use the whole meta:process element here so that later we can use multi-command
-       processing (#394) :)
-    let $xsl := if ( $filePathInfo?type = "project" )
+    let $proc := if ( $filePathInfo?type = "project" )
       then
         <meta:process target="html">
           <meta:command type="xsl">{ 
@@ -81,10 +79,9 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
           }</meta:command>
         </meta:process>
       else
-        (: TODO: this should get the process, both XSLT and XQUery, and hence the key in the map should be process :)
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
-    let $xslt := if ( not($xsl) instance of element(meta:process) )
+    let $process := if ( not($proc) instance of element(meta:process) )
       then wdbErr:error(map { "code": "wdbErr:wdb0002", "err:description": "no XSLT found for file with ID " || $id,
                 "err:additional": <additional>
                   <file>{$filePathInfo?fileName}</file>
@@ -93,7 +90,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
                 </additional>
               }
             )
-      else $xsl
+      else $proc
     
     let $doc := doc($pathToFile)
       , $title := if ( $id != "" )
@@ -130,7 +127,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       "requestUrl":       $requestUrl,
       "title":            $title,
       "view":             $view,
-      "xslt":             $xslt
+      "process":          $process
     }
   } catch *:wdb0000 {                       (: wdb-files.xqm: no file with ID :)
     error(

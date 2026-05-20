@@ -319,20 +319,14 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
       r2:response(304, "text/plain", "", $r2:allOrigins)
     else
       let $viewParam := string($process/@view)
-        , $result := wdbProc:getContent(
-            $request?parameters?id,
-            $process,
-            $viewParam,
-            map {
+        , $result := wdbProc:getContent(map {
               "id": $request?parameters?id,
               "process": $process,
               "view": $viewParam,
               "fileLoc": $resource?path,
               "pathToEd": $resource?projectPath,
-              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()],
-              "xslt": $process
-            }
-          )
+              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()]
+          })
         , $body := $result?content
         , $namespace := if ( $body instance of document-node() or $body instance of element() )
                           then namespace-uri(($body/*[1], $body)[1])

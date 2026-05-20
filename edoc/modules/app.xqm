@@ -249,8 +249,10 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @param $infoFileLoc The location of the wdbmeta.xml file
  : @param $view (optional) a view parameter for selecting the right process
  :
- : @returns The path to the XSLT
+ : @returns A command (should be: a process with 1+ command)
 :)
+(: TODO: rename to "getProcessFromWdbmeta" or simply "getProcess" :)
+(: TODO: change to actually get a process with 1+ command, see comment below :)
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as element(process)? {
     wdb:getXslFromWdbMeta($infoFileLoc, $id, $target, "")
 };
@@ -263,6 +265,8 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
   
   let $sel := if ( $process/meta:command )
     then
+    (: Also for wdbmeta: the attributes to narrow selection should actually be children of process, not command.
+        This is semantically better and it allows to have multiple commands for one process (see #394) :)
       for $c in $process/meta:command
         return if ( $c/@refs ) then
           (: if a list of IDREFS is given, this command matches if $id is part of that list :)

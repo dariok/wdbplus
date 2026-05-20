@@ -104,7 +104,7 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
     <meta name="ed" content="{ $model?ed }" />
     <meta name="path" content="{ $model?fileLoc }"/>
     { $config:restMetaElement }
-    <meta name="xslt" content="{ $model?xslt }" />
+    <meta name="process" content="{ $model?process }" />
     <title>{ $model("title") } – { normalize-space($config:configFile//config:short) }</title>
 
     {
@@ -195,7 +195,7 @@ declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   try {
     <main>
-      { (wdbProc:getContent($model?id, $model?xslt, $model?view, $model))?content }
+      { (wdbProc:getContent($model))?content }
       { wdbv:getLeftFooter($node, $model) }
     </main>
   } catch err:XPTY0004 {
