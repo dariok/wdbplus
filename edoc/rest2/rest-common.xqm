@@ -237,7 +237,7 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
               file="{ $id }"
               label="{ $info?mainTitle }">
             {
-              if ( $info?body?xml//tei:titleStmt/tei:title[@type eq 'num'] )
+              if ( exists($info?numberingTitle) )
                 then attribute order { normalize-space($info?numberingTitle) }
                 else ()
             }
