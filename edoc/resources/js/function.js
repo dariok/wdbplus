@@ -756,14 +756,17 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
   },
   
   /**
-   * display an image in the right div – does not use an viewer but inserts an iframe
-   * @param {string} url - the URL from which to load the image
-   * @returns {void}
+   * display an image in the right div – does not use any viewer but inserts an iframe
+   * @param { String } url - the URL from which to load the image
+   * @returns { void }
    */
   displayImageRight: function ( url ) {
-    if (window.innerWidth > 768) {
-      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+    if ( window.innerWidth > 768 ) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><button>[x]</button></span>');
       $('#facsimile').attr('src', url).css('display', 'block');
+      $('document').on('click', 'iframe button', ( event ) => {
+        $('#fac').empty();
+      });
     }
   },
   
@@ -946,6 +949,8 @@ $( () => {
   
   // register click handler for entity information
   $('body').on('click', '.entity', wdbUser.showEntityData);
+
+  $('#auth button').on('click', ( ) => { $('#login').toggle(); });
 });
 /* END DOM ready functions */
 
