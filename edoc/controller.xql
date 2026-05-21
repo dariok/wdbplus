@@ -24,7 +24,7 @@ declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " → resource: " || $exist:resource),
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
-if ( $local:isget and $exist:resource = ('v2.json', 'apiv2.html') ) then
+if ( $local:isget and $exist:resource = ('v2.json', 'v2.html', 'v2.yaml') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/rest2/{$exist:resource}"/>
   </dispatch>
