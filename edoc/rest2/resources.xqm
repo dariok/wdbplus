@@ -138,15 +138,20 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
 };
 
 declare %private function r2r:allViews ( $resource as map(*) ) as element()* {
-  let $metaFile := $resource?meta
-    , $parent := $metaFile/meta:projectMD/meta:struct/meta:import[1]
-    , $parentMeta := doc($resource?projectPath || '/' || $parent/@path)
+  (: this lists all processes – which is not a problem because detailed selection will happen based on the attributes
+     of any command(s) in the process :)
+  let $parent := if ( $resource?meta/* instance of element(meta:projectMD) )
+        then substring-before(base-uri($resource?meta), 'wdbmeta') || '../wdbmeta.xml'
+        else $resource?projectPath || '/../wdbmeta.xml'
+    , $parentMeta := if ( doc-available($parent) )
+        then doc($parent)
+        else ()
 
   return (
-    $metaFile//meta:process,
-    if ( exists($parent) ) then
-      r2r:allViews(map{ "meta": $parentMeta, "projectPath": substring-before(base-uri($parentMeta), '/wdbmeta.xml') })
-    else ()
+    $resource?meta//meta:process,
+    if ( exists($parentMeta) )
+      then r2r:allViews(map{ "meta": $parentMeta, "projectPath": substring-before(base-uri($parentMeta), '/wdbmeta.xml') })
+      else r2r:allViews(map{ "projectPath": substring-before(base-uri($resource?meta), 'wdbmeta') || '..' })
   )
 };
 
