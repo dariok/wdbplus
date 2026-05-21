@@ -211,7 +211,6 @@ declare function r2r:putResource ( $request as map(*) ) as map(*) {
     $resource?error
   else
     let $upload := r2r:parseUpload($request)
-    , $t := util:log("warn", "Error storing file under " || $upload?relativePath || ": A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path)
 
     return if ( exists($upload?error) ) then
       $upload?error
