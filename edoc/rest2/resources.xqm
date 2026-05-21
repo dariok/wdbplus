@@ -115,7 +115,15 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
 
 declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(list) {
   let $processes := r2r:allViews($resource)
-  (: TODO: reduce this list so that evey view+content-type combination occurs only once :)
+    , $list := for $process in $processes
+          let $viewName := string(($process/@view, 'default')[1])
+          group by $name := $process/@target || '-' || $viewName
+          return
+            <view xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+                id="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }/views/{ $viewName[1] }"
+                view="{ $viewName[1] }"
+                target="{ ($process/@target)[1] }"
+            />
 
   return
     <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
@@ -123,16 +131,9 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
         for="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }"
         type="views"
         start="1"
-        total="{ count($processes) }">
+        total="{ count($list) }">
       {
-        for $process in $processes
-          let $viewName := string(($process/@view, 'default')[1])
-          return
-            <view
-                id="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }/views/{ $viewName }"
-                view="{ $viewName }"
-                content-type="{ string(($process/@label, $process/@target)[1]) }"
-            />
+        $list
       }
     </list>
 };
@@ -140,8 +141,9 @@ declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(lis
 declare %private function r2r:allViews ( $resource as map(*) ) as element()* {
   (: this lists all processes – which is not a problem because detailed selection will happen based on the attributes
      of any command(s) in the process :)
-  let $parent := if ( $resource?meta/* instance of element(meta:projectMD) )
-        then substring-before(base-uri($resource?meta), 'wdbmeta') || '../wdbmeta.xml'
+  let $current := base-uri($resource?meta)
+    , $parent := if ( $resource?meta/* instance of element(meta:projectMD) )
+        then substring-before($current, 'wdbmeta') || '../wdbmeta.xml'
         else $resource?projectPath || '/../wdbmeta.xml'
     , $parentMeta := if ( doc-available($parent) )
         then doc($parent)
@@ -149,9 +151,10 @@ declare %private function r2r:allViews ( $resource as map(*) ) as element()* {
 
   return (
     $resource?meta//meta:process,
-    if ( exists($parentMeta) )
+    if ( $current = '/db/apps/edoc/data/wdbmeta.xml' ) then ()
+    else if ( exists($parentMeta) )
       then r2r:allViews(map{ "meta": $parentMeta, "projectPath": substring-before(base-uri($parentMeta), '/wdbmeta.xml') })
-      else r2r:allViews(map{ "projectPath": substring-before(base-uri($resource?meta), 'wdbmeta') || '..' })
+      else r2r:allViews(map{ "projectPath": substring-before($current, 'wdbmeta') || '..' })
   )
 };
 
