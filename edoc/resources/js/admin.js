@@ -162,6 +162,10 @@ const wdbAdmin = {
       , filename = f === undefined ? '' : $('select').val()
     let formdata = new FormData();
     formdata.append("file", file);
+    /* note: we do not use a path as single file uploads are supposed to go to a collection that already exists (the
+       default being "edition"). If an upload to a different collection is desired, a directory can be uploaded which
+       will create a collection with this name */
+    /* TODO: add this to the documentation as well */
     formdata.append("path", String(filename));
     
     let fileAlreadyOnServer;
