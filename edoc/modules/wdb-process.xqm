@@ -11,12 +11,12 @@ declare function wdbProc:process ( $input as node(), $commands as element(meta:s
   fold-left(
     $commands,
     $input,
-    function ( $accumulator as node(), $command as element(meta:command) ) {
-      switch ( $command/@type )
-        case "xsl" return wdbProc:processXSL($accumulator, doc(normalize-space($command))/*, $params)
+    function ( $accumulator as node(), $step as element(meta:step) ) {
+      switch ( $step/@type )
+        case "xsl" return wdbProc:processXSL($accumulator, doc(normalize-space($step))/*, $params)
         (: TODO case "xquery" :)
         default
-          return map { "status": 500, "content": "Invalid command type " || ($command/@type, '?')[1] }
+          return map { "status": 500, "content": "Invalid command type " || ($step/@type, '?')[1] }
     }
   )
 };
