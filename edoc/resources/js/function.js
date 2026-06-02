@@ -32,8 +32,9 @@ const wdb = (function() {
   /**
    * Perform the actual login. Reload the page if parameter is true
    * @param { Boolean } reload 
+   * @param { String } base
    */
-  let login = function ( reload ) {
+  let login = function ( reload, base='' ) {
     let user = $('#user').val()
       , pass = $('#password').val()
       , username = user === undefined ? '' : String(user)
@@ -42,9 +43,11 @@ const wdb = (function() {
     let formdata = new FormData();
     formdata.append("user", username);
     formdata.append("password", password);
+
+    let url = base === '' ? wdb.restUrl : base;
     
     $.ajax({
-      url: new URL('login', wdb.restUrl).toString(),
+      url: new URL('login', url).toString(),
       method: 'post',
       data: formdata,
       success: ( data ) => {
@@ -63,11 +66,16 @@ const wdb = (function() {
     });
   };
 
-  let logout = function () {
+  /**
+   * Perform the logout call
+   * @param { String } base 
+   */
+  let logout = function ( base='' ) {
     wdb.report("info", "logout request");
+    let url = base === '' ? wdb.restUrl : base;
     
     $.ajax({
-      url: new URL('logout', wdb.restUrl).toString(),
+      url: new URL('logout', url).toString(),
       method: 'get',
       success: function (data) {
         try {
