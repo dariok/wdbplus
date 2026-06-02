@@ -32,13 +32,26 @@ if ( $local:isget and $exist:resource = ('v2.json', 'v2.html', 'v2.yaml') ) then
 (: login :)
 else if ( $exist:resource = 'login' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/rest2/api.xq"/>
+    <forward url="{$exist:controller}/rest2/api.xq">
+      { 
+        if ( $local:config//config:origin = request:get-header('origin') )
+        then (
+          <set-header name="Access-Control-Allow-Origin" value="{ request:get-header('origin') }" />,
+          <set-header name="Access-Control-Allow-Headers" value="Authorization, Content-Type" />
+        )
+        else ()
+      }
+    </forward>
   </dispatch>
 (: logout :)
 else if ( $exist:resource = 'logout' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/rest2/api.xq">
-      <add-parameter name="logout" value="logout" />
+      { 
+        if ( $local:config//config:origin = request:get-header('origin') )
+        then <set-header name="Access-Control-Allow-Origin" value="{ request:get-header('origin') }" />
+        else ()
+      }
     </forward>
   </dispatch>
 
