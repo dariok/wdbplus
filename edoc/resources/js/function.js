@@ -29,66 +29,55 @@ const wdb = (function() {
   };
 
   /* Login and logout */
-  /* TODO: this needs to be reworked completely */
-  let login = function ( event, reload ) {
-    event.preventDefault();
-  
-    let username = $('#user').val()
-      , password = $('#password').val();
-    Cookies.remove('wdbplus');
+  /**
+   * Perform the actual login. Reload the page if parameter is true
+   * @param { Boolean } reload 
+   */
+  let login = function ( reload ) {
+    let user = $('#user').val()
+      , pass = $('#password').val()
+      , username = user === undefined ? '' : String(user)
+      , password = pass === undefined ? '' : String(pass);
 
     let formdata = new FormData();
     formdata.append("user", username);
     formdata.append("password", password);
     
     $.ajax({
-      url: '../api/v2/login',
+      url: new URL('login', wdb.restUrl).toString(),
       method: 'post',
       data: formdata,
-      processData: false,
-      contentType: false,
-      cache: false,
-      success: function (data) {
+      success: ( data ) => {
         try {
-          Cookies.set('wdbplus', btoa(username + ':' + password));
-          $('#auth').replaceWith(data);
-          $('#logout').on('click', () => {
-            wdb.logout();
-          });
+          $('#auth').append("<div id='userdata'></div>");
+          $('#userdata').append(data.user);
+          $('#login').hide();
           if ( reload ) {
             location.reload();
           }
+          wdb.report("info", "logged in as " + username);
         } catch ( e ) {
-          wdb.report("error", "error logging in", e.toString(), $('#auth')[0]);
+          wdb.handleError("logging in", e);
         }
-      },
-      dataType: 'text'
+      }
     });
   };
 
   let logout = function () {
     wdb.report("info", "logout request");
     
-    Cookies.remove('wdbplus');
     $.ajax({
-      url: 'login',
-      method: 'post',
-      data: {
-        logout: 'logout'
-      },
+      url: new URL('logout', wdb.restUrl).toString(),
+      method: 'get',
       success: function (data) {
         try {
-          $('#auth').replaceWith(data);
-          $('#login').on('submit', (event) => {
-            event.preventDefault();
-            wdb.login(event);
-          });
+          $('#userdata').remove();
+          $('#login').show();
           wdb.report("info", "logging off");
-        } catch (e) {
-          wdb.report("error", "error logging out", e);
+        } catch ( e ) {
+          wdb.handleError("logging off", e);
         }
-      },
-      dataType: 'text'
+      }
     });
   };
   /* END login and logout */
@@ -104,16 +93,29 @@ const wdb = (function() {
     login:          login,
     logout:         logout,
 
-    /* usually used internally to signal errors */
     /**
-     * 
+     * Handle general errors, taking care of type checking the error
+     * @param { String } text 
+     * @param { unknown } e 
+     */
+    handleError: function ( text, e ) {
+      if ( e instanceof Error ) {
+        wdb.report("error", "error when " + text, e.toString());
+      } else {
+        wdb.report("error", "an unknown type of error occurred when " + text);
+      }
+      return true;
+    },
+
+    /**
+     * Standard reporting to console
      * @param { String } reportType 
      * @param { String } shortInfo 
      * @param { String } longInfo 
      * @param { Element } targetElement 
-     * @param  {...String} args 
+     * @param { ...String } args 
      */
-    report: function ( reportType, shortInfo, longInfo = '', targetElement, ...args ) {
+    report: function ( reportType, shortInfo, longInfo = '', targetElement = document.createElement('div'), ...args ) {
       let symbol,
           report = [shortInfo + "\n" + longInfo, ...args];
 
@@ -139,6 +141,8 @@ const wdb = (function() {
       if ( targetElement ) {
         $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
+
+      return true;
     }
   };
 })();
@@ -906,14 +910,6 @@ $( () => {
     wdbUser.displayImage(event.target);
   });
 
-  $('#login').on('submit', (event) => {
-    event.preventDefault();
-    wdb.login(event);
-  });
-  $('#logout').on('click', () => {
-    wdb.logout();
-  });
-
   // load navigation
   $('#showNavLink').on('click', () => {
     wdbDocument.nav.toggleNavigation();
@@ -950,6 +946,14 @@ $( () => {
   // register click handler for entity information
   $('body').on('click', '.entity', wdbUser.showEntityData);
 
+  // register listeners for login and logout
+  $(document).on('submit', '#login', ( event ) => {
+    event.preventDefault();
+    wdb.login(false);
+  });
+  $(document).on('click', '#logout', () => {
+    wdb.logout();
+  });
   $('#auth button').on('click', ( ) => { $('#login').toggle(); });
 });
 /* END DOM ready functions */
