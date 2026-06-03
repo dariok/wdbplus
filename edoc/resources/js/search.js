@@ -8,7 +8,9 @@ $(() => {
       , q = event.target.children.namedItem('q')?.value
       , p = event.target.children.namedItem('p')?.value; 
 
-    wdbDocument.loadContent(`${base}search/ft/project/${ed}?q=${q}&p=${p}`, 'searchResults');
+    let url = new URL(`search/ft/project/${ed}?q=${q}&p=${p}`, wdb.restUrl).toString();
+
+    wdbDocument.loadContent(url, 'searchResults');
   });
 
   // a button for paginated results, e.g. of a full text search
