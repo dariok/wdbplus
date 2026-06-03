@@ -327,4 +327,11 @@ function newProjectHandlers ( ) {
 $( ( ) => {
   uploadHandlers();
   newProjectHandlers();
+
+  // register listeners for login and logout – reload admin pages
+  $(document).off("submit")
+  $(document).on('submit', '#login', ( event ) => {
+    event.preventDefault();
+    wdb.login(true, wdbAdmin.restUrl);
+  });
 });
