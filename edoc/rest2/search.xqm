@@ -4,13 +4,12 @@ module namespace r2s = "https://github.com/dariok/wdbplus/rest2/search";
 
 import module namespace kwic     = "http://exist-db.org/xquery/kwic";
 import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
 
-declare namespace api   = "https://github.com/dariok/wdbplus/api/schema/v1";
-declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-declare namespace tei   = "http://www.tei-c.org/ns/1.0";
+declare namespace api    = "https://github.com/dariok/wdbplus/api/schema/v1";
+declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : Search projects – first step before searching within files.
@@ -36,8 +35,8 @@ declare function r2s:searchProjects ( $request as map(*) ) as map(*) {
       
       , $response :=  r2:resultsWrapper(
           map {
-            "self": concat($r2:base, $request?path, '?q=', $query),
-            "from": $r2:base || 'project/' || $request?parameters?ed,
+            "self": $r2:base || '/' || $request?path || '?q=' || $query,
+            "from": $r2:base || '/project/' || $request?parameters?ed,
             "total": count($result),
             "start": $start,
             "length": min(($max, count($subsequence))),
@@ -99,8 +98,8 @@ declare function r2s:searchFile ( $request as map(*) ) as map(*) {
       
       , $response := r2:resultsWrapper(
           map {
-            "self": concat($r2:base, 'search/ft/resource/', $request?parameters?id, '?q=', $query),
-            "from": $r2:base || 'resources/' || $request?parameters?id,
+            "self": $r2:base || '/search/ft/resource/' || $request?parameters?id || '?q=' || $query,
+            "from": $r2:base || '/resources/' || $request?parameters?id,
             "total": count($expanded//exist:match),
             "query": $query,
             "job": "fts"
