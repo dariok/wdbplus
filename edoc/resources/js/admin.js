@@ -65,8 +65,8 @@ const wdbAdmin = {
     for ( let file of files ) {
       let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
         , val = $('select').val()
-        , targetCollection = val === undefined ? '' : String(val)
-        , targetPath = new URL(targetCollection + '/' + filePath, 'xmldb:/' + $('pre').text()).toString();
+        , targetCollection = val === '' ? '' : (String(val) + "/")
+        , targetPath = new URL(targetCollection + filePath, 'xmldb:/' + $('pre').text()).toString();
 
       $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath.substring(7) + "</td><td></td>");
     }
@@ -158,15 +158,14 @@ const wdbAdmin = {
 
     let mdMode = $('#selectTask input:checked').attr("id") == "do" ? "" : "?meta=1";
 
-    let f = $('select').val()
-      , filename = f === undefined ? '' : $('select').val()
-    let formdata = new FormData();
+    let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
+      , val = $('select').val()
+      , targetCollection = val === '' ? '' : (String(val) + "/")
+      , targetPath = new URL(targetCollection + filePath, 'xmldb://').toString().substring(9);
+    
+        let formdata = new FormData();
     formdata.append("file", file);
-    /* note: we do not use a path as single file uploads are supposed to go to a collection that already exists (the
-       default being "edition"). If an upload to a different collection is desired, a directory can be uploaded which
-       will create a collection with this name */
-    /* TODO: add this to the documentation as well */
-    formdata.append("path", String(filename));
+    formdata.append("path", String(targetPath));
     
     let fileAlreadyOnServer;
     try {
