@@ -364,10 +364,10 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
   else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $request?parameters?id ) then
     r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)
             and @xml:id = $request?parameters?id
-            and @uuid = $uuid
-          ] ) then
+            and @uuid = $uuid]
+          ) then
     r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
   else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
