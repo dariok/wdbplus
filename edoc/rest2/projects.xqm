@@ -369,7 +369,7 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
             and @uuid = $uuid
           ] ) then
     r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename(request?body?file?name) and @xml:id != $request?parameters?id] ) then
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
   else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)] ) then
     r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
