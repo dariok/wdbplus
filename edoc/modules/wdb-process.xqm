@@ -7,13 +7,13 @@ import module namespace wdb = "https://github.com/dariok/wdbplus/wdb" at "app.xq
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace xsl  = "http://www.w3.org/1999/XSL/Transform";
 
-declare function wdbProc:process ( $input as node(), $commands as element(meta:step)+, $params as element(parameters) ) as map(*) {
+declare function wdbProc:process ( $input as node(), $steps as element(meta:step)+, $params as element(parameters) ) as map(*) {
   fold-left(
-    $commands,
-    $input,
-    function ( $accumulator as node(), $step as element(meta:step) ) {
+    $steps,
+    map { "content": $input },
+    function ( $accumulator as map(*), $step as element(meta:step) ) {
       switch ( $step/@type )
-        case "xsl" return wdbProc:processXSL($accumulator, doc(normalize-space($step))/*, $params)
+        case "xsl" return wdbProc:processXSL($accumulator?content, doc(normalize-space($step))/*, $params)
         (: TODO case "xquery" :)
         default
           return map { "status": 500, "content": "Invalid command type " || ($step/@type, '?')[1] }
