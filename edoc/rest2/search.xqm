@@ -63,7 +63,7 @@ declare function r2s:searchProjects ( $request as map(*) ) as map(*) {
           ) else (),
           r2:returnResponse($response, $request?headers?Accept, $pathInfo, "search")
         )
-  } catch wdbErr:wdb0000 | wdb0000 {
+  } catch *:wdb0000 | wdb0000 {
     util:log("error", $err:description),
     util:log("info", $err:code),
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
