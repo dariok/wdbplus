@@ -38,8 +38,8 @@
     <files/>
     <processes>
         <process target="html">
-            <command type="xsl">
-                <step>resources/xsl/tei-transcript.xsl</step>
+            <command>
+                <step type="xsl">resources/xsl/tei-transcript.xsl</step>
             </command>
         </process>
     </processes>
