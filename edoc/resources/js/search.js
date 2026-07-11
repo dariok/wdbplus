@@ -1,13 +1,13 @@
 $(() => {
   const base = wdb.meta.get('rest').get('2');
   
-  let id = window.location.pathname.split('/').pop()
+  let ed = wdb.parameters.get('ed')
     , q = wdb.parameters.get('q')
     , p = JSON.parse(decodeURIComponent(wdb.parameters.get('p')).replaceAll("'", '"'));
   
-  if ( id !== undefined && q !== undefined && p?.job == 'fts' && $('main div').children().length === 0 ) {
+  if ( ed !== undefined && q !== undefined && p?.job == 'fts' && $('main div').children().length === 0 ) {
     $('aside div input[name=q]').first().val(q);
-    let url = new URL(`search/ft/project/${id}?q=${q}&p=${p}`, wdb.restUrl).toString();
+    let url = new URL(`search/ft/project/${ed}?q=${q}&p=${p}`, wdb.restUrl).toString();
     wdbDocument.loadContent(url, 'searchResults');
   }
 
