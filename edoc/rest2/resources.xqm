@@ -109,7 +109,7 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
         map {
           "xml": $xml,
           "hash": util:uuid($xml),
-          "relativePath": $relPath || $fileNameBase
+          "relativePath": $relPath || r2:sanitiseFilename($fileNameBase)
         }
 };
 

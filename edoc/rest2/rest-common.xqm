@@ -116,6 +116,12 @@ declare function r2:mapKeysAllowed( $m as map(*), $required as xs:string*, $opti
     (every $k in $keys      satisfies $k = $allowed)
 };
 
+declare function r2:sanitiseFilename ( $filename as xs:string ) as xs:string {
+  $filename => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
+            => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
+            => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
+};
+
 (:~
  : Function to create a new XML resource or update an existing XML, used for POST and PUT requests.
  : XML files are always entered into a wdbmeta file
@@ -140,9 +146,7 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
     , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
     , $targetPath := $fullTargetPath => substring-before($fileNameBase)
     , $relPath := $targetPath => substring-after($request?project?collectionPath)
-    , $fileNameMod := $fileNameBase => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
-                 => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
-                 => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
+    , $fileNameMod := r2:sanitiseFilename($fileNameBase)
     
   let $store := (
         if ( not(xmldb:collection-available($targetPath)) )
