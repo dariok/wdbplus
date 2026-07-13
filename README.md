@@ -132,10 +132,6 @@ See the Wiki for details!
 
 * HAB Wolfenbüttel
   * Editionsprojekt Karlstadt
-* ACDH Wien
-  * Wien[n]erisches Diarium Digital
-  * Repertotium frühneuzeitlicher Rechtsquellen
-  * Protokolle der Sitzungen der Gesamtakadmie
 * Akademie der Wissenschaften, Heidelberg
   * Theologenbriefwechsel
 * ULB Darmstadt
