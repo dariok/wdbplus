@@ -89,12 +89,12 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
       wdbs:projectList(true(), '')
     )
     else if ($model?ed != 'data' and $model?ed != ''and $file = '') then
-      local:getFiles($model)
+      wdbPL:getFiles($model)
     else
       wdbPL:getFileStat($model, $file)
 };
 
-declare function local:getFiles($model) {
+declare function wdbPL:getFiles($model) {
   let $infoFile := doc($model?infoFileLoc)
     , $filesInEd := $infoFile//meta:file
   
