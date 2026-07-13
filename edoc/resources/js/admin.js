@@ -313,7 +313,7 @@ function newProjectHandlers ( ) {
         url.searchParams.append("pShort", $('#pShort').val()?.toString() ?? 'unknown');
         url.searchParams.append("pID", $('#pID').val()?.toString() ?? 'unknown');
         url.searchParams.append("collection", data);
-        url.searchParams.append("ed", $('#pID').val()?.toString() ?? 'unknown');
+        url.searchParams.append("ed", wdb.meta.get('ed'));
         window.location.href = url.toString();
       },
       error: function ( data ) {
