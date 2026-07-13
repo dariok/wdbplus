@@ -91,12 +91,12 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
     else if ( $file[self::meta:projectMD or self::meta:struct] ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
       return map {
-        "type": "project",
-        "projectPath": $projectPath,
-        "collectionPath": $projectPath,
-        "fileName": "wdbmeta.xml",
-        "mainProject": wdbFiles:findMainProject($projectPath),
-        "parentProject": wdbFiles:findParentProject($projectPath, $id)
+        "collectionPath": xs:anyURI($projectPath),
+              "fileName": xs:anyURI("wdbmeta.xml"),
+           "mainProject": wdbFiles:findMainProject($projectPath),
+         "parentProject": wdbFiles:findParentProject($projectPath, $id),
+           "projectPath": xs:anyURI($projectPath),
+                  "type": "project"
       }
     else if ( starts-with($file/@path, '$') ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
@@ -112,11 +112,11 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
         , $path := $projectPath || $file[self::meta:file]/@path
 
       return map {
-        "type": "file",
-        "projectPath": $projectPath,
-        "collectionPath": functx:substring-before-last($path, '/') ,
-        "fileName": functx:substring-after-last($path, '/'),
-        "mainProject": wdbFiles:findMainProject($projectPath)
+        "collectionPath": xs:anyURI(functx:substring-before-last($path, '/')),
+              "fileName": xs:anyURI(functx:substring-after-last($path, '/')),
+           "mainProject": xs:anyURI(wdbFiles:findMainProject($projectPath)),
+           "projectPath": xs:anyURI($projectPath),
+                  "type": "file"
       }
 };
 
@@ -127,11 +127,13 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
  : @param $projectPath a string representation of the path to the project
  : @returns the path to the main project
  :)
-declare function wdbFiles:findParentProject ( $projectPath as xs:string, $id as xs:string ) as xs:string {
-  if ( doc-available($projectPath || "/wdbmeta.xml") and doc($projectPath || "/wdbmeta.xml")//meta:ptr[@xml:id = $id] ) then
-    $projectPath
+declare function wdbFiles:findParentProject ( $projectPath as xs:string, $id as xs:string ) as xs:anyURI {
+  if ( doc-available($projectPath || "/wdbmeta.xml")
+       and doc($projectPath || "/wdbmeta.xml")//meta:ptr[@xml:id = $id]
+  ) then
+    xs:anyURI($projectPath)
   else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
-    "/db/apps/edoc/data/"
+    xs:anyURI("/db/apps/edoc/data/")
   else
     wdbFiles:findParentProject(functx:substring-before-last($projectPath, '/'), $id)
 };
@@ -143,11 +145,11 @@ declare function wdbFiles:findParentProject ( $projectPath as xs:string, $id as 
  : @param $projectPath a string representation of the path to the project
  : @returns the path to the main project
  :)
-declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:string {
+declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:anyURI {
   if ( util:binary-doc-available($projectPath || "/project.xqm") ) then
-    $projectPath
+    xs:anyURI($projectPath)
   else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
-    "/db/apps/edoc/data/"
+    xs:anyURI("/db/apps/edoc/data/")
   else
     wdbFiles:findMainProject(functx:substring-before-last($projectPath, '/'))
 };
