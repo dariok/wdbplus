@@ -9,7 +9,6 @@ import module namespace wdbm       = "https://github.com/dariok/wdbplus/model"  
 import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
 import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "../modules/wdb-request.xqm";
 import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -196,8 +195,12 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
       then error (QName("https://github.com/dariok/wdbplus/errors", "wdbErr:h400"), "user " || $user || " has no access to write to collection " || $collectionPath, 403)
       else ()
     
-    let $resourceName := xstring:substring-after-last($path, '/'),
-        $targetPath   := $collectionPath || '/' || xstring:substring-before-last($path, '/')
+    let $resourceName := tokenize(normalize-space($path), '/')[last()],
+        $targetPath   := $collectionPath || '/' || (
+          if (starts-with($path, '/'))
+          then '/' || string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/')
+          else string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/')
+        )
     
     (: make sure we really have an ID in the file :)
     let $prepped := wdbRMi:replaceWs($parsed?file?body),
@@ -229,7 +232,7 @@ function wdbRc:createFile ($data as xs:string*, $collection as xs:string, $heade
                 <http:header name="Location" value="{$store[2]}" />
               </http:response>
             </rest:response>,
-            $config:restURL || "/resource/" || $id
+            $config:restURL?1 || "/resource/" || $id
           )
         else if ($store[1]//http:response/@status != "200")
         then $store

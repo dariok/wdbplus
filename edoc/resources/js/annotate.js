@@ -28,7 +28,7 @@ $(function() {
   // get all full text annotations (all public and private if created by current user) for the current file
   $.ajax({
     method: "get",
-    url: wdb.meta.rest+ "anno/" + wdb.meta.id,
+    url: wdb.meta.get('rest').get('1')+ "anno/" + wdb.meta.get('id,')
     headers: wdb.restheaders,
     success: function(data, textStatus, jqXHR){
       if (jqXHR.status == 200) {
@@ -170,7 +170,7 @@ function annoDelete ( id ) {
   console.log("Delete " + id);
   $.ajax({
     method: "delete",
-    url: wdb.meta.rest + "anno/" + id,
+    url: wdb.meta.get('rest').get('1') + "anno/" + id,
     headers: wdb.restheaders,
     success: function (data, textStatus, jqXHR) {
       let container = $('#' + id).parent(),
@@ -202,7 +202,7 @@ function parsefta() {
   // POST the the fta
   $.ajax({
     method: "post",
-    url: wdb.meta.rest+ "anno/" + wdb.meta.id,
+    url: wdb.meta.get('rest').get('1')+ "anno/" + wdb.meta.get('id,')
     headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
@@ -216,7 +216,7 @@ function parsefta() {
   
   // GET all annotations from server
   $.getJSON(
-   wdb.meta.rest+ "anno/" + wdb.meta.id,
+   wdb.meta.get('rest').get('1')+ "anno/" + wdb.meta.get('id,')
     function(data){ console.log(data); }
   );
   
@@ -255,8 +255,8 @@ $(document).ready(function(){
     },
     ajax: {
       url: function (params) {
-        let url = wdb.meta.rest + "entities/scan/" + $("#type").val() + "/"
-          + wdb.meta.ed + ".xml";
+        let url = wdb.meta.get('rest').get('1') + "entities/scan/" + $("#type").val() + "/"
+          + wdb.meta.get('ed + "').xml";
         return url;
       },
       processResults: function (data) {
@@ -343,7 +343,7 @@ function identifyEntity() {
   
   $.ajax({
     method: "post",
-    url: wdb.meta.rest + "anno/entity/" + wdb.meta.id,
+    url: wdb.meta.get('rest').get('1') + "anno/entity/" + wdb.meta.get('id,')
     headers: wdb.restheaders,
     data: JSON.stringify({
       from: start,
@@ -372,7 +372,7 @@ function deleteEntity() {
     alert("Es darf nur ein Wort ausgewählt werden!");
     return false;
   } else {
-    let url = wdb.meta.rest + "anno/entity/" + wdb.meta.id + "/" + type + "/" + start;
+    let url = wdb.meta.get('rest').get('1') + "anno/entity/" + wdb.meta.get('id + "/" + type + "/" + start;')
     
     $.ajax({
       method: "delete",
@@ -407,7 +407,7 @@ function editText() {
   else
     $.ajax({
       method: "post",
-      url: wdb.meta.rest+ "anno/word/" + wdb.meta.id,
+      url: wdb.meta.get('rest').get('1')+ "anno/word/" + wdb.meta.get('id,')
       headers: wdb.restheaders,
       data: JSON.stringify({
         from: start,

@@ -7,6 +7,11 @@ Accept: application/xml
 
 ###
 
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+Accept: application/xml
+
+###
+
 GET http://localhost:8080/exist/apps/edoc/api/v2/projects
 Accept: application/json
 
@@ -60,13 +65,13 @@ Content-Type: application/json
 
 ###
 # supposed to succeed
-PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects/project
+PUT http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006000/subprojects/pb006001
 Content-Type: application/json
 
 {
-  "title": "New Project with ID",
-  "short": "Created by unit test",
-  "collection": "test40"
+  "title": "Vier Bücher von Wahrem Christentum, Band 1",
+  "short": "BWC I",
+  "collection": "pb006001"
 }
 
 ###
@@ -77,12 +82,15 @@ Content-Type: multipart/form-data; boundary=----test----
 ------test----
 Content-Disposition: form-data; name="user"
 
-wdbadmin
+admin
 ------test----
 Content-Disposition: form-data; name="password"
 
-wdbadmin
+admin
 ------test------
+
+###
+GET http://localhost:8080/exist/apps/edoc/api/v2/logout
 
 ###
 
@@ -91,17 +99,17 @@ Accept: application/json
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001
 Accept: application/xml
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/data/subprojects
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/subprojects
 Accept: application/xml
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001000/views/default
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/views/default
 Accept: application/xml
 
 ###
@@ -111,16 +119,21 @@ Accept: text/html
 
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/views/navigation
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/views/navigation
 Accept: text/html
 ###
 
-GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb001740/resources
-Accept: application/xml
+GET http://localhost:8080/exist/apps/edoc/api/v2/projects/pb006001/resources
+Accept: text/html
 
 ###
 
 DELETE http://localhost:8080/exist/apps/edoc/api/v2/projects/project
+
+###
+
+OPTIONS http://localhost:8080/exist/apps/edoc/api/v2/projects
+Origin: http://exist.localhost:8080
 
 ###
 

@@ -25,7 +25,7 @@ declare function r2p:listProjects ( $request as map(*) ) as map(*) {
       {
         for $project in $projects return
           <project
-              id="{ $r2:base }{ $request?path }/{ $project/@xml:id }"
+              id="{ $r2:base }{ $r2:urls?projects }{ $project/@xml:id }"
               label="{ $project/@title }"
           />
       }
@@ -61,7 +61,7 @@ declare function r2p:listSubprojects ( $request as map(*) ) as map(*) {
             let $ed := string($entry/@xml:id)
             return
               <project
-                  id="{ $r2:base }/projects/{ $ed }"
+                  id="{ $r2:base }{ $r2:urls?projects }{ $ed }"
                   label="{ map:get($labels, $ed) }"
               />
           }
@@ -187,9 +187,15 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
             
             xmldb:copy-resource("/db/apps/edoc/admin/project-template", "project.xqm", $subCollection, "project.xqm"),
             sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdb:wdbusers"),
-            sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x")
+            sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x"),
+
+            (: we assume that main projects do no import globally as this would comlpetely overwhelm navigation :)
+            update delete $meta//meta:struct/meta:import
           )
-        else (),
+        else (
+          (: sub-projects will by default use process inheritance :)
+          update delete $meta//meta:process[@target = 'html']/meta:command
+        ),
 
       $request?parameters?ed
     )[last()], (: create-collection() returns a string; we only want the path to the project collection :)
@@ -209,20 +215,20 @@ declare function r2p:listProjectViews ( $request as map(*) ) as map(*) {
   else
     r2:returnXmlOrJson(<list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         level="project"
-        for="{ $r2:base }/projects/{$request?parameters?ed}"
+        for="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}"
         type="views"
         start="1"
         length="3"
         max="3 ">
         <view name="default"
           label="returns an XML representation of the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/default"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/default"/>
         <view name="navigation"
           label="returns a navigation structure for the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/navigation"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/navigation"/>
         <view name="start"
           label="returns a start page for the project"
-          href="{ $r2:base }/projects/{$request?parameters?ed}/views/start"/>
+          href="{ $r2:base }{ $r2:urls?projects }{$request?parameters?ed}/views/start"/>
       </list>)
 };
 
@@ -245,13 +251,13 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
         {
           for $entry in $meta//meta:ptr return
             <project xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/projects/{ $entry/@xml:id }"
+                id="{ $r2:base }{ $r2:urls?projects }{ $entry/@xml:id }"
                 label="{ $meta//meta:struct[@file = $entry/@xml:id]/@label }" />
         }
         {
           for $entry in $meta//meta:file return
             <file xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
-                id="{ $r2:base }/resources/{ $entry/@xml:id }"
+                id="{ $r2:base }{ $r2:urls?resources }{ $entry/@xml:id }"
                 label="{ $meta//meta:view[@file = $entry/@xml:id]/@label }" />
         }
       </contents>
@@ -264,8 +270,11 @@ declare function r2p:getProject ( $request as map(*) ) as map(*) {
  :)
 declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
   let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+
   return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not($request?headers?Accept = ('application/xml', 'application/json')) )
+    then r2:response(406, 'text/plain', 'Listings are available as application/xml or application/json', $r2:allOrigins)
   else
     let $meta := doc( $project?collectionPath || "/wdbmeta.xml" )
       , $views := $meta//meta:view
@@ -279,7 +288,7 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
             let $id := string($entry/@file)
             return
               <file
-                  id="{ $r2:base }/projects/{ $request?parameters?ed }/resources/{ $id }"
+                  id="{ $r2:base }{ $r2:urls?resources }{ $id }"
                   label="{ normalize-space($entry/@label) }"
               />
           }
@@ -288,58 +297,37 @@ declare function r2p:listProjectResources ( $request as map(*) ) as map(*) {
 };
 
 (:~
+ : Preflight request before creating a resource
+ : OPTIONS /projects/{$ed}/resources
+ :)
+declare function r2p:optionsResource ( $request as map(*) ) as item() {
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+  
+  return if ( $project instance of xs:QName ) then
+    r2:response(404, "text/plain", "Project " || $request?parameters?ed || " not found", $r2:allOrigins)
+  else
+    r2:response(204, "text/plain", "", r2:headersWithAllow())
+};
+
+(:~
  : Create an XML resource in a project (no ID given)
  : This is used for XML files only. Non-XML files need to be created with a full path via PUT, so that the path information is available for the processing of the file.
  : POST /projects/{$ed}/resources
  :)
 declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as map(*) {
-  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
-    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
-    , $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
+  let $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
     , $id := if ( $xml instance of node() )
         then ($xml/*[1]/@xml:id, '_' || util:uuid())[1]
         else ()
     , $uuid := util:uuid($xml)
+    , $combine := function($k, $v) {
+        if ( $k = 'parameters' )
+          then map:entry("parameters", map:merge(($v, map{"id": $id})))
+          else map:entry($k, $v)
+        }
+    , $newMap := map:merge(map:for-each($request, $combine))
 
-  return if ( $project instance of xs:QName ) then
-    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
-  else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
-    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
-        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
-    )
-  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
-    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( not($xml instance of document-node()) ) then
-    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
-  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
-    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
-  else if ( not(r2:writeAllowed($request?user)) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || '/' || $request?body?file?name || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $id] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $id || ' already exists in project ' || $request?parameters?ed, $r2:allOrigins)
-  else if ( $meta//meta:file[@uuid = $uuid] ) then
-    r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
-  else
-    (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
-    r2:createXmlResource(
-      map{
-        "parameters": map:merge((
-            $request?parameters,
-            map:entry("id", $id)
-          )),
-        "body": map:merge((
-            $request?body,
-            map:entry("xml", $xml),
-            map:entry("hash", $uuid)
-          )),
-        "user": $request?user,
-        "project": $project
-      }
-    )
+  return r2p:createProjectResourceWithId($newMap)
 };
 
 (:~
@@ -359,30 +347,31 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   
   return if ( $project instance of xs:QName ) then
     r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
-  else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
-    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
-        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
-    )
-  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ())) ) then
-    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( not($xml instance of document-node()) ) then
-    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
-  else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $request?parameters?id ) then
-    r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
   else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
     r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
   else if ( not(r2:writeAllowed($request?user)) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
   else if ( not(sm:has-access($project?collectionPath, "w")) ) then
     r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name
+  else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
+    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
+        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
+    )
+          (: `path` and `file` are required and in the message body; `meta` is an optional query parameter :)
+  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ('meta'))) ) then
+    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
+  else if ( not($xml instance of document-node()) ) then
+    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
+  else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $request?parameters?id ) then
+    r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)
             and @xml:id = $request?parameters?id
-            and @uuid = $uuid
-          ] ) then
-    r2:response(204, 'text/plain', '', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || $request?body?file?name and @xml:id != $request?parameters?id] ) then
+            and @uuid = $uuid]
+          ) then
+    r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || $request?body?file?name] ) then
+  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)] ) then
     r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $uuid] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
@@ -487,7 +476,7 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
         204,
         'text/plain',
         (
-          if ( subProjectIds ) then
+          if ( $subProjectIds ) then
             for $id in $subProjectIds return r2p:deleteProject(map{
               "parameters": map{ "ed": $id },
               "user": $request?user
@@ -510,9 +499,9 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
   if ( not($request?parameters?view = ('default', 'navigation', 'start')) ) then
     r2:response(400, 'text/plain', 'Bad value for parameter `view`
       Expected one of "default", "navigation", "start", got ' || $request?parameters?view, $r2:allOrigins)
-  else if ( ($request?parameters?view = 'default' and request:get-header('Accept') != 'application/xml')
-         or ($request?parameters?view = 'navigation' and not(request:get-header('Accept') = ('application/xml', 'application/json', 'text/html')))
-         or ($request?parameters?view = 'start' and request:get-header('Accept') != 'text/html') ) then
+  else if ( ($request?parameters?view = 'default' and $request?headers?Accept != 'application/xml')
+         or ($request?parameters?view = 'navigation' and not($request?headers?Accept = ('application/json', 'application/xml', 'text/html')))
+         or ($request?parameters?view = 'start' and $request?headers?Accept != 'text/html') ) then
     r2:response(406, 'text/plain', 'Available representations are:
       for view "default": application/xml
       for view "start": text/html
@@ -522,19 +511,18 @@ declare function r2p:viewProject ( $request as map(*) ) as map(*) {
     return if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
     else
-      r2:returnXmlOrJson(
-        r2p:projectView(map{
-          "path" : $project?collectionPath || "/wdbmeta.xml",
-          "parameters": $request?parameters,
-          "Accept": request:get-header('Accept')
-        })
-      )
+      r2p:projectView(map{
+        "path" : $project?collectionPath || "/wdbmeta.xml",
+        "parameters": $request?parameters,
+        "Accept": $request?headers?Accept
+      })
 };
 
-declare function r2p:projectView ( $request as map(*) ) as node() {
+declare function r2p:projectView ( $request as map(*) ) as map(*) {
   let $meta := doc($request?path)
+    , $pathInfo := wdbFiles:getFullPath($request?parameters?ed)
   return if ( $request?parameters?view = 'start' ) then
-      wdb:applySpecificXsl($meta, $request?path => substring-before('wdbmeta.xml'), "start.xsl")
+      r2:returnResponse($meta, $request?Accept, $pathInfo, "start")
     else if ( $request?parameters?view = 'navigation' ) then
       let $struct := $meta//meta:projectMD/meta:struct
       let $content := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta" ed="{$request?parameters?ed}">{(
@@ -546,11 +534,9 @@ declare function r2p:projectView ( $request as map(*) ) as node() {
         then r2p:imported($struct/meta:import, $content)
         else $content
 
-      return if ( $request?Accept = 'text/html' )
-        then wdb:applySpecificXsl($response, $request?path => substring-before('wdbmeta.xml'), "nav.xsl")
-        else $response
+      return r2:returnResponse($response, $request?Accept, $pathInfo, "nav")
     else
-      $meta
+      r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
 declare %private function r2p:imported ( $import, $importerContent ) {
@@ -559,17 +545,18 @@ declare %private function r2p:imported ( $import, $importerContent ) {
     , $importedMeta := doc($fullImportedPath)
     , $importedContent := $importedMeta/meta:projectMD/meta:struct
 
-    let $conStructed := <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-        { $importedContent/@* }
-        { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
-        { for $elem in $importedContent/* return
-            if ( $elem/@file = $importerContent/@ed )
-                then $importerContent
-                else $elem
-        }
+  let $conStructed :=
+    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+      { $importedContent/@* }
+      { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
+      { for $elem in $importedContent/* return
+          if ( $elem/@file = $importerContent/@ed )
+              then $importerContent
+              else $elem
+      }
     </struct>
 
-    return if ( $importedContent/meta:import )
-      then r2p:imported($importedContent/meta:import, $conStructed)
-      else $conStructed
+  return if ( $importedContent/meta:import )
+    then r2p:imported($importedContent/meta:import, $conStructed)
+    else $conStructed
 };

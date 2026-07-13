@@ -16,7 +16,8 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
   return (
     <div>
       <h1>Volltextsuche</h1>
-      <form action="search.html">
+      <form id="fts">
+        <label for="ed">diesen Bestand durchsuchen: </label>
         { $options }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
         <input type="hidden" name="p">
@@ -29,7 +30,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
     <hr />,
     <div>
       <h1>Registersuche</h1>
-      <form action="search.html">
+      <form action="search.html" id="searchEntities">
         { $options }
         { wdbSearch:listEnt("search") }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
@@ -39,7 +40,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
     <hr />,
     <div>
       <h1>Registerliste</h1>
-      <form action="search.html">
+      <form action="search.html" id="listEntities">
         { $options }
         { wdbSearch:listEnt("entries") }
         <select name="q">{
@@ -53,52 +54,22 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
   )
 };
 
-declare function wdbSearch:search ( $node as node(), $model as map(*) ) {
-  let $job := if ( $model?p instance of map(*) )
-    then $model?p?job
-    else "err"
-  
-  return if ( $job != "err" ) then
-    let $p := $model?p
-      , $c := for $k in map:keys($p) return concat('&quot;', $k, '&quot;: &quot;', $p($k), '&quot;')
-      , $json := "{" || string-join($c, ', ') || "}"
-      , $start := if ( exists($model?p?start) ) then $model?p?start else 1
-    
-    return (
-      response:set-header("Cache-Control", "no-cache"),
-      switch ( $job )
-        case "fts"
-          return wdbRs:collectionHtml($model?ed, $model?q, $start)
-        case "search"
-          return wdbRe:scanHtml($model?ed, $model?p?type, $model?q)
-        case "list"
-          return wdbRe:collectionEntityHtml($model?ed, $model?p?type, $model?p?id, $start)
-        case "entries"
-          return wdbRe:scanHtml($model?ed, $model?p?type, lower-case($model?q))
-        default
-          return response:set-status-code(400)
-    )
-  else <div />
-};
-
 declare
   %private
 function wdbSearch:selectEd ( $model as map(*) ) as element()+ {(
   <select name="ed">{
     let $md := doc($config:data || '/wdbmeta.xml')
-    
-    let $opts := for $file in $md//meta:ptr
-      let $id := $file/@xml:id
-      
-      return
-        <option value="{$id}">
-          { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
-          { normalize-space($md//meta:struct[@file = $id]/@label) }
-        </option>
-    
+
     return (
       <option value="{$md/meta:projectMD/@xml:id}">global</option>,
-      $opts
+      for $file in $md//meta:ptr
+        let $id := $file/@xml:id
+
+        return
+          <option value="{$id}">
+            { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
+            { normalize-space($md//meta:struct[@file = $id]/@label) }
+          </option>
     )
   }</select>,
   <br />

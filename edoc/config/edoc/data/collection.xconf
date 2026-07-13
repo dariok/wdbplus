@@ -3,44 +3,32 @@
     <!-- Lucene index is configured below -->
     <lucene>
       <analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-      <!-- This index configuration is likely to be revised in later releases of wdb+ -->
-      
-      <!-- index files and standOff: index main name parts but not whole lists -->
-      <text qname="tei:persName"/>
-      <text qname="tei:placeName"/>
-      <text qname="tei:orgName"/>
-      <text qname="tei:title"/>
-      
-      <!-- main text -->
-      <!-- tei:text for fast first step, cf. rest-search.xql: /edoc/search/collection/{$id}.xml -->
+      <!-- main index – information for filtering is provided when results are prepared per file -->
       <text qname="tei:text"/>
       
-      <!-- notes usually contain text that is outside the main text’s flow; hence, they must be
-        handled separately -->
-      <ignore qname="tei:note"/>
-      <text qname="tei:note"/>
+      <!-- notes usually contain text that is outside the main text’s flow; hence, they must be handled separately. -->
+      <ignore qname="tei:note" />
+      <text qname="tei:note" />
       
-      <!-- main structure types that contain relevant text -->
-      <text qname="tei:p"/>
-      <text qname="tei:ab"/>
-      <text qname="tei:opener"/>
-      <text qname="tei:closer"/>
-      <text qname="tei:postscript"/>
-      <text qname="tei:cell"/>
-      <text qname="tei:label"/>
-      <text qname="tei:item"/>
-      <text qname="tei:quote"/>
-      <text qname="tei:head"/>
-      <text qname="tei:l"/>
+      <!-- headings will often be used for filtering and thus an additional index is created; unlike notes, however,
+        they are still part of the general text index -->
+      <text qname="tei:head" />
       
-      <!-- index w for fast queries for single words if text is tokenized -->
-      <!--<text qname="tei:w"/>-->
-      
-      <!-- lists are not indexed, only the main entry head -->
+      <!-- lists of entities are not indexed, only the main entry head is added as a range index below -->
       <ignore qname="tei:listPerson"/>
+      <!-- <text qname="tei:persName"/> -->
       <ignore qname="tei:listPlace"/>
+      <!-- <text qname="tei:placeName"/> -->
       <ignore qname="tei:listOrg"/>
+      <!-- <text qname="tei:orgName"/> -->
       <ignore qname="tei:listBibl"/>
+      <!-- <text qname="tei:title"/> -->
+      
+      <!-- contemporary changes: only the intended for, with tei:add, is to be indexed -->
+      <inline qname="tei:subst"/>
+      <ignore qname="tei:del"/>
+
+      <!-- modern intervention, choice[orig+reg] and choice[sic+corr], must occur at word level !! → documentation -->
             
       <!-- elements that may appear within a word -->
       <inline qname="tei:unclear"/>
@@ -51,15 +39,23 @@
       
       <!-- things to ignore -->
       <ignore qname="tei:pb"/>
-      <ignore qname="tei:fw"/>
+      <ignore qname="tei:cb"/>
       <ignore qname="tei:lb"/>
+      <ignore qname="tei:fw"/>
       <ignore qname="tei:pc"/>
     </lucene>
     <range>
-      <!-- configuration for metadata files -->
-      <create qname="meta:file">
+      <!-- configuration for metadata files – should be rewritten to match agains out index of ID → path -->
+      <!-- <create qname="meta:file">
         <field name="file-path" match="@path" type="xs:string"/>
-      </create>
+      </create> -->
+           
+       <!-- entities -->
+      <create qname="tei:persName" type="xs:string" />
+      <create qname="tei:placeName" type="xs:string" />
+      <create qname="tei:orgName" type="xs:string" />
+      <create qname="tei:eventName" type="xs:string" />
+      <create qname="tei:title" type="xs:string" />
       
       <!-- attributes for semantic elements -->
       <create qname="@ref" type="xs:string"/>

@@ -79,7 +79,7 @@ function wdbRe:scanHtml ( $collection as xs:string, $type as xs:string, $q as xs
   
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
-    <param name="rest" value="{$config:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (
@@ -133,7 +133,7 @@ function wdbRe:collectionEntityHtml ( $collection as xs:string*, $type as xs:str
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
-    <param name="rest" value="{$config:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (
@@ -183,7 +183,7 @@ function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as
     , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
     
   let $params := <parameters>
-    <param name="rest" value="{$config:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (

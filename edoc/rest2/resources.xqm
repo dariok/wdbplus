@@ -33,7 +33,7 @@ declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
   let $resource := wdbFiles:getFullPath($id)
   
   return
-    if ( $resource?kind != "file" ) then
+    if ( $resource?type != "file" ) then
       ()
     else
       let $meta := doc($resource?projectPath || "/wdbmeta.xml")
@@ -97,6 +97,11 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
     map { "error": r2:response(400, "text/plain", "Wrong content of resource information found. Expected `path` and `file`.", $r2:allOrigins) }
   else
     let $xml := try { parse-xml($request?body?file?data) } catch * { () }
+      , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
+      , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+      , $targetPath := $fullTargetPath => substring-before($fileNameBase)
+      , $relPath := $targetPath => substring-after($request?project?collectionPath)
+
     return
       if ( empty($xml) ) then
         map { "error": r2:response(400, "text/plain", "File content is not valid XML.", $r2:allOrigins) }
@@ -104,30 +109,53 @@ declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
         map {
           "xml": $xml,
           "hash": util:uuid($xml),
-          "relativePath": $request?body?path || "/" || $request?body?file?name
+          "relativePath": $relPath || r2:sanitiseFilename($fileNameBase)
         }
 };
 
 declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(list) {
-  let $processes := $resource?meta//meta:process[@target]
+  let $processes := r2r:allViews($resource)
+    , $list := for $process in $processes
+          let $viewName := string(($process/@view, 'default')[1])
+          group by $name := $process/@target || '-' || $viewName
+          return
+            <view xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
+                id="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }/views/{ $viewName[1] }"
+                view="{ $viewName[1] }"
+                target="{ ($process/@target)[1] }"
+            />
+
   return
     <list xmlns="https://github.com/dariok/wdbplus/api/schema/v1"
         level="resource"
-        for="{ $r2:base }/resources/{ $resource?entry/@xml:id }"
+        for="{ $r2:base }{ $r2:urls?resources }{ $resource?entry/@xml:id }"
         type="views"
         start="1"
-        total="{ count($processes) }">
+        total="{ count($list) }">
       {
-        for $process in $processes
-          let $viewName := string(($process/@view, 'default')[1])
-          return
-            <view
-                id="{ $r2:base }/resources/{ $resource?entry/@xml:id }/views/{ $viewName }"
-                view="{ $viewName }"
-                content-type="{ string(($process/@label, $process/@target)[1]) }"
-            />
+        $list
       }
     </list>
+};
+
+declare %private function r2r:allViews ( $resource as map(*) ) as element()* {
+  (: this lists all processes – which is not a problem because detailed selection will happen based on the attributes
+     of any command(s) in the process :)
+  let $current := base-uri($resource?meta)
+    , $parent := if ( $resource?meta/* instance of element(meta:projectMD) )
+        then substring-before($current, 'wdbmeta') || '../wdbmeta.xml'
+        else $resource?projectPath || '/../wdbmeta.xml'
+    , $parentMeta := if ( doc-available($parent) )
+        then doc($parent)
+        else ()
+
+  return (
+    $resource?meta//meta:process,
+    if ( $current = '/db/apps/edoc/data/wdbmeta.xml' ) then ()
+    else if ( exists($parentMeta) )
+      then r2r:allViews(map{ "meta": $parentMeta, "projectPath": substring-before(base-uri($parentMeta), '/wdbmeta.xml') })
+      else r2r:allViews(map{ "projectPath": substring-before($current, 'wdbmeta') || '..' })
+  )
 };
 
 declare %private function r2r:resolveProcess ( $resource as map(*), $view as xs:string, $target as xs:string ) as element(meta:process)? {
@@ -165,7 +193,7 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
       , $status := if ( exists($modified) and $modified != "" )
                       then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
                       else 200
-      
+    
     return if ( empty($content) ) then
       r2:response(204, "", "", $r2:allOrigins)
     else
@@ -177,18 +205,19 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
       )
 };
 
-declare function r2r:putResource ( $request as map(*) ) as item() {
+declare function r2r:putResource ( $request as map(*) ) as map(*) {
   let $resource := r2r:requireWritableResource($request)
   return if ( exists($resource?error) ) then
     $resource?error
   else
     let $upload := r2r:parseUpload($request)
+
     return if ( exists($upload?error) ) then
       $upload?error
     else if ( exists($upload?xml/*[1]/@xml:id) and $upload?xml/*[1]/@xml:id != $request?parameters?id ) then
       r2:response(400, "text/plain", "ID in the XML content (" || $upload?xml/*[1]/@xml:id || ") does not match the ID in the URL (" || $request?parameters?id || ").", $r2:allOrigins)
     else if ( $upload?relativePath != string($resource?entry/@path) ) then
-      r2:response(409, "text/plain", "A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path, $r2:allOrigins)
+      r2:response(409, "text/plain", "Error storing file under " || $upload?relativePath || ": A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path, $r2:allOrigins)
     else
       let $existingDoc := try { doc($resource?path) } catch * { () }
         , $existingHash := if ( exists($existingDoc) ) then util:uuid($existingDoc) else ()
@@ -230,12 +259,12 @@ declare function r2r:patchResource ( $request as map(*) ) as item() {
       let $target := $content/id($patch/*[1]/@xml:id)
       return if ( empty($target) ) then
         r2:response(400, "text/plain", "No fragment with xml:id " || $patch/*[1]/@xml:id || " found in resource " || $request?parameters?id, $r2:allOrigins)
-      else
-        let $updated := (
-            update replace $target with $patch/*[1],
-            xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path))
-          )
-        return r2:response(204, "text/plain", "", $r2:allOrigins)
+      else (
+          update replace $target with $patch/*[1],
+          xmldb:store($resource?collectionPath, $resource?fileName, $content, xmldb:get-mime-type($resource?path)),
+          
+          r2:response(204, "text/plain", "", $r2:allOrigins)
+        )[last()]
 };
 
 declare function r2r:optionsResource ( $request as map(*) ) as item() {
@@ -285,8 +314,8 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
   return if ( empty($resource) ) then
     r2:response(404, "text/plain", "The resource was not found", $r2:allOrigins)
   else
-    let $type := if ( exists($request?parameters?accept) )
-            then $request?parameters?accept
+    let $type := if ( exists($request?headers?Accept) )
+            then $request?headers?Accept
             else "text/html"
         , $process := try {
               r2r:resolveProcess($resource, $request?parameters?view, $type)
@@ -302,21 +331,14 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
     else if ( $status = 304 ) then
       r2:response(304, "text/plain", "", $r2:allOrigins)
     else
-      let $viewParam := string($process/@view)
-        , $result := wdbProc:getContent(
-            $request?parameters?id,
-            $process,
-            $viewParam,
-            map {
+      let $result := wdbProc:getContent(map {
               "id": $request?parameters?id,
               "process": $process,
-              "view": $viewParam,
+              "view": $request?parameters?view,
               "fileLoc": $resource?path,
               "pathToEd": $resource?projectPath,
-              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()],
-              "xslt": $process
-            }
-          )
+              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()]
+          })
         , $body := $result?content
         , $namespace := if ( $body instance of document-node() or $body instance of element() )
                           then namespace-uri(($body/*[1], $body)[1])
@@ -326,9 +348,15 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
 };
 
 declare function r2r:getResourceByPid ( $request as map(*) ) as item() {
+  (: TODO: range index based on white space separated values – or, introduce a child element to meta:file :)
+  (: TODO: add a unit test for this; use the documentation :)
+  (: TODO: handle the case that multiple representations exist for a PID :)
   let $matches := collection("/db/apps/edoc/data")//meta:file[@pid = $request?parameters?pid]
   return if ( count($matches) = 1 ) then
-    r2:response(200, "text/plain", string($matches[1]/@xml:id), $r2:allOrigins)
+    r2:response(303, "text/plain", "", map:merge((
+        $r2:allOrigins,
+        map { "Location": $r2:base || $r2:urls?resources || string($matches[1]/@xml:id) }
+    )))
   else
     r2:response(404, "text/plain", "This external PID was not found", $r2:allOrigins)
 };

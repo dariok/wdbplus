@@ -17,7 +17,6 @@ import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery
 import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "start.xqm";
-import module namespace xstring      = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 
@@ -54,7 +53,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
         }
       </html>
   } catch *:wdb0200 {
-    util:log("error", "project not found: " || $err:value?ed || " from request " || $err:value?request),
+    util:log("error", "project not found: " || $ed || " from request " || request:get-url() ),
     wdbErr:error(map{
       "code": $err:code,
       "description": "project not found",
@@ -94,7 +93,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
     <meta name="wdbTemplate" content="templates/{$templateFile}.html"/>
     <meta name="id" content="{$model("id")}" />
     <meta name="ed" content="{$model("ed")}" />
-    <meta name="rest" content="{$config:restURL}" />
+    { $config:restMetaElement }
     <title>{$model("title")}</title>
     {
       if ( wdb:findProjectFunction($model, "wdbPF:overrideFunctionCssJs", 2) ) then
@@ -133,7 +132,7 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*), $templateFil
  : @return element(html:header)
  :)
 declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as element(header) {
-  let $file := xstring:substring-after-last(request:get-uri(), '/')
+  let $file := tokenize(normalize-space(request:get-uri()), '/')[last()]
     , $name := substring-before($file, '.html')
     , $unam := upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
@@ -179,9 +178,9 @@ declare function wdbfp:test ( $node as node(), $model as map(*) ) {
 declare
   %private
 function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
-  let $file := xstring:substring-after-last(request:get-uri(), '/')
-  , $name := substring-before($file, '.html')
-  , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
+  let $file := tokenize(normalize-space(request:get-uri()), '/')[last()]
+    , $name := substring-before($file, '.html')
+    , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
   
   return switch($type)
     case "css" return

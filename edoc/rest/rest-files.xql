@@ -10,7 +10,6 @@ import module namespace wdbProc    = "https://github.com/dariok/wdbplus/Process"
 import module namespace wdbRequest = "https://github.com/dariok/wdbplus/Request"     at "../modules/wdb-request.xqm";
 import module namespace wdbRCo     = "https://github.com/dariok/wdbplus/RestCommon"  at "common.xqm";
 import module namespace wdbRMi     = "https://github.com/dariok/wdbplus/RestMIngest" at "ingest.xqm";
-import module namespace xstring    = "https://github.com/dariok/XStringUtils"        at "../include/xstring/string-pack.xql";
 
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -104,7 +103,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
     let $errNoAccess := not(sm:has-access(xs:anyURI($fullPath), "w"))
     let $user := sm:id()//sm:real/sm:username
     
-    let $resourceName := xstring:substring-after-last($fullPath, '/')
+    let $resourceName := tokenize(normalize-space($fullPath), '/')[last()]
     let $contentType := $parsed?file?header?Content-Type
     
     let $prepped := wdbRMi:replaceWs($parsed?file?body),
@@ -156,7 +155,9 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
 
     else
       let $collectionID := $fileEntry/ancestor::meta:projectMD/@xml:id
-      let $collectionPath := xstring:substring-before-last($fullPath, '/')
+      let $collectionPath := if (starts-with($fullPath, '/'))
+        then '/' || string-join(tokenize(normalize-space($fullPath), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($fullPath), '/')[position() lt last()], '/')
       
       let $store := wdbRMi:store($collectionPath, $resourceName, $contents, $contentType),
           $meta := 
@@ -175,7 +176,7 @@ function wdbRf:storeFile ($id as xs:string, $data as xs:string, $header as xs:st
             <http:header name="Location" value="{$store[2]}" />
           </http:response>
         </rest:response>,
-        $config:restURL || "/resource/" || $id
+        $config:restURL?1 || "/resource/" || $id
       )
     else if ($store[1]//http:response/@status != "200")
     then $store
@@ -406,10 +407,11 @@ function wdbRf:getResourceView ( $id as xs:string, $type as xs:string, $view as 
       then map { "status": 404, "content": "No file with ID " || $id || " found!" }
       else if ( not($process) )
       then map { "status": 400, "content": "no process found for target type " || $type || " that has a view " || $view }
-      else wdbProc:getContent($id, $process, $view,
+      else wdbProc:getContent(
               map { 
                     'fileLoc': $pathInfo?collectionPath || '/' || $pathInfo?fileName,
-                    'pathToEd': $pathInfo?projectPath
+                    'pathToEd': $pathInfo?projectPath,
+                    "process": $process
                   }
             )
   
@@ -443,11 +445,11 @@ declare
     let $projectFileAvailable := wdb:findProjectFunction($map, "getImages", 2)
     let $resource := if ($projectFileAvailable)
       then wdb:eval("wdbPF:getImages($fileID, $page)", false(), (xs:QName("fileID"), $fileID, xs:QName("page"), $page))
-      else $config:restURL || "file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
+      else $config:restURL?1 || "file/iiif/" || $fileID || "/resource/" || substring-after($fa/tei:graphic/@url, ':')
     
     let $sid := if ($projectFileAvailable = true())
       then substring-before($resource, '/full')
-      else $config:restURL || "file/iiif/" || $fileID || "/images/" || $page
+      else $config:restURL?1 || "file/iiif/" || $fileID || "/images/" || $page
     
     let $tiles := map {
           "scaleFactors": [1, 2, 4, 8, 16],
@@ -469,13 +471,13 @@ declare
       }
       
       (:map {
-        "@id": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page,
+        "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page,
         "@type": "sc:Canvas",
         "label": "S. " || $page,
         "height": xs:int($fa/@lry),
         "width": xs:int($fa/@lrx),
         "images": [map{
-            "@id": $config:restURL || "file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
+            "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/annotation/p" || $page || "-image",
             "@type": "oa:Annotation",
             "motivation": "sc:painting",
             "resource": map {
@@ -487,22 +489,22 @@ declare
                      "profile" : "http://iiif.io/api/image/2/level2.json"
                 }
             },
-            "on": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
+            "on": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page
         }],
         "otherContent": [
             map {
-                "@id": $config:restURL || "file/iiif/" || $fileID || "/list/" || $page,
+                "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/list/" || $page,
                 "@type": "sc:AnnotationList",
                 "resources": [
                     map {
                         "@type": "oa:Annotation",
                         "motivation": "sc:painting",
                         "resource": map {
-                            "@id": $config:restURL || "file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
+                            "@id": $config:restURL?1 || "file/iiif/" || $fileID || "/resource/p" || $page || ".xml",
                             "@type": "dctypes:text",
                             "format": "application/xml"
                         },
-                        "on": $config:restURL || "file/iiif/" || $fileID || "/canvas/p" || $page
+                        "on": $config:restURL?1 || "file/iiif/" || $fileID || "/canvas/p" || $page
                     }
                 ]
             }
@@ -621,7 +623,7 @@ function wdbRf:getFileManifest ($id as xs:string) {
       if ($meta//meta:metaData/*[contains(@role, 'disseminator')]) then
         map {
             "label": [ map {"@value": "Disseminator", "@language": "en"}, map {"@value": "Anbieter", "@language": "de"}],
-            "value": "<a href='" || $config:restURL || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
+            "value": "<a href='" || $config:restURL?1 || "'>" || $meta//meta:metaData/*[contains(@role, 'disseminator')] || "</a>"
         } else (),
       if ($meta//meta:language) then 
         map {
@@ -646,12 +648,14 @@ function wdbRf:getFileManifest ($id as xs:string) {
   then $errors
   else map {
     "@context": "http://iiif.io/api/presentation/2/context.json",
-    "@id": $config:restURL || "file/iiif/" || $id || "/manifest",
+    "@id": $config:restURL?1 || "file/iiif/" || $id || "/manifest",
     "@type": "sc:Manifest",
     "label": $title,
     "description": [map{
       "@value": $title,
-      "@language": xstring:substring-before($meta//meta:language[1], '-')
+      "@language": if (contains($meta//meta:language[1], '-'))
+        then substring-before($meta//meta:language[1], '-')
+        else $meta//meta:language[1]
     }],
     "viewingDirection": "left-to-right",
     "viewingHint": "paged",
@@ -663,9 +667,9 @@ function wdbRf:getFileManifest ($id as xs:string) {
     "metadata": $md,
     "sequences": [
       map {
-        "@id": $config:restURL || "file/iiif/" || $id || "/sequence/normal",
+        "@id": $config:restURL?1 || "file/iiif/" || $id || "/sequence/normal",
         "@type": "sc:Sequence",
-        "startCanvas": $config:restURL || "file/iiif/" || $id || "/canvas/p1",
+        "startCanvas": $config:restURL?1 || "file/iiif/" || $id || "/canvas/p1",
         "canvases": $canv
       }
     ]

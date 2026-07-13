@@ -188,7 +188,14 @@ paths:
       operationId: r2p:listProjects
       responses:
         "200":
-          $ref: '#/components/responses/projects'
+          description: A non-empty result set of projects. This endpoint is expected to be non-empty because the global data collection must exist.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/listProjects'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listProjects'
 
   /api/v2/projects/{ed}:
     parameters:
@@ -203,7 +210,7 @@ paths:
         "200":
           $ref: "#/components/responses/projectContents"
         "204":
-          description: The project was found but currently has neither subprojects nor registered resources
+          description: No matching entries were found; no response body is returned.
         "404":
           description: No project found by this ID
     delete:
@@ -229,7 +236,7 @@ paths:
         "200":
           $ref: "#/components/responses/projects"
         "204":
-          description: The project was found but currently has neither subprojects nor registered resources
+          description: No matching entries were found; no response body is returned.
         "404":
           description: Project $parent not found
     post:
@@ -255,7 +262,6 @@ paths:
           description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
       security:
         - cookieAuth: []
-  
   /api/v2/projects/{parent}/subprojects/{ed}:
     parameters:
       - $ref: "#/components/parameters/parent"
@@ -290,14 +296,20 @@ paths:
     get:
       tags:
         - projects
-      summary: get a list of the views available for this project
+      summary: Get a list of the views available for this project
       operationId: r2p:listProjectViews
       responses:
         "200":
-          $ref: "#/components/responses/views"
+          description: A non-empty result set of views. This endpoint is expected to be non-empty because the available views are defined statically.
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/listViews"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/listViews"
         "404":
           description: Project $ed not found
-
   /api/v2/projects/{ed}/views/{view}:
     parameters:
       - $ref: "#/components/parameters/ed"
@@ -305,27 +317,41 @@ paths:
     get:
       tags:
         - projects
-      summary: Get project navigation
+      summary: Get a specific view of the project
       operationId: r2p:viewProject
       responses:
         "200":
-          description: Returning navigation
+          description: Representation of the project with the requested view in the negotiated media type.
           content:
             "application/xml":
-              example: <struct xmlns="https://github.com/dariok/wdbmeta"><view label="..." id="..." /></struct>
+              schema:
+                type: object
+                additionalProperties: true
             "application/json":
-              example: 'struct { view [ { id: "...", label: "..."} ] }'
+              schema:
+                type: object
+                additionalProperties: true
             "text/html":
-              example: <nav><ul></ul></nav>
+              schema:
+                type: string
         "404":
           description: Project $ed not found
         "406":
           description: The media type requested in an 'Accept' header cannot be created for this view
 
-
   /api/v2/projects/{ed}/resources:
     parameters:
       - $ref: "#/components/parameters/ed"
+    options:
+      tags:
+        - projects
+      summary: Preflight request before uploading
+      operationId: r2p:optionsResource
+      responses:
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: Project $ed not found
     get:
       tags:
         - projects
@@ -335,7 +361,7 @@ paths:
         "200":
           $ref: "#/components/responses/files"
         "204":
-          description: The project was found but currently has no registered resources
+          description: No matching entries were found; no response body is returned.
         "404":
           description: Project $ed not found
     post:
@@ -378,7 +404,6 @@ paths:
           description: Invalid or incomplete information in the request body
       security:
         - cookieAuth: []
-
   /api/v2/projects/{ed}/resources/{id}:
     parameters:
       - $ref: "#/components/parameters/ed"
@@ -713,7 +738,7 @@ paths:
     delete:
       tags:
         - resources
-      summary: delete a file
+      summary: Delete a file
       operationId: "r2r:deleteResource"
       responses:
         "204":
@@ -730,7 +755,7 @@ paths:
       operationId: "r2r:listResourceViews"
       responses:
         "200":
-          description: Returns a list of available views
+          description: A non-empty result set of views. An empty result would indicate an API error.
           content:
             application/json:
               schema:
@@ -760,6 +785,8 @@ paths:
           description: The resource in the selected representation
         404:
           description: The resource or view was not found
+        406:
+          description: No representation could be created for the requested media type
   /api/v2/resources/byPid/{pid}:
     parameters:
       - name: "pid"
@@ -771,56 +798,66 @@ paths:
     get:
       tags:
         - resources
-      summary: Return our ID for a external PID
+      summary: Resolve an external PID to the canonical resource URL.
       operationId: "r2r:getResourceByPid"
       responses:
-        200:
-          description: The internal ID for this PID
-          content:
-            text/plain:
+        "303":
+          description: PID resolved; the canonical resource URL is given in the Location header.
+          headers:
+            Location:
+              description: Canonical URL of the resolved resource.
               schema:
                 type: string
-        404:
-          description: This external PID was not found
+                format: uri
+        "404":
+          description: No resource could be resolved for this PID.
 
-  # /api/v2/search/ft/project/{ed}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/ed"
-  #     - $ref: "#/components/parameters/q"
-  #     - $ref: "#/components/parameters/start"
-  #   get:
-  #     tags:
-  #       - search
-  #     summary: List files in project containing text
-  #     operationId: #TODO
-  #     responses:
-  #       200:
-  #         $ref: "#/components/responses/files"
-  #       204:
-  #         description: Search result list is empty
-  #       400:
-  #         description: An error was found in the query
-  #       404:
-  #         description: project not found
-  # /api/v2/search/ft/resource/{id}:
-  #   parameters:
-  #     - $ref: "#/components/parameters/id"
-  #     - $ref: "#/components/parameters/q"
-  #     - $ref: "#/components/parameters/start"
-  #   get:
-  #     tags:
-  #       - search
-  #     summary: List fragments in file containing text
-  #     operationId: #TODO
-  #     responses:
-  #       200:
-  #         $ref: "#/components/responses/fragments"
-  #       204:
-  #         description: Search result list is empty
-  #       400:
-  #         description: An error was found in the query
-  #       404:
-  #         description: File not found
+  /api/v2/search/ft/project/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/accept"
+      - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
+    get:
+      tags:
+        - search
+      summary: List files in project containing text
+      operationId: "r2s:searchProjects"
+      responses:
+        200:
+          $ref: "#/components/responses/files"
+        204:
+          description: No matching entries were found; no response body is returned.
+        400:
+          description: An error was found in the query
+        404:
+          description: project not found
+        406:
+          description: Unsupported media type requested
+  /api/v2/search/ft/resource/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+      - $ref: "#/components/parameters/accept"
+      - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
+    get:
+      tags:
+        - search
+      summary: List fragments in file containing text
+      operationId: "r2s:searchFile"
+      responses:
+        200:
+          $ref: "#/components/responses/fragments"
+        204:
+          description: No matching entries were found; no response body is returned.
+        400:
+          description: An error was found in the query
+        404:
+          description: File not found
+        406:
+          description: Unsupported media type request
 
   # TODO
   # /api/v2/oai
@@ -842,41 +879,42 @@ components:
       description: Which content type should be created for this view
       schema:
         type: string
+      required: true
     ed:
       name: "ed"
       in: path
-      description: The ID of the project
+      description: The ID of a project
       schema:
         type: string
       required: true
   #   entity:
   #     name: "entity"
   #     in: path
-  #     description: The ID of the entity
+  #     description: The ID of an entity
   #     schema:
   #       type: string
   #     required: true
     id:
       name: "id"
       in: path
-      description: The ID of the resource
+      description: The ID of a resource
       schema:
         type: string
       required: true
     parent:
       name: "parent"
       in: path
-      description: The ID of the parent project
+      description: The ID of a parent project
       schema:
         type: string
       required: true
-  #   q:
-  #     name: q
-  #     in: query
-  #     required: true
-  #     schema:
-  #       type: string
-  #     description: query or filter by name / title
+    q:
+      name: q
+      in: query
+      required: true
+      schema:
+        type: string
+      description: general query or filter parameter
   #   type:
   #     name: type
   #     in: query
@@ -889,13 +927,23 @@ components:
   #         - bib
   #         - evt
   #     required: true
-  #   start:
-  #     name: start
-  #     in: query
-  #     description: from which position in a list to start (1-based)
-  #     schema:
-  #       type: integer
-  #       default: 1
+    start:
+      name: start
+      in: query
+      description: from which position in a list to start (1-based)
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    max:
+      name: max
+      in: query
+      description: the maximum number of elements to return in a list
+      schema:
+        type: integer
+        minimum: 1
+        default: 25
+        maximum: 100
     modified:
       name: "If-Modified-Since"
       in: header
@@ -939,17 +987,17 @@ components:
     #     application/xml:
     #       schema:
     #         $ref: "#/components/schemas/listAnnotations"
-    # fragments:
-    #   description: A list of fragments within a file matching the query
-    #   content:
-    #     application/json:
-    #       schema:
-    #         $ref: "#/components/schemas/listFragments"
-    #     application/xml:
-    #       schema:
-    #         $ref: "#/components/schemas/listFragments"
+    fragments:
+      description: A non-empty result set containing fragments within a file. If no matching fragments exist, the endpoint returns 204 without a response body.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listFragments"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listFragments"
     files:
-      description: A list of files
+      description: A non-empty result set containing files. If no matching files exist, the endpoint returns 204 without a response body.
       content:
         application/json:
           schema:
@@ -959,7 +1007,7 @@ components:
             $ref: "#/components/schemas/listFiles"
     
     projects:
-      description: A list of projects
+      description: A non-empty result set containing projects. If no matching projects exist, the endpoint returns 204 without a response body.
       content:
         application/xml:
           schema:
@@ -968,7 +1016,7 @@ components:
           schema:
             $ref: '#/components/schemas/listProjects'
     views:
-      description: a list of views
+      description: A non-empty result set containing views for a project or resource. If no matching views exist, the endpoint returns 204 without a response body.
       content:
         application/xml:
           schema:
@@ -1124,71 +1172,76 @@ components:
     #           label:
     #             $ref: "#/components/schemas/label"
 
-    Result:
-      description: A result set, containing a list of 0+ project(s), file(s) etc.
-      type: object
-      xml:
-        name: list
-        namespace: https://github.com/dariok/wdbplus/api/schema/v1
-      oneOf:
-        - $ref: '#/components/schemas/listProjects'
-        - $ref: '#/components/schemas/listViews'
+    # Result:
+    #   description: A result set, containing a list of 0+ project(s), file(s) etc.
+    #   type: object
+    #   xml:
+    #     name: list
+    #     namespace: https://github.com/dariok/wdbplus/api/schema/v1
+    #   oneOf:
+    #     - $ref: '#/components/schemas/listProjects'
+    #     - $ref: '#/components/schemas/listViews'
     ResultBase:
       type: object
       xml:
-        name: list
+        name: result
         namespace: https://github.com/dariok/wdbplus/api/schema/v1
       properties:
-        start:
-          $ref: '#/components/schemas/attStart'
         total:
           $ref: '#/components/schemas/attTotal'
+        start:
+          $ref: '#/components/schemas/attStart'
         length:
           $ref: '#/components/schemas/attLength'
-        level:
-          $ref: '#/components/schemas/attLevel'
         query:
           $ref: '#/components/schemas/attQuery'
-        for:
-          $ref: '#/components/schemas/attFor'
+        self:
+          $ref: '#/components/schemas/attSelf'
+        from:
+          $ref: '#/components/schemas/attFrom'
       required:
-        - start
         - total
-    # listFragments:
-    #   description: A result set, containing a list of fragments within a file
-    #   type: object
-    #   xml:
-    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
-    #     name: "result"
-    #   properties:
-    #     start:
-    #       $ref: "#/components/schemas/start"
-    #     total:
-    #       $ref: "#/components/schemas/total"
-    #     fragment:
-    #       $ref: "#/components/schemas/fragment"
-
-    # fragments:
-    #   type: array
-    #   description: describes a fragment within a file
-    #   items:
-    #     xml:
-    #       name: fragment
-    #     properties:
-    #       id:
-    #         $ref: "#/components/schemas/id"
+        - self
+    
+    listFragments:
+      description: A non-empty result set containing fragments within a file. If no matching fragments exist, the endpoint returns 204 without a response body.
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            fragments:
+              type: array
+              minItems: 1
+              xml:
+                name: fragment
+                wrapped: false
+              items:
+                $ref: "#/components/schemas/Fragment"
+          required: [fragments]
+    Fragment:
+      description: describes a fragment within a file
+      type: object
+      xml:
+        name: fragment
+      properties:
+        id:
+          $ref: "#/components/schemas/attId"
+    
     listFiles:
-      description: A result set, containing a list of files
+      description: A non-empty result set containing files. If no matching files exist, the endpoint returns 204 without a response body.
       allOf:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
           properties:
             files:
               type: array
+              minItems: 1
               xml:
+                name: file
                 wrapped: false
               items:
                 $ref: "#/components/schemas/File"
+          required: [files]
     File:
       description: one file
       type: object
@@ -1197,6 +1250,8 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/attId"
+        details:
+          $ref: "#components/schemas/attDetails"
         label:
           $ref: "#/components/schemas/attLabel"
       required:
@@ -1204,16 +1259,20 @@ components:
         - label
     
     listProjects:
+      description: A non-empty result set containing projects. If no matching projects exist, the endpoint returns 204 without a response body.
       allOf:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
           properties:
             projects:
               type: array
+              minItems: 1
               xml:
+                name: project
                 wrapped: false
               items:
                 $ref: '#/components/schemas/Project'
+          required: [projects]
     Project:
       description: one project
       type: object
@@ -1229,25 +1288,33 @@ components:
         - label
     
     listViews:
+      description: A non-empty result set containing views for a project or resource. If no matching views exist, the endpoint returns 204 without a response body.
       allOf:
         - $ref: '#/components/schemas/ResultBase'
         - type: object
           properties:
             views:
               type: array
+              minItems: 1
               xml:
+                name: view
                 wrapped: false
               items:
                 $ref: '#/components/schemas/View'
+          required: [views]
     View:
-      description: a view
+      description: one view
       type: object
       xml:
-        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
         name: "view"
       properties:
         id:
           $ref: "#/components/schemas/attId"
+        label:
+          $ref: "#/components/schemas/attLabel"
+      required:
+        - id
+        - label
     
     projectMetadata:
       description: project meta data
@@ -1357,8 +1424,14 @@ components:
       format: uri
       xml:
         attribute: true
-    attFor:
-      description: ID of the content for which this result is produced
+    attDetails:
+      description: A link to a more detailed description, e.g. dearch in a file
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attFrom:
+      description: URI of the content (project, resource) from which this result is taken or for which a list is valid
       type: string
       format: uri
       xml:
@@ -1369,7 +1442,7 @@ components:
       xml:
         attribute: true
     attLength:
-      description: The length of the current page of the result set
+      description: The (maximum) length of a page of the result set
       type: integer
       default: 1
       xml:
@@ -1388,8 +1461,14 @@ components:
       type: string
       xml:
         attribute: true
+    attSelf:
+      description: A backlink to the query that created a result set
+      type: string
+      format: URI
+      xml:
+        attribute: true
     attStart:
-      description: from which position in a list the result set starts (1-based)
+      description: from which position in a paginated list the result set starts (1-based)
       type: integer
       default: 1
       xml:

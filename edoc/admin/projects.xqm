@@ -6,7 +6,6 @@ import module namespace config   = "https://github.com/dariok/wdbplus/config" at
 import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
 import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
-import module namespace xstring  = "https://github.com/dariok/XStringUtils"   at "../include/xstring/string-pack.xql";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
@@ -29,8 +28,10 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
       let $metaFile := doc($metaPath)
       
       let $relativePath := substring-after($file, $model?pathToEd || '/')
-      let $subColl := xstring:substring-before-last($file, '/')
-      let $resource := xstring:substring-after-last($file, '/')
+      let $subColl := if (starts-with($file, '/'))
+        then '/' || string-join(tokenize(normalize-space($file), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($file), '/')[position() lt last()], '/')
+      let $resource := tokenize(normalize-space($file), '/')[last()]
       let $fileEntry := $metaFile//meta:file[@path = $relativePath]
       let $xml := doc($file)
       
@@ -187,7 +188,7 @@ declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string 
               <td>Eintrag in <i>wdbmeta.xml</i> vorhanden?</td>
               {if ($entry/@path != '')
                 then <td>OK</td>
-                else <td>fehlt <a href="javascript:job('add', '{$id}')">hinzufügen</a></td>
+                else <td>fehlt <button data-job="add" data-id="{$id}">hinzufügen</button></td>
               }
             </tr>
             {if ($entry/@path != '')
@@ -196,28 +197,31 @@ declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string 
                   <td style="border-top: 1px solid black;">UUID in wdbMeta</td>
                   {if ($entry/@uuid = $uuid)
                     then <td>OK: {$uuid}</td>
-                    else <td>{normalize-space($entry/@uuid)}<br/><a href="javascript:job('uuid', '{$id}')">UUID aktualisieren</a></td>
+                    else <td>{normalize-space($entry/@uuid)}
+                            <br/><button data-job="uuid" data-id="{$id}">UUID aktualisieren</button></td>
                   }
                 </tr>,
                 <tr>
                   <td>externe PID</td>
                   <td>{if ($entry/@pid = $pid)
                     then "OK: " || string($entry/@pid)
-                    else <a href="javascript:job('pid', '{$id}'">PID aus Datei übernehmen</a>
+                    else <button data-job="pid"  data-id="{$id}">PID aus Datei übernehmen</button>
                   }</td>
                 </tr>,
                 <tr>
                   <td>Timestamp in wdbMeta</td>
                   {if ($entry/@date = $date)
                     then <td>OK: {$date}</td>
-                    else <td>{normalize-space($entry/@date)}<br/><a href="javascript:job('date', '{$id}')">Timestamp aktualisieren</a></td>
+                    else <td>{normalize-space($entry/@date)}
+                            <br/><button data-job="date"  data-id="{$id}">Timestamp aktualisieren</button></td>
                   }
                 </tr>,
                 <tr>
                   <td><code>@xml:id</code> in wdbMeta</td>
                   {if ($entry/@xml:id = $doc/tei:TEI/@xml:id)
                     then <td>OK: {$entry/@xml:id/string()}</td>
-                    else <td>{normalize-space($entry/@xml:id)}<br/><a href="javascript:job('id', '{$id}')">ID aktualisieren</a></td>
+                    else <td>{normalize-space($entry/@xml:id)}
+                            <br/><button data-job="id" data-id="{$id}">ID aktualisieren</button></td>
                   }
                 </tr>
               )
@@ -303,7 +307,7 @@ declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string 
                       if ($status = 'Kein Struktureintrag') then
                         $status
                       else
-                        let $link := <a href="javascript:job('private', '{ $id }')">umschalten</a>
+                        let $link := <button data-job="private" data-id="{ $id }">umschalten</button>
                         return ($status, <br/>, $link)
                     }</td>
                   </tr>

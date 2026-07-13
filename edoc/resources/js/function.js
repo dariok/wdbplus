@@ -8,21 +8,18 @@
 
 const wdb = (function() {
   // all meta elements
-  let meta = {};
-  for (let m of document.getElementsByTagName("meta")) {
-    meta[m.name] = m.content;
-  }
-
-  // will be used to store headers
-  let restHeaderVal = { };
-  
-  // parsed query parameters; URLSearchParams is not supported by Edge < 17 and IE
-  /* TODO https://github.com/dariok/wdbplus/issues/429
-      current support data: c. 91% should support URLSearchParams – switch when support > 95% */
-  let params = {};
-  for (let ar of window.location.search.substr(1).split("&")) {
-    let te = ar.split("=");
-    params[te[0]] = te[1];
+  let meta = new Map();
+  for ( let m of document.getElementsByTagName("meta") ) {
+    if ( m.name == 'rest' ) { 
+      let contents = m.content.split('; ')
+        , values = new Map();
+      for ( let c of contents ) {
+        let url = c.split(': ');
+        values.set(url[0], url[1]);
+      }
+      meta.set("rest", values);
+    }
+    else meta.set(m.name, m.content);
   }
   
   // unique IDs
@@ -31,111 +28,113 @@ const wdb = (function() {
     return 'wdb' + ('000' + internalUniqueId++).substring(-4);
   };
 
-  function setAuthorizationHeader () {
-    let cred = Cookies.get("wdbplus");
-    if ( typeof cred === "undefined" || cred.length === 0 ) {
-      delete restHeaderVal.Authorization;
-    } else {
-      restHeaderVal.Authorization = "Basic " + cred;
-    } 
-  };
-
   /* Login and logout */
-  /* TODO: this needs to be reworked completely */
-  let login = function ( event, reload ) {
-    event.preventDefault();
-  
-    let username = $('#user').val()
-      , password = $('#password').val();
-    wdb.report("info", "login request");
-    Cookies.remove('wdbplus');
+  /**
+   * Perform the actual login. Reload the page if parameter is true
+   * @param { Boolean } reload 
+   * @param { String } base
+   */
+  let login = function ( reload, base='' ) {
+    let user = $('#user').val()
+      , pass = $('#password').val()
+      , username = user === undefined ? '' : String(user)
+      , password = pass === undefined ? '' : String(pass);
 
     let formdata = new FormData();
     formdata.append("user", username);
     formdata.append("password", password);
+
+    let url = base === '' ? wdb.restUrl : base;
     
     $.ajax({
-      url: '../api/v2/login',
+      url: new URL('login', url).toString(),
       method: 'post',
       data: formdata,
-      processData: false,
-      contentType: false,
-      cache: false,
-      success: function (data) {
+      success: ( data ) => {
         try {
-          Cookies.set('wdbplus', btoa(username + ':' + password));
-          $('#auth').replaceWith(data);
-          setAuthorizationHeader();
-          $('#logout').on('click', () => {
-            wdb.logout();
-          });
-          wdb.report("info", "logged in");
+          $('#auth').append("<div id='userdata'></div>");
+          $('#userdata').append(data.user);
+          $('#login').hide();
           if ( reload ) {
-             location.reload();
+            location.reload();
           }
+          wdb.report("info", "logged in as " + username);
         } catch ( e ) {
-          wdb.report("error", "error logging in", e);
+          wdb.handleError("logging in", e);
         }
-      },
-      dataType: 'text'
+      }
     });
   };
 
-  let logout = function () {
+  /**
+   * Perform the logout call
+   * @param { String } base 
+   */
+  let logout = function ( base='' ) {
     wdb.report("info", "logout request");
+    let url = base === '' ? wdb.restUrl : base;
     
-    Cookies.remove('wdbplus');
     $.ajax({
-      url: 'login',
-      method: 'post',
-      data: {
-        logout: 'logout'
-      },
+      url: new URL('logout', url).toString(),
+      method: 'get',
       success: function (data) {
         try {
-          $('#auth').replaceWith(data);
-          $('#login').on('submit', (event) => {
-            event.preventDefault();
-            wdb.login(event);
-          });
-          setAuthorizationHeader();
+          $('#userdata').remove();
+          $('#login').show();
           wdb.report("info", "logging off");
-        } catch (e) {
-          wdb.report("error", "error logging out", e);
+        } catch ( e ) {
+          wdb.handleError("logging off", e);
         }
-      },
-      dataType: 'text'
+      }
     });
   };
   /* END login and logout */
 
   /* globals Cookies */
   /* TODO when modules are available, import js.cookie.mjs via CDN; current support 90.5% */
-  // function to set REST headers
-  setAuthorizationHeader();
 
   return {
     meta:           meta,
-    parameters:     params,
-    restHeaders:    restHeaderVal,
-    setRestHeaders: setAuthorizationHeader,
+    parameters:     new URLSearchParams(window.location.search),
+    restUrl:        new URL("api/v2/", meta.get('rest').get('2')).toString(),
     getUniqueId:    getUniqueId,
     login:          login,
     logout:         logout,
 
-    /* usually used internally to signal errors */
-    report: function ( reportType, shortInfo, longInfo, targetElement, ...args ) {
+    /**
+     * Handle general errors, taking care of type checking the error
+     * @param { String } text 
+     * @param { unknown } e 
+     */
+    handleError: function ( text, e ) {
+      if ( e instanceof Error ) {
+        wdb.report("error", "error when " + text, e.toString());
+      } else {
+        wdb.report("error", "an unknown type of error occurred when " + text);
+      }
+      return true;
+    },
+
+    /**
+     * Standard reporting to console
+     * @param { String } reportType 
+     * @param { String } shortInfo 
+     * @param { String } longInfo 
+     * @param { Element } targetElement 
+     * @param { ...String } args 
+     */
+    report: function ( reportType, shortInfo, longInfo = '', targetElement = document.createElement('div'), ...args ) {
       let symbol,
           report = [shortInfo + "\n" + longInfo, ...args];
 
       if ( reportType == "error" ) {
-        console.error(...report);
         console.trace();
+        console.error(...report);
         symbol = "✕";
       } else if ( reportType == "warn" ) {
+        console.trace();
         symbol = "❗";
         console.warn(...report);
-        console.trace();
       } else if ( reportType == "info" ) {
         symbol = "ℹ";
         console.info(...report);
@@ -143,24 +142,16 @@ const wdb = (function() {
         symbol = "✓";
         console.info(...report);
       } else {
+        console.trace();
         console.log(...report);
       }
 
       if ( targetElement ) {
         $(targetElement).append('<span class="' + reportType + '" title="' + longInfo + '">' + symbol + '</span>');
       }
-    },
 
-    /* taken from https://github.com/30-seconds/30-seconds-of-code/blob/master/snippets/URLJoin.md */
-    URLJoin: ( ...args ) =>
-      args
-        .join('/')
-        .replace(/[\/]+/g, '/')
-        .replace(/^(.+):\//, '$1://')
-        .replace(/^file:/, 'file:/')
-        .replace(/\/(\?|&|#[^!])/g, '$1')
-        .replace(/\?/g, '&')
-        .replace('&', '?')
+      return true;
+    }
   };
 })();
 Object.freeze(wdb);
@@ -196,6 +187,8 @@ const wdbDocument = {
     let from = range.split('-')[0],
         to = range.split('-')[1];
     
+    if ( document.getElementById(from) === null ) return;
+
     this.highlightElements (from, to, 'red', '');
 
     let scrollto = $('#' + from).offset().top - $('#navBar').innerHeight();
@@ -488,31 +481,43 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
   },
 
   // generic laoding function
-  loadContent: function ( url, target, me ) {
-    if ( url.length > 0 && $('#' + target).children().length == 0 ) {
-      $.ajax(
-        {
-          url: url,
-          headers: wdb.restHeaders,
-          dataType: 'html',
-          success: function (data) {
-              $('#' + target).html($(data).children('ul'));
-              $('#' + target).slideToggle();
-              $(me).html('↑').attr('title', 'Hide results');
-          },
-          error: function (xhr, status, error) {
-            wdb.report("error", "Error loading " + url + " : " + status, error);
-          }
+  /**
+   * @param url { string }
+   * @param target { string }
+   * @param me { Element }
+   */
+  loadContent: function ( url, target, me = document.createElement('div'), selector = "") {
+    if ( !me.isConnected ) { // nothing to toggle, so replace contents
+      $.ajax({
+        url: url,
+        method: 'get',
+        dataType: 'html',
+        success: function ( data ) {
+          let newContent = selector !== '' ? $(data).children(selector) : data;
+          $('#' + target).html(newContent);
+        },
+        error: function ( xhr, status, error ) {
+          wdb.report("error", "Error loading " + url + " : " + status, error);
         }
-      );
-    } else if ( $('#' + target).css('display') == 'none' ) {
+      });
+    } else if ( $('#' + target).children().length == 0 ) { // no children: load and show
+      $.ajax({
+        url: url,
+        method: 'get',
+        dataType: 'html',
+        success: function ( data ) {
+          let newContent = selector !== '' ? $(data).children(selector) : data;
+          $('#' + target).html(newContent);
+          $('#' + target).slideDown();
+          $(me).html('⮭').attr('title', 'Hide results');
+        },
+        error: function ( xhr, status, error ) {
+          wdb.report("error", "Error loading " + url + " : " + status, error);
+        }
+      });
+    } else { // children already present: toggle visibility
       $('#' + target).slideToggle();
-      $(me).html('↑').attr('title', 'Hide results');
-    } else {
-      $('#' + target).slideToggle();
-      if ( me !== undefined ) {
-        $(me).html('→').attr('title', 'Show results');
-      }
+      $(me).html($(me).visible ? '⮭' : '⮯').attr('title', $(me).visible ? 'Hide results' : 'Show results');
     }
   },
 
@@ -542,6 +547,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
    /* TODO use the Range API to make this easier and more comprehensible */
   // highlight a range of elements between a start and an end marker, using a given color and an alternative text
   highlightElements: function (startMarker, endMarker, color, alt) {
+    if ( startMarker === undefined || endMarker === undefined ) return;
     // set defaults
     color = (color === "undefined") ? "#FFEF19" : color;
     
@@ -708,19 +714,19 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
 // group navigation related methods
   nav: {
     // load navigation if necessary and toggle visibility
-    toggleNavigation: function( target) {
-      if ($("header nav").css("display") == "none") {
+    toggleNavigation: function( ) {
+      if ( $("header nav").css("display") === "none" ) {
         $("#showNavLink").text("Navigation ausblenden");
       } else {
         $("#showNavLink").text("Navigation einblenden");
       }
       
-      if ($("header nav").text() === "") {
+      if ( $("header nav").text() === "" ) {
         $("header nav").text("lädt...");
-        let edition = wdb.meta.ed;
+        let edition = wdb.meta.get('ed;')
         
         $.ajax({
-          url: wdb.URLJoin(wdb.meta.rest, "collection/", edition, "/nav.html"),
+          url: new URL("projects/" + wdb.meta.get('ed') + "/views/navigation", wdb.restUrl).toString(),
           success: function (data) {
             $("header nav").replaceWith($(data));
           },
@@ -746,7 +752,8 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
       let ed = event.currentTarget.dataset.ed;
       $.ajax({
         method: "get",
-        url: wdb.meta.rest + "collection/" + ed + "/nav.html",
+        url: wdb.restUrl + "projects/" + ed + "/views/navigation",
+        dataType: "html",
         success:  ( data ) => {
           let replacement = $(data).find('#' + ed).prev().addBack();
           if ( replacement.length > 0 ) {
@@ -761,14 +768,17 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
   },
   
   /**
-   * display an image in the right div – does not use an viewer but inserts an iframe
-   * @param {string} url - the URL from which to load the image
-   * @returns {void}
+   * display an image in the right div – does not use any viewer but inserts an iframe
+   * @param { String } url - the URL from which to load the image
+   * @returns { void }
    */
   displayImageRight: function ( url ) {
-    if (window.innerWidth > 768) {
-      $('#fac').html('<iframe id="facsimile"></iframe><span><a href="javascript:close();">[x]</a></span>');
+    if ( window.innerWidth > 768 ) {
+      $('#fac').html('<iframe id="facsimile"></iframe><span><button>[x]</button></span>');
       $('#facsimile').attr('src', url).css('display', 'block');
+      $('document').on('click', 'iframe button', ( event ) => {
+        $('#fac').empty();
+      });
     }
   },
   
@@ -875,21 +885,26 @@ const wdbUser = {
  * includes highlighting and image loading functions
  ***/
 $( () => {
+
   // highlight a range of elements given by the »l« query parameter and scroll there
-  if (wdb.parameters.hasOwnProperty('l')) {
-    wdbDocument.highlightRange(wdb.parameters.l);
+  if ( wdb.parameters.has('l') ) {
+    wdbDocument.highlightRange(wdb.parameters.get('l'));
   }
 
   // highlight several elements given by a comma separated list in the »i« query parametter
-  if (wdb.parameters.hasOwnProperty('i')) {
-    for (let ids of wdb.parameters.i.split(',')) {
-      $('#' + ids).css('background-color', 'lightblue');
+  if ( wdb.parameters.has('i') ) {
+    const ids = wdb.parameters.get('i');
+    if ( ids !== null && ids !== '' ) {
+      for ( let id of ids.split(',') ) {
+        if ( id === '' ) continue;
+        $('#' + id).css('background-color', 'lightblue');
+      }
     }
   }
 
   // if a search word is present, highlight it
-  if ( wdb.meta.wdbTemplate !== 'templates/function.html' && wdb.parameters.hasOwnProperty('q') ) {
-    wdbDocument.highlightSearch(wdb.parameters.q, 'yellow');
+  if ( wdb.meta.get('wdbTemplate') !== 'templates/function.html' && wdb.parameters.has('q') ) {
+    wdbDocument.highlightSearch(wdb.parameters.get('q'), 'yellow');
   }
 
   // load image for target page (or first page if no fragment requested)
@@ -901,14 +916,6 @@ $( () => {
   $('body').on('click', '.pagebreak', ( event ) => {
     event.preventDefault();
     wdbUser.displayImage(event.target);
-  });
-
-  $('#login').on('submit', (event) => {
-    event.preventDefault();
-    wdb.login(event);
-  });
-  $('#logout').on('click', () => {
-    wdb.logout();
   });
 
   // load navigation
@@ -946,6 +953,16 @@ $( () => {
   
   // register click handler for entity information
   $('body').on('click', '.entity', wdbUser.showEntityData);
+
+  // register listeners for login and logout
+  $(document).on('submit', '#login', ( event ) => {
+    event.preventDefault();
+    wdb.login(false);
+  });
+  $(document).on('click', '#logout', () => {
+    wdb.logout();
+  });
+  $('#auth button').on('click', ( ) => { $('#login').toggle(); });
 });
 /* END DOM ready functions */
 
@@ -953,7 +970,7 @@ $( () => {
  *  event handlers on window properties
  ***/
 // load image when jumping to target
-$(window).bind('hashchange', function () {
+$(window).on('hashchange', function () {
   wdbDocument.loadTargetImage();
 });
 
@@ -964,7 +981,7 @@ $(window).on('load resize', function () {
 });
 
 /* preparations to show some loading animation while doing AJAX requests */
-$(document).bind({
+$(document).on({
 	ajaxStart: function() {
     $("body").addClass("loading");
   },

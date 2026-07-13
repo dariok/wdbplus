@@ -9,12 +9,24 @@ declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei  = "http://www.tei-c.org/ns/1.0";
 
-declare variable $r2:acceptable := ("application/json", "application/xml", "text/html");
+(:~
+ : list of allowed operations
+ :)
+declare variable $r2:allow := "GET, PUT, PATCH, HEAD, OPTIONS, DELETE";
 
 (:~
  : Base URL for the REST API
  :)
 declare variable $r2:base := doc('../config.xml')//*:rest[@version = "2"];
+
+(:~
+ : Paths for endpoint groups 
+ :)
+declare variable $r2:urls := map {
+  "projects": "/api/v2/projects/",
+  "resources": "/api/v2/resources/",
+  "search": "/api/v2/search/"
+};
 
 (:~
  : list of allowed origins
@@ -29,14 +41,38 @@ declare variable $r2:allOrigins := if ( request:get-header('origin') != '' )
   else map {
     "Access-Control-Allow-Origin" : "*"
   };
-(: ,
-  "Access-Control-Allow-Methods" : "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers" : "Content-Type, Authorization",
-  "Access-Control-Max-Age"       : "86400" :)
 
-declare variable $r2:mediaTypes := map {
-  "Access-Control-Allow-Origin": "*",
-  "AllowPost": string-join($r2:acceptable, ' ')
+declare function r2:headersWithAllow ( ) as map(*) {
+  map:merge((
+    $r2:allOrigins,
+    map {
+      "Allow": $r2:allow,
+      "Access-Control-Allow-Methods": $r2:allow
+    }
+  ))
+};
+
+declare variable $r2:defaultResponseLength := 25;
+
+declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathInfo as map(*), $function as xs:string ) as map(*) {
+  try {
+    switch ( $mediaType )
+      case "application/json"
+        return router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
+      case "text/html"
+        return router:response(200, "text/html", wdb:applySpecificXsl($data, $pathInfo, $function || ".xsl"), $r2:allOrigins)
+      case "application/xml"
+      case "application/tei+xml"
+        return router:response(200, $mediaType, $data, $r2:allOrigins)
+      default
+        return router:response(406, "text/plain", "Type " || $mediaType || " cannot be served", $r2:allOrigins)
+  } catch * {
+    util:log("info", map{
+      "location":  $err:module || '@' || $err:line-number
+    }),
+    util:log("info", trace($err:description)),
+    r2:response(500, 'text/plain', "an unknown error occurred when preparing response", $r2:allOrigins)
+  }
 };
 
 declare function r2:returnXmlOrJson ( $data as item() ) as item() {
@@ -44,9 +80,8 @@ declare function r2:returnXmlOrJson ( $data as item() ) as item() {
   return
     if ( $mediaType = "application/json" ) then
       router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
-    else if ( $mediaType = $r2:acceptable ) then (
-      router:response(200, $mediaType, $data, $r2:allOrigins)
-    )
+    else if ( $mediaType = "application/xml" ) then
+      router:response(200, "application/xml", $data, $r2:allOrigins)
     else
       router:response(406, "text/plain", "Not acceptable", $r2:allOrigins)
 };
@@ -57,17 +92,9 @@ declare function r2:response ( $status as xs:integer, $mediaType as xs:string, $
 
 declare function r2:parseBody ( $request as map(*) ) as item() {
   let $mediaType := $request?media-type
-    (: , $t1 := util:log("info", $request?body) :)
-    (: , $checkMediaType := $mediaType = $r2:acceptable :)
-    (: , $t0 := util:log("info", $mediaType || ': ' || $checkMediaType) :)
 
   return
     (: Roaster should handle unsupported media types and return 415 :)
-    (: if ( not($checkMediaType) ) then
-      ( util:log("error", "unsupported: " || $mediaType),
-      r2:response(415, 'text/plain', 'Unsupported Media Type', $r2:mediaTypes)
-      )
-    else :)
      if ( $mediaType = "application/json" and $request?body instance of map(*) ) then
       $request?body?title
     else if ( $mediaType = "application/xml" ) then
@@ -80,17 +107,19 @@ declare function r2:writeAllowed ( $user as map(*) ) as xs:boolean {
   $user?groups = ('dba', 'wdbadmin')
 };
 
-declare function r2:mapKeysAllowed(
-  $m as map(*) ,
-  $required as xs:string*,
-  $optional as xs:string*
-) as xs:boolean {
+declare function r2:mapKeysAllowed( $m as map(*), $required as xs:string*, $optional as xs:string* ) as xs:boolean {
   let $keys := map:keys($m)
   let $allowed := ($required, $optional)
   return
     (every $r in $required  satisfies $r = $keys)
     and
     (every $k in $keys      satisfies $k = $allowed)
+};
+
+declare function r2:sanitiseFilename ( $filename as xs:string ) as xs:string {
+  $filename => replace(',', '') => replace(' ', '_') => replace('&amp;', '-')
+            => replace('ä', 'ae') => replace('Ä', 'Ae') => replace('ö', 'oe') => replace('Ö', 'Oe')
+            => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
 };
 
 (:~
@@ -113,11 +142,30 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
       (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
     , $existing := $meta//id($request?parameters?id)
     
-    , $targetPath := $request?project?collectionPath || $request?body?path
+    , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
+    , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+    , $targetPath := $fullTargetPath => substring-before($fileNameBase)
+    , $relPath := $targetPath => substring-after($request?project?collectionPath)
+    , $fileNameMod := r2:sanitiseFilename($fileNameBase)
     
-    , $store := (
-        r2:store($targetPath, $request?body?file?name, $request?body?xml, $mimeType),
-        r2:enterMetaForXml($request)
+  let $store := (
+        if ( not(xmldb:collection-available($targetPath)) )
+          then (
+            xmldb:create-collection($request?project?collectionPath, $relPath),
+            sm:chown(xs:anyURI($targetPath), "wdb"),
+            sm:chgrp(xs:anyURI($targetPath), "wdbusers")
+          )
+          else (),
+        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType, $existing),
+        r2:enterMetaForXml(map{
+          "collectionPath": $request?project?collectionPath,
+          "targetPath": $relPath,
+          "filename": $fileNameMod,
+          "hash": $request?body?hash,
+          "id": $request?parameters?id,
+          "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
+          "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
+        })
       )
       (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
 
@@ -126,22 +174,31 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
   return router:response($status, $mimeType, $store, $r2:allOrigins)
 };
 
-declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(), $mime-type as xs:string ) as xs:string {
+declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(),
+                            $mime-type as xs:string, $existing as element(meta:file)? ) as xs:string {
   (: all checks should have been carried out by the higher API functions in r2p and r2f.
      Hence, we assume everything’s okay and do not catch errors :)
   (
     xmldb:store($collection, $resource-name, $contents, $mime-type),
-    sm:chmod(xs:anyURI(string-join(($collection, $resource-name), '/')), if ( ends-with($resource-name, 'xql') ) then "rwxrwxr-x" else "rw-rw-r--"),
-    sm:chown(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdb"),
-    sm:chgrp(xs:anyURI(string-join(($collection, $resource-name), '/')), "wdbusers")
+    if ( empty($existing) ) then
+      (
+        sm:chmod(
+            xs:anyURI($collection || '/' || $resource-name),
+            if ( ends-with($resource-name, 'xql') ) then "rwxrwxr-x" else "rw-rw-r--"
+          ),
+        sm:chown(xs:anyURI($collection || '/' || $resource-name), "wdb"),
+        sm:chgrp(xs:anyURI($collection || '/' || $resource-name), "wdbusers")
+      )
+    else ()
   )
 };
 
 declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
-  let $meta := doc($info?project?collectionPath || '/wdbmeta.xml')
-    , $uuid := $info?body?hash
-    , $relPath := $info?body?path || '/' || $info?body?file?name
-    , $id := $info?parameters?id
+  let $meta := doc($info?collectionPath || '/wdbmeta.xml')
+    , $uuid := $info?hash
+    , $delimiter := if ( ends-with($info?targetPath, '/') ) then '' else '/'
+    , $relPath := $info?targetPath || $delimiter || $info?filename
+    , $id := $info?id
     , $metaFileById := $meta/id($id)[self::meta:file]
     , $metaFileByPath := $meta//meta:file[@path = $relPath]
     , $metaFile := if ( empty($metaFileById) ) then
@@ -161,33 +218,34 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
           else error("unknown error")
         else ()
       
-    , $file := element { QName("https://github.com/dariok/wdbplus/wdbmeta", "file") } {
-        if ( count($metaFile) = 1 ) then
-          for $attr in $metaFile[1]/@*
-          return if (
-              (namespace-uri($attr) = "http://www.w3.org/XML/1998/namespace" and local-name($attr) = "id")
-              or (namespace-uri($attr) = "" and local-name($attr) = ("path", "date", "uuid"))
-            ) then ()
-            else $attr
-        else (),
-        attribute xml:id { $id },
-        attribute path { $relPath },
-        attribute date { current-dateTime() },
-        attribute uuid { $uuid }
-      }
-    , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?project}, "getRestView", 1) )
+    , $file :=
+        <file xmlns="https://github.com/dariok/wdbplus/wdbmeta"
+            xml:id="{ $id }"
+            path="{ $relPath }"
+            date="{ current-dateTime() }"
+            uuid="{ $uuid }"
+        >{
+          if ( count($metaFile) = 1 ) then
+            for $attr in $metaFile[1]/@*
+            return if (
+                (namespace-uri($attr) = "http://www.w3.org/XML/1998/namespace" and local-name($attr) = "id")
+                or (namespace-uri($attr) = "" and local-name($attr) = ("path", "date", "uuid"))
+              ) then ()
+              else $attr
+          else ()
+        }</file>
+    , $view := if ( wdb:findProjectFunction(map{"pathToEd": $info?collectionPath}, "getRestView", 1) )
         then wdb:eval("wdbPF:getRestView($fileID)", false(), (xs:QName("fileID"), $id))
         else
           <view xmlns="https://github.com/dariok/wdbplus/wdbmeta"
               file="{ $id }"
-              label="{ normalize-space(($info?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $info?body?xml//tei:titleStmt/tei:title[1])[1]) }">
+              label="{ $info?mainTitle }">
             {
-              if ( $info?body?xml//tei:titleStmt/tei:title[@type eq 'num'] )
-                then attribute order { normalize-space($info?body?xml//tei:titleStmt/tei:title[@type eq 'num']) }
+              if ( exists($info?numberingTitle) )
+                then attribute order { normalize-space($info?numberingTitle) }
                 else ()
             }
           </view>
-    , $errorContent := map { "errors": $errors, "file": $file, "view": $view }
 
     return if ( not($errors) and count($metaFile) = 0 ) then
       (
@@ -199,10 +257,19 @@ declare function r2:enterMetaForXml ( $info as map(*) ) as empty-sequence() {
         update replace $metaFile[1] with $file,
         update replace $meta//meta:view[@file = $id] with $view
       )
-    else (
-      r2:logMap($errorContent, 0),
-      error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
-    )
+    else
+      let $errorContent := map { "errors": $errors, "file": $file, "view": $view }
+      return (
+        r2:logMap($errorContent, 0),
+        error(xs:QName("wdb:wdb4711"), "Error processing metadata for file ID " || $id, $errorContent)
+      )
+};
+
+declare function r2:resultsWrapper ( $values as map(*), $contents as element()* ) as element(results) {
+  <results xmlns="https://github.com/dariok/wdbplus/api/schema/v1">
+    { map:keys($values) ! attribute { . } { $values(.) } }
+    { $contents }
+  </results>
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {

@@ -36,7 +36,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     let $filePathInfo := if ( not($ed or $id) or $ed = "data" ) (: no specific file/project requested; use data :)
           then
             map {
-              "kind": "project",
+              "type": "project",
               "projectPath": $config:data,
               "collectionPath": $config:data,
               "fileName": "wdbmeta.xml",
@@ -44,7 +44,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
             }
           else
             wdbFiles:getFullPath( ($id, $ed)[1] )    (: $id and $ed should never be present at the same time :)
-      , $pathToFile := if ( $filePathInfo?kind = 'peer' ) (: fileURL: URL to a file located on a peer :)
+      , $pathToFile := if ( $filePathInfo?type = 'peer' ) (: fileURL: URL to a file located on a peer :)
           then $filePathInfo?fileURL
           else $filePathInfo?collectionPath || '/' || $filePathInfo?fileName
     
@@ -69,22 +69,21 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       , $instanceFunctions := for $function in doc($config:data || "/instance-functions.xml")//function
           return $function/@name || '#' || count($function/argument)
     
-    (: even though it’s called xsl, we use the whole meta:process element here so that later we can use multi-command
-       processing (#394) :)
-    let $xsl := if ( $filePathInfo?kind = "project" )
+    let $proc := if ( $filePathInfo?type = "project" )
       then
         <meta:process target="html">
-          <meta:command type="xsl">{ 
-            if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
-              then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
-              else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
-          }</meta:command>
+          <meta:command>
+            <meta:step type="xsl">{ 
+              if ( doc-available ( $config:data || '/resources/xsl/nav.xsl' ) ) 
+                then xs:anyURI($config:data || '/resources/xsl/nav.xsl')
+                else xs:anyURI($config:edocBaseDB || '/resources/xsl/nav.xsl')
+            }</meta:step>
+          </meta:command>
         </meta:process>
       else
-        (: TODO: this should get the process, both XSLT and XQUery, and hence the key in the map should be process :)
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
-    let $xslt := if ( not($xsl) instance of element(meta:process) )
+    let $process := if ( not($proc) instance of element(meta:process) )
       then wdbErr:error(map { "code": "wdbErr:wdb0002", "err:description": "no XSLT found for file with ID " || $id,
                 "err:additional": <additional>
                   <file>{$filePathInfo?fileName}</file>
@@ -93,7 +92,7 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
                 </additional>
               }
             )
-      else $xsl
+      else $proc
     
     let $doc := doc($pathToFile)
       , $title := if ( $id != "" )
@@ -121,16 +120,16 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
       "id":               $id,
       "infoFileLoc":      $filePathInfo?projectPath || '/wdbmeta.xml',
       "language":         $language,
-      "mainEd":           $filePathInfo?mainProject,
+      "mainEd":           doc($filePathInfo?mainProject || '/wdbmeta.xml')/meta:projectMD/@xml:id,
       "p":                $parsedParam,
       "pathToEd":         $filePathInfo?projectPath,
+      "process":          $process,
       "projectFile":      $projectFile,
       "projectResources": $filePathInfo?mainProject || "/resources/",
       "q":                $q,
       "requestUrl":       $requestUrl,
       "title":            $title,
-      "view":             $view,
-      "xslt":             $xslt
+      "view":             $view
     }
   } catch *:wdb0000 {                       (: wdb-files.xqm: no file with ID :)
     error(
@@ -143,7 +142,9 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
         "p":           $p,
         "q":           $q,
         "wdb:data":    $config:data,
-        "request":     if ( request:exists() ) then request:get-url() else ""
+        "request":     if ( request:exists() ) then request:get-url() else "",
+        "errLocation": $err:module || '@' || $err:line-number || ':' || $err:column-number,
+        "additional":  $err:additional
       }
     )
   } catch * {                                   (: TODO: add more descriptions:)

@@ -1,0 +1,609 @@
+digraph XQueryCallGraph {
+  graph [rankdir="LR", fontsize=10, fontname="Helvetica"];
+  node [fontname="Helvetica", fontsize=10, style="filled", fillcolor="white"];
+  edge [fontname="Helvetica", fontsize=9, color="#666666"];
+  subgraph "cluster_edoc_admin_admin_xqm" {
+    label="edoc/admin/admin.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/Admin#css#2" [label="wdbAdmin:css#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Admin#getAside#2" [label="wdbAdmin:getAside#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Admin#getEd#2" [label="wdbAdmin:getEd#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Admin#heading#2" [label="wdbAdmin:heading#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Admin#start#3" [label="wdbAdmin:start#3", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_admin_global_xqm" {
+    label="edoc/admin/global.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/GlobalSettings#roleForm#1" [label="local:roleForm#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/GlobalSettings#titleForm#1" [label="local:titleForm#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/GlobalSettings#body#2" [label="wdbGS:body#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/GlobalSettings#getRest#2" [label="wdbGS:getRest#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/GlobalSettings#ingest#2" [label="wdbGS:ingest#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_admin_modelFunctions_xql" {
+    label="edoc/admin/modelFunctions.xql";
+    color="#cccccc";
+    "http://exist-db.org/xquery/trigger#after-update-document#1" [label="trigger:after-update-document#1", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_admin_new_xqm" {
+    label="edoc/admin/new.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/ProjectNew#body#6" [label="wdbPN:body#6", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_admin_projects_xqm" {
+    label="edoc/admin/projects.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/ProjectList#getFiles#1" [label="local:getFiles#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/ProjectList#body#2" [label="wdbPL:body#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/ProjectList#getFileStat#2" [label="wdbPL:getFileStat#2", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/ProjectList#pageTitle#2" [label="wdbPL:pageTitle#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_data_instance_xqm" {
+    label="edoc/data/instance.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/projectFiles#getInstanceName#0" [label="wdbPF:getInstanceName#0", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_addin_xqm" {
+    label="edoc/modules/addin.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/addins-main#body#2" [label="wdbAddinMain:body#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_annotations_xqm" {
+    label="edoc/modules/annotations.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/anno#getAnnoFile#2" [label="wdbanno:getAnnoFile#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_app_xqm" {
+    label="edoc/modules/app.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#3" [label="wdb:applySpecificXsl#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#4" [label="wdb:applySpecificXsl#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#eval#1" [label="wdb:eval#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#eval#3" [label="wdb:eval#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#findProjectFile#2" [label="wdb:findProjectFile#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3" [label="wdb:findProjectFunction#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getAbsolutePath#2" [label="wdb:getAbsolutePath#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getAnnotationDialogue#2" [label="wdb:getAnnotationDialogue#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getBlob#3" [label="wdb:getBlob#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getContentTypeFromExt#2" [label="wdb:getContentTypeFromExt#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getEdFromPath#2" [label="wdb:getEdFromPath#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3" [label="wdb:getProjectFiles#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3" [label="wdb:getProjectFunction#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getUrl#1" [label="wdb:getUrl#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#3" [label="wdb:getXslFromWdbMeta#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4" [label="wdb:getXslFromWdbMeta#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#test#2" [label="wdb:test#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdb#wrapText#3" [label="wdb:wrapText#3", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_auth_xqm" {
+    label="edoc/modules/auth.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/auth#getAuth#2" [label="wdba:getAuth#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_entity_xqm" {
+    label="edoc/modules/entity.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/entity#getEntity#5" [label="wdbe:getEntity#5", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/entity#getEntityBody#2" [label="wdbe:getEntityBody#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_error_xqm" {
+    label="edoc/modules/error.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/errors#error#1" [label="wdbErr:error#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/errors#get#2" [label="wdbErr:get#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/errors#store#3" [label="wdbErr:store#3", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_function_xqm" {
+    label="edoc/modules/function.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/functionpages#evalForAttribute#4" [label="wdbfp:evalForAttribute#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#get#3" [label="wdbfp:get#3", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/functionpages#getFooter#2" [label="wdbfp:getFooter#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#getHead#3" [label="wdbfp:getHead#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#getHeader#2" [label="wdbfp:getHeader#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#getVal#3" [label="wdbfp:getVal#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#start#6" [label="wdbfp:start#6", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/functionpages#test#2" [label="wdbfp:test#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_model_xqm" {
+    label="edoc/modules/model.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/model#populateModel#5" [label="wdbm:populateModel#5", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_pquery_xqm" {
+    label="edoc/modules/pquery.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/pquery#body#2" [label="wdbpq:body#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_search_xqm" {
+    label="edoc/modules/search.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/wdbs#getLeft#2" [label="wdbSearch:getLeft#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdbs#listEnt#1" [label="wdbSearch:listEnt#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/wdbs#search#2" [label="wdbSearch:search#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/wdbs#selectEd#1" [label="wdbSearch:selectEd#1", shape="ellipse", fillcolor="#f3f3f3"];
+  }
+  subgraph "cluster_edoc_modules_start_xqm" {
+    label="edoc/modules/start.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/start#getStart#2" [label="wdbst:getStart#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/start#getStartLeft#2" [label="wdbst:getStartLeft#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_stats_xqm" {
+    label="edoc/modules/stats.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/stats#getEd#3" [label="wdbs:getEd#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/stats#getInstanceName#2" [label="wdbs:getInstanceName#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/stats#getInstanceShort#2" [label="wdbs:getInstanceShort#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/stats#projectList#2" [label="wdbs:projectList#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_view_xqm" {
+    label="edoc/modules/view.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/mView#getContent#2" [label="wdbv:getContent#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getEE#5" [label="wdbv:getEE#5", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getGlobalFooter#2" [label="wdbv:getGlobalFooter#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getHead#2" [label="wdbv:getHead#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getHeader#2" [label="wdbv:getHeader#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getLeftFooter#2" [label="wdbv:getLeftFooter#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/mView#getRightFooter#2" [label="wdbv:getRightFooter#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_wdb_files_xqm" {
+    label="edoc/modules/wdb-files.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#2" [label="wdbFiles:evaluateIfModifiedSince#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3" [label="wdbFiles:evaluateIfModifiedSince#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#findMainProject#1" [label="wdbFiles:findMainProject#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#findParentProject#2" [label="wdbFiles:findParentProject#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#getAbsolutePath#1" [label="wdbFiles:getAbsolutePath#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#getFilePaths#2" [label="wdbFiles:getFilePaths#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#getFullPath#1" [label="wdbFiles:getFullPath#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#getModificationDate#1" [label="wdbFiles:getModificationDate#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#getModificationDate#2" [label="wdbFiles:getModificationDate#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#hasAccess#3" [label="wdbFiles:hasAccess#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/files#ietfDate#1" [label="wdbFiles:ietfDate#1", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_wdb_process_xqm" {
+    label="edoc/modules/wdb-process.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/Process#getContent#4" [label="wdbProc:getContent#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Process#processXQuery#1" [label="wdbProc:processXQuery#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/Process#processXSL#1" [label="wdbProc:processXSL#1", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_modules_wdb_request_xqm" {
+    label="edoc/modules/wdb-request.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/Request#parseMultipart#2" [label="wdbRequest:parseMultipart#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest_common_xqm" {
+    label="edoc/rest/common.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestCommon#evaluatePreflight#2" [label="wdbRCo:evaluatePreflight#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCommon#getXSLT#2" [label="wdbRCo:getXSLT#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCommon#head#1" [label="wdbRCo:head#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCommon#sequenceEqual#2" [label="wdbRCo:sequenceEqual#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest_ingest_xqm" {
+    label="edoc/rest/ingest.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestMIngest#createCollection#1" [label="wdbRMi:createCollection#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#enterMeta#1" [label="wdbRMi:enterMeta#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1" [label="wdbRMi:enterMetaXML#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#getID#3" [label="wdbRMi:getID#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#replaceWs#1" [label="wdbRMi:replaceWs#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#store#3" [label="wdbRMi:store#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestMIngest#store#4" [label="wdbRMi:store#4", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest_rest_anno_xql" {
+    label="edoc/rest/rest-anno.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestAnnotations#changeWords#2" [label="wdbRa:changeWords#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#check#4" [label="wdbRa:check#4", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#checkToken#2" [label="wdbRa:checkToken#2", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#commons#2" [label="wdbRa:commons#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#deleteEntity#3" [label="wdbRa:deleteEntity#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#deleteFTA#1" [label="wdbRa:deleteFTA#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#getFileAnno#1" [label="wdbRa:getFileAnno#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#insertAnno#2" [label="wdbRa:insertAnno#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestAnnotations#markEntity#2" [label="wdbRa:markEntity#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+  }
+  subgraph "cluster_edoc_rest_rest_coll_xql" {
+    label="edoc/rest/rest-coll.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestCollections#createFile#3" [label="wdbRc:createFile#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#createFilePreflight#2" [label="wdbRc:createFilePreflight#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#createSubcollection#2" [label="wdbRc:createSubcollection#2", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/RestCollections#createSubcollectionJson#2" [label="wdbRc:createSubcollectionJson#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#createSubcollectionXml#2" [label="wdbRc:createSubcollectionXml#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollection#2" [label="wdbRc:getCollection#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionJSON#1" [label="wdbRc:getCollectionJSON#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#1" [label="wdbRc:getCollectionNavHTML#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" [label="wdbRc:getCollectionNavHTML#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavXML#1" [label="wdbRc:getCollectionNavXML#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionXML#1" [label="wdbRc:getCollectionXML#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollections#1" [label="wdbRc:getCollections#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionsJSON#0" [label="wdbRc:getCollectionsJSON#0\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getCollectionsXML#0" [label="wdbRc:getCollectionsXML#0\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3" [label="wdbRc:getGeneral#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCollections#getResources#2" [label="wdbRc:getResources#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getResourcesJSON#1" [label="wdbRc:getResourcesJSON#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getResourcesXML#1" [label="wdbRc:getResourcesXML#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getResourcesZip#1" [label="wdbRc:getResourcesZip#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getStructureJson#1" [label="wdbRc:getStructureJson#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getSubcoll#2" [label="wdbRc:getSubcoll#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getSubcollJson#1" [label="wdbRc:getSubcollJson#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#getSubcollXML#1" [label="wdbRc:getSubcollXML#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestCollections#imported#2" [label="wdbRc:imported#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/RestCollections#importedStruct#2" [label="wdbRc:importedStruct#2", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest_rest_entity_xql" {
+    label="edoc/rest/rest-entity.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestEntities#collectionEntity#4" [label="wdbRe:collectionEntity#4\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#collectionEntityHtml#4" [label="wdbRe:collectionEntityHtml#4\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#entityById#3" [label="wdbRe:entityById#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#fileEntity#4" [label="wdbRe:fileEntity#4\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#fileEntityHtml#4" [label="wdbRe:fileEntityHtml#4\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#scan#3" [label="wdbRe:scan#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestEntities#scanHtml#3" [label="wdbRe:scanHtml#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+  }
+  subgraph "cluster_edoc_rest_rest_files_xql" {
+    label="edoc/rest/rest-files.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestFiles#fileHead#1" [label="wdbRf:fileHead#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getFileManifest#1" [label="wdbRf:getFileManifest#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getIdfromPid#1" [label="wdbRf:getIdfromPid#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getImageDesc#2" [label="wdbRf:getImageDesc#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getImages#1" [label="wdbRf:getImages#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResource#2" [label="wdbRf:getResource#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceFragment#2" [label="wdbRf:getResourceFragment#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceTxt#1" [label="wdbRf:getResourceTxt#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceView#3" [label="wdbRf:getResourceView#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceViews#2" [label="wdbRf:getResourceViews#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceViewsJSON#1" [label="wdbRf:getResourceViewsJSON#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#getResourceViewsXML#1" [label="wdbRf:getResourceViewsXML#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#image#3" [label="wdbRf:image#3", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" [label="wdbRf:storeFile#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestFiles#storeFilePreflight#2" [label="wdbRf:storeFilePreflight#2\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+  }
+  subgraph "cluster_edoc_rest_rest_search_xql" {
+    label="edoc/rest/rest-search.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestSearch#collectionHtml#3" [label="wdbRs:collectionHtml#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestSearch#collectionText#3" [label="wdbRs:collectionText#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestSearch#fileHtml#3" [label="wdbRs:fileHtml#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+    "https://github.com/dariok/wdbplus/RestSearch#fileText#3" [label="wdbRs:fileText#3\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+  }
+  subgraph "cluster_edoc_rest_rest_test_xql" {
+    label="edoc/rest/rest-test.xql";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/RestTest#test#1" [label="wdbRt:test#1\\nRESTXQ", shape="box", fillcolor="#ffe6cc"];
+  }
+  subgraph "cluster_edoc_rest2_api_xq" {
+    label="edoc/rest2/api.xq";
+    color="#cccccc";
+    "http://e-editiones.org/roaster#lookup#1" [label="api:lookup#1", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest2_projects_xqm" {
+    label="edoc/rest2/projects.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" [label="r2p:createProjectResourceWithId#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" [label="r2p:createProjectResourceWithoutId#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1" [label="r2p:createProjectWithId#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithoutId#1" [label="r2p:createProjectWithoutId#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#deleteProject#1" [label="r2p:deleteProject#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#getProject#1" [label="r2p:getProject#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#imported#2" [label="r2p:imported#2", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/projects#listProjectResources#1" [label="r2p:listProjectResources#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#listProjectViews#1" [label="r2p:listProjectViews#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#listProjects#1" [label="r2p:listProjects#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#listSubprojects#1" [label="r2p:listSubprojects#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#projectView#1" [label="r2p:projectView#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/projects#viewProject#1" [label="r2p:viewProject#1", shape="ellipse", fillcolor="white"];
+  }
+  subgraph "cluster_edoc_rest2_resources_xqm" {
+    label="edoc/rest2/resources.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/rest2/resources#deleteResource#1" [label="r2r:deleteResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getMimeType#2" [label="r2r:getMimeType#2", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getResource#1" [label="r2r:getResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getResourceByPid#1" [label="r2r:getResourceByPid#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1" [label="r2r:getResourceInfo#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" [label="r2r:getResourceView#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getStoredContent#1" [label="r2r:getStoredContent#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#getViewsXml#1" [label="r2r:getViewsXml#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#headResource#1" [label="r2r:headResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#headersWithAllow#0" [label="r2r:headersWithAllow#0", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#listResourceViews#1" [label="r2r:listResourceViews#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#optionsResource#1" [label="r2r:optionsResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#parseUpload#1" [label="r2r:parseUpload#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#patchResource#1" [label="r2r:patchResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#putResource#1" [label="r2r:putResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1" [label="r2r:requireWritableResource#1", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#resolveProcess#3" [label="r2r:resolveProcess#3", shape="ellipse", fillcolor="#f3f3f3"];
+    "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" [label="r2r:returnResource#2", shape="ellipse", fillcolor="#f3f3f3"];
+  }
+  subgraph "cluster_edoc_rest2_rest_common_xqm" {
+    label="edoc/rest2/rest-common.xqm";
+    color="#cccccc";
+    "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1" [label="r2:createXmlResource#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#enterMetaForXml#1" [label="r2:enterMetaForXml#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#logMap#2" [label="r2:logMap#2", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3" [label="r2:mapKeysAllowed#3", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#parseBody#1" [label="r2:parseBody#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#response#4" [label="r2:response#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1" [label="r2:returnXmlOrJson#1", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#store#4" [label="r2:store#4", shape="ellipse", fillcolor="white"];
+    "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1" [label="r2:writeAllowed#1", shape="ellipse", fillcolor="white"];
+  }
+  "https://github.com/dariok/wdbplus/Admin#getAside#2" -> "https://github.com/dariok/wdbplus/errors#get#2";
+  "https://github.com/dariok/wdbplus/Admin#start#3" -> "https://github.com/dariok/wdbplus/model#populateModel#5";
+  "https://github.com/dariok/wdbplus/Process#getContent#4" -> "https://github.com/dariok/wdbplus/Process#processXQuery#1";
+  "https://github.com/dariok/wdbplus/Process#getContent#4" -> "https://github.com/dariok/wdbplus/Process#processXSL#1";
+  "https://github.com/dariok/wdbplus/Process#processXQuery#1" -> "https://github.com/dariok/wdbplus/wdb#eval#3";
+  "https://github.com/dariok/wdbplus/Process#processXQuery#1" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/ProjectList#body#2" -> "https://github.com/dariok/wdbplus/ProjectList#getFileStat#2";
+  "https://github.com/dariok/wdbplus/ProjectList#body#2" -> "https://github.com/dariok/wdbplus/stats#projectList#2";
+  "https://github.com/dariok/wdbplus/ProjectList#getFileStat#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestAnnotations#changeWords#2" -> "https://github.com/dariok/wdbplus/RestAnnotations#check#4";
+  "https://github.com/dariok/wdbplus/RestAnnotations#check#4" -> "https://github.com/dariok/wdbplus/RestAnnotations#checkToken#2";
+  "https://github.com/dariok/wdbplus/RestAnnotations#check#4" -> "https://github.com/dariok/wdbplus/files#hasAccess#3";
+  "https://github.com/dariok/wdbplus/RestAnnotations#deleteEntity#3" -> "https://github.com/dariok/wdbplus/RestAnnotations#check#4";
+  "https://github.com/dariok/wdbplus/RestAnnotations#getFileAnno#1" -> "https://github.com/dariok/wdbplus/anno#getAnnoFile#2";
+  "https://github.com/dariok/wdbplus/RestAnnotations#getFileAnno#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestAnnotations#insertAnno#2" -> "https://github.com/dariok/wdbplus/RestAnnotations#check#4";
+  "https://github.com/dariok/wdbplus/RestAnnotations#insertAnno#2" -> "https://github.com/dariok/wdbplus/anno#getAnnoFile#2";
+  "https://github.com/dariok/wdbplus/RestAnnotations#markEntity#2" -> "https://github.com/dariok/wdbplus/RestAnnotations#check#4";
+  "https://github.com/dariok/wdbplus/RestAnnotations#markEntity#2" -> "https://github.com/dariok/wdbplus/RestAnnotations#commons#2";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/Request#parseMultipart#2";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#enterMeta#1";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#replaceWs#1";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#store#4";
+  "https://github.com/dariok/wdbplus/RestCollections#createFile#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#createFilePreflight#2" -> "https://github.com/dariok/wdbplus/RestCommon#evaluatePreflight#2";
+  "https://github.com/dariok/wdbplus/RestCollections#createSubcollection#2" -> "https://github.com/dariok/wdbplus/RestCommon#sequenceEqual#2";
+  "https://github.com/dariok/wdbplus/RestCollections#createSubcollection#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#createSubcollectionJson#2" -> "https://github.com/dariok/wdbplus/RestCollections#createSubcollection#2";
+  "https://github.com/dariok/wdbplus/RestCollections#createSubcollectionXml#2" -> "https://github.com/dariok/wdbplus/RestCollections#createSubcollection#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollection#2" -> "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionJSON#1" -> "https://github.com/dariok/wdbplus/RestCollections#getCollection#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#1" -> "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavXML#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/files#getModificationDate#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/files#ietfDate#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/model#populateModel#5";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavHTML#3" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavXML#1" -> "https://github.com/dariok/wdbplus/RestCollections#imported#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionNavXML#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionXML#1" -> "https://github.com/dariok/wdbplus/RestCollections#getCollection#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollections#1" -> "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionsJSON#0" -> "https://github.com/dariok/wdbplus/RestCollections#getCollections#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getCollectionsXML#0" -> "https://github.com/dariok/wdbplus/RestCollections#getCollections#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3" -> "https://github.com/dariok/wdbplus/wdb#eval#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getResources#2" -> "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getResourcesJSON#1" -> "https://github.com/dariok/wdbplus/RestCollections#getResources#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getResourcesXML#1" -> "https://github.com/dariok/wdbplus/RestCollections#getResources#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getResourcesZip#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getStructureJson#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestCollections#getSubcoll#2" -> "https://github.com/dariok/wdbplus/RestCollections#getGeneral#3";
+  "https://github.com/dariok/wdbplus/RestCollections#getSubcollJson#1" -> "https://github.com/dariok/wdbplus/RestCollections#getSubcoll#2";
+  "https://github.com/dariok/wdbplus/RestCollections#getSubcollXML#1" -> "https://github.com/dariok/wdbplus/RestCollections#getSubcoll#2";
+  "https://github.com/dariok/wdbplus/RestCollections#imported#2" -> "https://github.com/dariok/wdbplus/RestCollections#imported#2";
+  "https://github.com/dariok/wdbplus/RestCollections#imported#2" -> "https://github.com/dariok/wdbplus/RestCollections#importedStruct#2";
+  "https://github.com/dariok/wdbplus/RestCollections#importedStruct#2" -> "https://github.com/dariok/wdbplus/RestCollections#importedStruct#2";
+  "https://github.com/dariok/wdbplus/RestEntities#collectionEntity#4" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestEntities#collectionEntityHtml#4" -> "https://github.com/dariok/wdbplus/RestCommon#getXSLT#2";
+  "https://github.com/dariok/wdbplus/RestEntities#collectionEntityHtml#4" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestEntities#entityById#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestEntities#fileEntityHtml#4" -> "https://github.com/dariok/wdbplus/RestCommon#getXSLT#2";
+  "https://github.com/dariok/wdbplus/RestEntities#fileEntityHtml#4" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestEntities#scan#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestEntities#scanHtml#3" -> "https://github.com/dariok/wdbplus/RestCommon#getXSLT#2";
+  "https://github.com/dariok/wdbplus/RestEntities#scanHtml#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestFiles#fileHead#1" -> "https://github.com/dariok/wdbplus/RestCommon#head#1";
+  "https://github.com/dariok/wdbplus/RestFiles#fileHead#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestFiles#getFileManifest#1" -> "https://github.com/dariok/wdbplus/RestFiles#getResource#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getFileManifest#1" -> "https://github.com/dariok/wdbplus/RestFiles#image#3";
+  "https://github.com/dariok/wdbplus/RestFiles#getFileManifest#1" -> "https://github.com/dariok/wdbplus/model#populateModel#5";
+  "https://github.com/dariok/wdbplus/RestFiles#getImageDesc#2" -> "https://github.com/dariok/wdbplus/RestFiles#getResource#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getImageDesc#2" -> "https://github.com/dariok/wdbplus/RestFiles#image#3";
+  "https://github.com/dariok/wdbplus/RestFiles#getImageDesc#2" -> "https://github.com/dariok/wdbplus/model#populateModel#5";
+  "https://github.com/dariok/wdbplus/RestFiles#getImages#1" -> "https://github.com/dariok/wdbplus/RestFiles#getResource#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getImages#1" -> "https://github.com/dariok/wdbplus/RestFiles#image#3";
+  "https://github.com/dariok/wdbplus/RestFiles#getImages#1" -> "https://github.com/dariok/wdbplus/model#populateModel#5";
+  "https://github.com/dariok/wdbplus/RestFiles#getResource#2" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getResource#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestFiles#getResource#2" -> "https://github.com/dariok/wdbplus/files#getModificationDate#1";
+  "https://github.com/dariok/wdbplus/RestFiles#getResource#2" -> "https://github.com/dariok/wdbplus/files#ietfDate#1";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceView#3" -> "https://github.com/dariok/wdbplus/Process#getContent#4";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceView#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceView#3" -> "https://github.com/dariok/wdbplus/wdb#getContentTypeFromExt#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceView#3" -> "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceViewsJSON#1" -> "https://github.com/dariok/wdbplus/RestFiles#getResourceViews#2";
+  "https://github.com/dariok/wdbplus/RestFiles#getResourceViewsXML#1" -> "https://github.com/dariok/wdbplus/RestFiles#getResourceViews#2";
+  "https://github.com/dariok/wdbplus/RestFiles#image#3" -> "https://github.com/dariok/wdbplus/RestFiles#getResource#2";
+  "https://github.com/dariok/wdbplus/RestFiles#image#3" -> "https://github.com/dariok/wdbplus/wdb#eval#3";
+  "https://github.com/dariok/wdbplus/RestFiles#image#3" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" -> "https://github.com/dariok/wdbplus/Request#parseMultipart#2";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#enterMeta#1";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#replaceWs#1";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFile#3" -> "https://github.com/dariok/wdbplus/RestMIngest#store#4";
+  "https://github.com/dariok/wdbplus/RestFiles#storeFilePreflight#2" -> "https://github.com/dariok/wdbplus/RestCommon#evaluatePreflight#2";
+  "https://github.com/dariok/wdbplus/RestMIngest#createCollection#1" -> "https://github.com/dariok/wdbplus/RestMIngest#createCollection#1";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMeta#1" -> "https://github.com/dariok/wdbplus/RestMIngest#getID#3";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMeta#1" -> "https://github.com/dariok/wdbplus/wdb#getEdFromPath#2";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1" -> "https://github.com/dariok/wdbplus/RestMIngest#getID#3";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1" -> "https://github.com/dariok/wdbplus/wdb#eval#3";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/RestMIngest#enterMetaXML#1" -> "https://github.com/dariok/wdbplus/wdb#getEdFromPath#2";
+  "https://github.com/dariok/wdbplus/RestMIngest#store#3" -> "https://github.com/dariok/wdbplus/RestMIngest#store#4";
+  "https://github.com/dariok/wdbplus/RestMIngest#store#4" -> "https://github.com/dariok/wdbplus/RestMIngest#createCollection#1";
+  "https://github.com/dariok/wdbplus/RestSearch#collectionHtml#3" -> "https://github.com/dariok/wdbplus/RestSearch#collectionText#3";
+  "https://github.com/dariok/wdbplus/RestSearch#collectionHtml#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestSearch#collectionHtml#3" -> "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#4";
+  "https://github.com/dariok/wdbplus/RestSearch#collectionText#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestSearch#fileHtml#3" -> "https://github.com/dariok/wdbplus/RestSearch#fileText#3";
+  "https://github.com/dariok/wdbplus/RestSearch#fileHtml#3" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/RestSearch#fileHtml#3" -> "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#4";
+  "https://github.com/dariok/wdbplus/addins-main#body#2" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/entity#getEntity#5" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/errors#error#1" -> "https://github.com/dariok/wdbplus/errors#get#2";
+  "https://github.com/dariok/wdbplus/errors#error#1" -> "https://github.com/dariok/wdbplus/errors#store#3";
+  "https://github.com/dariok/wdbplus/errors#get#2" -> "https://github.com/dariok/wdbplus/errors#get#2";
+  "https://github.com/dariok/wdbplus/errors#store#3" -> "https://github.com/dariok/wdbplus/errors#get#2";
+  "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#2" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3";
+  "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3" -> "https://github.com/dariok/wdbplus/files#getModificationDate#2";
+  "https://github.com/dariok/wdbplus/files#findMainProject#1" -> "https://github.com/dariok/wdbplus/files#findMainProject#1";
+  "https://github.com/dariok/wdbplus/files#findParentProject#2" -> "https://github.com/dariok/wdbplus/files#findParentProject#2";
+  "https://github.com/dariok/wdbplus/files#getFullPath#1" -> "https://github.com/dariok/wdbplus/files#findMainProject#1";
+  "https://github.com/dariok/wdbplus/files#getFullPath#1" -> "https://github.com/dariok/wdbplus/files#findParentProject#2";
+  "https://github.com/dariok/wdbplus/files#getModificationDate#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/files#getModificationDate#1" -> "https://github.com/dariok/wdbplus/files#getModificationDate#2";
+  "https://github.com/dariok/wdbplus/files#hasAccess#3" -> "https://github.com/dariok/wdbplus/files#getAbsolutePath#1";
+  "https://github.com/dariok/wdbplus/files#hasAccess#3" -> "https://github.com/dariok/wdbplus/files#getFilePaths#2";
+  "https://github.com/dariok/wdbplus/functionpages#get#3" -> "https://github.com/dariok/wdbplus/wdb#getUrl#1";
+  "https://github.com/dariok/wdbplus/functionpages#getFooter#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#getFooter#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHead#3" -> "https://github.com/dariok/wdbplus/functionpages#get#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHead#3" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHead#3" -> "https://github.com/dariok/wdbplus/wdb#getBlob#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHead#3" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHeader#2" -> "https://github.com/dariok/wdbplus/auth#getAuth#2";
+  "https://github.com/dariok/wdbplus/functionpages#getHeader#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#getHeader#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/functionpages#start#6" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/functionpages#test#2" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/mView#getContent#2" -> "https://github.com/dariok/wdbplus/Process#getContent#4";
+  "https://github.com/dariok/wdbplus/mView#getContent#2" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/mView#getContent#2" -> "https://github.com/dariok/wdbplus/mView#getLeftFooter#2";
+  "https://github.com/dariok/wdbplus/mView#getEE#5" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/mView#getEE#5" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#2";
+  "https://github.com/dariok/wdbplus/mView#getGlobalFooter#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getGlobalFooter#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getHead#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getHead#2" -> "https://github.com/dariok/wdbplus/wdb#getBlob#3";
+  "https://github.com/dariok/wdbplus/mView#getHead#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3";
+  "https://github.com/dariok/wdbplus/mView#getHead#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getHeader#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getHeader#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getLeftFooter#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getLeftFooter#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getRightFooter#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/mView#getRightFooter#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/model#populateModel#5" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/model#populateModel#5" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/model#populateModel#5" -> "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4";
+  "https://github.com/dariok/wdbplus/pquery#body#2" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#enterMetaForXml#1";
+  "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#store#4";
+  "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1" -> "https://github.com/dariok/wdbplus/wdb#getContentTypeFromExt#2";
+  "https://github.com/dariok/wdbplus/rest2/common#enterMetaForXml#1" -> "https://github.com/dariok/wdbplus/rest2/common#logMap#2";
+  "https://github.com/dariok/wdbplus/rest2/common#enterMetaForXml#1" -> "https://github.com/dariok/wdbplus/wdb#eval#3";
+  "https://github.com/dariok/wdbplus/rest2/common#enterMetaForXml#1" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/rest2/common#logMap#2" -> "https://github.com/dariok/wdbplus/rest2/common#logMap#2";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectResourceWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1" -> "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithoutId#1" -> "https://github.com/dariok/wdbplus/rest2/projects#createProjectWithId#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#deleteProject#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#deleteProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#deleteProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#getProject#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#getProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#getProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#imported#2" -> "https://github.com/dariok/wdbplus/rest2/projects#imported#2";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectResources#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectResources#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectResources#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectViews#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectViews#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjectViews#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listProjects#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listSubprojects#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#listSubprojects#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#listSubprojects#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#projectView#1" -> "https://github.com/dariok/wdbplus/rest2/projects#imported#2";
+  "https://github.com/dariok/wdbplus/rest2/projects#projectView#1" -> "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#3";
+  "https://github.com/dariok/wdbplus/rest2/projects#viewProject#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/projects#viewProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/projects#viewProject#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#deleteResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#deleteResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceByPid#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/Process#getContent#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/rest2/resources#resolveProcess#3";
+  "https://github.com/dariok/wdbplus/rest2/resources#getResourceView#1" -> "https://github.com/dariok/wdbplus/wdb#getContentTypeFromExt#2";
+  "https://github.com/dariok/wdbplus/rest2/resources#headResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2";
+  "https://github.com/dariok/wdbplus/rest2/resources#listResourceViews#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#listResourceViews#1" -> "https://github.com/dariok/wdbplus/rest2/common#returnXmlOrJson#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#listResourceViews#1" -> "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#optionsResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#optionsResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#parseUpload#1" -> "https://github.com/dariok/wdbplus/rest2/common#mapKeysAllowed#3";
+  "https://github.com/dariok/wdbplus/rest2/resources#parseUpload#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#patchResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#patchResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#putResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#createXmlResource#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#putResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#putResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#parseUpload#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#putResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1" -> "https://github.com/dariok/wdbplus/rest2/common#writeAllowed#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#requireWritableResource#1" -> "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#resolveProcess#3" -> "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/files#evaluateIfModifiedSince#3";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/files#ietfDate#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/rest2/common#response#4";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/rest2/resources#getMimeType#2";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/rest2/resources#getResourceInfo#1";
+  "https://github.com/dariok/wdbplus/rest2/resources#returnResource#2" -> "https://github.com/dariok/wdbplus/rest2/resources#getStoredContent#1";
+  "https://github.com/dariok/wdbplus/start#getStart#2" -> "https://github.com/dariok/wdbplus/rest2/projects#projectView#1";
+  "https://github.com/dariok/wdbplus/start#getStart#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/start#getStart#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/start#getStartLeft#2" -> "https://github.com/dariok/wdbplus/rest2/projects#projectView#1";
+  "https://github.com/dariok/wdbplus/start#getStartLeft#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/start#getStartLeft#2" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/stats#getEd#3" -> "https://github.com/dariok/wdbplus/stats#projectList#2";
+  "https://github.com/dariok/wdbplus/stats#projectList#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/stats#projectList#2" -> "https://github.com/dariok/wdbplus/wdb#getUrl#1";
+  "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#3" -> "https://github.com/dariok/wdbplus/wdb#applySpecificXsl#4";
+  "https://github.com/dariok/wdbplus/wdb#findProjectFile#2" -> "https://github.com/dariok/wdbplus/wdb#findProjectFile#2";
+  "https://github.com/dariok/wdbplus/wdb#getAbsolutePath#2" -> "https://github.com/dariok/wdbplus/files#getFullPath#1";
+  "https://github.com/dariok/wdbplus/wdb#getEdFromPath#2" -> "https://github.com/dariok/wdbplus/errors#error#1";
+  "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3" -> "https://github.com/dariok/wdbplus/wdb#findProjectFile#2";
+  "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3" -> "https://github.com/dariok/wdbplus/wdb#findProjectFunction#3";
+  "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3" -> "https://github.com/dariok/wdbplus/wdb#getProjectFunction#3";
+  "https://github.com/dariok/wdbplus/wdb#getProjectFiles#3" -> "https://github.com/dariok/wdbplus/wdb#getUrl#1";
+  "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#3" -> "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4";
+  "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4" -> "https://github.com/dariok/wdbplus/wdb#getXslFromWdbMeta#4";
+  "https://github.com/dariok/wdbplus/wdb#test#2" -> "https://github.com/dariok/wdbplus/errors#get#2";
+  "https://github.com/dariok/wdbplus/wdbs#getLeft#2" -> "https://github.com/dariok/wdbplus/wdbs#listEnt#1";
+  "https://github.com/dariok/wdbplus/wdbs#getLeft#2" -> "https://github.com/dariok/wdbplus/wdbs#selectEd#1";
+  "https://github.com/dariok/wdbplus/wdbs#search#2" -> "https://github.com/dariok/wdbplus/RestEntities#collectionEntityHtml#4";
+  "https://github.com/dariok/wdbplus/wdbs#search#2" -> "https://github.com/dariok/wdbplus/RestEntities#scanHtml#3";
+  "https://github.com/dariok/wdbplus/wdbs#search#2" -> "https://github.com/dariok/wdbplus/RestSearch#collectionHtml#3";
+}

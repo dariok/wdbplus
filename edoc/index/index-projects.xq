@@ -23,4 +23,5 @@ for $project in collection('/db/apps/edoc/data')//meta:projectMD
     if ( not(empty($file-entries)) )
       then update insert $file-entries into doc("/db/apps/edoc/index/file-index.xml")/index:index
       else ()
-  )
+  ),
+xmldb:reindex("/db/apps/edoc/index")

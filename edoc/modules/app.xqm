@@ -15,7 +15,6 @@ import module namespace config    = "https://github.com/dariok/wdbplus/config"  
 import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"       at "error.xqm";
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"        at "wdb-files.xqm";
 import module namespace wdbPF     = "https://github.com/dariok/wdbplus/projectFiles" at "../data/instance.xqm";
-import module namespace xstring   = "https://github.com/dariok/XStringUtils"         at "../include/xstring/string-pack.xql";
 
 declare namespace main = "https://github.com/dariok/wdbplus";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -118,7 +117,12 @@ declare function wdb:getAbsolutePath ( $ed as xs:string, $path as xs:string ) {
  : @return the path
  :)
 declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) as xs:string {
-  let $tok := tokenize(xstring:substring-after($path, $config:edocBaseDB||'/'), '/')
+  let $tok := tokenize(
+    if (contains($path, $config:edocBaseDB || '/'))
+    then substring-after($path, $config:edocBaseDB || '/')
+    else $path,
+    '/'
+  )
   
   let $pa := for $i in 1 to count($tok)
     let $t := $config:edocBaseDB || '.*' || string-join ($tok[position() < $i+1], '/')
@@ -206,7 +210,12 @@ declare function wdb:findProjectFile ( $path as xs:string, $fileName as xs:strin
   else if ( substring-after($path, $config:data) = '' ) then
     xs:anyURI("")
   else
-    wdb:findProjectFile(xstring:substring-before-last($path, '/'), $fileName)
+    wdb:findProjectFile(
+      if (starts-with($path, '/'))
+      then '/' || string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/')
+      else string-join(tokenize(normalize-space($path), '/')[position() lt last()], '/'),
+      $fileName
+    )
 };
 (: END FUNCTIONS DEALING WITH PROJECTS AND RESOURCES :)
 
@@ -240,8 +249,10 @@ declare function wdb:eval($function as xs:string, $cache-flag as xs:boolean, $ex
  : @param $infoFileLoc The location of the wdbmeta.xml file
  : @param $view (optional) a view parameter for selecting the right process
  :
- : @returns The path to the XSLT
+ : @returns A command (should be: a process with 1+ command)
 :)
+(: TODO: rename to "getProcessFromWdbmeta" or simply "getProcess" :)
+(: TODO: change to actually get a process with 1+ command, see comment below :)
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string ) as element(process)? {
     wdb:getXslFromWdbMeta($infoFileLoc, $id, $target, "")
 };
@@ -250,49 +261,46 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
     , $process := if ( $view != '' )
         then $metaFile//meta:process[@target = $target and @view = $view]
         else $metaFile//meta:process[@target = $target and not(@view)]
-    , $base := if ( count($process) = 1 )
-        then substring-before(base-uri($metaFile), 'wdbmeta.xml')
-        else if ( count($process) = 0 ) 
-        then error(
-            QName('wdbRErr', 'wdb0002'),
-            "no process found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
-          )
-        else error(
-            QName('wdbRErr', 'wdb0012'),
-            "multiple processes found for id " || $id || ", target '" || $target || "' and view '" || $view || "' in " || $infoFileLoc
-          )
+    , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
   
   let $sel := if ( $process/meta:command )
     then
+    (: A command contains 1+ steps; we check command/@* to find the correct command and return it :)
       for $c in $process/meta:command
         return if ( $c/@refs ) then
           (: if a list of IDREFS is given, this command matches if $id is part of that list :)
           let $map := tokenize($c/@refs, ' ')
-          return if ( $map = $id ) then $base || $c else ()
+          return if ( $map = $id ) then $c else ()
         else if ( $c/@regex and matches($id, $c/@regex) )
           (: if a regex is given and $id matches that regex, the command matches :)
-          then $base || $c
+          then $c
         else if ( $c/@group and $metaFile/id($id)/parent::meta:filegroup/@xml:id = $c/@group )
-          then $base || $c
+          then $c
         else if ( not($c/@refs or $c/@regex or $c/@group) )
           (: if no selection method is given, the command is considered the default :)
-          then $base || $c
+          then $c
         else () (: neither refs nor regex match and no default given :)
     (: if no command is defined, traverse up the project ancestors :)
     else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
-      let $path := xstring:substring-before-last($infoFileLoc, '/')
+      let $path := if (starts-with($infoFileLoc, '/'))
+        then '/' || string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
+        else string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
         , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
       return
         wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
     else ()
   
-  (: As we check from most specific to default, the first command in the sequence is the right one :)
-  return if ( $sel[1] instance of element(meta:process) )
+  (: As we check from most specific to default, the first command in the sequence is the right one.
+     We add the base-uri as attribute to the command so the path can later be evaluated :)
+  return if ( $sel[1] instance of element(meta:command) )
+    then <process target="{ $target }" view="{ $view }" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
+            <command base="{ $base }">{ 
+              for $step in $sel[1]/*
+                return <step type="{ $step/@type }">{ $base || normalize-space($step) }</step>
+            }</command>
+         </process>
+    else if ( $sel[1] instance of element(meta:process) )
     then $sel[1]
-    else if ( $sel[1] instance of xs:string )
-      then <meta:process target="{$target}" view="{$view}">
-              <meta:command type="{$process/meta:command/@type}">{$sel[1]}</meta:command>
-           </meta:process>
     else
       error(
         QName('wdbRErr', 'wdb0002'),
@@ -314,8 +322,8 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
  : 2) instance resources
  : 3) global resources
  :)
-declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string ) as node() {
-  wdb:applySpecificXsl($xml, $edPath, $name, ())
+declare function wdb:applySpecificXsl ( $xml as node(), $pathInfo as map(*), $name as xs:string ) as node() {
+  wdb:applySpecificXsl($xml, $pathInfo, $name, ())
 };
 (:~
  : Apply a project specific XSLT to some XML
@@ -332,15 +340,15 @@ declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $n
  : 2) instance resources
  : 3) global resources
  :)
-declare function wdb:applySpecificXsl ( $xml as node(), $edPath as xs:string, $name as xs:string, $parameters as element(parameters)? ) as node() {
-  let $xsl := if ( doc-available($edPath || "/resources/xsl/" || $name) ) then
-        doc($edPath || "/resources/xsl/" || $name)
+declare function wdb:applySpecificXsl ( $xml as node(), $pathInfo as map(*), $name as xs:string, $parameters as element(parameters)? ) as node() {
+  let $xsl := if ( doc-available($pathInfo?mainProject || "resources/xsl/" || $name) ) then
+        doc($pathInfo?mainProject || "resources/xsl/" || $name)
       else if ( doc-available("/db/apps/edoc/data/resources/xsl/" || $name) ) then
         doc("/db/apps/edoc/data/resources/xsl/" || $name)
       else
         doc("/db/apps/edoc/resources/xsl/" || $name)
-   
-   return transform:transform($xml, $xsl, $parameters)
+  
+  return transform:transform($xml, $xsl, $parameters)
 };
 (: END LOCAL HELPER FUNCTIONS :)
 
