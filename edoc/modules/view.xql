@@ -16,6 +16,7 @@ import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"  
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"          at "auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main"   at "addin.xqm";
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"        at "entity.xqm";
+import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"        at "error.xqm";
 import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"         at "wdb-files.xqm";
 import module namespace wdbfp        = "https://github.com/dariok/wdbplus/functionpages" at "function.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"        at "pquery.xqm";

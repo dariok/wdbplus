@@ -79,6 +79,13 @@ declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:str
   }
 };
 
+declare function wdbfp:evalForElement ( $node as node(), $model as map(*), $expression as xs:string ) as element() {
+  element { node-name($node) } {
+    $node/@*,
+    util:eval($expression)
+  }
+};
+
 declare function wdbfp:evalForAttribute ( $node as node(), $model as map(*), $attribute as xs:string, $expression as xs:string ) {
   element { local-name($node) } {
     attribute { $attribute } { util:eval($expression) },

@@ -5,10 +5,17 @@ module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 import module namespace functx = "http://www.functx.com";
 
-declare namespace response = "http://exist-db.org/xquery/response";
-declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
+declare namespace response  = "http://exist-db.org/xquery/response";
+declare namespace map       = "http://www.w3.org/2005/xpath-functions/map";
 
-declare function wdbErr:error ( $data as map (*) ) as item()+ {
+declare function wdbErr:getError ( $node as node(), $map as map(*) ) as element() {
+  element { local-name($node) } {
+    $node/@class,
+    parse-xml(request:get-attribute("org.exist.forward.error"))/*
+  }
+};
+
+declare function wdbErr:error ( $data as map (*) ) as element()+ {
   let $error := switch ( xs:string($data("code")) )
     case "wdbErr:wdb0000"
     case "wdb0000"
@@ -37,18 +44,21 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
   let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdb0000", "wdbErr:wdb0404") )
     then 404
     else 418
+
+  let $prettyPrint := wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '')
   
   let $errorContent := if ( $statusCode = 404 )
     then (
       <h2>Seite nicht gefunden</h2>,
-      <p>Leider konnten wir die angegebene Seite nicht finden</p>
+      <p>Leider konnten wir die angegebene Seite nicht finden. <a href=".">nach oben</a></p>
     )
     else (
       <h2>Something has gone wrong...</h2>,
-      <p>{$error}</p>,
+      <p>{ $error }</p>,
+      <p>ID: { wdbErr:store("error", $error, $prettyPrint) }</p>,
       <details>
         <summary>Logged error details:</summary>
-        { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
+        { $prettyPrint }
       </details>
     )
 
@@ -56,65 +66,47 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
     util:log("error", $error),
     util:log("info", $data),
     if ( response:exists() ) then response:set-status-code($statusCode) else (),
-    (: TODO we need to check whether we already have a page at this point and only need to return a div or whether we
-       need a complete HTML file :)
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="wdb-template" content="(error page)" />
-      <title>ERROR</title>
-      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
-      <script src="$shared/js/function.js"/>
-    </head>,
-    <body>
-      <header>head</header>
-      <main>
-        <div>{ $errorContent }</div>
-        <div>
-          <h2>The following error was logged:</h2>
-          { wdbErr:store("error", $error, $data) }
-        </div>
-      </main>
-    </body>
+    <div>{ $errorContent }</div>
   )
 };
 
-declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element()+ {
-  typeswitch ($test)
-    case array(*) return
-      for $n in (1 to array:size($test)) return
-        wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
-    case map(*) return
-      for $key in map:keys($test) return
-      try {  
-        if ($test($key) instance of map(*))
+declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element(dl) {
+  <dl>{
+    typeswitch ($test)
+      case array(*) return
+        for $n in (1 to array:size($test)) return
+          wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
+      case map(*) return
+        for $key in map:keys($test) return
+        try {  
+          if ($test($key) instance of map(*))
+            then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
+          else if ($test($key) instance of function(*))
+            then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
+          else if ($test($key) instance of xs:string 
+                  or $test($key) instance of xs:boolean 
+                  or $test($key) instance of xs:integer 
+                  or $test($key) instance of xs:double)
           then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
-        else if ($test($key) instance of function(*))
-          then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
-        else if ($test($key) instance of xs:string 
-                or $test($key) instance of xs:boolean 
-                or $test($key) instance of xs:integer 
-                or $test($key) instance of xs:double)
-        then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
-        else (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{functx:atomic-type($test($key))}</dd>)
-      } catch * {
-        functx:atomic-type($key) || " - " || functx:atomic-type($prefix)
-      }
-    case element(*) return
-      (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
-    default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
+          else (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{functx:atomic-type($test($key))}</dd>)
+        } catch * {
+          functx:atomic-type($key) || " - " || functx:atomic-type($prefix)
+        }
+      case element(*) return
+        (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
+      default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
+  }</dl>
 };
 
 declare function wdbErr:store ( $type as xs:string, $description as xs:string, $content as map(*) ) as xs:string {
   let $id := util:uuid()
 
   return (
-    $id || " - " || $description || " – " || $type || " - " || serialize($content),
+    $id,
     update insert 
         <error xmlns="https://github.com/dariok/wdbplus/errors" xml:id="e-{$id}">
           <desc>{ $description }</desc>
-          <type>{$type}</type>
+          <type>{ $type }</type>
           <date>{ xs:dateTime(current-dateTime()) }</date>
           <content>{ wdbErr:get($content, '') }</content>
         </error>
