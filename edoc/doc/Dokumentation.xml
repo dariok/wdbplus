@@ -61,7 +61,7 @@
                <head>Where to find the function</head>
                <p>the files can be found in <list>
                      <item>/edoc/modules/start.xqm</item>
-                     <item>/edoc/resources/start.xsl</item>
+                     <item>/edoc/resources/xsl/start.xsl</item>
                   </list>
                   <div>
                      <head>The start.xqm</head>
@@ -79,7 +79,7 @@
                   </div>
                   <!-- muss nach oben :-) -->
                   If you want to change it on a project-level: link to
-                  project/resource/startLeft.html and startRight.html; if you want to change it
+                  {$project}/resource/html/startLeft.html and {$project}/resource/html/startRight.html; if you want to change it
                   globally, you can override the default behaviour by changing
                   edoc/data/instance.xqm </p>
             </div>

@@ -2,9 +2,7 @@ xquery version "3.1";
 
 module namespace wdbRMi = "https://github.com/dariok/wdbplus/RestMIngest";
 
-import module namespace console = "http://exist-db.org/xquery/console"         at "java:org.exist.console.xquery.ConsoleModule";
-import module namespace xstring = "https://github.com/dariok/XStringUtils"     at "/db/apps/edoc/include/xstring/string-pack.xql";
-import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "/db/apps/edoc/modules/app.xqm";
+import module namespace wdb     = "https://github.com/dariok/wdbplus/wdb"      at "../modules/app.xqm";
 
 declare namespace http = "http://expath.org/ns/http-client";
 declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -311,8 +309,10 @@ declare function wdbRMi:store($collection as xs:string, $resource-name as xs:str
 };
 
 declare function wdbRMi:createCollection ($coll as xs:string) {
-  let $target-collection := xstring:substring-before-last($coll, '/')
-  let $new-collection := xstring:substring-after-last($coll, '/')
+  let $target-collection := if (starts-with($coll, '/'))
+    then '/' || string-join(tokenize(normalize-space($coll), '/')[position() lt last()], '/')
+    else string-join(tokenize(normalize-space($coll), '/')[position() lt last()], '/')
+  let $new-collection := tokenize(normalize-space($coll), '/')[last()]
   
   return if (xmldb:collection-available($target-collection))
   then ( 
@@ -321,7 +321,7 @@ declare function wdbRMi:createCollection ($coll as xs:string) {
     let $chgrp := sm:chgrp($path, "wdbusers")
     let $chmod := sm:chmod($path, "rwxrwxr-x")
     
-    return console:log("creating " || $new-collection || " in " || $target-collection)
+    return util:log("info", "creating " || $new-collection || " in " || $target-collection)
   )
   else ( 
     wdbRMi:createCollection($target-collection),
@@ -334,7 +334,7 @@ declare function wdbRMi:getID ($element as item(), $collection as xs:string, $pa
   then string($element/*/@xml:id)
   else if  ( $element instance of element() )
   then string($element/@xml:id)
-  else $collection || '-' || translate(xstring:substring-before-last($path, '\.'), '/', '_')
+  else $collection || '-' || translate(string-join(tokenize(normalize-space($path), '\.')[position() lt last()], '.'), '/', '_')
 };
 
 declare function wdbRMi:replaceWs($string) {

@@ -1,0 +1,1480 @@
+openapi: 3.0.0
+info:
+  description: "wdb+ API v2 (wdb+ > v4.0) – see https://github.com/dariok/wdbplus for details"
+  version: "2.0"
+  title: "wdb+ API"
+  # termsOfService: "see instance"
+  contact:
+    url: https://github.com/dariok/wdbplus
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:8080/exist/apps/edoc
+tags:
+  - name: auth
+    description: Operations concerning authentication
+  # - name: annotations
+  #   description: Concerning Hobbits
+  - name: projects
+    description: Operations on wdb+ projects
+  # - name: entities
+  #   description: Operations on entities
+  # - name: resources
+  #   description: Operations on resources (usually texts)
+  # - name: search
+  #   description: Full text search
+  # - name: oai
+  #   description: OAI PMH endpoints
+  # - name: dts
+  #   description: Endpoints for Distributed Text Services
+security:
+  - cookieAuth: []
+paths:
+  /api/v2/login:
+    post:
+      summary: "User Login"
+      description: "Start an authenticated session for the given user"
+      tags: [ "auth" ]
+      operationId: "auth:login"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/login"
+          application/x-www-form-urlencoded:
+            schema:
+              "$ref": "#/components/schemas/login"
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: string
+                  groups:
+                    type: array
+                    items:
+                      type: string
+                  dba:
+                    type: boolean
+                  domain:
+                    type: string
+        '401':
+          description: "Wrong user or password"
+      security:
+        - cookieAuth: []
+  /api/v2/logout:
+    get:
+      summary: User Logout
+      description: End session of the current user
+      operationId: 'auth:logout'
+      tags:
+        - auth
+      parameters:
+        - name: logout
+          in: query
+          description: Set to some value to log out the current user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+  
+  # TODO – this should only contain functions that are not already covered by the other endpoint (if any):
+  # /api/v2/admin
+
+  # /api/v2/annotations:
+  #   post:
+  #     tags:
+  #       - annotations
+  #     summary: Add a new full text annotation
+  #     description: "Create a new full text annotation; return its location when sucessful.<br> **Note:** 1. no checks are performed and multiple requests will create multiple entries. 2. This creates full text annotations only. Changes to the file, including entity markup, must be made using → `PATCH /resources/{id}`"
+  #     operationId: #TODO
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/annotation"
+  #     responses:
+  #       "201":
+  #         $ref: "#/components/responses/created"
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  # /api/v2/annotations/{annotation}:
+  #   parameters:
+  #     - name: "annotation"
+  #       in: path
+  #       description: The ID of the annotation
+  #       schema:
+  #         type: string
+  #       required: true
+  #   get:
+  #     tags:
+  #       - annotations
+  #     summary: Get annotation by ID
+  #     operationId: TODO getAnnotationById
+  #     responses:
+  #       "200":
+  #         description: Annotation has been found
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/annotation.json"
+  #           application/xml:
+  #             schema:
+  #               $ref: "#/components/schemas/annotation.xml"
+  #       "404":
+  #         description: No annotation found by this ID
+  #   put:
+  #     tags:
+  #       - annotations
+  #     summary: Update an annotation
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/annotation"
+  #     responses:
+  #       "204":
+  #         description: Update sucessful.
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  #       "404":
+  #         description: No annotation found by this ID
+  #   delete:
+  #     tags:
+  #       - annotations
+  #     summary: Delete an annotation
+  #     operationId: #TODO deleteAnnotation
+  #     responses:
+  #       "204":
+  #         description: The annotation has been deleted
+  #       "404":
+  #         description: This annotation was not found
+  # /api/v2/annotations/forFile/{id}:
+  #   parameters:
+  #     - $ref: "#/components/parameters/id"
+  #   get:
+  #     tags:
+  #       - annotations
+  #     summary: List of annotations related to a file
+  #     operationId: #TODO
+  #     responses:
+  #       "200":
+  #         description: Found annotations for this file
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/listAnnotations"
+  #           application/xml:
+  #             schema:
+  #               $ref: "#/components/schemas/listAnnotations"
+  #       "204":
+  #         description: No annotations for this file
+  #       "404":
+  #         description: File $id not found
+  
+  /api/v2/projects:
+    get:
+      tags:
+        - projects
+      summary: List all projects
+      operationId: r2p:listProjects
+      responses:
+        "200":
+          description: A non-empty result set of projects. This endpoint is expected to be non-empty because the global data collection must exist.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/listProjects'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listProjects'
+
+  /api/v2/projects/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    # TODO: should this endpoint also return metadata?
+    get:
+      tags:
+        - projects
+      summary: Get project contents (registered resources and subprojects) by ID
+      operationId: r2p:getProject
+      responses:
+        "200":
+          $ref: "#/components/responses/projectContents"
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: No project found by this ID
+    delete:
+      tags:
+        - projects
+      summary: Delete project
+      operationId: r2p:deleteProject
+      responses:
+        "204":
+          description: The project has been deleted
+        "404":
+          description: This project was not found
+
+  /api/v2/projects/{parent}/subprojects:
+    parameters:
+      - $ref: "#/components/parameters/parent"
+    get:
+      tags:
+        - projects
+      summary: Get a list of all subprojects of ${parent}
+      operationId: r2p:listSubprojects
+      responses:
+        "200":
+          $ref: "#/components/responses/projects"
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: Project $parent not found
+    post:
+      tags:
+        - projects
+      summary: Create a project in ${parent} without specifying an ID
+      description: Create a project as child of ${parent} with the meta data provided in the body while auto-generating the ID. E.g., creating a new main project requires "data" as parent.
+      operationId: r2p:createProjectWithoutId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
+      security:
+        - cookieAuth: []
+  /api/v2/projects/{parent}/subprojects/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/parent"
+      - $ref: "#/components/parameters/ed"
+    put:
+      tags:
+        - projects
+      summary: Create project with given ID
+      description: This creates a new or updates an existing project with the ID given as ed and the necessary meta data in the request body
+      operationId: r2p:createProjectWithId
+      requestBody:
+        $ref: "#/components/requestBodies/project"
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "404":
+          description: Project $parent not found
+        "409":
+          description: A project exists with this ID in a different location or the location requested contains a project with a different ID
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Unprocessable Entity. The request was well-formed but was unable to be followed due to semantic errors in the body.
+  
+  /api/v2/projects/{ed}/views:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    get:
+      tags:
+        - projects
+      summary: Get a list of the views available for this project
+      operationId: r2p:listProjectViews
+      responses:
+        "200":
+          description: A non-empty result set of views. This endpoint is expected to be non-empty because the available views are defined statically.
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/listViews"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/listViews"
+        "404":
+          description: Project $ed not found
+  /api/v2/projects/{ed}/views/{view}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/view"
+    get:
+      tags:
+        - projects
+      summary: Get a specific view of the project
+      operationId: r2p:viewProject
+      responses:
+        "200":
+          description: Representation of the project with the requested view in the negotiated media type.
+          content:
+            "application/xml":
+              schema:
+                type: object
+                additionalProperties: true
+            "application/json":
+              schema:
+                type: object
+                additionalProperties: true
+            "text/html":
+              schema:
+                type: string
+        "404":
+          description: Project $ed not found
+        "406":
+          description: The media type requested in an 'Accept' header cannot be created for this view
+
+  /api/v2/projects/{ed}/resources:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+    options:
+      tags:
+        - projects
+      summary: Preflight request before uploading
+      operationId: r2p:optionsResource
+      responses:
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: Project $ed not found
+    get:
+      tags:
+        - projects
+      summary: List resources in a project
+      operationId: r2p:listProjectResources
+      responses:
+        "200":
+          $ref: "#/components/responses/files"
+        "204":
+          description: No matching entries were found; no response body is returned.
+        "404":
+          description: Project $ed not found
+    post:
+      tags:
+        - projects
+      summary: Create a resource in a project (create an ID if necessary)
+      operationId: r2p:createProjectResourceWithoutId
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - path
+                - file
+              properties:
+                path:
+                  type: string
+                  description: Relative path inside the project (e.g. "texts/foo.xml")
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "403":
+          description: Forbidden
+        "404":
+          description: Project $ed not found
+        "409":
+          description: A file with this ID or file name is already present
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Invalid or incomplete information in the request body
+      security:
+        - cookieAuth: []
+  /api/v2/projects/{ed}/resources/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/id"
+    put:
+      tags:
+        - projects
+      summary: Create a resource in a project (with a given ID – this does not update resources)
+      operationId: r2p:createProjectResourceWithId
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - path
+                - file
+              properties:
+                path:
+                  type: string
+                  description: Relative path inside the project (e.g. "texts/foo.xml")
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "401":
+          $ref: "#/components/responses/authenticate"
+        "403":
+          description: Forbidden
+        "404":
+          description: File $id not found in project $ed
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+        "415":
+          description: Unsupported Media Type. Check the Allow and Allow-Encoding headers.
+        "422":
+          description: Invalid or incomplete information in the request body
+      security:
+        - cookieAuth: []
+
+  # /api/v2/projects/{ed}/metadata
+  #   get:
+  #   patch:
+  #   put:
+
+  # /api/v2/entities:
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: Query entities in global registry
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/q"
+  #       - $ref: "#/components/parameters/type"
+  #       - $ref: "#/components/parameters/start"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/entities"
+  #       "204":
+  #         description: No entities were found for the combination of query parameters
+  #   post:
+  #     tags:
+  #       - entities
+  #     summary: Create a global entity without specifying an ID
+  #     operationId: #TODO
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/entity"
+  #     responses:
+  #       "201":
+  #         $ref: "#/components/responses/created"
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  #       "409":
+  #         description: The body contains an ID for which an entity is already present
+  # /api/v2/entities/{entity}:
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: Get details of entity
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/entity"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/entity"
+  #       "404":
+  #         description: Entity not found
+  #   put:
+  #     tags:
+  #       - entities
+  #     summary: Create a global entity specifying an ID
+  #     operationId: #TODO
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/entity"
+  #     responses:
+  #       "201":
+  #         $ref: "#/components/responses/created"
+  #       "204":
+  #         description: The entity was updated
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  #       "404":
+  #         description: Entity $ed not found
+  #       "409":
+  #         description: The body contains an ID for which an entity is already present
+  #   delete:
+  #     tags:
+  #       - entities
+  #     summary: Delete global entity
+  #     operationId: #TODO
+  #     responses:
+  #       "204":
+  #         description: The entity has been deleted
+  #       "404":
+  #         description: This entity was not found
+  # /api/v2/entities/project/{ed}:
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: Query entities in a project’s registry
+  #     parameters:
+  #       - $ref: "#/components/parameters/ed"
+  #       - $ref: "#/components/parameters/q"
+  #       - $ref: "#/components/parameters/type"
+  #       - $ref: "#/components/parameters/start"
+  #     operationId: #TODO
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/entities"
+  #       "204":
+  #         description: No entities were found for the combination of query parameters
+  #       "404":
+  #         description: No project by the given ID
+  #   post:
+  #     tags:
+  #       - entities
+  #     summary: Create an entity with a project without specifying an ID
+  #     operationId: #TODO
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/entity"
+  #     responses:
+  #       "201":
+  #         $ref: "#/components/responses/created"
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  #       "409":
+  #         description: The body contains an ID for which an entity is already present
+  # /api/v2/entities/project/{ed}/{entity}:
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: Get details of project entity
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/entity"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/entity"
+  #       "404":
+  #         description: Entity not foun
+  #   put:
+  #     tags:
+  #       - entities
+  #     summary: Create a project entity specifying an ID
+  #     operationId: #TODO
+  #     requestBody:
+  #       $ref: "#/components/requestBodies/entity"
+  #     responses:
+  #       "201":
+  #         $ref: "#/components/responses/created"
+  #       "204":
+  #         description: The entity was updated
+  #       "400":
+  #         $ref: "#/components/responses/invalidBody"
+  #       "404":
+  #         description: Project $ed or entity $entity not found
+  #       "409":
+  #         description: The body contains an ID for which an entity is already present
+  #   delete:
+  #     tags:
+  #       - entities
+  #     summary: Delete project entity
+  #     operationId: #TODO
+  #     responses:
+  #       "204":
+  #         description: The entity has been deleted
+  #       "404":
+  #         description: This entity was not found
+  # /api/v2/entities/refs/{entity}:
+  #   parameters:
+  #     - $ref: "#/components/parameters/entity"
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: List projects referring to an entity
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/start"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/projects"
+  #       "204":
+  #         description: No references to the queried entity were found
+  # /api/v2/entities/refs/project/{ed}/{entity}:
+  #   parameters:
+  #     - $ref: "#/components/parameters/ed"
+  #     - $ref: "#/components/parameters/entity"
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: List texts in a project referring to an entity
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/start"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/files"
+  #       "204":
+  #         description: No references to the queried entity were found
+  #       "404":
+  #         description: The project was not found
+  # /api/v2/entities/refs/resource/{id}/{entity}:
+  #   parameters:
+  #     - $ref: "#/components/parameters/id"
+  #     - $ref: "#/components/parameters/entity"
+  #   get:
+  #     tags:
+  #       - entities
+  #     summary: List all fragments in a text containing a reference to an entity
+  #     operationId: #TODO
+  #     parameters:
+  #       - $ref: "#/components/parameters/start"
+  #     responses:
+  #       "200":
+  #         $ref: "#/components/responses/fragments"
+  #       "204":
+  #         description: No references to the queried entity were found
+  #       "404":
+  #         description: The project was not found
+
+  /api/v2/resources/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - resources
+      summary: Get resource by ID
+      operationId: "r2r:getResource"
+      responses:
+        "200":
+          description: Resource by ID
+          content:
+            "application/tei+xml":
+              schema:
+                $ref: "#/components/schemas/TEI"
+        "404":
+          description: No resource found by this ID
+    put:
+      tags:
+        - resources
+      summary: Replace a file
+      operationId: "r2r:putResource"
+      requestBody:
+        description: Replace a file in-place
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          $ref: "#/components/responses/created"
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "404":
+          description: File $id not found
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+    patch:
+      tags:
+        - resources
+      summary: Change a fragment from a file
+      operationId: "r2r:patchResource"
+      requestBody:
+        description: The replacement XML fragment 
+        required: true
+        content:
+          "application/xml":
+            example: "<div xml:id='d1'>…</div>"
+      responses:
+        "204":
+          description: File has been updated
+        "400":
+          $ref: "#/components/responses/invalidBody"
+        "404":
+          description: File $id not found
+    head:
+      tags:
+        - resources
+      summary: Preflight request
+      operationId: "r2r:headResource"
+      responses:
+        "204":
+          description: File was found
+        "404":
+          description: File $id not found
+        "409":
+          description: A file with this ID is present in a different location or a file in this location exists with a different ID
+    options:
+      tags:
+        - resources
+      summary: Preflight request
+      operationId: "r2r:optionsResource"
+      responses:
+        "204":
+          description: File was found
+        "404":
+          description: File $id not found
+    delete:
+      tags:
+        - resources
+      summary: Delete a file
+      operationId: "r2r:deleteResource"
+      responses:
+        "204":
+          description: File was deleted
+        "404":
+          description: File $id not found
+  /api/v2/resources/{id}/views:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - resources
+      summary: List views for a file
+      operationId: "r2r:listResourceViews"
+      responses:
+        "200":
+          description: A non-empty result set of views. An empty result would indicate an API error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/listViews"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/listViews"
+  /api/v2/resources/{id}/views/{view}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+      - $ref: "#/components/parameters/modified"
+      - $ref: "#/components/parameters/view"
+      - $ref: "#/components/parameters/accept"
+      - name: view
+        in: path
+        description: The ID of the view to be invoked
+        schema:
+          type: string
+        required: true
+    get:
+      tags:
+        - resources
+      summary: Get resource as represented by view
+      operationId: "r2r:getResourceView"
+      responses:
+        200:
+          description: The resource in the selected representation
+        404:
+          description: The resource or view was not found
+        406:
+          description: No representation could be created for the requested media type
+  /api/v2/resources/byPid/{pid}:
+    parameters:
+      - name: "pid"
+        in: path
+        description: The externally defined persistend ID of a file
+        schema:
+          type: string
+        required: true
+    get:
+      tags:
+        - resources
+      summary: Resolve an external PID to the canonical resource URL.
+      operationId: "r2r:getResourceByPid"
+      responses:
+        "303":
+          description: PID resolved; the canonical resource URL is given in the Location header.
+          headers:
+            Location:
+              description: Canonical URL of the resolved resource.
+              schema:
+                type: string
+                format: uri
+        "404":
+          description: No resource could be resolved for this PID.
+
+  /api/v2/search/ft/project/{ed}:
+    parameters:
+      - $ref: "#/components/parameters/ed"
+      - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/accept"
+      - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
+    get:
+      tags:
+        - search
+      summary: List files in project containing text
+      operationId: "r2s:searchProjects"
+      responses:
+        200:
+          $ref: "#/components/responses/files"
+        204:
+          description: No matching entries were found; no response body is returned.
+        400:
+          description: An error was found in the query
+        404:
+          description: project not found
+        406:
+          description: Unsupported media type requested
+  /api/v2/search/ft/resource/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+      - $ref: "#/components/parameters/accept"
+      - $ref: "#/components/parameters/q"
+      - $ref: "#/components/parameters/start"
+      - $ref: "#/components/parameters/max"
+    get:
+      tags:
+        - search
+      summary: List fragments in file containing text
+      operationId: "r2s:searchFile"
+      responses:
+        200:
+          $ref: "#/components/responses/fragments"
+        204:
+          description: No matching entries were found; no response body is returned.
+        400:
+          description: An error was found in the query
+        404:
+          description: File not found
+        406:
+          description: Unsupported media type request
+
+  # TODO
+  # /api/v2/oai
+
+  # TODO
+  # /api/v2/dts
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      name: wdbplus.login
+      in: cookie
+
+  parameters:
+    accept:
+      name: accept
+      in: header
+      description: Which content type should be created for this view
+      schema:
+        type: string
+      required: true
+    ed:
+      name: "ed"
+      in: path
+      description: The ID of a project
+      schema:
+        type: string
+      required: true
+  #   entity:
+  #     name: "entity"
+  #     in: path
+  #     description: The ID of an entity
+  #     schema:
+  #       type: string
+  #     required: true
+    id:
+      name: "id"
+      in: path
+      description: The ID of a resource
+      schema:
+        type: string
+      required: true
+    parent:
+      name: "parent"
+      in: path
+      description: The ID of a parent project
+      schema:
+        type: string
+      required: true
+    q:
+      name: q
+      in: query
+      required: true
+      schema:
+        type: string
+      description: general query or filter parameter
+  #   type:
+  #     name: type
+  #     in: query
+  #     description: The type of entity
+  #     schema:
+  #       enum:
+  #         - per
+  #         - pla
+  #         - org
+  #         - bib
+  #         - evt
+  #     required: true
+    start:
+      name: start
+      in: query
+      description: from which position in a list to start (1-based)
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    max:
+      name: max
+      in: query
+      description: the maximum number of elements to return in a list
+      schema:
+        type: integer
+        minimum: 1
+        default: 25
+        maximum: 100
+    modified:
+      name: "If-Modified-Since"
+      in: header
+      schema:
+        type: string
+        format: date-time
+    view:
+      name: view
+      in: path
+      description: Which view is to be applied to a resource
+      schema:
+        type: string
+      required: true
+  
+  responses:
+    authenticate:
+      description: Authentication necessary
+      headers:
+        WWW-Authenticate:
+          description: Challenge for authentication
+          schema:
+            type: string
+    created:
+      description: Annotation, file, etc. has been created
+      headers:
+        Location:
+          description: Location of the annotation, file etc.
+          schema:
+            type: string
+            format: uri
+    
+    invalidBody:
+      description: Request body is invalid or not wellformed
+    
+    # annotations:
+    #   description: A list of annotations matching the query
+    #   content:
+    #     application/json:
+    #       schema:
+    #         $ref: "#/components/schemas/listAnnotations"
+    #     application/xml:
+    #       schema:
+    #         $ref: "#/components/schemas/listAnnotations"
+    fragments:
+      description: A non-empty result set containing fragments within a file. If no matching fragments exist, the endpoint returns 204 without a response body.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listFragments"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listFragments"
+    files:
+      description: A non-empty result set containing files. If no matching files exist, the endpoint returns 204 without a response body.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listFiles"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listFiles"
+    
+    projects:
+      description: A non-empty result set containing projects. If no matching projects exist, the endpoint returns 204 without a response body.
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/listProjects'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/listProjects'
+    views:
+      description: A non-empty result set containing views for a project or resource. If no matching views exist, the endpoint returns 204 without a response body.
+      content:
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/listViews"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/listViews"
+
+  #   entities:
+  #     description: A list of entities matching the query
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/listEntities"
+  #       application/xml:
+  #         schema:
+  #           $ref: "#/components/schemas/listEntities"
+  #   entity:
+  #     description: A (TEI) description of one entity
+  #     content:
+  #       application/xml:
+  #         schema:
+  #           xml:
+  #             name: entity
+  #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+  #           oneOf:
+  #             - $ref: "#/components/schemas/entity-person"
+  #             - $ref: "#/components/schemas/entity-place"
+  #             - $ref: "#/components/schemas/entity-org"
+  #             - $ref: "#/components/schemas/entity-bibl"
+  #             - $ref: "#/components/schemas/entity-event"
+    projectContents:
+      description: Lists the registered contents of a project
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/contents'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/contents'
+
+  requestBodies:
+  #   annotation:
+  #     description: the full text annotation to be added
+  #     required: true
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/annotation.json"
+  #       application/xml:
+  #         schema:
+  #           $ref: "#/components/schemas/annotation.xml"
+    project:
+      description: The necessary data for the project to be created or updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/projectMetadata"
+  #   entity:
+  #     description: A (TEI) description of one entity
+  #     required: true
+  #     content:
+  #       application/xml:
+  #         schema:
+  #           xml:
+  #             name: entity
+  #             namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+  #           oneOf:
+  #             - $ref: "#/components/schemas/entity-person"
+  #             - $ref: "#/components/schemas/entity-place"
+  #             - $ref: "#/components/schemas/entity-org"
+  #             - $ref: "#/components/schemas/entity-bibl"
+  #             - $ref: "#/components/schemas/entity-event"
+  #   file:
+  #     description: A full TEI file
+  #     required: true
+  #     content:
+  #       application/xml:
+  #         schema:
+  #           $ref: "#/components/schemas/TEI"
+
+
+  schemas:
+    contents:
+      type: object
+      xml:
+        name: contents
+        namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+      allOf:
+        - $ref: "#/components/schemas/listFiles"
+        - $ref: "#/components/schemas/listProjects"
+      required:
+        - for
+    login:
+      type: object
+      required: [ "user" ]
+      properties:
+        user:
+          description: "Name of the user"
+          type: string
+        password:
+          type: string
+          format: password
+    TEI:
+      description: A full TEI file
+      type: object
+      xml:
+        namespace: "http://www.tei-c.org/ns/1.0"
+        name: "TEI"
+
+    # listAnnotations:
+    #   description: A result set, containing a list of pointers to annotations
+    #   type: object
+    #   xml:
+    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+    #     name: "result"
+    #   properties:
+    #     start:
+    #       $ref: "#/components/schemas/start"
+    #     total:
+    #       $ref: "#/components/schemas/total"
+    #     annotations:
+    #       type: array
+    #       items:
+    #         xml:
+    #           name: annotation
+    #         properties:
+    #           id:
+    #             $ref: "#/components/schemas/id"  
+    # listEntities:
+    #   description: A result set, containing a list of entities
+    #   type: object
+    #   xml:
+    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+    #     name: "result"
+    #   properties:
+    #     start:
+    #       $ref: "#/components/schemas/start"
+    #     total:
+    #       $ref: "#/components/schemas/total"
+    #     entities:
+    #       type: array
+    #       items:
+    #         xml:
+    #           name: entity
+    #         properties:
+    #           id:
+    #             $ref: "#/components/schemas/id"
+    #           label:
+    #             $ref: "#/components/schemas/label"
+
+    # Result:
+    #   description: A result set, containing a list of 0+ project(s), file(s) etc.
+    #   type: object
+    #   xml:
+    #     name: list
+    #     namespace: https://github.com/dariok/wdbplus/api/schema/v1
+    #   oneOf:
+    #     - $ref: '#/components/schemas/listProjects'
+    #     - $ref: '#/components/schemas/listViews'
+    ResultBase:
+      type: object
+      xml:
+        name: result
+        namespace: https://github.com/dariok/wdbplus/api/schema/v1
+      properties:
+        total:
+          $ref: '#/components/schemas/attTotal'
+        start:
+          $ref: '#/components/schemas/attStart'
+        length:
+          $ref: '#/components/schemas/attLength'
+        query:
+          $ref: '#/components/schemas/attQuery'
+        self:
+          $ref: '#/components/schemas/attSelf'
+        from:
+          $ref: '#/components/schemas/attFrom'
+      required:
+        - total
+        - self
+    
+    listFragments:
+      description: A non-empty result set containing fragments within a file. If no matching fragments exist, the endpoint returns 204 without a response body.
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            fragments:
+              type: array
+              minItems: 1
+              xml:
+                name: fragment
+                wrapped: false
+              items:
+                $ref: "#/components/schemas/Fragment"
+          required: [fragments]
+    Fragment:
+      description: describes a fragment within a file
+      type: object
+      xml:
+        name: fragment
+      properties:
+        id:
+          $ref: "#/components/schemas/attId"
+    
+    listFiles:
+      description: A non-empty result set containing files. If no matching files exist, the endpoint returns 204 without a response body.
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            files:
+              type: array
+              minItems: 1
+              xml:
+                name: file
+                wrapped: false
+              items:
+                $ref: "#/components/schemas/File"
+          required: [files]
+    File:
+      description: one file
+      type: object
+      xml:
+        name: file
+      properties:
+        id:
+          $ref: "#/components/schemas/attId"
+        details:
+          $ref: "#components/schemas/attDetails"
+        label:
+          $ref: "#/components/schemas/attLabel"
+      required:
+        - id
+        - label
+    
+    listProjects:
+      description: A non-empty result set containing projects. If no matching projects exist, the endpoint returns 204 without a response body.
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            projects:
+              type: array
+              minItems: 1
+              xml:
+                name: project
+                wrapped: false
+              items:
+                $ref: '#/components/schemas/Project'
+          required: [projects]
+    Project:
+      description: one project
+      type: object
+      xml:
+        name: project
+      properties:
+        id:
+          $ref: '#/components/schemas/attId'
+        label:
+          $ref: '#/components/schemas/attLabel'
+      required:
+        - id
+        - label
+    
+    listViews:
+      description: A non-empty result set containing views for a project or resource. If no matching views exist, the endpoint returns 204 without a response body.
+      allOf:
+        - $ref: '#/components/schemas/ResultBase'
+        - type: object
+          properties:
+            views:
+              type: array
+              minItems: 1
+              xml:
+                name: view
+                wrapped: false
+              items:
+                $ref: '#/components/schemas/View'
+          required: [views]
+    View:
+      description: one view
+      type: object
+      xml:
+        name: "view"
+      properties:
+        id:
+          $ref: "#/components/schemas/attId"
+        label:
+          $ref: "#/components/schemas/attLabel"
+      required:
+        - id
+        - label
+    
+    projectMetadata:
+      description: project meta data
+      type: object
+      xml:
+        namespace: "https://github.com/dariok/wdbmeta"
+        name: project
+      properties:
+        title:
+          type: string
+          description: The Title of the project
+        id:
+          type: string
+          description: The ID of the project if it is to be created with a specific ID
+        collection:
+          type: string
+          description: The path where the project is to be created
+      required:
+        - title
+        - collection
+
+    # entity-person:
+    #   type: object
+    #   description: describes one person
+    #   properties:
+    #     person:
+    #       xml:
+    #         namespace: "http://www.tei-c.org/ns/1.0"
+    # entity-place:
+    #   type: object
+    #   description: describes one place
+    #   properties:
+    #     place:
+    #       xml:
+    #         namespace: "http://www.tei-c.org/ns/1.0"
+    # entity-org:
+    #   type: object
+    #   description: describes one organization
+    #   properties:
+    #     org:
+    #       xml:
+    #         namespace: "http://www.tei-c.org/ns/1.0"
+    # entity-bibl:
+    #   type: object
+    #   description: describes one bibliographical entity
+    #   properties:
+    #     bibl:
+    #       xml:
+    #         namespace: "http://www.tei-c.org/ns/1.0"
+    # entity-event:
+    #   type: object
+    #   description: describes one event
+    #   properties:
+    #     event:
+    #       xml:
+    #         namespace: "http://www.tei-c.org/ns/1.0"
+
+    # annotation.xml:
+    #   type: object
+    #   xml:
+    #     namespace: "https://github.com/dariok/wdbplus/api/schema/v1"
+    #   # example:
+    #   #   <annotation id="..." file="..." createdBy="" createdOn="">Text</annotation>
+    #   properties:
+    #     id:
+    #       $ref: "#/components/schemas/id"
+    #     file:
+    #       $ref: "#/components/schemas/file"
+    #     createdBy:
+    #       type: string
+    #       xml:
+    #         attribute: true
+    #     createdOn:
+    #       type: string
+    #       format: date-time
+    #       xml:
+    #         attribute: true
+    #     # text:
+    #     #   type: string
+    #     #   xml:
+    #     #     text: true
+    # annotation.json:
+    #   type: object
+    #   properties:
+    #     id:
+    #       $ref: "#/components/schemas/id"
+    #     file:
+    #       $ref: "#/components/schemas/file"
+    #     createdBy:
+    #       type: string
+    #     createdOn:
+    #       type: string
+    #       format: date-time
+    #     text:
+    #       type: string
+
+    # file:
+    #   description: Link to a file
+    #   type: string
+    #   format: URI
+    #   xml:
+    #     attribute: true
+    
+    attId:
+      description: ID of this entry
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attDetails:
+      description: A link to a more detailed description, e.g. dearch in a file
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attFrom:
+      description: URI of the content (project, resource) from which this result is taken or for which a list is valid
+      type: string
+      format: uri
+      xml:
+        attribute: true
+    attLabel:
+      description: Title to be displayed for this entry
+      type: string
+      xml:
+        attribute: true
+    attLength:
+      description: The (maximum) length of a page of the result set
+      type: integer
+      default: 1
+      xml:
+        attribute: true
+    attLevel:
+      description: For which type of content is this result produced
+      type: string
+      enum:
+        - "global"
+        - "project"
+        - "resource"
+      xml:
+        attribute: true
+    attQuery:
+      description: the value of the query parameter passed to the endpoint
+      type: string
+      xml:
+        attribute: true
+    attSelf:
+      description: A backlink to the query that created a result set
+      type: string
+      format: URI
+      xml:
+        attribute: true
+    attStart:
+      description: from which position in a paginated list the result set starts (1-based)
+      type: integer
+      default: 1
+      xml:
+        attribute: true
+    attTotal:
+      description: total number of entries in the result set
+      type: integer
+      xml:
+        attribute: true

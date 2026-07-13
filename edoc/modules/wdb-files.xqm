@@ -14,8 +14,10 @@ module namespace wdbFiles = "https://github.com/dariok/wdbplus/files";
 
 import module namespace functx = "http://www.functx.com" at "/db/system/repo/functx-1.0.1/functx/functx.xq";
 
-declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
+declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace request = "http://exist-db.org/xquery/request";
+declare namespace util    = "http://exist-db.org/xquery/util";
+declare namespace wdbErr  = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : Return the path to all Resources with a given ID
@@ -57,49 +59,97 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : project collection) and its file name
  :
  : @param $id as xs:string: the ID of the file (which should be unique)
- : @return map(string, string) with keys "collectionPath", "fileName", "projectPath"
+ : @return map(string, string) with keys including "type", "projectPath", "collectionPath", and "fileName"
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
 :)
-declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string, xs:string? )? {
-  let $file := collection("/db")/id($id)[self::meta:file]
+declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
+  let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
+    , $project-hint := doc("/db/apps/edoc/index/project-index.xml")/id($id)
+    , $file := ( doc($file-hint[1]/@project)/id($id), doc($project-hint[1]/@path || "/wdbmeta.xml")/id($id) )
+    , $request := if ( request:exists() ) then request:get-url() else 'no request context'
 
-  return if ( count($file) = 0 ) then
+  return
+    if ( count($file) = 0 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0000'),
         "no file with ID " || $id,
-        map { "id": $id, "request": request:get-url() }
+        map { "id": $id, "request": $request }
       )
-    else if ( count($file) > 1 ) then
+    else if ( count($file-hint) gt 1 ) then
       error(
         QName('https://github.com/dariok/wdbErr', 'wdb0001'),
         "multiple files with ID " || $id,
-        map { "id": $id, "request": request:get-url() }
+        map { "id": $id, "request": $request }
       )
-    else if ( $file[self::meta:projectMD] ) then
+    else if ( count($project-hint) gt 1 ) then
+      error(
+        QName('https://github.com/dariok/wdbErr', 'wdb1001'),
+        "multiple projects with ID " || $id,
+        map { "id": $id, "request": $request }
+      )
+    else if ( $file[self::meta:projectMD or self::meta:struct] ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
       return map {
+        "type": "project",
         "projectPath": $projectPath,
         "collectionPath": $projectPath,
-        "fileName": "wdbmeta.xml"
+        "fileName": "wdbmeta.xml",
+        "mainProject": wdbFiles:findMainProject($projectPath),
+        "parentProject": wdbFiles:findParentProject($projectPath, $id)
       }
     else if ( starts-with($file/@path, '$') ) then
       let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
         , $peer := $file => substring(2) => substring-before('/')
         , $id := $file => substring-after('/')
       return map {
+        "type": "peer",
         "projectPath": $projectPath,
         "fileURL": doc("../config.xml")/id($peer) || '/' || $id
       }
     else
-      let $projectPath := base-uri($file) => substring-before("wdbmeta.xml")
-        , $path := $projectPath || $file/@path
+      let $projectPath := base-uri($file[self::meta:file]) => substring-before("wdbmeta.xml")
+        , $path := $projectPath || $file[self::meta:file]/@path
 
-      return map{
+      return map {
+        "type": "file",
         "projectPath": $projectPath,
         "collectionPath": functx:substring-before-last($path, '/') ,
-        "fileName": functx:substring-after-last($path, '/')
+        "fileName": functx:substring-after-last($path, '/'),
+        "mainProject": wdbFiles:findMainProject($projectPath)
       }
+};
+
+(:~
+ : Find the parent project: if a wdbmeta.xml imports the current project, use it; else, ascend and look for an import
+ : there. Use if present. Ulitmately, if even $wdb:data/wdbmeta.xml does not exist, panic.
+ :
+ : @param $projectPath a string representation of the path to the project
+ : @returns the path to the main project
+ :)
+declare function wdbFiles:findParentProject ( $projectPath as xs:string, $id as xs:string ) as xs:string {
+  if ( doc-available($projectPath || "/wdbmeta.xml") and doc($projectPath || "/wdbmeta.xml")//meta:ptr[@xml:id = $id] ) then
+    $projectPath
+  else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
+    "/db/apps/edoc/data/"
+  else
+    wdbFiles:findParentProject(functx:substring-before-last($projectPath, '/'), $id)
+};
+
+(:~
+ : Find the main project: if a project.xqm is present in $projectPath, use it; else, ascend and look for project.xqm
+ : there. Use if present. Ulitmately, if even $wdb:data/project.xqm does not exist, panic.
+ :
+ : @param $projectPath a string representation of the path to the project
+ : @returns the path to the main project
+ :)
+declare function wdbFiles:findMainProject ( $projectPath as xs:string ) as xs:string {
+  if ( util:binary-doc-available($projectPath || "/project.xqm") ) then
+    $projectPath
+  else if ( substring-after($projectPath, "/db/apps/edoc/data") = '' ) then
+    "/db/apps/edoc/data/"
+  else
+    wdbFiles:findMainProject(functx:substring-before-last($projectPath, '/'))
 };
 
 (:~
@@ -160,7 +210,10 @@ declare function wdbFiles:evaluateIfModifiedSince ( $id as xs:string, $requested
  :)
 declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string, $fileName as xs:string, $requestedModified as xs:string+ ) as xs:double {
   let $modifiedWithoutMillisecs := wdbFiles:getModificationDate($collectionPath, $fileName)
-    , $requestedModifiedParsed := parse-ietf-date(string-join($requestedModified))
+    , $requestedModifiedParsed :=
+        if ( $requestedModified castable as xs:dateTime )
+          then $requestedModified
+          else parse-ietf-date(string-join($requestedModified))
   
   return if ( $requestedModifiedParsed lt $modifiedWithoutMillisecs )
     then 200
@@ -168,9 +221,9 @@ declare function wdbFiles:evaluateIfModifiedSince ( $collectionPath as xs:string
 };
 
 (:~
- : format da given datetime as IETF date
+ : format a given datetime as IETF date
  :
- : @param gmtDateTime an xs:dataTime adjust to GMT
+ : @param gmtDateTime an xs:dataTime adjusted to GMT
  : @returns xs:string formated as an IETF date
  :)
 declare function wdbFiles:ietfDate ( $gmtDateTime as xs:dateTime ) as xs:string {

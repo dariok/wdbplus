@@ -2,11 +2,11 @@ xquery version "3.1";
 
 module namespace wdbRa = "https://github.com/dariok/wdbplus/RestAnnotations";
 
-import module namespace util     = "http://exist-db.org/xquery/util"         at "java:org.exist.xquery.functions.util.UtilModule";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "/db/apps/edoc/modules/app.xqm";
-import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"  at "/db/apps/edoc/modules/annotations.xqm";
-import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "/db/apps/edoc/modules/wdb-files.xqm";
-import module namespace console  = "http://exist-db.org/xquery/console";
+import module namespace config   = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
+import module namespace util     = "http://exist-db.org/xquery/util"          at "java:org.exist.xquery.functions.util.UtilModule";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "../modules/app.xqm";
+import module namespace wdbanno  = "https://github.com/dariok/wdbplus/anno"   at "../modules/annotations.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
 
 declare namespace anno = "https://github.com/dariok/wdbplus/annotations";
 declare namespace http    = "http://expath.org/ns/http-client";
@@ -28,7 +28,10 @@ declare
 function wdbRa:getFileAnno ($fileID as xs:string) {
   (: get the username; use sm:real to avoid setuid conflicts :)
   let $username := xs:string(sm:id()//sm:real/sm:username)
-  let $fileURI := xs:anyURI(wdb:getFilePath($fileID))
+    , $fileInfo := wdbFiles:getFullPath($fileID)
+  let $fileURI := xs:anyURI($fileInfo?collectionPath || '/' || $fileInfo?fileName)
+  
+  (: check whether the file exists and is accessible :)
   
   let $public := wdbanno:getAnnoFile($fileURI, "")//anno:entry
   let $private := wdbanno:getAnnoFile($fileURI, $username)//anno:entry
@@ -118,7 +121,7 @@ declare
   %rest:DELETE
   %rest:path("/edoc/anno/{$id}")
 function wdbRa:deleteFTA ( $id as xs:string) {
-  let $annoCollection := $wdb:edocBaseDB || "/annotations"
+  let $annoCollection := $config:edocBaseDB || "/annotations"
   let $target := collection($annoCollection)//anno:entry[anno:id = $id]
   
   return update delete $target
@@ -299,7 +302,6 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
       </rest:response>,
       switch ($data("job"))
       case "edit" return
-        let $d := console:log($token)
         let $u := if ($token/tei:lb)
           then
             let $id := $token/@xml:id
@@ -309,7 +311,6 @@ function wdbRa:changeWords ($fileID as xs:string, $body as item()) {
               then $token/tei:pc/@xml:id
               else ()
             let $pc := <pc>{$pid, substring($text[1], string-length($text[1]))}</pc>
-            let $d1 := console:log($text)
             let $repl :=
               <w xmlns="http://www.tei-c.org/ns/1.0">{$id,
                 substring($text[1], 1, string-length($text[1]) - 1),
@@ -342,7 +343,7 @@ function wdbRa:check ($fileID, $data, $mode, $keys) {
   
   (: check whether a file with the given ID exists and is accessible :)
   let $accessible := try { 
-      let $ac := wdbFiles:hasAccess($wdb:data, $fileID, $mode)
+      let $ac := wdbFiles:hasAccess($config:data, $fileID, $mode)
       return if ($ac)
         then (true(), $ac)
         else (false(), 403, "User " || $user || " does not have sufficient rights to access resource " || $fileID || " in mode " || $mode)

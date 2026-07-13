@@ -11,7 +11,7 @@
  */
 
 body {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
 }
 
 /* hide right side on small broser windows, e.g. mobile */
@@ -94,12 +94,8 @@ body > aside {
   overflow: initial;
 }
 
-#ann {
+aside > div {
   position: absolute;
-}
-
-#fac {
-  height: 100%;
 }
 
 q {
@@ -134,12 +130,12 @@ div.footnote {
   display: table-row;
 }
 
-/* footnote number within the main text */
+/* footnote number within the main text
 .fnNumber {
   font-size: 0.9em;
   vertical-align: super;
   line-height: 0;
-}
+} */
 
 /* footnote number within apparatus */
 .footnotes .fnNumber {
@@ -171,9 +167,11 @@ div.footnote {
 
 /* footnote links */
 button[aria-label].footnoteNumber {
-  vertical-align: super;
-  font-size: 0.75rem;
+  display: inline-block;
+  font-size: 0.9em;
   line-height: 0;
+  text-indent: 0;
+  vertical-align: super;
 }
 
 /* Spans acting as buttons to display entity information */

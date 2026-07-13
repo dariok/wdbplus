@@ -8,6 +8,7 @@
      functions/templates can be overwritten -->
 <xsl:stylesheet
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
   xmlns:html="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="#all" version="3.0">
@@ -75,6 +76,8 @@
        In case you wish to change any behaviour, you can either
        – copy this file to your project an edit it there;
        – import this stylesheet via xsl:import and overwrite any template you like, especially those mentioned above -->
+  <xsl:variable name="fnTypes-Footnote" as="xs:string+" select="('fn', 'footnote','annotation','comment')"/>
+  <xsl:variable name="fnTypes-Critical" as="xs:string+" select="('crit', 'crit_app', 'critical', 'apparatus')"/>
   
   <!-- basic outline is created via templating in templates/layout.html. The following templates create a semantic
     outline (see above);  requirements may change for different projects or types of texts (e.g. for transcriptions,
@@ -94,10 +97,42 @@
     </header>
   </xsl:template>
   <xsl:template match="tei:teiHeader" mode="footer">
+    <xsl:apply-templates select="tei:fileDesc//tei:publicationStmt"/>
+  </xsl:template>
+  
+  <xsl:template match="tei:publicationStmt">
     <footer>
-      <xsl:apply-templates select="tei:fileDesc//tei:publicationStmt" />
+      <xsl:apply-templates select="tei:publisher, tei:pubPlace, tei:availability"/>
     </footer>
   </xsl:template>
+  <xsl:template match="tei:publicationStmt/tei:publisher">
+    <a>
+      <xsl:if test="@ref or */@ref">
+        <xsl:attribute name="href" select="(@ref, */@ref)[1]" />
+      </xsl:if>
+      <xsl:apply-templates />
+    </a>
+    <br/>
+  </xsl:template>
+  <xsl:template match="tei:pubPlace">
+    <xsl:value-of select="."/>
+    <xsl:if test="following-sibling::tei:date">
+      <xsl:text> (</xsl:text>
+      <xsl:value-of select="((following-sibling::tei:date[@type='published'], following-sibling::tei:date)[1]/@when => analyze-string('\d{4}'))//*:match[1]"/>
+      <xsl:text>)</xsl:text>
+    </xsl:if>
+    <xsl:if test="following-sibling::tei:idno">
+      <xsl:text> – PID: </xsl:text>
+      <xsl:value-of select="following-sibling::tei:idno"/>
+    </xsl:if>
+    <br/>
+  </xsl:template>
+  <xsl:template match="tei:availability">
+    <a href="{tei:licence/@target}">
+      <xsl:apply-templates select="tei:licence/node()"/>
+    </a>
+  </xsl:template>
+  
   <xsl:template match="tei:text">
     <!-- TODO check usage of removed id="wdbContent" and rewrite these occurrences -->
     <article>
@@ -112,9 +147,13 @@
         <xsl:apply-templates />
       </section>
       
-      <xsl:if test="//tei:note[@type = ('fn', 'footnote', 'annotation')]">
+      <xsl:if test="//tei:note[@type = ($fnTypes-Footnote, $fnTypes-Critical)]">
         <section aria-label="contains full text footnotes for this text" id="footnote_container">
-          <xsl:apply-templates select="//tei:note[@type = ('fn', 'footnote', 'annotation')]" mode="fnText" />
+          <xsl:apply-templates
+              select="//tei:note[@type = $fnTypes-Footnote],
+                      //tei:note[@type = $fnTypes-Critical],
+                      //tei:note[@type and not(@type = $fnTypes-Footnote or @type = $fnTypes-Critical)]"
+              mode="fnText"/>
         </section>
       </xsl:if>
     </article>
@@ -133,6 +172,7 @@
 
    <xsl:template match="tei:p">
       <p>
+         <xsl:apply-templates select="@style" />
          <xsl:attribute name="id">
             <xsl:choose>
                <xsl:when test="@xml:id">
@@ -173,6 +213,7 @@
     <xsl:variable name="att" as="attribute()*">
       <xsl:attribute name="class" select="string-join(('entity', @type), ' ')" />
       <xsl:attribute name="data-ref" select="$ref" />
+      <xsl:attribute name="data-type" select="@type" />
       <xsl:attribute name="aria-label">opens information about an entity</xsl:attribute>
     </xsl:variable>
     
@@ -306,47 +347,64 @@
     </xsl:choose>
   </xsl:template>
   
-  <!-- page breaks -->
-  <xsl:template match="tei:pb">
-    <xsl:variable name="content">
-      <xsl:analyze-string select="@n" regex="[rv]">
-        <xsl:matching-substring>
-          <span class="rectoVerso">
-            <xsl:value-of select="."/>
-          </span>
-        </xsl:matching-substring>
-        <xsl:non-matching-substring>
-          <xsl:value-of select="."/>
-        </xsl:non-matching-substring>
-      </xsl:analyze-string>
-    </xsl:variable>
-    
-    <xsl:choose>
-      <xsl:when test="@facs">
-        <xsl:variable name="image">
-          <xsl:choose>
+   <!-- page breaks -->
+   <xsl:template match="tei:pb">
+      <xsl:variable name="content">
+         <xsl:analyze-string select="@n" regex="[rv]">
+            <xsl:matching-substring>
+               <span class="rectoVerso">
+                  <xsl:value-of select="."/>
+               </span>
+            </xsl:matching-substring>
+            <xsl:non-matching-substring>
+               <xsl:value-of select="."/>
+            </xsl:non-matching-substring>
+         </xsl:analyze-string>
+      </xsl:variable>
+      <xsl:variable name="image">
+         <xsl:choose>
+            <xsl:when test="not(@facs)"/>
             <xsl:when test="starts-with(@facs, '#')">
-              <xsl:variable name="id" select="substring(@facs, 2)"/>
-              <xsl:value-of select="/id($id)/tei:graphic/@url"/>
+               <xsl:variable name="id" select="substring(@facs, 2)"/>
+               <xsl:value-of select="/id($id)/tei:graphic/@url"/>
             </xsl:when>
             <xsl:otherwise>
-              <xsl:value-of select="@facs" />
+               <xsl:value-of select="@facs"/>
             </xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>
-        
-        <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}"
-          data-image="{$image}">
-          <xsl:sequence select="$content" />
-        </button>
-      </xsl:when>
-      <xsl:otherwise>
-        <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="p{@ed}-{@n}">
-          <xsl:sequence select="$content" />
-        </span>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
+         </xsl:choose>
+      </xsl:variable>
+      <xsl:variable name="url">
+         <xsl:choose>
+            <xsl:when test="starts-with($image, 'http')">
+               <xsl:value-of select="$image"/>
+            </xsl:when>
+            <!-- private URI -->
+            <xsl:when test="contains($image, ':')">
+               <xsl:variable name="ident" select="substring-before($image, ':')"/>
+               <xsl:variable name="matchPattern" select="//tei:prefixDef[@ident = $ident]/@matchPattern"/>
+               <xsl:variable name="replacementPattern" select="//tei:prefixDef[@ident = $ident]/@replacementPattern"/>
+               
+               <xsl:value-of select="replace($image, $matchPattern, $replacementPattern)"/>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:value-of select="$image"/>
+            </xsl:otherwise>
+         </xsl:choose>
+      </xsl:variable>
+      
+      <xsl:choose>
+         <xsl:when test="$url != ''">
+            <button aria-label="a pagebreak with a link to a facsimile" class="pagebreak" id="p{@ed}-{@n}" data-image="{$url}">
+               <xsl:sequence select="$content"/>
+            </button>
+         </xsl:when>
+         <xsl:otherwise>
+            <span class="pagebreak" aria-label="a pagebreak without a facsimile" id="p{@ed}-{@n}">
+               <xsl:sequence select="$content"/>
+            </span>
+         </xsl:otherwise>
+      </xsl:choose>
+   </xsl:template>
   
   <!-- marginalia or other types of notes in the page margin -->
   <xsl:template match="tei:note[@place = 'margin']" mode="margin">
@@ -401,7 +459,7 @@
   <xsl:template match="@rend" />
   
   <!-- Handling of footnotes -->
-  <xsl:template match="tei:note[@type = ('fn', 'footnote', 'annotation')]">
+  <xsl:template match="tei:note[@type = ($fnTypes-Footnote, $fnTypes-Critical)]">
     <xsl:apply-templates select="." mode="fnLink" />
   </xsl:template>
   
@@ -598,7 +656,7 @@
       </xsl:apply-templates>
     </xsl:variable>
     
-    <button id="{$position}{$type}{$number}" data-note="{$type}{$number}" class="footnoteNumber"
+    <button id="{$position}{$type}{$number}" data-note="{(@xml:id, $type||$number)[1]}" class="footnoteNumber"
       aria-label="opens a footnote">
       <xsl:value-of select="$number"/>
     </button>
@@ -606,6 +664,9 @@
   
   <!-- general representation of notes -->
   <xsl:template match="*" mode="fnText">
+    <xsl:if test="@type != preceding::tei:note[@type][1]/@type">
+      <hr/>
+    </xsl:if>
     <div class="annotation">
       <xsl:attribute name="id">
         <xsl:choose>
@@ -638,10 +699,10 @@
     <xsl:param name="type" />
     
     <xsl:choose>
-      <xsl:when test="$type = ('crit', 'crit_app', 'critical', 'apparatus')">
+      <xsl:when test="$type = $fnTypes-Critical">
         <xsl:apply-templates select="." mode="fnumberAlph" />
       </xsl:when>
-      <xsl:when test="$type = ('fn', 'footnote', 'annotation')">
+      <xsl:when test="$type = $fnTypes-Footnote">
         <xsl:apply-templates select="." mode="fnumberNumeric" />
       </xsl:when>
       <xsl:otherwise>
@@ -662,7 +723,7 @@
       | tei:subst
       | tei:add[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
       | tei:del[not(parent::tei:subst | parent::tei:lem | parent::tei:rdg)]
-      | tei:note[@type='crit_app']
+      | tei:note[@type=$fnTypes-Critical]
       | tei:seg[@hand or @resp]
       | tei:unclear[@extent]"/>
   </xsl:template>
@@ -686,11 +747,9 @@
     </span>
   </xsl:template>
   
-  <!--<xsl:template match="*[@xml:lang = 'grc-Grek']//text()">
-    <xsl:value-of select="translate(., 'θ', 'ϑ')" />
-  </xsl:template>-->
-  
   <xsl:template match="@xml:lang">
     <xsl:attribute name="lang" select="."/>
   </xsl:template>
+  
+  <xsl:template match="@xml:space" />
 </xsl:stylesheet>

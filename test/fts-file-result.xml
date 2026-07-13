@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results 
+   xmlns="https://github.com/dariok/wdbplus/api/schema/v1" total="5" query="fichte" job="fts" self="https://tueditions.localhost/api/v2/search/ft/resource/pa000032-0194?q=fichte" from="https://tueditions.localhost/api/v2/resources/pa000032-0194">
+   <fragment path="body/opener/address/addrLine" n="1">
+      <p 
+         xmlns="">
+         <span class="previous">...       den Hrn Professor
+         </span>
+         <span class="hi">Fichte</span>
+         <span class="following"></span>
+      </p>
+   </fragment>
+   <fragment path="body/div#d1/p#p1" n="4">
+      <p 
+         xmlns="">
+         <span class="previous">...ngabe des Hrn Professors
+         </span>
+         <span class="hi">Fichte</span>
+         <span class="following">, wegen der bey der Censurbehörde ver...</span>
+      </p>
+      <p 
+         xmlns="">
+         <span class="previous">...ion in Ansehung der von Herrn Professor </span>
+         <span class="hi">Fichte</span>
+         <span class="following">
+            hergestellten dreyzeh...</span>
+      </p>
+      <p 
+         xmlns="">
+         <span class="previous">...angen ist, so wird der   Herr Professor </span>
+         <span class="hi">Fichte</span>
+         <span class="following"> sich an gedachten Hrn
+            ...</span>
+      </p>
+      <p 
+         xmlns="">
+         <span class="previous">...en des OberConsistorii an den Hrn Prof. </span>
+         <span class="hi">Fichte</span>
+         <span class="following"> wird demselben hiebey
+            ...</span>
+      </p>
+   </fragment>
+</results>

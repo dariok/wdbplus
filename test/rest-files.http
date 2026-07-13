@@ -1,0 +1,2 @@
+GET https://tueditions.localhost/r/edoc/resource/pb004030-1008/views
+Accept: application/json

@@ -5,6 +5,7 @@ module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon";
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace rest   = "http://exquery.org/ns/restxq";
+declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 (: To avoid circular dependencies, app.xqm is not imported; all relevant variables must be read from config.xml, or
  : handed to the functions :)
@@ -70,13 +71,16 @@ declare function wdbRCo:head ( $filePath as xs:string ) as element(rest:response
     </rest:response>
 };
 
+(: TODO: combine this with a lookup of a function: findProjectSpecific("getNavXSLT", "nav.xsl")
+  first, look fo a project or instance specific functin, then look for a file in project, data, global resources;
+  infer the path from the ending (because of #326) :)
 (:~
  : Get a project specific / instance specific / global XSLT by name
  :
  : @param $coll Path to the Project
  : @param $name file name of the XSLT
  :)
-declare function wdbRCo:getXSLT ( $coll as xs:string, $name ) as xs:anyURI {
+declare function wdbRCo:getXSLT ( $coll as xs:string, $name as xs:string ) as xs:anyURI {
   (: for now, we ignore this possibility – havin an XSLT in the project collection should hopefully suffice; if it is
      indeed needed, we must move that function here so we do not have to import app.xqm :)
   (: if ( wdb:findProjectFunction(map { "pathToEd": $coll }, "getSearchXSLT", 0) ) then

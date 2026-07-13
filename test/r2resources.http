@@ -1,0 +1,59 @@
+OPTIONS http://localhost:8080/exist/apps/edoc/api/v2/resources/pa000032-0174
+
+###
+HEAD http://localhost:8080/exist/apps/edoc/api/v2/resources/pa000032-0174
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774394619113-47399/views
+Accept: application/xml
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301/views/md
+Accept: text/html
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT
+
+###
+
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT
+
+###
+
+HEAD http://localhost:8080/exist/apps/edoc/api/v2/resources/resource-shared-get-fallback-1774396208324-13301
+If-Modified-Since: Wed, 25 Mar 2026 00:20:57 GMT
+
+###
+# @no-redirect
+GET http://localhost:8080/exist/apps/edoc/api/v2/resources/byPid/12345
+
+###
+
+DELETE http://localhost:8080/exist/apps/edoc/api/v2/resource/pb006001-0101
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views
+Accept: text/html
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views/md
+Accept: text/html
+
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106/views/md
+Accept: text/html
+If-Modified-Since: Wed, 13 May 2026 08:09:45 GMT
+
+###
+
+GET https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pb006003-2106
+If-Modified-Since: Wed, 13 May 2026 08:09:45 GMT
+
+###
+
+HEAD https://exist.ulb.tu-darmstadt.de/5/api/v2/resources/pa000019-0004
