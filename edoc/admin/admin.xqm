@@ -20,7 +20,10 @@ declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
 declare
     %templates:default("ed", "data")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) as item()* {
-  wdbm:populateModel((), $ed, "", "", "")
+  map:merge((
+    wdbm:populateModel((), $ed, "", "", ""),
+    map:entry("page", substring-after(request:get-uri(), "admin/"))
+  ))
 };
 
 declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as item()+ {(
