@@ -84,11 +84,11 @@ declare function wdbPL:body ( $node as node(), $model as map(*) ) {
         default return
           <div id="data"><div><h3>Strange Error</h3></div></div>
     (: no job given :)
-    else if ( ($model?ed = 'data' or $model?ed = '') and $file = '' ) then (
+    else if ( $model?ed = ('data','') and $file = '' ) then (
       <h3>Liste der Projekte</h3>,
-      wdbs:projectList(true(), '')
+      wdbPL:projectList($config:data)
     )
-    else if ($model?ed != 'data' and $model?ed != ''and $file = '') then
+    else if ($model?ed != 'data' and $model?ed != '' and $file = '') then
       wdbPL:getFiles($model)
     else
       wdbPL:getFileStat($model, $file)
@@ -318,4 +318,36 @@ declare %private function wdbPL:getFileStat( $model as map(*), $id as xs:string 
         }
       </div>
     </div>
+};
+
+declare %private function wdbPL:projectList ( $pathToEd as xs:anyURI ) as element(table) {
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Titel</th>
+      <th>Metadaten-Datei</th>
+      <th>verwalten</th>
+    </tr>
+    {
+      for $project in collection($pathToEd)//meta:projectMD
+        let $name := $project/meta:titleData/meta:title[1]
+          , $metaFile := base-uri($project)
+          , $ed := string($project/@xml:id)
+          , $pa := $metaFile => substring-after($config:data || '/')
+                             => substring-before("/wdbmeta.xml")
+          , $padding := count(tokenize($pa, '/')) - 1
+        order by $pa
+        return
+          if ( $ed = ('data', 'documentation') ) then ()
+          else
+            <tr>
+              <td>{ $ed }</td>
+              <td style="padding-left: { $padding }em;">
+                <a href="{ $config:edocBaseURL }/start.html?ed={ $project/@xml:id }">{ normalize-space($name) }</a>
+              </td>
+              <td>{ $pa || '/wdbmeta.xml' }</td>
+              <td><a href="?ed={ $project/@xml:id }">verwalten</a></td>
+            </tr>
+    }
+  </table>
 };
