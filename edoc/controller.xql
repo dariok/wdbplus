@@ -21,7 +21,7 @@ declare variable $local:isget := request:get-method() = ("GET","get");
 declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
 (: util:log("info", "Request-Path: " || $exist:path || "; Resource: " || $exist:resource || "; Controller: " || $exist:controller || "; Prefix: " || $exist:prefix || "; Root: " || $exist:root), :)
-util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " → resource: " || $exist:resource),
+(: util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " → resource: " || $exist:resource), :)
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
 if ( $local:isget and $exist:resource = ('v2.json', 'v2.html', 'v2.yaml') ) then
@@ -83,8 +83,9 @@ else if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
 else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
-      <set-header name="Cache-Control" value="no-cache"/>
-      <forward url="{$exist:controller}/admin/view.xql"/>
+      <forward url="{$exist:controller}/admin/view.xql">
+        <set-header name="Cache-Control" value="no-cache"/>
+      </forward>
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
