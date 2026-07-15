@@ -275,7 +275,9 @@ declare function r2:resultsWrapper ( $values as map(*), $contents as element()* 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {
   let $c := for $key in map:keys($request) return
       let $ind := string-join((string-join((1 to $depth) ! '  ', '') || $key, ': '), '')
-      return if( $request($key) instance of map(*) ) then
+      return if ( $key = 'spec' ) then
+        $ind || '(roaster spec)' (: do not log roaster’s full repetition of the API definition :)
+      else if( $request($key) instance of map(*) ) then
          ( $ind, r2:logMap($request($key), $depth + 1))
       else if ( $request($key) instance of array(*) ) then
         $ind || 'Array[' || array:size($request($key)) || ']'
@@ -283,10 +285,10 @@ declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item(
         $ind || 'XML[' || string-length($request($key)) || ']'
       else if ( $request($key) instance of xs:string ) then
         $ind || 'String[' || string-length($request($key)) || ']'
-      else if ( $request($key) castable as xs:double ) then
-        $ind || 'number = ' || string($request($key))
       else if ( $request($key) instance of xs:boolean ) then
         $ind || 'boolean = ' || string($request($key))
+      else if ( $request($key) castable as xs:double ) then
+        $ind || 'number = ' || string($request($key))
       else
         $ind || ($request($key))
         
