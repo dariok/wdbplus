@@ -2,12 +2,13 @@ xquery version "3.1";
 
 module namespace r2 = "https://github.com/dariok/wdbplus/rest2/common";
 
-import module namespace router     = "http://e-editiones.org/roaster/router";
-import module namespace wdb        = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
+import module namespace router = "http://e-editiones.org/roaster/router";
+import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
 
-declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
-declare namespace sm   = "http://exist-db.org/xquery/securitymanager";
-declare namespace tei  = "http://www.tei-c.org/ns/1.0";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace sm     = "http://exist-db.org/xquery/securitymanager";
+declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : list of allowed operations
@@ -270,6 +271,50 @@ declare function r2:resultsWrapper ( $values as map(*), $contents as element()* 
     { map:keys($values) ! attribute { . } { $values(.) } }
     { $contents }
   </results>
+};
+
+declare function r2:parseUpload ( $request as map(*) ) as map(*)? {
+  if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
+    error (
+      xs:QName("wdbErr:wdb9101"),
+      "not a multipart request",
+      map {
+        "responseCode": 415,
+        "description": "Unsupported Media Type. Expected multipart/form-data (with `path` and `file` fields)."
+      }
+    )
+  else if ( not(r2:mapKeysAllowed($request?body, ("path", "file"), ("meta"))) ) then
+    error(
+      xs:QName("wdbErr:wdb9102"),
+      "fields missing from multipart body",
+      map {
+        "responseCode": 422,
+        "description": "Wrong content of resource information found. Expected `path` and `file`; got "
+            || string-join(map:keys($request?body), ' - ') || '.'
+      }
+    )
+  else
+    let $data := if ( $request?body?file instance of map(*) )
+          then $request?body?file?data
+          else $request?body?file
+      , $xml := if ( $data instance of xs:base64Binary ) 
+          then parse-xml(util:binary-to-string($data))
+          else parse-xml($data)
+
+      (: we cannot be certain to have a file name in the `file` field; hence for stability, we use the path field only :)
+      , $fullTargetPath := $request?project?collectionPath || $request?body?path
+      , $fileName := if ( contains($request?body?path, '/') )
+            then tokenize($request?body?path, '/')[last()]
+            else $request?body?path
+      , $targetCollection := $fullTargetPath => substring-before($fileName)
+      , $relPath := $targetCollection => substring-after($request?project?collectionPath)
+
+    return map {
+      "xml": $xml,
+      "hash": util:uuid($xml),
+      "relativePath": $relPath || r2:sanitiseFilename($fileName),
+      "sanitisedFilename": r2:sanitiseFilename($fileName)
+    }
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {
