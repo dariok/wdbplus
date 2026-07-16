@@ -72,11 +72,21 @@ declare function wdbAdmin:getAside ( $node as node(), $model as map(*) ) as elem
     </div>
     <hr/>
     <div>
+      <h3>Übergeordnetes Projekt</h3>
+      {
+        let $parent := doc($model?filePathInfo?parentProject || '/wdbmeta.xml')
+        return if ( not(empty($parent)) )
+          then <a href="projects.html?ed={ $parent/meta:projectMD/@xml:id }">{ string($parent//meta:title[@type='main']) }</a>
+          else <span>kein übergeordnetes Projekt verlinkt</span>
+      }
+    </div>
+    <hr/>
+    <div>
       <h3>Unterprojekte</h3>
       <ol>
         {
           for $subproject in doc($model?infoFileLoc)//meta:struct[@file]
-            return <li><a href="?ed={ $subproject/@file }">{ string($subproject/@label) }</a></li>
+            return <li><a href="projects.html?ed={ $subproject/@file }">{ string($subproject/@label) }</a></li>
         }
       </ol>
     </div>
