@@ -2,8 +2,9 @@ xquery version "3.1";
 
 module namespace r2 = "https://github.com/dariok/wdbplus/rest2/common";
 
-import module namespace router = "http://e-editiones.org/roaster/router";
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"  at "../modules/app.xqm";
+import module namespace router   = "http://e-editiones.org/roaster/router";
+import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"   at "../modules/app.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files" at "../modules/wdb-files.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm     = "http://exist-db.org/xquery/securitymanager";
@@ -96,7 +97,7 @@ declare function r2:parseBody ( $request as map(*) ) as item() {
 
   return
     (: Roaster should handle unsupported media types and return 415 :)
-     if ( $mediaType = "application/json" and $request?body instance of map(*) ) then
+    if ( $mediaType = "application/json" and $request?body instance of map(*) ) then
       $request?body?title
     else if ( $mediaType = "application/xml" ) then
       $request?body
@@ -144,7 +145,9 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
     , $existing := $meta//id($request?parameters?id)
     
     , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
-    , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
+    , $fileNameBase := if ( contains($request?body?file?name, '/') )
+        then substring-after($request?body?file?name, '/')
+        else $request?body?file?name
     , $targetPath := $fullTargetPath => substring-before($fileNameBase)
     , $relPath := $targetPath => substring-after($request?project?collectionPath)
     , $fileNameMod := r2:sanitiseFilename($fileNameBase)
@@ -280,7 +283,8 @@ declare function r2:parseUpload ( $request as map(*) ) as map(*)? {
       "not a multipart request",
       map {
         "responseCode": 415,
-        "description": "Unsupported Media Type. Expected multipart/form-data (with `path` and `file` fields)."
+        "description": "Unsupported Media Type. Expected multipart/form-data (with `path` and `file` fields).",
+        "additionalHeaders": map:entry("Allow-Post", "multipart/form-data")
       }
     )
   else if ( not(r2:mapKeysAllowed($request?body, ("path", "file"), ("meta"))) ) then
@@ -315,6 +319,54 @@ declare function r2:parseUpload ( $request as map(*) ) as map(*)? {
       "relativePath": $relPath || r2:sanitiseFilename($fileName),
       "sanitisedFilename": r2:sanitiseFilename($fileName)
     }
+};
+
+declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*), $id as xs:string ) as map(*) {
+  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
+
+  return if ( $project instance of xs:QName ) then
+    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
+  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
+    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
+  else if ( not(r2:writeAllowed($request?user)) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
+    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+  else if ( not($parsedUpload?xml instance of document-node()) ) then
+    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
+  else if ( exists($parsedUpload?xml/*[1]/@xml:id) and $parsedUpload?xml/*[1]/@xml:id != $request?parameters?id ) then
+    r2:response(422, 'text/plain', 'ID in the XML content (' || $parsedUpload?xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)
+            and @xml:id = $request?parameters?id
+            and @uuid = $parsedUpload?hash]
+          ) then
+    r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
+  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)] ) then
+    r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
+  else if ( $meta//meta:file[@uuid = $parsedUpload?hash] ) then
+    r2:response(409, 'text/plain', 'A resource with a hash of ' || $parsedUpload?hash || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $parsedUpload?hash]/@path, $r2:allOrigins)
+  else if ( $meta//id($request?parameters?id)[self::meta:struct] ) then
+    r2:response(409, 'text/plain', 'ID ' || $request?parameters?id || ' is already in use for a struct ' || $meta/id($request?parameters?id)/@label || $meta/id($request?parameters?id)/meta:label, $r2:allOrigins)
+  else 
+  (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
+    r2:createXmlResource(
+      map{
+        "parameters": map:merge((
+            $request?parameters,
+            map:entry("id", $id)
+          )),
+        "body": map:merge((
+            $request?body,
+            map:entry("xml", $parsedUpload?xml),
+            map:entry("hash", $parsedUpload?hash)
+          )),
+        "user": $request?user,
+        "project": $project
+      }
+    )
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {
