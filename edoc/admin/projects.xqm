@@ -5,7 +5,6 @@ module namespace wdbPL = "https://github.com/dariok/wdbplus/ProjectList";
 import module namespace config   = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
 import module namespace sm       = "http://exist-db.org/xquery/securitymanager";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "../modules/wdb-files.xqm";
-import module namespace wdbs     = "https://github.com/dariok/wdbplus/stats"  at "../modules/stats.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";

@@ -74,9 +74,21 @@ else if ( contains($exist:path, 'api/v2') ) then
   </dispatch>
 
 (: global index.html :)
-else if ( $exist:resource eq '' or $exist:resource eq 'index.html' ) then
+else if ( $exist:resource eq '' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <forward url="{$exist:controller}/global/index.html"/>
+    <view>
+      <forward url="{$exist:controller}/index.html" method="get" />
+      <forward url="{$exist:controller}/modules/view.xql">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </view>
+    <error-handler>
+      <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
+      <forward url="{$exist:controller}/modules/view.xql"/>
+    </error-handler>
   </dispatch>
 
 (: admin pages :)
