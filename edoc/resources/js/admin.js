@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * @type { FileList | null }
+ * @type { FileList | Array<File> | null }
  */
 let files;
 
@@ -258,7 +258,13 @@ function uploadHandlers ( ) {
 
   /* event listeners */
   picker.addEventListener("change", ( event ) => {
-    files = picker.files;
+    if ( picker.files === null ) return;
+    
+    const tempArray = Array.from(picker.files);
+    tempArray.sort( (a, b) =>
+      a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, { numeric: true, sensitivity: 'base' })
+    );
+    files = tempArray;
     wdbAdmin.setFiles(event);
   });
   document.querySelector('#selectTarget select')?.addEventListener("change", ( event ) => {
