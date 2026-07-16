@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   description: "wdb+ API v2 (wdb+ > v4.0) – see https://github.com/dariok/wdbplus for details"
   version: "2.0"
@@ -20,10 +20,10 @@ tags:
     description: Operations on wdb+ projects
   # - name: entities
   #   description: Operations on entities
-  # - name: resources
-  #   description: Operations on resources (usually texts)
-  # - name: search
-  #   description: Full text search
+  - name: resources
+    description: Operations on resources (usually texts)
+  - name: search
+    description: Full text search
   # - name: oai
   #   description: OAI PMH endpoints
   # - name: dts
@@ -383,8 +383,11 @@ paths:
                   type: string
                   description: Relative path inside the project (e.g. "texts/foo.xml")
                 file:
-                  type: string
+                  type: object
                   format: binary
+              encoding:
+                file:
+                  contentType: application/xml; charset=utf-8
       responses:
         "201":
           $ref: "#/components/responses/created"
@@ -427,8 +430,11 @@ paths:
                   type: string
                   description: Relative path inside the project (e.g. "texts/foo.xml")
                 file:
-                  type: string
+                  type: object
                   format: binary
+              encoding:
+                file:
+                  contentType: application/xml; charset=utf-8
       responses:
         "204":
           description: File has been updated
@@ -487,7 +493,7 @@ paths:
   #   get:
   #     tags:
   #       - entities
-  #     summary: Get details of entity
+  #     summary: Get details of a global entity
   #     operationId: #TODO
   #     parameters:
   #       - $ref: "#/components/parameters/entity"
@@ -556,6 +562,9 @@ paths:
   #         $ref: "#/components/responses/invalidBody"
   #       "409":
   #         description: The body contains an ID for which an entity is already present
+  # TODO: these are too clunky for my taste – would entities/$entity/forProject/$ed be better?
+  #       Or even just entities/$entity?ed=... ? Or always entities/$ed/$entity with $ed='data' for global entities?
+  #         → In this case, entities/$entity would list any entities, includin subprojects.
   # /api/v2/entities/project/{ed}/{entity}:
   #   get:
   #     tags:
@@ -681,9 +690,13 @@ paths:
               properties:
                 path:
                   type: string
+                  description: Relative path inside the project (e.g. "texts/foo.xml")
                 file:
-                  type: string
+                  type: object
                   format: binary
+              encoding:
+                file:
+                  contentType: application/xml; charset=utf-8
       responses:
         "201":
           $ref: "#/components/responses/created"
@@ -1102,7 +1115,6 @@ components:
   #         schema:
   #           $ref: "#/components/schemas/TEI"
 
-
   schemas:
     contents:
       type: object
@@ -1251,7 +1263,7 @@ components:
         id:
           $ref: "#/components/schemas/attId"
         details:
-          $ref: "#components/schemas/attDetails"
+          $ref: "#/components/schemas/attDetails"
         label:
           $ref: "#/components/schemas/attLabel"
       required:
