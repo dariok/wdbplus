@@ -19,29 +19,27 @@ declare function wdbAddinMain:body ( $node as node(), $model as map(*) ) as elem
   let $module := try {
     load-xquery-module("https://github.com/dariok/wdbplus/addins", $map)
   } catch * {
-    wdbErr:error(map {
-      "code":  fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2101'),
-      "path":  $path,
-      "model": $model,
-      "err":   $err:value,
-      "desc":  $err:description
-    })
+    error(xs:QName('wdbErr:wdb2101'), $err:description, map{
+        "path": $path,
+        "model": $model,
+        "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+      }
+    )
   }
   
   return try {
     let $function := $module?functions?(xs:QName("wdbadd:main"))?1
     return $function($model)
   } catch * {
-    wdbErr:error(map {
-      "code":      fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2102'),
-      "path":      $path,
-      "model":     $model,
-      "err":       $err:value,
-      "module":    $module,
-      "desc":      $err:description,
-      "available": system:function-available(xs:QName("wdbadd:main"), 1),
-      "functions": inspect:module-functions(xs:anyURI($path)),
-      "location":  $err:module || '@' || $err:line-number
-    })
+    error(xs:QName('wdbErr:wdb2102'), $err:description, map {
+        "path": $path,
+        "model": $model,
+        "err": $err:value,
+        "module": $module,
+        "available": system:function-available(xs:QName("wdbadd:main"), 1),
+        "functions": inspect:module-functions(xs:anyURI($path)),
+        "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+      }
+    )
   }
 };

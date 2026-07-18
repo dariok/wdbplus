@@ -84,14 +84,15 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
         wdb:getXslFromWdbMeta($filePathInfo?projectPath || '/wdbmeta.xml', $id, 'html', $view)
     
     let $process := if ( not($proc) instance of element(meta:process) )
-      then wdbErr:error(map { "code": "wdbErr:wdb0002", "err:description": "no XSLT found for file with ID " || $id,
-                "err:additional": <additional>
-                  <file>{$filePathInfo?fileName}</file>
-                  <project>{$filePathInfo?projectPath}</project>
-                  <id>{$id}</id>
-                </additional>
-              }
-            )
+      then error(xs:QName("wdbErr:wdb0002"), "no XSLT found for file with ID " || $id,
+          map {
+            "additionalInformation": map {
+              "file": $filePathInfo?fileName,
+              "project": $filePathInfo?projectPath,
+              "id": $id
+            }
+          }
+        )
       else $proc
     
     let $doc := doc($pathToFile)
@@ -113,19 +114,19 @@ declare namespace tei     = "http://www.tei-c.org/ns/1.0";
     return map {
       "auth":             sm:id()/sm:id,
       "ed":               $projectID,
-      "fileLoc":          $pathToFile,
+      "fileLoc":          xs:anyURI($pathToFile),
       "filePathInfo":     $filePathInfo,
       "functions":        map { "project": $projectFunctions, "instance": $instanceFunctions }, 
       "header":           $requestHeaders,
       "id":               $id,
-      "infoFileLoc":      $filePathInfo?projectPath || '/wdbmeta.xml',
+      "infoFileLoc":      xs:anyURI($filePathInfo?projectPath || '/wdbmeta.xml'),
       "language":         $language,
       "mainEd":           doc($filePathInfo?mainProject || '/wdbmeta.xml')/meta:projectMD/@xml:id,
       "p":                $parsedParam,
-      "pathToEd":         $filePathInfo?projectPath,
+      "pathToEd":         xs:anyURI($filePathInfo?projectPath),
       "process":          $process,
-      "projectFile":      $projectFile,
-      "projectResources": $filePathInfo?mainProject || "/resources/",
+      "projectFile":      xs:anyURI($projectFile),
+      "projectResources": xs:anyURI($filePathInfo?mainProject || "/resources/"),
       "q":                $q,
       "requestUrl":       $requestUrl,
       "title":            $title,

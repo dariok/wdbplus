@@ -129,12 +129,10 @@ declare function wdb:getEdFromPath($path as xs:string, $absolute as xs:boolean) 
     return xmldb:match-collection($t)
   
   let $path := if (count($pa) = 0)
-  then
-    wdbErr:error(map{"code": "wdbErr:wdb2001", "additional": <additional><path>{$path}</path></additional>})
-  else for $p in $pa
-    order by string-length($p) descending
-    
-    return if ( doc-available($p || '/wdbmeta.xml') ) then $p else ()
+    then error(xs:QName("wdbErr:wdb2001"), "error inspecting path", map{ "path": $path })
+    else for $p in $pa
+      order by string-length($p) descending
+      return if ( doc-available($p || '/wdbmeta.xml') ) then $p else ()
   
   return if ( $absolute )
     then $path[1]

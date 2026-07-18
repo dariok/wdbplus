@@ -5,17 +5,21 @@ module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 import module namespace functx = "http://www.functx.com";
 
-declare namespace response  = "http://exist-db.org/xquery/response";
-declare namespace map       = "http://www.w3.org/2005/xpath-functions/map";
+declare namespace response = "http://exist-db.org/xquery/response";
+declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
 
 declare function wdbErr:getError ( $node as node(), $map as map(*) ) as element() {
   element { local-name($node) } {
     $node/@class,
-    parse-xml(request:get-attribute("org.exist.forward.error"))/*
+      parse-xml(request:get-attribute("org.exist.forward.error"))/*
   }
 };
 
 declare function wdbErr:error ( $data as map (*) ) as element()+ {
+  (: This map will contain the error variables created when catching an error;
+     most importantly, $data?value = $err:value should include what is handed
+     over by the third argument of fn:error#3 :)
+
   let $error := switch ( xs:string($data("code")) )
     case "wdbErr:wdb0000"
     case "wdb0000"
@@ -41,13 +45,14 @@ declare function wdbErr:error ( $data as map (*) ) as element()+ {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $statusCode := if ( exists($data?responseCode) )
-    then $data?responseCode
+  let $statusCode := if ( exists($data?value?responseCode) )
+    then $data?value?responseCode
     else if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdb0000", "wdbErr:wdb0404") )
     then 404
     else 418
 
-  let $prettyPrint := wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '')
+  let $errorMap := map:merge(($data, map:entry("user", sm:id())))
+    , $prettyPrint := wdbErr:get($errorMap, '')
   
   let $errorContent := if ( $statusCode = 404 )
     then (
@@ -57,7 +62,7 @@ declare function wdbErr:error ( $data as map (*) ) as element()+ {
     else (
       <h2>Something has gone wrong...</h2>,
       <p>{ $error }</p>,
-      <p>ID: { wdbErr:store("error", $error, $prettyPrint) }</p>,
+      <p>ID: { wdbErr:store("error", $error, $errorMap) }</p>,
       <details>
         <summary>Logged error details:</summary>
         { $prettyPrint }
@@ -68,7 +73,7 @@ declare function wdbErr:error ( $data as map (*) ) as element()+ {
     util:log("error", $error),
     util:log("info", $data),
     if ( response:exists() ) then response:set-status-code($statusCode) else (),
-    <div>{ $errorContent }</div>
+    <div class="error">{ $errorContent }</div>
   )
 };
 

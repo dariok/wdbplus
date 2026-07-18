@@ -53,22 +53,10 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
       </html>
   } catch *:wdb0200 {
     util:log("error", "project not found: " || $ed || " from request " || request:get-url() ),
-    wdbErr:error(map{
-      "code": $err:code,
-      "description": "project not found",
-      "err:description": $err:description,
-      "err:additional": $err:additional
-    })
+    error(xs:QName("wdbErr:wdb0200"), "project " || $ed || "not found")
   } catch * {
     util:log("error", "error when applying templates in function.xqm: " || $err:description),
-    wdbErr:error(map{
-      "code": $err:code,
-      "model": $model,
-      "err:value": $err:value,
-      "err:description": $err:description,
-      "err:additional": $err:additional,
-      "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
-    })
+    error($err:code, $err:description, map { "model": $model })
   }
 };
 
@@ -177,13 +165,9 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
       </header>
 };
 
-declare function wdbfp:test ( $node as node(), $model as map(*) ) {
-  wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
-};
-
 declare
   %private
-function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
+function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model as map(*) ) as element() {
   let $file := tokenize(normalize-space(request:get-uri()), '/')[last()]
     , $name := substring-before($file, '.html')
     , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)

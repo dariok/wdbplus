@@ -108,7 +108,7 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
 else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
-      <forward url="{$exist:controller}/modules/view.xql">
+      <forward url="{$exist:controller}/modules/view.xql" method="{ request:get-method() }">
         {
           for $header in $local:config//config:header
             return <set-header>{ $header/@* }</set-header>

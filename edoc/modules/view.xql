@@ -56,7 +56,8 @@ let $lookup := function($functionName as xs:string, $arity as xs:integer) {
 let $content := request:get-data()
   , $id := request:get-parameter("id", "")
 
-return if ( request:get-method() = 'GET' )
+return try {
+  if ( request:get-method() = 'GET' )
     then templates:apply($content, $lookup, (), $config)
     else if ( request:get-method() = 'HEAD' ) then
       let $requestedModified := (
@@ -75,3 +76,12 @@ return if ( request:get-method() = 'GET' )
         else
           response:set-status-code(304)
     else templates:apply($content, $lookup, (), $config)
+} catch * {
+  wdbErr:error(map{
+    "code": $err:code,
+    "desc": $err:description,
+    "value": $err:value,
+    "additional": $err:additional,
+    "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+  })
+}

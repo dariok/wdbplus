@@ -36,60 +36,49 @@ declare
     %templates:default("view", "")
     %templates:default("p", "")
 function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string ) as item()* {
-  try {
-    let $newModel := map:merge((
-          wdbm:populateModel($id, (), $view, $p, ""),
-          $model
-    ))
+  let $newModel := map:merge((
+        wdbm:populateModel($id, (), $view, $p, ""),
+        $model
+  ))
+  
+  return if ( contains($newModel?fileLoc, 'http') ) then
+    $newModel
+  else
+    let $requestedModified := (
+          request:get-attribute("if-modified"),
+          request:get-header("If-Modified-Since")
+        )[1]
+    let $isModified := if ( $requestedModified != '' )
+          then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
+          else 200
     
-    return if ( contains($newModel?fileLoc, 'http') ) then
-      $newModel
-    else
-      let $requestedModified := (
-            request:get-attribute("if-modified"),
-            request:get-header("If-Modified-Since")
-          )[1]
-      let $isModified := if ( $requestedModified != '' )
-            then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
-            else 200
-      
-      return  if ( count($newModel) = 1 and $isModified = 200 )
-        then (
-          response:set-header(
-            "Last-Modified",
-            wdbFiles:getModificationDate($newModel?filePathInfo?collectionPath, $newModel?filePathInfo?fileName)
-              => wdbFiles:ietfDate()
-          ),
-          <html>
-            {
-              attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
-              comment { " Generated in view.xqm by " || $node/@data-template },
-              templates:process($node/node(), $newModel)
-            }
-          </html>
-        )
-        else if ( $isModified = 304 ) then
-          response:set-status-code(304)
-        else
-          <html>
-            <body>
-              <div>
-                <p>An unknown error has occurred</p>
-              </div>
-            </body>
-            { util:log("error", $newModel) } 
-          </html>
-  } catch * {
-    util:log("error", $err:code || ': ' || $err:description),
-    wdbErr:error(map {
-        "code": $err:code,
-        "model": $model,
-        "err:value": $err:value,
-        "err:description": $err:description,
-        "err:additional": $err:additional,
-        "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
-    })
-  }
+    return  if ( count($newModel) = 1 and $isModified = 200 )
+      then (
+        response:set-header(
+          "Last-Modified",
+          wdbFiles:getModificationDate($newModel?filePathInfo?collectionPath, $newModel?filePathInfo?fileName)
+            => wdbFiles:ietfDate()
+        ),
+        <html>
+          {
+            attribute lang { if ( $newModel?language ) then $newModel?language else "de" },
+            comment { " Generated in view.xqm by " || $node/@data-template },
+            templates:process($node/node(), $newModel)
+          }
+        </html>
+      )
+      (: TODO: this should be unnecessary as view.xql already checks for modification time – remove here or in view.xql :)
+      else if ( $isModified = 304 ) then
+        response:set-status-code(304)
+      else
+        <html>
+          <body>
+            <div>
+              <p>An unknown error has occurred</p>
+            </div>
+          </body>
+          { util:log("error", $newModel) } 
+        </html>
 };
 
 (: ~
@@ -193,40 +182,10 @@ declare function wdbv:getHeader ( $node as node(), $model as map(*) ) as element
  :)
 declare function wdbv:getContent ( $node as node(), $model as map(*) ) {
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
-  try {
-    <main>
-      { (wdbProc:getContent($model))?content }
-      { wdbv:getLeftFooter($node, $model) }
-    </main>
-  } catch err:XPTY0004 {
-    wdbErr:error(
-      map {
-        "code": "wdbErr:wdb0002",
-        "model": $model,
-        "error": map {
-          "code": $err:code,
-          "desc": $err:description,
-          "module": $err:module,
-          "line": $err:line-number,
-          "col": $err:column-number,
-          "add": $err:additional
-        }
-      }
-    )//main
-  } catch * {
-    wdbErr:error(
-      map{
-        "code": "wdbErr:wdb1001",
-        "model": $model,
-        "error": map {
-          "code": $err:code,
-          "desc": $err:description,
-          "module": $err:module,
-          "line": $err:line-number,
-          "col": $err:column-number,
-          "add": $err:additional
-    }})
-  }
+  <main>
+    { (wdbProc:getContent($model))?content }
+    { wdbv:getLeftFooter($node, $model) }
+  </main>
 };
 
 (: TODO: replace the repetitive if (doc-avilable(a) then a else if (doc-available(b) then b else c) with a function :)
