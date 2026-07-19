@@ -196,7 +196,7 @@ declare function wdbFiles:getModificationDate ( $id as xs:string ) as xs:dateTim
  :)
 declare function wdbFiles:getModificationDate ( $collectionPath as xs:string, $fileName as xs:string ) as xs:dateTime {
   let $dateTime := xmldb:last-modified($collectionPath, $fileName)
-    , $adjusted := adjust-dateTime-to-timezone($dateTime,"-PT0H0M")
+    , $adjusted := adjust-dateTime-to-timezone($dateTime, xs:dayTimeDuration("-PT0H0M"))
     
   return xs:dateTime(format-dateTime($adjusted, "[Y]-[M01]-[D01]T[H01]:[m]:[s]Z"))
 };
