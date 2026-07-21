@@ -1,7 +1,7 @@
 (: wdb+ controller
  : based on the generic eXist-DB controller
  :
- : author: Dario Kampkaspar <dario.kampkaspar@ulb.tu-darmstadt.de>
+ : author: Dario Kampkaspar <dario.kampkaspar@tu-darmstadt.de>
  :)
 xquery version "3.1";
 
@@ -9,18 +9,17 @@ import module namespace request = "http://exist-db.org/xquery/request" at "java:
 
 declare namespace config = "https://github.com/dariok/wdbplus/config";
 declare namespace exist  = "http://exist.sourceforge.net/NS/exist";
-declare namespace meta = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
-declare variable $exist:root external;
 
 declare variable $local:isget := request:get-method() = ("GET","get");
 declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
-(: util:log("info", "Request-Path: " || $exist:path || "; Resource: " || $exist:resource || "; Controller: " || $exist:controller || "; Prefix: " || $exist:prefix || "; Root: " || $exist:root), :)
+(: util:log("info", "Request-Path: " || $exist:path || "; Resource: " || $exist:resource || "; Controller: " || $exist:controller || "; Prefix: " || $exist:prefix), :)
 (: util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " → resource: " || $exist:resource), :)
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
@@ -74,7 +73,7 @@ else if ( contains($exist:path, 'api/v2') ) then
   </dispatch>
 
 (: global index.html :)
-else if ( $exist:resource eq '' ) then
+else if ( $exist:resource = '' ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/index.html" method="get" />
@@ -102,6 +101,22 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
       <forward url="{$exist:controller}/admin/view.xql"/>
+    </error-handler>
+  </dispatch>
+(: view.html :)
+else if ( $exist:resource = "view.html" ) then
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <view>
+      <forward url="{$exist:controller}/renderers/view.xql">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </view>
+    <error-handler>
+      <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
+      <forward url="{$exist:controller}/modules/view.xql"/>
     </error-handler>
   </dispatch>
 (: other HTML :)

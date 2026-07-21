@@ -60,6 +60,7 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
   }
 };
 
+(: TODO: replace these by their equivalent in renderer-helper :)
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
   element { local-name($node) } {
     $model($key)

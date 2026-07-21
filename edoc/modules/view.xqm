@@ -37,22 +37,19 @@ declare
     %templates:default("p", "")
 function wdbv:getEE ( $node as node(), $model as map(*), $id as xs:string, $view as xs:string, $p as xs:string ) as item()* {
   let $newModel := map:merge((
-        wdbm:populateModel($id, (), $view, $p, ""),
-        $model
+    wdbm:populateModel($id, (), $view, $p, ""),
+    $model
   ))
   
-  return if ( contains($newModel?fileLoc, 'http') ) then
-    $newModel
-  else
-    let $requestedModified := (
-          request:get-attribute("if-modified"),
-          request:get-header("If-Modified-Since")
-        )[1]
-    let $isModified := if ( $requestedModified != '' )
-          then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
-          else 200
+  let $requestedModified := (
+        request:get-attribute("if-modified"),
+        request:get-header("If-Modified-Since")
+      )[1]
+  let $isModified := if ( $requestedModified != '' )
+      then wdbFiles:evaluateIfModifiedSince($id, $requestedModified)
+      else 200
     
-    return  if ( count($newModel) = 1 and $isModified = 200 )
+  return  if ( count($newModel) = 1 and $isModified = 200 )
       then (
         response:set-header(
           "Last-Modified",
