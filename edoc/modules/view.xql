@@ -23,7 +23,6 @@ import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery
 import module namespace wdbi         = "https://github.com/dariok/wdbplus/index"         at "index.xqm";
 import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"          at "search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"         at "start.xqm";
-import module namespace wdbv         = "https://github.com/dariok/wdbplus/mView"         at "view.xqm";
 
 declare option output:method "html5";
 declare option output:media-type "text/html";
