@@ -163,6 +163,7 @@ declare function wdb:getProjectFiles ( $node as node(), $model as map(*), $type 
     else $files[self::*:script]
 };
 
+(: TODO these will probably move to /renderers once the transition is completed :)
 (:~ 
  : Check whether the function given in $name with arity $arity has been loaded into $model?functions
  : 

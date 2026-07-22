@@ -12,13 +12,13 @@ module namespace wdbm = "https://github.com/dariok/wdbplus/model";
 
 import module namespace config   = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"    at "app.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors" at "error.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"  at "wdb-files.xqm";
 
 declare namespace meta    = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace request = "http://exist-db.org/xquery/request";
 declare namespace sm      = "http://exist-db.org/xquery/securitymanager";
 declare namespace tei     = "http://www.tei-c.org/ns/1.0";
+declare namespace wdbErr  = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : Populate the model with the most important global settings when displaying a file
