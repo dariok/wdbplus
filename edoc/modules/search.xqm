@@ -6,9 +6,7 @@ declare namespace response = "http://exist-db.org/xquery/response";
 declare namespace tei      = "http://www.tei-c.org/ns/1.0";
 declare namespace meta     = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace config = "https://github.com/dariok/wdbplus/config"       at "wdb-config.xqm";
-import module namespace wdbRe  = "https://github.com/dariok/wdbplus/RestEntities" at "../rest/rest-entity.xql";
-import module namespace wdbRs  = "https://github.com/dariok/wdbplus/RestSearch"   at "../rest/rest-search.xql";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 
 declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as element()+ {
   let $options := wdbSearch:selectEd($model)
