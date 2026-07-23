@@ -257,10 +257,19 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
 };
 declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:string, $target as xs:string, $view as xs:string? ) as element(process)? {
   let $metaFile := doc($infoFileLoc)
-    , $process := if ( $view != '' )
-        then $metaFile//meta:process[@target = $target and @view = $view]
-        else $metaFile//meta:process[@target = $target and not(@view)]
-    , $base := substring-before(base-uri($metaFile), 'wdbmeta.xml')
+    , $function := function( $prev as map(*), $current as xs:string ) {
+          let $next := $prev?path || '/' || $current
+            , $meta := doc($next||'/wdbmeta.xml')
+            , $proc := if ( empty($view) or not(normalize-space($view)) )
+                    then $meta//meta:process[meta:command and @target=$target and not(@view)]
+                    else $meta//meta:process[meta:command and @target=$target and @view=$view]
+            return if ( exists($proc) )
+                then map{ "path": $next, "process": $proc, "at": $next }
+                else map:put($prev, "path", $next)
+        }
+    , $path := $infoFileLoc => substring-before("/wdbmeta.xml") => substring-after('edoc/') => tokenize('/')
+    , $proc := fold-left($path, map { "path": "/db/apps/edoc" }, $function)
+    , $process := $proc?process
   
   let $sel := if ( $process/meta:command )
     then
@@ -279,23 +288,15 @@ declare function wdb:getXslFromWdbMeta ( $infoFileLoc as xs:string, $id as xs:st
           (: if no selection method is given, the command is considered the default :)
           then $c
         else () (: neither refs nor regex match and no default given :)
-    (: if no command is defined, traverse up the project ancestors :)
-    else if ( $metaFile/meta:projectMD/meta:struct/*[1][self::meta:import] ) then
-      let $path := if (starts-with($infoFileLoc, '/'))
-        then '/' || string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
-        else string-join(tokenize(normalize-space($infoFileLoc), '/')[position() lt last()], '/')
-        , $parent := $metaFile/meta:projectMD/meta:struct/meta:import
-      return
-        wdb:getXslFromWdbMeta ($path || '/' || $parent/@path, $id, $target, $view)
     else ()
   
   (: As we check from most specific to default, the first command in the sequence is the right one.
      We add the base-uri as attribute to the command so the path can later be evaluated :)
   return if ( $sel[1] instance of element(meta:command) )
     then <process target="{ $target }" view="{ $view }" xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-            <command base="{ $base }">{ 
+            <command base="{ $proc?at }">{
               for $step in $sel[1]/*
-                return <step type="{ $step/@type }">{ $base || normalize-space($step) }</step>
+                return <step type="{ $step/@type }">{ $proc?at || '/' || normalize-space($step) }</step>
             }</command>
          </process>
     else if ( $sel[1] instance of element(meta:process) )
