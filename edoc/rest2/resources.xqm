@@ -162,21 +162,25 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
     r2:response(404, "text/plain", "No resource found by this ID", $r2:allOrigins)
   else
     let $content := r2r:getStoredContent($resource?path)
-      , $lastModified := wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName))
-      , $mimeType := r2r:getMimeType($resource?path, $content)
-      , $modified := request:get-header("If-Modified-Since")
-      , $status := if ( exists($modified) and $modified != "" )
-                      then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
-                      else 200
     
     return if ( empty($content) ) then
       r2:response(204, "", "", $r2:allOrigins)
     else
-      router:response(
-        $status,
-        $mimeType,
-        if ( $method = "GET" ) then $content else (),
-        map:merge(($r2:allOrigins, map { "Last-Modified": $lastModified }))
+      let $lastModified := wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName))
+        , $mimeType := r2r:getMimeType($resource?path, $content)
+        , $modified := request:get-header("If-Modified-Since")
+        , $status := if ( exists($modified) and $modified != "" )
+                        then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
+                        else 200
+
+      return (
+        util:log("info", $lastModified),
+        router:response(
+          $status,
+          $mimeType,
+          if ( $method = "GET" ) then $content else (),
+          map:merge(($r2:allOrigins, map { "Last-Modified": $lastModified }))
+        )
       )
 };
 
