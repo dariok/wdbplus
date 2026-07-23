@@ -6,6 +6,16 @@ This framework still lacks a good name. If you have an idea, please let me know!
 
 ## Incompatible changes
 
+### 26Q3
+
+- In preparation for V4.0, we introduced separate renderers for view.html; this means that `view.xqm` was moved out of
+  `modules` and into `renderers`. There are also a set of new helper functions which will replace some of those that
+  wer previously present in e.g. `function.xqm`. If you use templating functions, check the renderers for their new
+  counterparts.
+- A new version of the REST API hast been introduced including a SwaggerUI frontend for it openAPI description. The old
+  API that was based on RestXQ has been removed. You are still able to use it (the configuration still includes the
+  triggers) and get it from `development` before 26Q3.
+
 ### 25Q3
 
 Release 25Q3 dropped support for more unsued functions:
