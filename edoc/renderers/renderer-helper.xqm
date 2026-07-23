@@ -35,26 +35,25 @@ declare function wdbrh:evalForAttribute ( $node as node(), $model as map(*), $at
   }
 };
 
-declare function wdbrh:getProjectSpecifics ( $node as node(), $model as map(*), $name as xs:string ) as element()* {
-  element { node-name($node) } {
-    $node/@*[not(starts-with(local-name(), 'data-template'))],
-
-    if ( doc-available($config:data || "/resources/html/" || $name || ".html") ) then (
-        comment { $config:data || "/resources/html/" || $name || ".html" },
-        templates:apply(doc($config:data || "/resources/html/" || $name || ".html"),  $model?configuration?fn-resolver, $model)
-      )
-    else if ( doc-available($model?projectResources || "/html/" || $name || ".html") ) then (
-        comment { $model?projectResources || "/html/" || $name || ".html" },
-        templates:apply(doc($model?projectResources || "/html/" || $name || ".html"), $model?configuration?fn-resolver, $model)
-      )
-    else if ( wdb:findProjectFunction($model, "wdbPF:get"||$name, 1) ) then (
-        comment { "wdbPF:get"||$name },
-        (wdb:getProjectFunction($model, "wdbPF:get"||$name, 1))($model)
-      )
-    else comment {
-      "no " || $name || " in " || $config:data || "/resources/html/" || $name || ".html, " ||
-        $model?projectResources || "/html/" || $name || ".html, or " || "wdbPF:get"||$name
+declare function wdbrh:getProjectSpecifics ( $node as node(), $model as map(*), $name as xs:string ) as element()? {
+  if ( doc-available($config:data || "/resources/html/" || $name || ".html") ) then
+    element { node-name($node) } {
+      $node/@*[not(starts-with(local-name(), 'data-template'))],
+      comment { $config:data || "/resources/html/" || $name || ".html" },
+      templates:apply(doc($config:data || "/resources/html/" || $name || ".html"),  $model?configuration?fn-resolver, $model)
     }
-  }
+  else if ( doc-available($model?projectResources || "/html/" || $name || ".html") ) then
+    element { node-name($node) } {
+      $node/@*[not(starts-with(local-name(), 'data-template'))],
+      comment { $model?projectResources || "/html/" || $name || ".html" },
+      templates:apply(doc($model?projectResources || "/html/" || $name || ".html"), $model?configuration?fn-resolver, $model)
+    }
+  else if ( wdb:findProjectFunction($model, "wdbPF:get"||$name, 1) ) then
+    element { node-name($node) } {
+      $node/@*[not(starts-with(local-name(), 'data-template'))],
+      comment { "wdbPF:get"||$name },
+      (wdb:getProjectFunction($model, "wdbPF:get"||$name, 1))($model)
+    }
+  else util:log("debug", ``[no `{$name}` in `{$config:data}`/resources/html/`{$name}`.html, `{$model?projectResources}`/html/`{$name}`.html, or wdbPF:get`{$name}`]``)
 };
 
