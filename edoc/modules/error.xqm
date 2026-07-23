@@ -11,7 +11,11 @@ declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
 declare function wdbErr:getError ( $node as node(), $map as map(*) ) as element() {
   element { local-name($node) } {
     $node/@class,
-      parse-xml(request:get-attribute("org.exist.forward.error"))/*
+      try {
+        parse-xml(request:get-attribute("org.exist.forward.error"))/*
+      } catch * {
+        request:get-attribute("org.exist.forward.error")
+      }
   }
 };
 
@@ -45,7 +49,7 @@ declare function wdbErr:error ( $data as map (*) ) as element()+ {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $statusCode := if ( exists($data?value?responseCode) )
+  let $statusCode := if ( $data?value instance of map(*) and exists($data?value?responseCode) )
     then $data?value?responseCode
     else if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdb0000", "wdbErr:wdb0404") )
     then 404
