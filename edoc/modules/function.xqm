@@ -27,7 +27,7 @@ declare
     %templates:default("p", "")
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed as xs:string?, $p as xs:string,
     $q as xs:string ) as item()* {
-  try {
+  (: try { :)
     let $newModel := if ( request:exists() and  contains(request:get-url(), 'addins') ) then
           map {
             "pathToEd": "/db/apps/edoc/addins/" || substring-before(substring-after(request:get-uri(), 'addins/'), '/') || '/'
@@ -51,13 +51,13 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
                 templates:apply($h, $wdbfp:lookup, $newModel)
         }
       </html>
-  } catch *:wdb0200 {
+  (: } catch *:wdb0200 {
     util:log("error", "project not found: " || $ed || " from request " || request:get-url() ),
-    error(xs:QName("wdbErr:wdb0200"), "project " || $ed || "not found")
+    error(xs:QName("wdbErr:wdb0200"), "project " || $ed || " not found")
   } catch * {
     util:log("error", "error when applying templates in function.xqm: " || $err:description),
     error($err:code, $err:description, map { "model": $model })
-  }
+  } :)
 };
 
 (: TODO: replace these by their equivalent in renderer-helper :)
@@ -168,7 +168,7 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
 
 declare
   %private
-function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model as map(*) ) as element() {
+function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model as map(*) ) as element()* {
   let $file := tokenize(normalize-space(request:get-uri()), '/')[last()]
     , $name := substring-before($file, '.html')
     , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)
