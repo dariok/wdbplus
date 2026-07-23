@@ -8,6 +8,6 @@
     <type>application</type>
     <target>edoc</target>
     <prepare>pre-install.xql</prepare>
-    <finish>post-install.xql</finish>
+    <!-- <finish>post-install.xql</finish> -->
     <permissions user="wdb" group="wdbusers" mode="rw-rw-r--"/>
 </meta>
