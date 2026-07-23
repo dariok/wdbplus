@@ -47,7 +47,7 @@ declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
             map {
               "meta": $meta,
               "entry": $entry,
-              "path": $resource?collectionPath || "/" || $resource?fileName
+              "path": xs:anyURI($resource?collectionPath || "/" || $resource?fileName)
             }
           ))
 };
@@ -142,7 +142,7 @@ declare %private function r2r:resolveProcess ( $resource as map(*), $view as xs:
       if ( $view = 'default' ) then () else $view (: process in wdbmeta may not have @view, which means it is default :)
     )
   } catch * {
-    ()
+    util:log("error", $err:description)
   }
 };
 
@@ -269,9 +269,9 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
     let $type := if ( exists($request?headers?Accept) )
             then $request?headers?Accept
             else "text/html"
-        , $process := try {
-              r2r:resolveProcess($resource, $request?parameters?view, $type)
-            } catch wdbErr:wdb0002 { () }
+      , $process := try {
+            r2r:resolveProcess($resource, $request?parameters?view, $type)
+          } catch wdbErr:wdb0002 { () }
 
     let $modified := request:get-header("If-Modified-Since")
       , $status := if ( exists($modified) and $modified != "" )
@@ -289,7 +289,7 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
               "view": $request?parameters?view,
               "fileLoc": $resource?path,
               "pathToEd": $resource?projectPath,
-              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()]
+              "ed": $resource?meta/meta:projectMD/@xml:id
           })
         , $body := $result?content
         , $namespace := if ( $body instance of document-node() or $body instance of element() )
