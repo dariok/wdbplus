@@ -113,21 +113,7 @@ declare %templates:wrap function wdbv:getHeader ( $node as node(), $model as map
 (:~
  : return the body
  :)
-declare %templates:wrap function wdbv:getContent ( $node as node(), $model as map(*) ) as element()+ {
+declare function wdbv:getContent ( $node as node(), $model as map(*) ) as element()+ {
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
-  (wdbProc:getContent($model))?content,
-  (: footer for main :)
-  if (doc-available($model?projectResources || "/html/footer.html")) then (
-      comment { $model?projectResources || "/html/footer.html" },
-      templates:apply(doc($model?projectResources || "/html/footer.html"), $model?configuration?fn-resolver, $model)
-    )
-  else if (wdb:findProjectFunction($model, "wdbPF:getProjectFooter", 1)) then (
-      comment { "wdbPF:getProjectFooter" },
-      (wdb:getProjectFunction($model, "wdbPF:getProjectFooter", 1))($model)
-    )
-  else if (doc-available($config:edocBaseDB || "/resources/html/footer.html")) then (
-      comment { $config:edocBaseDB || "/resources/html/footer.html" },
-      templates:apply(doc($config:edocBaseDB || "/resources/html/footer.html"), $model?configuration?fn-resolver, $model)
-    )
-  else ()
+  (wdbProc:getContent($model))?content
 };

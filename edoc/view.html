@@ -6,7 +6,10 @@
    <body>
       <div class="loadingModal"></div>
       <header data-template="wdbv:getHeader"></header>
-      <main data-template="wdbv:getContent"></main>
+      <main>
+         <section data-template="wdbv:getContent" />
+         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="LeftFooter"></footer>
+      </main>
       <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
          <ul style="display: none;">
             <li><a href="#fac">Faksimile</a></li>
