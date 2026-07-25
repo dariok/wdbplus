@@ -64,3 +64,11 @@ declare function wdbrh:getBlob ( $node as node(), $model as map(*), $name as xs:
     then <script src="{ $path }"></script>
     else <link rel="stylesheet" type="text/css" href="{ $path }" />
 };
+
+declare function wdbrh:findProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) {
+  wdb:findProjectFunction($model, $name, $arity)
+};
+
+declare function wdbrh:getProjectFunction ( $model as map(*), $name as xs:string, $arity as xs:integer ) as function(*)? {
+  wdb:getProjectFunction($model, $name, $arity)
+};

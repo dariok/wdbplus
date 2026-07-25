@@ -13,7 +13,6 @@ module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"             at "../modules/app.xqm";
 import module namespace wdbProc   = "https://github.com/dariok/wdbplus/Process"         at "../modules/wdb-process.xqm";
 import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
 
@@ -85,34 +84,34 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
 declare %templates:wrap function wdbv:getHeader ( $node as node(), $model as map(*) ) as element()+ {
   if ( doc-available($model?projectResources || '/html/header.html') )
     then templates:apply(doc($model?projectResources || '/html/header.html')/header/*, $model?configuration?fn-resolver, $model)
-  else if ( wdb:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
-    (wdb:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
+  else if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
+    (wdbrh:getProjectFunction($model, "wdbPF:getHeader", 1))($model)
   else (
     <div class="headerSide" role="navigation">{
-      if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
-        (wdb:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
+      if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeaderLeft', 1) ) then
+        (wdbrh:getProjectFunction($model, "wdbPF:getHeaderLeft", 1))($model)
       else if ( doc-available($config:data || "/resources/html/headerLeft.html") ) then
         templates:apply(doc($config:data || "/resources/html/headerLeft.html"), $model?configuration?fn-resolver, $model)/*
       else <p />
     }</div>,
     <div class="headerCentre">{
-      if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
-        (wdb:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
+      if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeaderCentre', 1) ) then
+        (wdbrh:getProjectFunction($model, "wdbPF:getHeaderCentre", 1))($model)
       else if ( doc-available($config:data || "/resources/html/headerCentre.html") ) then
         templates:apply(doc($config:data || "/resources/html/headerCentre.html"), $model?configuration?fn-resolver, $model)/*
       else
         <h1>{$model("title")}</h1>
     }</div>,
     <div class="headerMenu" role="navigation">{(
-      if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
-        (wdb:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
+      if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeaderMenu', 1) ) then
+        (wdbrh:getProjectFunction($model, "wdbPF:getHeaderMenu", 1))($model)
       else if ( doc-available($config:data || "/resources/html/headerMenu.html") ) then
         templates:apply(doc($config:data || "/resources/html/headerMenu.html"), $model?configuration?fn-resolver, $model)/*
       else <button type="button" class="dispOpts respNav" tabindex="0">≡</button>
     )}</div>,
     <div class="headerSide" role="navigation">{
-      if ( wdb:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
-        (wdb:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
+      if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeaderRight', 1) ) then
+        (wdbrh:getProjectFunction($model, "wdbPF:getHeaderRight", 1))($model)
       else if ( doc-available($config:data || "/resources/html/headerRight.html") ) then
         templates:apply(doc($config:data || "/resources/html/headerRight.html"), $model?configuration?fn-resolver, $model)/*
       else <p />
