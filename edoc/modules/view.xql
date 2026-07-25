@@ -21,7 +21,6 @@ import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"
 import module namespace wdbfp        = "https://github.com/dariok/wdbplus/functionpages" at "function.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"        at "pquery.xqm";
 import module namespace wdbi         = "https://github.com/dariok/wdbplus/index"         at "index.xqm";
-import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"          at "search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"         at "start.xqm";
 
 declare option output:method "html5";

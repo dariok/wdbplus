@@ -9,14 +9,16 @@ declare namespace meta     = "https://github.com/dariok/wdbplus/wdbmeta";
 import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
 
 declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as element()+ {
-  let $options := wdbSearch:selectEd($model)
+  let $md := doc($config:data || '/wdbmeta.xml')
+    , $options := wdbSearch:selectEd($model?mainEd, $md/*)
   
   return (
     <div>
       <h1>Volltextsuche</h1>
       <form id="fts">
-        <label for="ed">diesen Bestand durchsuchen: </label>
+        <label>diesen Bestand durchsuchen: </label>
         { $options }
+        <br />
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
         <input type="hidden" name="p">
           { attribute value {'{"job": "fts", "start": "1"}'} }
@@ -30,6 +32,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
       <h1>Registersuche</h1>
       <form action="search.html" id="searchEntities">
         { $options }
+        <br />
         { wdbSearch:listEnt("search") }
         <label for="q">Suchbegriff(e) / RegEx: </label><input type="text" name="q" />
         <input type="submit" />
@@ -40,6 +43,7 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
       <h1>Registerliste</h1>
       <form action="search.html" id="listEntities">
         { $options }
+        <br />
         { wdbSearch:listEnt("entries") }
         <select name="q">{
           for $c in (1 to 26)
@@ -52,26 +56,18 @@ declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as elem
   )
 };
 
-declare
-  %private
-function wdbSearch:selectEd ( $model as map(*) ) as element()+ {(
-  <select name="ed">{
-    let $md := doc($config:data || '/wdbmeta.xml')
-
-    return (
-      <option value="{$md/meta:projectMD/@xml:id}">global</option>,
-      for $file in $md//meta:ptr
-        let $id := $file/@xml:id
-
-        return
-          <option value="{$id}">
-            { if ( $id = $model?mainEd ) then attribute selected {"selected"} else () }
-            { normalize-space($md//meta:struct[@file = $id]/@label) }
-          </option>
-    )
-  }</select>,
-  <br />
-)};
+declare %private function wdbSearch:selectEd ( $mainEd as xs:string, $md as element(meta:projectMD) ) as element(select) {
+  <select name="ed">
+    <option value="data">global</option>
+    {
+      for $file in $md//meta:ptr return
+        <option value="{ $file/@xml:id }">
+          { if ( $file/@xml:id = $mainEd ) then attribute selected { "selected" } else () }
+          { normalize-space($md//meta:struct[@file = $file/@xml:id]/@label) }
+        </option>
+    }
+  </select>
+};
 
 declare
   %private

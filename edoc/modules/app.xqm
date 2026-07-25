@@ -389,6 +389,7 @@ declare function wdb:getContentTypeFromExt ( $extension as xs:string, $namespace
       return 'application/octet-stream'
 };
 
+(: TODO this can be removed once everything has been moved to the renderers :)
 declare function wdb:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
   let $path := $config:configFile//config:source[@name = $name]/@path
   

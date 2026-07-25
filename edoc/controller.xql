@@ -119,6 +119,22 @@ else if ( $exist:resource = "view.html" ) then
       <forward url="{$exist:controller}/modules/view.xql"/>
     </error-handler>
   </dispatch>
+(: search.html :)
+else if ( $exist:resource = "search.html" ) then
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <view>
+      <forward url="{$exist:controller}/renderers/function.xql" method="{request:get-method()}">
+        {
+          for $header in $local:config//config:header
+            return <set-header>{ $header/@* }</set-header>
+        }
+      </forward>
+    </view>
+    <error-handler>
+      <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
+      <forward url="{$exist:controller}/modules/view.xql"/>
+    </error-handler>
+  </dispatch>
 (: other HTML :)
 else if ( ends-with($exist:resource, ".html") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

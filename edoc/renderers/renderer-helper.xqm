@@ -57,3 +57,10 @@ declare function wdbrh:getProjectSpecifics ( $node as node(), $model as map(*), 
   else util:log("debug", ``[no `{$name}` in `{$config:data}`/resources/html/`{$name}`.html, `{$model?projectResources}`/html/`{$name}`.html, or wdbPF:get`{$name}`]``)
 };
 
+declare function wdbrh:getBlob ( $node as node(), $model as map(*), $name as xs:string ) {
+  let $path := $config:configFile//config:source[@name = $name]/@path
+  
+  return if ( ends-with($path, 'js') )
+    then <script src="{ $path }"></script>
+    else <link rel="stylesheet" type="text/css" href="{ $path }" />
+};

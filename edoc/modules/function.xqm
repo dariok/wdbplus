@@ -14,7 +14,6 @@ import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors
 import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"       at "wdb-files.xqm";
 import module namespace wdbm         = "https://github.com/dariok/wdbplus/model"       at "model.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"      at "pquery.xqm";
-import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "start.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
