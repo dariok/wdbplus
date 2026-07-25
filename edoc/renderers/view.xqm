@@ -11,10 +11,11 @@ xquery version "3.1";
 
 module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
 
-import module namespace config    = "https://github.com/dariok/wdbplus/config"  at "../modules/wdb-config.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
-import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"     at "../modules/app.xqm";
-import module namespace wdbProc   = "https://github.com/dariok/wdbplus/Process" at "../modules/wdb-process.xqm";
+import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"             at "../modules/app.xqm";
+import module namespace wdbProc   = "https://github.com/dariok/wdbplus/Process"         at "../modules/wdb-process.xqm";
+import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
 
 (: ~
  : Create the head for HTML files served via the templating system
@@ -30,31 +31,40 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
     { $config:restMetaElement }
     <meta name="process" content="{ $model?process }" />
     <title>{ $model("title") } – { normalize-space($config:configFile//config:short) }</title>
-
+    <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
     {
-      if ( wdb:findProjectFunction($model, "wdbPF:overrideCssJs", 1) ) then
-        (wdb:getProjectFunction($model, "wdbPF:overrideCssJs", 1))($model)
-      else (
-        <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />,
-        if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
-          then <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
-          else (),
-        <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />,
-        if ( util:binary-doc-available($config:data || "/resources/css/view.css") )
-          then <link rel="stylesheet" type="text/css" href="$global/css/view.css" />
-          else (),
-        wdb:getBlob($node, $model, 'jquery-ui-css'),
-        wdb:getProjectFiles($node, $model, 'css'),
-        wdb:getBlob($node, $model, 'jquery'),
-        wdb:getBlob($node, $model, 'jquery-ui-js'),
-        <script src="$shared/js/js.cookie.js"></script>,
-        <script src="$shared/js/legal.js"></script>,
-        <script src="$shared/js/function.js"></script>,
-        if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
-          then <script src="$global/js/function.js"></script>
-          else (),
-        wdb:getProjectFiles($node, $model, 'js')
-      )
+      if ( util:binary-doc-available($config:data || "/resources/css/wdb.css") )
+        then <link rel="stylesheet" type="text/css" href="$global/css/wdb.css" />
+        else ()
+    }
+    <link rel="stylesheet" type="text/css" href="$shared/css/view.css" />
+    {
+      if ( util:binary-doc-available($config:data || "/resources/css/view.css") )
+        then <link rel="stylesheet" type="text/css" href="$global/css/view.css" />
+        else ()
+    }
+    { wdbrh:getBlob($node, $model, 'jquery-ui-css') }
+    { if ( util:binary-doc-available($model?projectResources || 'css/project.css') )
+        then <link rel="stylesheet" type="text/css"
+          href="{ substring-after($model?projectResources, $config:edocBaseDB||'/')}css/project.css" />
+        else ()
+    }
+    {
+      wdbrh:getBlob($node, $model, 'jquery'),
+      wdbrh:getBlob($node, $model, 'jquery-ui-js')
+    }
+    <script src="$shared/js/js.cookie.js"></script>
+    <script src="$shared/js/legal.js"></script>
+    <!-- this should be `view.js` in both instances; cf. https://github.com/dariok/wdbplus/issues/504 -->
+    <script src="$shared/js/function.js"></script>
+    {
+      if ( util:binary-doc-available($config:data || "/resources/js/function.js") )
+        then <script src="$global/js/function.js"></script>
+        else ()
+    }
+    { if ( util:binary-doc-available($model?projectResources || 'js/project.js') )
+        then <script src="{ substring-after($model?projectResources, $config:edocBaseDB||'/')}js/project.js" />
+        else ()
     }
   </head>
 };

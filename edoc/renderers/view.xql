@@ -12,7 +12,8 @@ import module namespace wdbm      = "https://github.com/dariok/wdbplus/model"   
 import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
 import module namespace wdbv      = "https://github.com/dariok/wdbplus/mView"           at "view.xqm";
 
-declare option output:method "html5";
+declare option output:method "html";
+declare option output:version "5.0";
 declare option output:media-type "text/html";
 
 try {
@@ -35,7 +36,7 @@ try {
         response:set-status-code(304)
   else
     let $config := map {
-            $templates:CONFIG_APP_ROOT: "/db/" || substring-after(system:get-module-load-path(), "/db/") => substring-before("modules"),
+            $templates:CONFIG_APP_ROOT: "/db/apps/edoc",
             $templates:CONFIG_STOP_ON_ERROR: true(),
             $templates:CONFIG_FILTER_ATTRIBUTES: true()
           }
