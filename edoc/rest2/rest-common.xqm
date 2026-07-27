@@ -124,60 +124,6 @@ declare function r2:sanitiseFilename ( $filename as xs:string ) as xs:string {
             => replace('ü', 'ue') => replace('Ü', 'Ue') => replace('ß', 'ss')
 };
 
-(:~
- : Function to create a new XML resource or update an existing XML, used for POST and PUT requests.
- : XML files are always entered into a wdbmeta file
- :)
-declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
-  (: functions in r2p parse the XML to check for valid data type and ID, and thus pass on a parsed XML.
-     all checks should have been carried out in r2p and r2f functions; hence, we don’t catch :)
-  let $namespace := namespace-uri($request?body?xml/*[1])
-    , $extension := tokenize($request?body?file?name, '\.')[last()]
-    , $tryType := wdb:getContentTypeFromExt($extension, $namespace)
-    , $mimeType := if ( $tryType != 'application/octet-stream' )
-        then $tryType
-        else if ( exists($request?body?file?type) )
-        then $request?body?file?type
-        else error()
-    
-    , $meta := doc($request?project?collectionPath || "/wdbmeta.xml")
-      (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
-    , $existing := $meta//id($request?parameters?id)
-    
-    , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
-    , $fileNameBase := if ( contains($request?body?file?name, '/') )
-        then substring-after($request?body?file?name, '/')
-        else $request?body?file?name
-    , $targetPath := $fullTargetPath => substring-before($fileNameBase)
-    , $relPath := $targetPath => substring-after($request?project?collectionPath)
-    , $fileNameMod := r2:sanitiseFilename($fileNameBase)
-    
-  let $store := (
-        if ( not(xmldb:collection-available($targetPath)) )
-          then (
-            xmldb:create-collection($request?project?collectionPath, $relPath),
-            sm:chown(xs:anyURI($targetPath), "wdb"),
-            sm:chgrp(xs:anyURI($targetPath), "wdbusers")
-          )
-          else (),
-        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType, $existing),
-        r2:enterMetaForXml(map{
-          "collectionPath": $request?project?collectionPath,
-          "targetPath": $relPath,
-          "filename": $fileNameMod,
-          "hash": $request?body?hash,
-          "id": $request?parameters?id,
-          "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
-          "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
-        })
-      )
-      (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
-
-    , $status := if ( exists($existing) ) then 204 else 201
-
-  return router:response($status, $mimeType, $store, $r2:allOrigins)
-};
-
 declare function r2:store ( $collection as xs:string, $resource-name as xs:string, $contents as item(),
                             $mime-type as xs:string, $existing as element(meta:file)? ) as xs:string {
   (: all checks should have been carried out by the higher API functions in r2p and r2f.
@@ -321,8 +267,8 @@ declare function r2:parseUpload ( $request as map(*) ) as map(*)? {
     }
 };
 
-declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*), $id as xs:string ) as map(*) {
-  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
+declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*), $ed as xs:string, $id as xs:string ) as map(*) {
+  let $project := wdbFiles:getFullPath($ed) 
     , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
 
   return if ( $project instance of xs:QName ) then
@@ -337,15 +283,15 @@ declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*),
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
   else if ( exists($parsedUpload?xml/*[1]/@xml:id) and $parsedUpload?xml/*[1]/@xml:id != $request?parameters?id ) then
     r2:response(422, 'text/plain', 'ID in the XML content (' || $parsedUpload?xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)
+  else if ( $meta//meta:file[@path = $parsedUpload?relativePath
             and @xml:id = $request?parameters?id
             and @uuid = $parsedUpload?hash]
           ) then
-    r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
+    r2:response(204, 'text/plain', ``[`{$parsedUpload?relativePath}`: `{$request?parameters?id}`]``, $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $parsedUpload?relatviePath and @xml:id != $request?parameters?id] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $parsedUpload?relativePath || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
+  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $parsedUpload?relativePath] ) then
+    r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?relativePath, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $parsedUpload?hash] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $parsedUpload?hash || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $parsedUpload?hash]/@path, $r2:allOrigins)
   else if ( $meta//id($request?parameters?id)[self::meta:struct] ) then
@@ -360,13 +306,67 @@ declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*),
           )),
         "body": map:merge((
             $request?body,
-            map:entry("xml", $parsedUpload?xml),
-            map:entry("hash", $parsedUpload?hash)
+            $parsedUpload
           )),
         "user": $request?user,
         "project": $project
       }
     )
+};
+
+(:~
+ : Function to create a new XML resource or update an existing XML, used for POST and PUT requests.
+ : XML files are always entered into a wdbmeta file
+ :)
+declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
+  (: functions in r2p parse the XML to check for valid data type and ID, and thus pass on a parsed XML.
+     all checks should have been carried out in r2p and r2f functions; hence, we don’t catch :)
+  let $namespace := namespace-uri($request?body?xml/*[1])
+    , $extension := tokenize($request?body?file?name, '\.')[last()]
+    , $tryType := wdb:getContentTypeFromExt($extension, $namespace)
+    , $mimeType := if ( $tryType != 'application/octet-stream' )
+        then $tryType
+        else if ( exists($request?body?file?type) )
+        then $request?body?file?type
+        else error()
+    
+    , $meta := doc($request?project?collectionPath || "/wdbmeta.xml")
+      (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
+    , $existing := $meta//id($request?parameters?id)
+    
+    , $fullTargetPath := $request?project?projectPath || $request?body?relativePath
+    , $t := util:log("Info", $fullTargetPath)
+    , $fileNameBase := if ( contains($request?body?relativePath, '/') )
+        then substring-after($request?body?relativePath, '/')
+        else $request?body?relativePath
+    , $targetPath := $fullTargetPath => substring-before($fileNameBase)
+    , $relPath := $targetPath => substring-after($request?project?collectionPath)
+    , $fileNameMod := $request?body?sanitisedFilename
+
+  let $store := (
+        if ( not(xmldb:collection-available($targetPath)) )
+          then (
+            xmldb:create-collection($request?project?collectionPath, $relPath),
+            sm:chown(xs:anyURI($targetPath), "wdb"),
+            sm:chgrp(xs:anyURI($targetPath), "wdbusers")
+          )
+          else (),
+        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType, $existing),
+        r2:enterMetaForXml(map{
+          "collectionPath": $request?project?collectionPath,
+          "targetPath": $relPath,
+          "filename": $fileNameMod,
+          "hash": $request?body?hash,
+          "id": $request?parameters?id,
+          "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
+          "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
+        })
+      )
+      (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
+
+    , $status := if ( exists($existing) ) then 204 else 201
+
+  return router:response($status, $mimeType, $store, $r2:allOrigins)
 };
 
 declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item()* {

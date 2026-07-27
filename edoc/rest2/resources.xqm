@@ -73,9 +73,7 @@ declare %private function r2r:getStoredContent ( $path as xs:string ) as item()?
 };
 
 declare %private function r2r:requireWritableResource ( $request as map(*) ) as map(*) {
-  let $resource := try {
-          r2r:getResourceInfo($request?parameters?id)
-        } catch * { () }
+  let $resource := r2r:getResourceInfo($request?parameters?id)
   
   return
     if ( not(exists($request?user)) or $request?user?fullName = "guest" ) then
@@ -174,7 +172,6 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
                         else 200
 
       return (
-        util:log("info", $lastModified),
         router:response(
           $status,
           $mimeType,
@@ -186,13 +183,16 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
 
 declare function r2r:putResource ( $request as map(*) ) as map(*) {
   try {
-    if ( empty(r2r:requireWritableResource($request)) )
+    let $resourceInfo := r2r:requireWritableResource($request)
+      
+    return if ( empty($resourceInfo) )
       then error(xs:QName("wdbErr:wdb9204"), "strange error")
-      else r2:checkAndStore($request, r2:parseUpload($request), $request?parameters?id)
+      else r2:checkAndStore($request, r2:parseUpload($request), string($resourceInfo?meta//meta:projectMD/@xml:id), $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
   } catch * {
-    r2:response($err:additional?responseCode, 'text/plain', $err:description, $r2:allOrigins)
+    util:log("error", $err:code || ': ' || $err:module || '@' || $err:line-number),
+    r2:response(($err:additional?responseCode, 400)[1], 'text/plain', $err:description, $r2:allOrigins)
   }
 };
 

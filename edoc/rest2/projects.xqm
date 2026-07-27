@@ -320,7 +320,7 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
     (: parseUpload() will throw errors if anything goes wrong so we will have a parsed XML here :)
     let $id := (($parsed?xml)/*[1]/@xml:id, '_' || util:uuid())[1]
 
-    return r2:checkAndStore($request, $parsed, $id)
+    return r2:checkAndStore($request, $parsed, $request?parameters?ed, $id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
   }
@@ -337,7 +337,7 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   try {
-    r2:checkAndStore($request, r2:parseUpload($request), $request?parameters?id)
+    r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
   }
