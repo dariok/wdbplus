@@ -66,7 +66,7 @@ const wdbAdmin = {
       let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
         , val = $('select').val()
         , targetCollection = val === '' ? '' : (String(val) + "/")
-        , targetPath = new URL(targetCollection + filePath, 'xmldb:/' + $('pre').text()).toString();
+        , targetPath = new URL(targetCollection + filePath.replaceAll(' ', '_'), 'xmldb:/' + $('pre').text()).toString();
 
       $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath.substring(7) + "</td><td></td>");
     }
@@ -161,7 +161,8 @@ const wdbAdmin = {
     let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
       , val = $('select').val()
       , targetCollection = val === '' ? '' : (String(val) + "/")
-      , targetPath = new URL(targetCollection + filePath, 'xmldb://').toString().substring(9);
+      , targetPath = new URL(targetCollection + filePath.replaceAll(' ', '_'), 'xmldb://')
+            .toString().substring(9);
     
         let formdata = new FormData();
     formdata.append("file", file);
