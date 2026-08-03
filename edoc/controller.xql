@@ -119,8 +119,8 @@ else if ( $exist:resource = "view.html" ) then
       <forward url="{$exist:controller}/modules/view.xql"/>
     </error-handler>
   </dispatch>
-(: search.html :)
-else if ( $exist:resource = "search.html" ) then
+(: search.html, start.html :)
+else if ( $exist:resource = ('search.html', 'start.html') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <view>
       <forward url="{$exist:controller}/renderers/function.xql" method="{request:get-method()}">

@@ -113,15 +113,22 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
     </header>
 };
 
-(: get the footer for function pages from either projectSpec HTML, projectSpec function or an empty sequence :)
-declare function wdbfp:getFooter( $node as node(), $model as map(*) ) as node()* {
-  if (doc-available($model("projectResources") || 'html/functionFooter.html')) then 
-    templates:apply(doc($model("projectResources") || 'html/functionFooter.html'), $model?configuration?fn-lookup, $model)
-  else if (wdb:findProjectFunction($model, 'wdbPF:getFunctionFooter', 1)) then
-    (wdb:getProjectFunction($model, 'wdbPF:getFunctionFooter', 1))($model)
-  else if ( doc-available($config:data || "/resources/html/mainFooter.html") ) then
-    doc($config:data || "/resources/html/mainFooter.html")
-  else if (wdb:findProjectFunction($model, 'wdbPF:getMainFooter', 1)) then
-    (wdb:getProjectFunction($model, 'wdbPF:getMainFooter', 1))($model)
-  else ()
+declare function wdbfp:getMainFooter ( $node as node(), $model as map(*) ) as node()* {
+ let $specifics := wdbrh:getProjectSpecifics($node, $model, "mainFooter")
+  return (
+    comment { "created in function.xqm, " || $node/@data-template },
+    if ( exists($specifics) )
+      then $specifics
+      else ()
+  )
+};
+
+declare function wdbfp:getBodyFooter ( $node as node(), $model as map(*) ) as node()* {
+ let $specifics := wdbrh:getProjectSpecifics($node, $model, "bodyFooter")
+  return (
+    comment { "created in function.xqm, " || $node/@data-template },
+    if ( exists($specifics) )
+      then $specifics
+      else ()
+  )
 };
