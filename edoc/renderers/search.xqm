@@ -9,7 +9,7 @@ declare namespace meta     = "https://github.com/dariok/wdbplus/wdbmeta";
 import module namespace config = "https://github.com/dariok/wdbplus/config"          at "wdb-config.xqm";
 import module namespace wdbrh  = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
 
-declare function wdbSearch:getLeft ( $node as node(), $model as map(*) ) as element()+ {
+declare function wdbSearch:getAside ( $node as node(), $model as map(*) ) as element()+ {
   if ( wdbrh:findProjectFunction($model, 'wdbPF:getSearchLeft', 1) ) then
     (wdbrh:getProjectFunction($model, 'wdbPF:getSearchLeft', 1))($model)
   else
