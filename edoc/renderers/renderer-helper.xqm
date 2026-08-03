@@ -35,12 +35,19 @@ declare function wdbrh:evalForAttribute ( $node as node(), $model as map(*), $at
   }
 };
 
+(:~
+ : get project specific HTML or function for a given node and name
+ : note: names use the hyphenated form here, e.g. "start-aside" for startAside, "search-left" for searchLeft
+ : @param $node the node to be replaced by project specific content
+ : @param $model the model map
+ : @param $name the name of the project specific content to be retrieved (hyphenated form)
+ :)
 declare function wdbrh:getProjectSpecifics ( $node as node(), $model as map(*), $name as xs:string ) as element()? {
-  if ( wdb:findProjectFunction($model, "wdbPF:get"||$name, 1) ) then
+  if ( wdb:findProjectFunction($model, "wdbPF:get-"||$name, 1) ) then
     element { node-name($node) } {
       $node/@*[not(starts-with(local-name(), 'data-template'))],
-      comment { "wdbPF:get"||$name },
-      (wdb:getProjectFunction($model, "wdbPF:get"||$name, 1))($model)
+      comment { "wdbPF:get-"||$name },
+      (wdb:getProjectFunction($model, "wdbPF:get-"||$name, 1))($model)
     }
   else if ( doc-available($model?projectResources || "/html/" || $name || ".html") ) then
     element { node-name($node) } {
