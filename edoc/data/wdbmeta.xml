@@ -1,4 +1,5 @@
-<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
 <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="data">
     <projectID></projectID>
     <titleData>
