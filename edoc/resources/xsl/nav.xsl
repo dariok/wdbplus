@@ -27,7 +27,7 @@
    <xsl:template match="meta:struct[not(parent::meta:struct)]">
       <nav>
          <xsl:comment>created in generic nav.xsl</xsl:comment>
-         <ul>
+         <ul id="{ @ed }">
             <xsl:apply-templates select="*">
                <xsl:sort select="meta:order(@order)"/>
             </xsl:apply-templates>
@@ -52,7 +52,7 @@
          </button>
          <ul>
             <xsl:attribute name="id" select="$id" />
-            <xsl:if test="not(meta:view) and (@ed != $id or not(@ed))">
+            <xsl:if test="preceding-sibling::meta:import">
                <xsl:attribute name="style">display: none;</xsl:attribute>
             </xsl:if>
             <xsl:if test="not(meta:struct or meta:view)">

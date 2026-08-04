@@ -755,9 +755,10 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         url: wdb.restUrl + "projects/" + ed + "/views/navigation",
         dataType: "html",
         success:  ( data ) => {
-          let replacement = $(data).find('#' + ed).prev().addBack();
+          let replacement = $(data).find('#' + ed);//.prev().addBack();
           if ( replacement.length > 0 ) {
-            $(event.currentTarget).replaceWith(replacement);
+            $(event.currentTarget).after(replacement);
+            $(event.currentTarget).removeClass('load').addClass('level');
           }
         },
         error: ( xhr, status, error ) => {
