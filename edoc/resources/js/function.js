@@ -759,6 +759,7 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
           if ( replacement.length > 0 ) {
             $(event.currentTarget).after(replacement);
             $(event.currentTarget).removeClass('load').addClass('level');
+            $(event.currentTarget).removeAttr('data-ed').attr('data-lvl', ed);
           }
         },
         error: ( xhr, status, error ) => {

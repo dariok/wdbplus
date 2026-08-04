@@ -154,6 +154,7 @@ nav {
   position: absolute;
   overflow-y: auto;
   max-height: 75vh;
+  font-family: sans-serif;
 }
 
 nav h2 {
@@ -176,10 +177,6 @@ li .label {
 
 nav li ul {
   margin-left: 1.25em;
-}
-
-nav a {
-  font-family: sans-serif;
 }
 
 nav button {
@@ -235,7 +232,6 @@ button[aria-label] {
 #annoInfo {
   display: inline-block;
   width: 80%;
-  float: right;
   text-align: right;
   padding-right: 2px;
 }

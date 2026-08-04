@@ -41,6 +41,7 @@
       </xsl:variable>
       
       <li>
+         <span class="label">–</span>
          <button class="wdbNav level" data-lvl="{$id}">
             <xsl:attribute name="title">
                <xsl:choose>
@@ -118,6 +119,7 @@
    
    <xsl:template match="meta:struct[@file]">
       <li>
+         <span class="label">–</span>
          <button class="wdbNav load" data-ed="{@file}" title="Navigationsebene einblenden">
             <xsl:apply-templates select="@label" />
          </button>
@@ -126,13 +128,24 @@
    
    <xsl:template match="meta:view">
       <li>
-         <xsl:if test="@order">
-            <span class="label" data-sort="{meta:order(@order)}"><xsl:value-of select="@order" /></span>
-         </xsl:if>
-         <a href="view.html?id={@file}">
-            <xsl:apply-templates select="@label | meta:label" />
-         </a>
+         <span class="label">
+            <xsl:choose>
+               <xsl:when test="@order">
+                  <xsl:attribute name="data-order" select="meta:order(@order)"/>
+                  <xsl:value-of select="@order" />
+               </xsl:when>
+               <xsl:otherwise>
+                  <xsl:text>–</xsl:text>
+               </xsl:otherwise>
+            </xsl:choose>
+         </span>
+         <xsl:apply-templates select="." mode="link" />
       </li>
+   </xsl:template>
+   <xsl:template match="meta:view" mode="link">
+      <a href="view.html?id={@file}">
+         <xsl:apply-templates select="@label | meta:label" />
+      </a>
    </xsl:template>
    
    <xsl:template match="meta:label">

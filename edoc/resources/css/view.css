@@ -34,6 +34,7 @@ main {
   
   resize: horizontal;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
