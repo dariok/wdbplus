@@ -39,7 +39,8 @@ body {
   
   overflow: hidden;
   
-  font-family: mufi;
+  /* in general, all text is sans-serif with the exception of source text, which is Junicode */
+  font-family: sans-serif;
   font-size: 1rem;
   line-height: 1.4rem;
   
@@ -106,7 +107,6 @@ body > header h2 {
 /* controls (e.g. buttons) within header */
 .dispOpts {
   line-height: 1.4rem;
-  font-family: sans-serif;
 }
 .dispOpts:before {
   content: ' [';
@@ -154,7 +154,6 @@ nav {
   position: absolute;
   overflow-y: auto;
   max-height: 75vh;
-  font-family: sans-serif;
 }
 
 nav h2 {
@@ -199,8 +198,9 @@ nav button {
 }
 
 a {
-  overflow-wrap: anywhere;
   color: var(--wdb-link-colour);
+  font-family: sans-serif;
+  overflow-wrap: anywhere;
   text-decoration: none;
 }
 

@@ -5,8 +5,7 @@
 
 body {
   grid-template-columns: 3fr 7fr;
-  /* function pages and functional text is sans-serif; only sources are Junicode */
-  font-family: sans-serif;
+  /* font-family: sans-serif is inherited from wdb.css */
 }
 
 body > footer {

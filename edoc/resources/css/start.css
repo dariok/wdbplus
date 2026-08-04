@@ -32,11 +32,11 @@ aside h2 {
   width: 100%;
 }
 
-h1 {
+main h1 {
   font-size: 2em;
   line-height: 2.25rem;
 }
-h2 {
+main h2 {
   font-size: 1.5em;
   line-height: 1.75rem;
 }

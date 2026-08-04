@@ -32,6 +32,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   
+  font-family: mufi;
   resize: horizontal;
   overflow-y: auto;
   scrollbar-gutter: stable;
