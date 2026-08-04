@@ -175,10 +175,6 @@ li .label {
   padding-right: 0.5em;
 }
 
-nav li ul {
-  margin-left: 1.25em;
-}
-
 nav button {
   appearance: auto;
   border: none;
