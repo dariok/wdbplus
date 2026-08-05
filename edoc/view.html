@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html data-template="wdbrh:getValueForAttribute" data-template-attribute="lang" data-template-key="language">
    <!-- TODO: restore `head` after fixing https://github.com/eXist-db/exist/issues/6587 -->
-   <content data-template="wdbv:getHead" />
-   <!-- <head data-template="wdbv:getHead"/> -->
+   <content data-template="wdbView:getHead" />
+   <!-- <head data-template="wdbView:getHead"/> -->
    <body>
       <div class="loadingModal"></div>
-      <header data-template="wdbv:getHeader"></header>
+      <header data-template="wdbView:getHeader"></header>
       <main>
-         <section data-template="wdbv:getContent" />
+         <section data-template="wdbView:getContent" />
          <footer data-template="wdbrh:getProjectSpecifics" data-template-name="mainFooter"></footer>
       </main>
       <aside id="wdbRight" aria-label="groups images of witnesses and additional information">

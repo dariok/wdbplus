@@ -9,7 +9,7 @@
 
 xquery version "3.1";
 
-module namespace wdbv = "https://github.com/dariok/wdbplus/mView";
+module namespace wdbView = "https://github.com/dariok/wdbplus/mView";
 
 import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
@@ -20,7 +20,7 @@ import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-
  : Create the head for HTML files served via the templating system
  : @created 2018-02-02 DK
  :)
-declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(head) {
+declare function wdbView:getHead ( $node as node(), $model as map(*) ) as element(head) {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -81,7 +81,7 @@ declare function wdbv:getHead ( $node as node(), $model as map(*) ) as element(h
  :    c) wdbPF:getHeaderMenu#1   or {$config:data}/resources/html/headerMenu.html or html:button
  :    d) wdbPF:getHeaderRight#1  or {$config:data}/resources/html/headerRight.html or empty html:p
  :)
-declare %templates:wrap function wdbv:getHeader ( $node as node(), $model as map(*) ) as element()+ {
+declare %templates:wrap function wdbView:getHeader ( $node as node(), $model as map(*) ) as element()+ {
   if ( doc-available($model?projectResources || '/html/header.html') )
     then templates:apply(doc($model?projectResources || '/html/header.html')/header/*, $model?configuration?fn-resolver, $model)
   else if ( wdbrh:findProjectFunction($model, 'wdbPF:getHeader', 1) ) then
@@ -122,7 +122,7 @@ declare %templates:wrap function wdbv:getHeader ( $node as node(), $model as map
 (:~
  : return the body
  :)
-declare function wdbv:getContent ( $node as node(), $model as map(*) ) as element()+ {
+declare function wdbView:getContent ( $node as node(), $model as map(*) ) as element()+ {
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   (wdbProc:getContent($model))?content
 };

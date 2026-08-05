@@ -10,7 +10,7 @@ import module namespace wdbErr    = "https://github.com/dariok/wdbplus/errors"  
 import module namespace wdbFiles  = "https://github.com/dariok/wdbplus/files"           at "../modules/wdb-files.xqm";
 import module namespace wdbm      = "https://github.com/dariok/wdbplus/model"           at "../modules/model.xqm";
 import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
-import module namespace wdbv      = "https://github.com/dariok/wdbplus/mView"           at "view.xqm";
+import module namespace wdbView   = "https://github.com/dariok/wdbplus/mView"           at "view.xqm";
 
 declare option output:method "html";
 declare option output:version "5.0";
