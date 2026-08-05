@@ -10,20 +10,8 @@
          <section data-template="wdbView:getContent" />
          <footer data-template="wdbrh:getProjectSpecifics" data-template-name="mainFooter"></footer>
       </main>
-      <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
-         <ul style="display: none;">
-            <li><a href="#fac">Faksimile</a></li>
-            <li><a href="#ann">Fußnoten</a></li>
-            <li><a href="#cnt">Inhaltliches</a></li>
-         </ul>
-         <div id="ann" role="note" aria-label="contains footnotes and other information when selected"></div>
-         <div id="fac" role="figure" aria-label="conains a digital facsimile or other image"></div>
-         <div id="cnt" role="note" aria-label="contains meta data for the text" style="display: none;">
-            <!-- this space can be used to add project specific content, e.g. to create a TOC of the text within a tabbed
-                 area to the right -->
-         </div>
-         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="RightFooter"></footer>
-      </aside>
+      <aside id="wdbRight" aria-label="groups images of witnesses and additional information"
+            data-template:="wdbView:getAside"></aside>
       <!-- <aside id="wdbAnnotations" data-template="wdb:getAnnotationDialogue"></aside> -->
       <footer data-template="wdbrh:getProjectSpecifics" data-template-name="bodyFooter"></footer>
    </body>

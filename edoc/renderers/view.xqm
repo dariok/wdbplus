@@ -126,3 +126,25 @@ declare function wdbView:getContent ( $node as node(), $model as map(*) ) as ele
   (: TODO: consider removing this entirely and instead load content of main via AJAX :)
   (wdbProc:getContent($model))?content
 };
+
+declare function wdbView:getAside ( $node as node(), $model as map(*) ) as element() {
+  let $aside := wdbrh:getProjectSpecifics($node, $model, "view-aside")
+
+  return if ( exists($aside) )
+    then $aside
+    else
+      <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
+         <ul style="display: none;">
+            <li><a href="#fac">Faksimile</a></li>
+            <li><a href="#ann">Fußnoten</a></li>
+            <li><a href="#cnt">Inhaltliches</a></li>
+         </ul>
+         <div id="ann" role="note" aria-label="contains footnotes and other information when selected"></div>
+         <div id="fac" role="figure" aria-label="conains a digital facsimile or other image"></div>
+         <div id="cnt" role="note" aria-label="contains meta data for the text" style="display: none;">
+            <!-- this space can be used to add project specific content, e.g. to create a TOC of the text within a tabbed
+                 area to the right -->
+         </div>
+         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="RightFooter"></footer>
+      </aside>
+};
