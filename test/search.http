@@ -1,6 +1,0 @@
-GET https://exist.ulb.tu-darmstadt.de/2/r/edoc/search/collection/jz000000.xml?q=data%20AND%20emergency
-
-
-###
-
-GET https://tueditions.ulb.tu-darmstadt.de/r/edoc/search/collection/data.xml?q=gesetz

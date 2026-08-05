@@ -3,7 +3,6 @@ xquery version "3.1";
 module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects";
 
 import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
-import module namespace wdb      = "https://github.com/dariok/wdbplus/wdb"          at "../modules/app.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
 
 declare namespace index = "https://github.com/dariok/wdbplus/index";
@@ -315,85 +314,33 @@ declare function r2p:optionsResource ( $request as map(*) ) as item() {
  : POST /projects/{$ed}/resources
  :)
 declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as map(*) {
-  let $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
-    , $id := if ( $xml instance of node() )
-        then ($xml/*[1]/@xml:id, '_' || util:uuid())[1]
-        else ()
-    , $uuid := util:uuid($xml)
-    , $combine := function($k, $v) {
-        if ( $k = 'parameters' )
-          then map:entry("parameters", map:merge(($v, map{"id": $id})))
-          else map:entry($k, $v)
-        }
-    , $newMap := map:merge(map:for-each($request, $combine))
+  try {
+    let $parsed := r2:parseUpload($request)
 
-  return r2p:createProjectResourceWithId($newMap)
+    (: parseUpload() will throw errors if anything goes wrong so we will have a parsed XML here :)
+    let $id := (($parsed?xml)/*[1]/@xml:id, '_' || util:uuid())[1]
+
+    return r2:checkAndStore($request, $parsed, $request?parameters?ed, $id)
+  } catch err:FODC0006 {
+    r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  }
 };
 
 (:~
  : Create a resource in a project (ID given – this may overwrite an existing resource)
  : If no entry with this ID, this path, and this hash exists, creates a new resource with the given ID.
-  : If an entry with this ID but a different path exists, returns a 409 Conflict,
-  : If an entry with this path but a different ID exists, returns a 409 Conflict,
-  : If an entry with this hash but a different ID and path exists, returns a 409 Conflict.
-  : If all three match an existing entry, return 204
+ : If an entry with this ID but a different path exists, returns a 409 Conflict,
+ : If an entry with this path but a different ID exists, returns a 409 Conflict,
+ : If an entry with this hash but a different ID and path exists, returns a 409 Conflict.
+ : If all three match an existing entry, return 204
  : PUT /projects/{$ed}/resources/{$id}
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
-  let $project := try { wdbFiles:getFullPath($request?parameters?ed) } catch * { $err:code }
-    , $meta := try { doc( $project?collectionPath || "/wdbmeta.xml" ) } catch * { $err:code }
-    , $xml := try { parse-xml($request?body?file?data) } catch * { $err:code }
-    , $uuid := util:uuid($xml)
-  
-  return if ( $project instance of xs:QName ) then
-    r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
-  else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
-    r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
-  else if ( not(r2:writeAllowed($request?user)) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(sm:has-access($project?collectionPath, "w")) ) then
-    r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
-  else if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
-    r2:response(415, 'text/plain', 'Unsupported Media Type. Expected multipart/form-data with a file field.',
-        map:merge(($r2:allOrigins, map:entry("Allow-Post", "multipart/form-data")))
-    )
-          (: `path` and `file` are required and in the message body; `meta` is an optional query parameter :)
-  else if ( not(r2:mapKeysAllowed($request?body, ('path', 'file'), ('meta'))) ) then
-    r2:response(422, 'text/plain', 'Wrong content of resource information found. Expected `path` and `file`.', $r2:allOrigins)
-  else if ( not($xml instance of document-node()) ) then
-    r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
-  else if ( exists($xml/*[1]/@xml:id) and $xml/*[1]/@xml:id != $request?parameters?id ) then
-    r2:response(422, 'text/plain', 'ID in the XML content (' || $xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)
-            and @xml:id = $request?parameters?id
-            and @uuid = $uuid]
-          ) then
-    r2:response(204, 'text/plain', ``[`{$request?body?path}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name) and @xml:id != $request?parameters?id] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $request?body?path || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $request?body?path || '/' || r2:sanitiseFilename($request?body?file?name)] ) then
-    r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?path || '/' || $request?body?file?name, $r2:allOrigins)
-  else if ( $meta//meta:file[@uuid = $uuid] ) then
-    r2:response(409, 'text/plain', 'A resource with a hash of ' || $uuid || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $uuid]/@path, $r2:allOrigins)
-  else if ( $meta//id($request?parameters?id)[self::meta:struct] ) then
-    r2:response(409, 'text/plain', 'ID ' || $request?parameters?id || ' is already in use for a struct ' || $meta/id($request?parameters?id)/@label || $meta/id($request?parameters?id)/meta:label, $r2:allOrigins)
-  else 
-  (: TODO: check media type for non-XML files, and handle accordingly (e.g. store as binary) :)
-    r2:createXmlResource(
-      map{
-        "parameters": map:merge((
-            $request?parameters,
-            map:entry("id", $request?parameters?id)
-          )),
-        "body": map:merge((
-            $request?body,
-            map:entry("xml", $xml),
-            map:entry("hash", $uuid)
-          )),
-        "user": $request?user,
-        "project": $project
-      }
-    )
+  try {
+    r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
+  } catch err:FODC0006 {
+    r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  }
 };
 
 (:

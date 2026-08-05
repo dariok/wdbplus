@@ -14,8 +14,6 @@ import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors
 import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"       at "wdb-files.xqm";
 import module namespace wdbm         = "https://github.com/dariok/wdbplus/model"       at "model.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"      at "pquery.xqm";
-import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"       at "stats.xqm";
-import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"        at "search.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"       at "start.xqm";
 
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
@@ -28,7 +26,7 @@ declare
     %templates:default("p", "")
 function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed as xs:string?, $p as xs:string,
     $q as xs:string ) as item()* {
-  try {
+  (: try { :)
     let $newModel := if ( request:exists() and  contains(request:get-url(), 'addins') ) then
           map {
             "pathToEd": "/db/apps/edoc/addins/" || substring-before(substring-after(request:get-uri(), 'addins/'), '/') || '/'
@@ -52,30 +50,26 @@ function wdbfp:start ( $node as node(), $model as map(*), $id as xs:string?, $ed
                 templates:apply($h, $wdbfp:lookup, $newModel)
         }
       </html>
-  } catch *:wdb0200 {
+  (: } catch *:wdb0200 {
     util:log("error", "project not found: " || $ed || " from request " || request:get-url() ),
-    wdbErr:error(map{
-      "code": $err:code,
-      "description": "project not found",
-      "err:description": $err:description,
-      "err:additional": $err:additional
-    })
+    error(xs:QName("wdbErr:wdb0200"), "project " || $ed || " not found")
   } catch * {
     util:log("error", "error when applying templates in function.xqm: " || $err:description),
-    wdbErr:error(map{
-      "code": $err:code,
-      "model": $model,
-      "err:value": $err:value,
-      "err:description": $err:description,
-      "err:additional": $err:additional,
-      "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
-    })
-  }
+    error($err:code, $err:description, map { "model": $model })
+  } :)
 };
 
+(: TODO: replace these by their equivalent in renderer-helper :)
 declare function wdbfp:getVal ($node as node(), $model as map(*), $key as xs:string) {
   element { local-name($node) } {
     $model($key)
+  }
+};
+
+declare function wdbfp:evalForElement ( $node as node(), $model as map(*), $expression as xs:string ) as element() {
+  element { node-name($node) } {
+    $node/@*,
+    util:eval($expression)
   }
 };
 
@@ -171,13 +165,9 @@ declare function wdbfp:getHeader ( $node as node(), $model as map(*) ) as elemen
       </header>
 };
 
-declare function wdbfp:test ( $node as node(), $model as map(*) ) {
-  wdbErr:error(map { "code": "wdbErr:Err666", "model": $model })
-};
-
 declare
   %private
-function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model ) {
+function wdbfp:get ( $type as xs:string, $edPath as xs:string, $model as map(*) ) as element()* {
   let $file := tokenize(normalize-space(request:get-uri()), '/')[last()]
     , $name := substring-before($file, '.html')
     , $unam := "project" || upper-case(substring($name, 1, 1)) || substring($name, 2, string-length($name) - 1)

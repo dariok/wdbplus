@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * @type { FileList | null }
+ * @type { FileList | Array<File> | null }
  */
 let files;
 
@@ -66,7 +66,7 @@ const wdbAdmin = {
       let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
         , val = $('select').val()
         , targetCollection = val === '' ? '' : (String(val) + "/")
-        , targetPath = new URL(targetCollection + filePath, 'xmldb:/' + $('pre').text()).toString();
+        , targetPath = new URL(targetCollection + filePath.replaceAll(' ', '_'), 'xmldb:/' + $('pre').text()).toString();
 
       $('#results').append("<tr><td>" + filePath + "</td><td>" + targetPath.substring(7) + "</td><td></td>");
     }
@@ -161,7 +161,8 @@ const wdbAdmin = {
     let filePath = file.webkitRelativePath === '' ? file.name : file.webkitRelativePath
       , val = $('select').val()
       , targetCollection = val === '' ? '' : (String(val) + "/")
-      , targetPath = new URL(targetCollection + filePath, 'xmldb://').toString().substring(9);
+      , targetPath = new URL(targetCollection + filePath.replaceAll(' ', '_'), 'xmldb://')
+            .toString().substring(9);
     
         let formdata = new FormData();
     formdata.append("file", file);
@@ -258,7 +259,13 @@ function uploadHandlers ( ) {
 
   /* event listeners */
   picker.addEventListener("change", ( event ) => {
-    files = picker.files;
+    if ( picker.files === null ) return;
+    
+    const tempArray = Array.from(picker.files);
+    tempArray.sort( (a, b) =>
+      a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, { numeric: true, sensitivity: 'base' })
+    );
+    files = tempArray;
     wdbAdmin.setFiles(event);
   });
   document.querySelector('#selectTarget select')?.addEventListener("change", ( event ) => {
@@ -313,7 +320,7 @@ function newProjectHandlers ( ) {
         url.searchParams.append("pShort", $('#pShort').val()?.toString() ?? 'unknown');
         url.searchParams.append("pID", $('#pID').val()?.toString() ?? 'unknown');
         url.searchParams.append("collection", data);
-        url.searchParams.append("ed", $('#pID').val()?.toString() ?? 'unknown');
+        url.searchParams.append("ed", wdb.meta.get('ed'));
         window.location.href = url.toString();
       },
       error: function ( data ) {
