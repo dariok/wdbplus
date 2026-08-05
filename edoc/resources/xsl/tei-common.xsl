@@ -102,10 +102,10 @@
   
   <xsl:template match="tei:publicationStmt">
     <footer>
-      <xsl:apply-templates select="tei:publisher, tei:pubPlace, tei:availability"/>
+      <xsl:apply-templates select="tei:publisher, tei:pubPlace, tei:availability" mode="footer"/>
     </footer>
   </xsl:template>
-  <xsl:template match="tei:publicationStmt/tei:publisher">
+  <xsl:template match="tei:publicationStmt/tei:publisher" mode="footer">
     <a>
       <xsl:if test="@ref or */@ref">
         <xsl:attribute name="href" select="(@ref, */@ref)[1]" />
@@ -114,7 +114,7 @@
     </a>
     <br/>
   </xsl:template>
-  <xsl:template match="tei:pubPlace">
+  <xsl:template match="tei:pubPlace" mode="footer">
     <xsl:value-of select="."/>
     <xsl:if test="following-sibling::tei:date">
       <xsl:text> (</xsl:text>
@@ -127,7 +127,7 @@
     </xsl:if>
     <br/>
   </xsl:template>
-  <xsl:template match="tei:availability">
+  <xsl:template match="tei:availability" mode="footer">
     <a href="{tei:licence/@target}">
       <xsl:apply-templates select="tei:licence/node()"/>
     </a>
