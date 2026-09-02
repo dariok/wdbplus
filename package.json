@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@types/jquery": "^4.0.0",
-    "@xmldom/xmldom": "^0.9.10",
+    "@xmldom/xmldom": "^0.9.12",
     "chai": "^6.2.2",
     "chai-http": "^5.1.2",
     "eslint": "^10.4.1",
