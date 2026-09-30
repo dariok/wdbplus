@@ -15,6 +15,8 @@ This framework still lacks a good name. If you have an idea, please let me know!
 - A new version of the REST API hast been introduced including a SwaggerUI frontend for it openAPI description. The old
   API that was based on RestXQ has been removed. You are still able to use it (the configuration still includes the
   triggers) and get it from `development` before 26Q3.
+- By default, texts are stored in a sub-collection `edition` of a project.
+- A user "wdbadmin" is created during installation; change the password immediately!
 
 ### 25Q3
 
