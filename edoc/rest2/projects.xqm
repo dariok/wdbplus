@@ -340,6 +340,8 @@ declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
     r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  } catch *:wdb0000 {
+    r2:response(404, 'text/plain', $err:description, $r2:allOrigins)
   }
 };
 
@@ -476,7 +478,7 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
           $struct/@*
           , $struct/*
         )}</struct>
-      
+
       let $response := if ( $struct/meta:import )
         then r2p:imported($struct/meta:import, $content)
         else $content
@@ -492,18 +494,19 @@ declare %private function r2p:imported ( $import, $importerContent ) {
     , $importedMeta := doc($fullImportedPath)
     , $importedContent := $importedMeta/meta:projectMD/meta:struct
 
-  let $conStructed :=
-    <struct xmlns="https://github.com/dariok/wdbplus/wdbmeta">
-      { $importedContent/@* }
-      { if ( $importedMeta/@ed ) then () else attribute ed { $importedMeta/meta:projectMD/@xml:id } }
-      { for $elem in $importedContent/* return
-          if ( $elem/@file = $importerContent/@ed )
-              then $importerContent
-              else $elem
-      }
-    </struct>
-
   return if ( $importedContent/meta:import )
-    then r2p:imported($importedContent/meta:import, $conStructed)
-    else $conStructed
+    then r2p:replaceNode($importedContent, $importerContent/@ed, $importerContent)
+    else $importerContent
+};
+
+declare %private function r2p:replaceNode ( $source as node(), $target as xs:string, $replacement as node() ) {
+  util:log("info", node-name($source)),
+  if ( $source/@file = $target ) then
+    $replacement
+  else if ( $source instance of element() ) then
+    element { local-name($source) } {
+      for $attr in $source/@* return attribute {node-name($attr)} {$attr/string()},
+      for $child in $source/node() return r2p:replaceNode($child, $target, $replacement)
+    }
+  else $source
 };
