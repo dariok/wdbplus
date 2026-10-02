@@ -16,14 +16,14 @@ button {
   background-color: #FFEF19;
 }
 
-.search .file {
-  vertical-align: top;
+dd {
+  display: table-row;
 }
-
-.search ul {
-  margin-top: 0;
+.kwic {
+  display: table-cell;
+  padding: .5em;
 }
-
-.fts-match {
-  background-color: yellow;
+.kwic:first-child {
+  padding-left: 2em;
+  text-align: right;
 }

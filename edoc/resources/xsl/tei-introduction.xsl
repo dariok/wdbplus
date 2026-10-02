@@ -3,15 +3,14 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
       xmlns:tei="http://www.tei-c.org/ns/1.0"
-      xsi:schemaLocation="http://www.w3.org/1999/XSL/Transform http://www.w3.org/2007/schema-for-xslt20.xsd"
       exclude-result-prefixes="#all"
-      version="2.0">
+      version="3.0">
+	
+	<!-- TODO prüfen, ob tatsächlich noch nötig -->
    
    <!-- Imports werden über tei-common abgewickelt; 2015/10/23 DK -->
    <xsl:import href="tei-common.xsl#1"/>
    
-   <xsl:output encoding="UTF-8" indent="no" method="html" doctype-system="about:legacy-compat"/>
-
 	<!-- mehrere param nach common ausgelagert; 2016-05-27 DK -->
 	<xsl:param name="footerXSL">
 		<xsl:value-of select="concat($baseDir, '/tei-introduction.xsl')"/>
@@ -21,21 +20,6 @@
 			erstellt; 2016-07-14 DK -->
 	<xsl:template match="/" mode="content">
 		<!-- navbar in den container verschoben; 2016-07-11 DK -->
-		<!-- TODO navBar ausblendbar machen -->
-		<!-- TODO navBar um Ansichtsoptionen und Link zu weiteren Ausgabevarianten erweitern -->
-		<xsl:if test="not($server = 'eXist')">
-			<div id="navBar">
-				<!-- Nummer ohne führende Null ausgeben; 2017-05-19 DK -->
-				<!-- TODO prüfen, ob es hier Probleme gibt -->
-				<h1>Nr. <xsl:value-of select="format-number(/tei:TEI/@n, '#')"/>
-	                <br/>
-					<xsl:apply-templates select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type)]"/>
-	            </h1>
-				<h2>Einleitung</h2>
-				<span class="dispOpts">[<a id="liSB" href="javascript:toggleSidebar();">Navigation einblenden</a>]</span>
-				<hr/>
-			</div>
-		</xsl:if>
 		<div id="content">
 			<p class="editors">
 				<xsl:apply-templates select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author"/>

@@ -28,7 +28,8 @@
    <server>http://localhost:8080/exist/apps/edoc</server>
 
    <!-- Full path for the instance’s REST base URL -->
-   <rest>http://localhost:8080/exist/restxq/edoc/</rest>
+   <rest version="1">http://localhost:8080/exist/restxq/edoc/</rest>
+   <rest version="2">https://localhost/exist/apps/edoc</rest>
 
    <!-- the collection that will hold all the projects. Adjust if you decide to put your projects elsewhere
      default: /db/apps/edoc/data -->
@@ -36,11 +37,24 @@
 
    <!-- standard HTTP reponse headers for HTML files -->
    <headers>
+      <header name="Content-Security-Policy" value="
+         base-uri 'self';
+         connect-src 'self' https://example.org;
+         default-src 'self';
+         form-action 'self';
+         frame-ancestors 'none';
+         frame-src 'self';
+         img-src 'self' data: https://example.org;
+         object-src 'none';
+         script-src 'self' https://example.org 'sha256-i5FN1OSK7gDNa3opBmzMU9YJGHPyoa6XHjjunO2922g=';
+         style-src 'self' 'unsafe-inline' https://example.org;
+         upgrade-insecure-requests;" />
       <header name="Permissions-Policy" value="geolocation=(self), fullscreen=(self)"/>
-      <header name="Referrer-Policy" value="no-referrer-when-downgrade"/>
+      <header name="Referrer-Policy" value="strict-origin-when-cross-origin"/>
       <header name="X-Content-Type-Options" value="nosniff"/>
       <header name="X-Frame-Options" value="DENY"/>
       <header name="X-XSS-Protection" value="1; mode=block"/>
+      <header name="Strict-Transport-Security" value="max-age=31536000" />
    </headers>
 
    <!-- Allowed origins for CORS requests – these may be necessary when wdb+ is behind a rewriting proxy
@@ -51,6 +65,8 @@
 
    <!-- Sources for some Blobs -->
    <externalSources>
-      <source name="jquery" path="$shared/jquery-3.6.3.min.js" />
+      <source name="jquery" path="$shared/js/jquery-4.0.0.min.js" />
+      <source name="jquery-ui-js" path="$shared/js/jquery-ui.min.js" />
+      <source name="jquery-ui-css" path="$shared/css/jquery-ui.min.css" />
    </externalSources>
 </config>

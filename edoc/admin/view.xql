@@ -7,7 +7,6 @@ xquery version "3.1";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
-import module namespace config    = "http://exist-db.org/xquery/apps/config"           at "../modules/config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"            at "../modules/app.xqm";
 import module namespace wdbAdmin  = "https://github.com/dariok/wdbplus/Admin"          at "admin.xqm";
@@ -24,8 +23,9 @@ declare option output:media-type "text/html";
  : The following modules provide functions which will be called by the 
  : templating.
  :)
+let $app-root := "/db/" || substring-after(system:get-module-load-path(), "/db/") => substring-before("admin")
 let $config := map {
-  $templates:CONFIG_APP_ROOT: $config:app-root,
+  $templates:CONFIG_APP_ROOT: $app-root,
   $templates:CONFIG_STOP_ON_ERROR: true()
 }
 

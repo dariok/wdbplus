@@ -46,9 +46,14 @@
       <element name="server">
         <data type="anyURI"/>
       </element>
-      <element name="rest">
-        <data type="anyURI"/>
-      </element>
+      <oneOrMore>
+        <element name="rest">
+          <attribute name="version">
+            <data type="double"/>
+          </attribute>
+          <data type="anyURI"/>
+        </element>
+      </oneOrMore>
       <element name="data">
         <text/>
       </element>

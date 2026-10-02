@@ -2,22 +2,25 @@ xquery version "3.1";
 
 module namespace wdbRe = "https://github.com/dariok/wdbplus/RestEntities";
 
-import module namespace wdbRCo = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
-import module namespace wdb    = "https://github.com/dariok/wdbplus/wdb"        at "../modules/app.xqm";
+import module namespace config   = "https://github.com/dariok/wdbplus/config"     at "../modules/wdb-config.xqm";
+import module namespace wdbRCo   = "https://github.com/dariok/wdbplus/RestCommon" at "common.xqm";
+import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"      at "../modules/wdb-files.xqm";
 
+declare namespace ft     = "http://exist-db.org/xquery/lucene";
 declare namespace http   = "http://expath.org/ns/http-client";
 declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace rest   = "http://exquery.org/ns/restxq";
 declare namespace tei    = "http://www.tei-c.org/ns/1.0";
+declare namespace xmldb  = "http://exist-db.org/xquery/xmldb";
 
 declare
     %rest:GET
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.xml")
     %rest:query-param("q", "{$q}")
 function wdbRe:scan ($collection as xs:string, $type as xs:string*, $q as xs:string*) {
-  let $coll := try { wdb:getEdPath($collection, true()) } catch * { "" }
-  let $query := xmldb:decode($q) || '*'
+  let $coll := try { (wdbFiles:getFullPath($collection))?projectPath } catch * { "" }
+    , $query := xmldb:decode($q) || '*'
 
   let $errNoColl := if ($coll eq "")
     then (404, "Project " || $collection || " not found")
@@ -69,14 +72,14 @@ declare
     %rest:path("/edoc/entities/scan/{$type}/{$collection}.html")
     %rest:query-param("q", "{$q}")
     %output:method("html")
-function wdbRe:scanHtml ($collection as xs:string, $type as xs:string, $q as xs:string*) {
-  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+function wdbRe:scanHtml ( $collection as xs:string, $type as xs:string, $q as xs:string* ) as item()+ {
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
+    , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
   
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
-    <param name="rest" value="{$wdb:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (
@@ -95,7 +98,7 @@ declare
     %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
 function wdbRe:collectionEntity ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $coll := wdb:getEdPath($collection, true())
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
   let $query := xmldb:decode($ref)
   
   let $res := collection($coll)//tei:TEI[descendant::tei:rs[@ref=$query or @ref='#'||$query or @ref = $type || ':' || $ref]]
@@ -123,14 +126,14 @@ declare
     %rest:path("/edoc/entities/collection/{$collection}/{$type}/{$ref}.html")
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
-function wdbRe:collectionEntityHtml ($collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int*) {
-  let $md := collection($wdb:data)//id($collection)[self::meta:projectMD]
-    , $coll := substring-before(wdb:findProjectXQM(wdb:getEdPath($collection, true())), 'project.xqm')
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+function wdbRe:collectionEntityHtml ( $collection as xs:string*, $type as xs:string*, $ref as xs:string*, $start as xs:int* ) as item()+ {
+  let $coll := (wdbFiles:getFullPath($collection))?projectPath
+    , $md := doc($coll || '/wdbmeta.xml')/*[self::meta:projectMD]
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
     
   let $params := <parameters>
     <param name="title" value="{$md//meta:title[1]}" />
-    <param name="rest" value="{$wdb:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (
@@ -149,7 +152,7 @@ declare
     %rest:path("/edoc/entities/file/{$id}/{$type}/{$ref}.xml")
     %rest:query-param("start", "{$start}", 1)
 function wdbRe:fileEntity ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
-  let $file := (collection($wdb:data)/id($id))[self::tei:TEI][1]
+  let $file := (collection($config:data)/id($id))[self::tei:TEI][1]
   let $query := lower-case(xmldb:decode($ref))
   
   let $res := $file//tei:rs[@ref=$query or @ref='#' || $query or @ref = $type || ':' || $ref]
@@ -176,11 +179,11 @@ declare
     %rest:query-param("start", "{$start}", 1)
     %output:method("html")
 function wdbRe:fileEntityHtml ( $id as xs:string*, $ref as xs:string*, $start as xs:int*, $type as xs:string* ) {
-  let $coll := wdb:getEdPath($id, true())
-    , $xsl := wdbRCo:getXSLT($coll, 'entity.xsl')
+  let $coll := (wdbFiles:getFullPath($id))?collectionPath
+    , $xsl := wdbRCo:getXSLT($coll, 'xsl/entity.xsl')
     
   let $params := <parameters>
-    <param name="rest" value="{$wdb:restURL}" />
+    <param name="rest" value="{$config:restURL?1}" />
   </parameters>
   
   return (
@@ -199,7 +202,7 @@ declare
   %rest:path("/edoc/entities/{$ed}/{$type}/byId")
   %rest:query-param("q", "{$externalId}", "")
 function wdbRe:entityById ( $ed as xs:string*, $type as xs:string*, $externalId as xs:string* ) {
-  let $coll := try { wdb:getEdPath($ed, true()) } catch * { "" }
+  let $coll := try { (wdbFiles:getFullPath($ed))?collectionPath } catch * { "" }
     , $query := xmldb:decode($externalId)
   
   let $res := switch ( $type )

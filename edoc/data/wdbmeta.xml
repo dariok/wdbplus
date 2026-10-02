@@ -2,7 +2,7 @@
 <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="data">
     <projectID></projectID>
     <titleData>
-        <title></title>
+        <title type="main">wdb+ main project collection</title>
         <involvement></involvement>
         <date></date>
         <place></place>
@@ -22,8 +22,12 @@
         </legal>
     </metaData>
     <files></files>
-    <process target="">
-        <command type=""></command>
-    </process>
+    <processes>
+        <process target="">
+            <command>
+                <step type=""/>
+            </command>
+        </process>
+    </processes>
     <struct></struct>
 </projectMD>
