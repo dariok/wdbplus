@@ -1,10 +1,16 @@
-<body data-template="templates:surround" data-template-with="templates/function.html" data-template-at="container">
-  <header data-template="wdbfp:getHeader"></header>
-  <aside>
-    <div data-template="wdbSearch:getLeft"></div>
-  </aside>
-  <main>
-    <div id="searchResults"></div>
-  </main>
-  <footer data-template="wdbfp:getFooter"></footer>
-</body>
+<!DOCTYPE html>
+<html data-template="wdbrh:getValueForAttribute" data-template-attribute="lang" data-template-key="language">
+   <!-- replace with `head` when eXist issue has been resolved -->
+   <content data-template="wdbfp:getHead" />
+   <body>
+      <header data-template="wdbfp:getHeader"></header>
+      <aside>
+         <div data-template="wdbSearch:getAside"></div>
+      </aside>
+      <main>
+         <div id="searchResults"><p>Keine Suche aktiv</p></div>
+         <footer data-template="wdbfp:getMainFooter" />
+      </main>
+      <footer data-template="wdbfp:getBodyFooter"></footer>
+   </body>
+</html>

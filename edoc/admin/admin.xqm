@@ -2,9 +2,9 @@ xquery version "3.1";
 
 module namespace wdbAdmin = "https://github.com/dariok/wdbplus/Admin";
 
-import module namespace config   = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
-import module namespace wdbErr   = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
-import module namespace wdbm     = "https://github.com/dariok/wdbplus/model"  at "../modules/model.xqm";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "../modules/wdb-config.xqm";
+import module namespace wdbErr = "https://github.com/dariok/wdbplus/errors" at "../modules/error.xqm";
+import module namespace wdbm   = "https://github.com/dariok/wdbplus/model"  at "../modules/model.xqm";
 
 declare namespace meta      = "https://github.com/dariok/wdbplus/wdbmeta";
 declare namespace sm        = "http://exist-db.org/xquery/securitymanager";
@@ -20,7 +20,10 @@ declare namespace wdb       = "https://github.com/dariok/wdbplus/wdb";
 declare
     %templates:default("ed", "data")
 function wdbAdmin:start ( $node as node(), $model as map(*), $ed as xs:string ) as item()* {
-  wdbm:populateModel((), $ed, "", "", "")
+  map:merge((
+    wdbm:populateModel((), $ed, "", "", ""),
+    map:entry("page", substring-after(request:get-uri(), "admin/"))
+  ))
 };
 
 declare function wdbAdmin:getEd ( $node as node(), $model as map(*) ) as item()+ {(
@@ -35,7 +38,6 @@ declare function wdbAdmin:heading ( $node as node(), $model as map(*) ) as eleme
     else ()
     
   return (
-    
     <h1>{
       comment { "Created in admin.xqm for "|| $node/@data-template },
       if ($model?page = 'admin.html') then
@@ -56,22 +58,45 @@ declare function wdbAdmin:heading ( $node as node(), $model as map(*) ) as eleme
 
 declare function wdbAdmin:getAside ( $node as node(), $model as map(*) ) as element() {
   <aside>
-    comment { "Created in admin.xqm for "|| $node/@data-template }
-    <h3>Funktionen</h3>
-    {
-      switch ($model?page)
-        case "projects.html" return (
-          <a href="new.html?ed={$model?ed}">(Unter-)Projekt erstellen</a>,<br/>,
-          <a href="directoryForm.html?ed={$model?ed}">Dateien hochladen</a>
-        )
-        default return ()
-    }
-    <hr />
-    <div id="rightSide" role="contentinfo"/>
-    <hr />
-    <div class="info" role="contentinfo">
-      <h2>Projekt-Info</h2>
-      <dl>{ wdbErr:get($model, "") }</dl>
+    { comment { "Created in admin.xqm for "|| $node/@data-template } }
+    <div>
+      <h3>Funktionen</h3>
+      {
+        switch ($model?page)
+          case "projects.html" return (
+            <a href="new.html?ed={$model?ed}">(Unter-)Projekt erstellen</a>,<br/>,
+            <a href="directoryForm.html?ed={$model?ed}">Dateien hochladen</a>
+          )
+          default return ()
+      }
+    </div>
+    <hr/>
+    <div>
+      <h3>Übergeordnetes Projekt</h3>
+      {
+        let $parent := doc($model?filePathInfo?parentProject || '/wdbmeta.xml')
+        return if ( not(empty($parent)) )
+          then <a href="projects.html?ed={ $parent/meta:projectMD/@xml:id }">{ string($parent//meta:title[@type='main']) }</a>
+          else <span>kein übergeordnetes Projekt verlinkt</span>
+      }
+    </div>
+    <hr/>
+    <div>
+      <h3>Unterprojekte</h3>
+      <ol>
+        {
+          for $subproject in doc($model?infoFileLoc)//meta:struct[@file]
+            return <li><a href="projects.html?ed={ $subproject/@file }">{ string($subproject/@label) }</a></li>
+        }
+      </ol>
+    </div>
+    <hr/>
+    <div>
+      <h3>Projekt-Info</h3>
+      <details>
+        <summary>$model</summary>
+        <dl>{ wdbErr:get($model, "") }</dl>
+      </details>
     </div>
   </aside>
 };

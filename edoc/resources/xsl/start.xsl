@@ -93,7 +93,11 @@
    </xsl:template>
 
    <xsl:template match="meta:image">
-      <img class="slideImage" src="{@href}"/>
+      <img src="{@href}">
+         <xsl:if test="parent::meta:coverImages">
+            <xsl:attribute name="class">slideImage</xsl:attribute>
+         </xsl:if>
+      </img>
    </xsl:template>
 
    <xsl:template match="meta:metaData">

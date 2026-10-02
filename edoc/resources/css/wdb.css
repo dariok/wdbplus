@@ -39,7 +39,8 @@ body {
   
   overflow: hidden;
   
-  font-family: mufi;
+  /* in general, all text is sans-serif with the exception of source text, which is Junicode */
+  font-family: sans-serif;
   font-size: 1rem;
   line-height: 1.4rem;
   
@@ -106,7 +107,6 @@ body > header h2 {
 /* controls (e.g. buttons) within header */
 .dispOpts {
   line-height: 1.4rem;
-  font-family: sans-serif;
 }
 .dispOpts:before {
   content: ' [';
@@ -174,14 +174,6 @@ li .label {
   padding-right: 0.5em;
 }
 
-nav li ul {
-  margin-left: 1.25em;
-}
-
-nav a {
-  font-family: sans-serif;
-}
-
 nav button {
   appearance: auto;
   border: none;
@@ -206,8 +198,9 @@ nav button {
 }
 
 a {
-  overflow-wrap: anywhere;
   color: var(--wdb-link-colour);
+  font-family: sans-serif;
+  overflow-wrap: anywhere;
   text-decoration: none;
 }
 
@@ -235,7 +228,6 @@ button[aria-label] {
 #annoInfo {
   display: inline-block;
   width: 80%;
-  float: right;
   text-align: right;
   padding-right: 2px;
 }

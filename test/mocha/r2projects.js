@@ -320,6 +320,7 @@ describe("REST v2 projects", function () {
         .set("Content-Type", unsupportedResourceContentType)
         .send({ path: defaultResourcePath, file: { name, type: "application/xml", data: xml } })
         .then((res) => {
+          /* roaster#88 means that it currently returns 400 */
           expect(res).to.have.status(415);
         });
     });

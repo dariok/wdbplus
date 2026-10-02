@@ -47,7 +47,7 @@ declare %private function r2r:getResourceInfo ( $id as xs:string ) as map(*)? {
             map {
               "meta": $meta,
               "entry": $entry,
-              "path": $resource?collectionPath || "/" || $resource?fileName
+              "path": xs:anyURI($resource?collectionPath || "/" || $resource?fileName)
             }
           ))
 };
@@ -73,44 +73,17 @@ declare %private function r2r:getStoredContent ( $path as xs:string ) as item()?
 };
 
 declare %private function r2r:requireWritableResource ( $request as map(*) ) as map(*) {
-  let $resource := try {
-          r2r:getResourceInfo($request?parameters?id)
-        } catch * { () }
+  let $resource := r2r:getResourceInfo($request?parameters?id)
   
   return
     if ( not(exists($request?user)) or $request?user?fullName = "guest" ) then
-      map { "error": r2:response(401, "text/plain", "Unauthorized", $r2:allOrigins) }
-    else if ( not(r2:writeAllowed($request?user)) ) then
-      map { "error": r2:response(403, "text/plain", "Forbidden", $r2:allOrigins) }
+      error(xs:QName("wdbErr:wdb9201"), "Unauthorized", map { "responseCode": 401 })
+    else if ( not(r2:writeAllowed($request?user)) or not(sm:has-access($resource?path, "w"))) then
+      error(xs:QName("wdbErr:wdb9202"), "Forbidden" , map { "responseCode": 403 })
     else if ( empty($resource) ) then
-      map { "error": r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", $r2:allOrigins) }
-    else if ( not(sm:has-access($resource?path, "w")) ) then
-      map { "error": r2:response(403, "text/plain", "Forbidden", $r2:allOrigins) }
+      error(xs:QName("wdbErr:wdb9203"), "not found", map { "responseCode": 404, "description": "File " || $request?parameters?id || " not found" })
     else
       $resource
-};
-
-declare %private function r2r:parseUpload ( $request as map(*) ) as map(*)? {
-  if ( not(starts-with($request?media-type, "multipart/form-data")) ) then
-    map { "error": r2:response(415, "text/plain", "Unsupported Media Type. Expected multipart/form-data with a file field.", $r2:allOrigins) }
-  else if ( not(r2:mapKeysAllowed($request?body, ("path", "file"), ())) ) then
-    map { "error": r2:response(400, "text/plain", "Wrong content of resource information found. Expected `path` and `file`.", $r2:allOrigins) }
-  else
-    let $xml := try { parse-xml($request?body?file?data) } catch * { () }
-      , $fullTargetPath := $request?project?collectionPath || $request?body?path || '/' || $request?body?file?name
-      , $fileNameBase := if ( contains($request?body?file?name, '/') ) then substring-after($request?body?file?name, '/') else $request?body?file?name
-      , $targetPath := $fullTargetPath => substring-before($fileNameBase)
-      , $relPath := $targetPath => substring-after($request?project?collectionPath)
-
-    return
-      if ( empty($xml) ) then
-        map { "error": r2:response(400, "text/plain", "File content is not valid XML.", $r2:allOrigins) }
-      else
-        map {
-          "xml": $xml,
-          "hash": util:uuid($xml),
-          "relativePath": $relPath || r2:sanitiseFilename($fileNameBase)
-        }
 };
 
 declare %private function r2r:getViewsXml ( $resource as map(*) ) as element(list) {
@@ -167,7 +140,7 @@ declare %private function r2r:resolveProcess ( $resource as map(*), $view as xs:
       if ( $view = 'default' ) then () else $view (: process in wdbmeta may not have @view, which means it is default :)
     )
   } catch * {
-    ()
+    util:log("error", $err:description)
   }
 };
 
@@ -187,61 +160,40 @@ declare %private function r2r:returnResource ( $request as map(*), $method as xs
     r2:response(404, "text/plain", "No resource found by this ID", $r2:allOrigins)
   else
     let $content := r2r:getStoredContent($resource?path)
-      , $lastModified := wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName))
-      , $mimeType := r2r:getMimeType($resource?path, $content)
-      , $modified := request:get-header("If-Modified-Since")
-      , $status := if ( exists($modified) and $modified != "" )
-                      then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
-                      else 200
     
     return if ( empty($content) ) then
       r2:response(204, "", "", $r2:allOrigins)
     else
-      router:response(
-        $status,
-        $mimeType,
-        if ( $method = "GET" ) then $content else (),
-        map:merge(($r2:allOrigins, map { "Last-Modified": $lastModified }))
+      let $lastModified := wdbFiles:ietfDate(wdbFiles:getModificationDate($resource?collectionPath, $resource?fileName))
+        , $mimeType := r2r:getMimeType($resource?path, $content)
+        , $modified := request:get-header("If-Modified-Since")
+        , $status := if ( exists($modified) and $modified != "" )
+                        then wdbFiles:evaluateIfModifiedSince($resource?collectionPath, $resource?fileName, $modified)
+                        else 200
+
+      return (
+        router:response(
+          $status,
+          $mimeType,
+          if ( $method = "GET" ) then $content else (),
+          map:merge(($r2:allOrigins, map { "Last-Modified": $lastModified }))
+        )
       )
 };
 
 declare function r2r:putResource ( $request as map(*) ) as map(*) {
-  let $resource := r2r:requireWritableResource($request)
-  return if ( exists($resource?error) ) then
-    $resource?error
-  else
-    let $upload := r2r:parseUpload($request)
-
-    return if ( exists($upload?error) ) then
-      $upload?error
-    else if ( exists($upload?xml/*[1]/@xml:id) and $upload?xml/*[1]/@xml:id != $request?parameters?id ) then
-      r2:response(400, "text/plain", "ID in the XML content (" || $upload?xml/*[1]/@xml:id || ") does not match the ID in the URL (" || $request?parameters?id || ").", $r2:allOrigins)
-    else if ( $upload?relativePath != string($resource?entry/@path) ) then
-      r2:response(409, "text/plain", "Error storing file under " || $upload?relativePath || ": A file with ID " || $request?parameters?id || " is present in a different location: " || $resource?entry/@path, $r2:allOrigins)
-    else
-      let $existingDoc := try { doc($resource?path) } catch * { () }
-        , $existingHash := if ( exists($existingDoc) ) then util:uuid($existingDoc) else ()
-      return if ( exists($existingHash) and $existingHash = $upload?hash ) then
-        r2:response(204, "text/plain", "", $r2:allOrigins)
-      else
-        r2:createXmlResource(
-          map{
-            "parameters": map {
-              "id": $request?parameters?id
-            },
-            "body": map:merge((
-              $request?body,
-              map {
-                "xml": $upload?xml,
-                "hash": $upload?hash
-              }
-            )),
-            "user": $request?user,
-            "project": map {
-              "collectionPath": $resource?projectPath
-            }
-          }
-        )
+  try {
+    let $resourceInfo := r2r:requireWritableResource($request)
+      
+    return if ( empty($resourceInfo) )
+      then error(xs:QName("wdbErr:wdb9204"), "strange error")
+      else r2:checkAndStore($request, r2:parseUpload($request), string($resourceInfo?meta//meta:projectMD/@xml:id), $request?parameters?id)
+  } catch err:FODC0006 {
+    r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  } catch * {
+    util:log("error", $err:code || ': ' || $err:module || '@' || $err:line-number),
+    r2:response(($err:additional?responseCode, 400)[1], 'text/plain', $err:description, $r2:allOrigins)
+  }
 };
 
 declare function r2r:patchResource ( $request as map(*) ) as item() {
@@ -317,9 +269,9 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
     let $type := if ( exists($request?headers?Accept) )
             then $request?headers?Accept
             else "text/html"
-        , $process := try {
-              r2r:resolveProcess($resource, $request?parameters?view, $type)
-            } catch wdbErr:wdb0002 { () }
+      , $process := try {
+            r2r:resolveProcess($resource, $request?parameters?view, $type)
+          } catch wdbErr:wdb0002 { () }
 
     let $modified := request:get-header("If-Modified-Since")
       , $status := if ( exists($modified) and $modified != "" )
@@ -337,7 +289,7 @@ declare function r2r:getResourceView ( $request as map(*) ) as item() {
               "view": $request?parameters?view,
               "fileLoc": $resource?path,
               "pathToEd": $resource?projectPath,
-              "ed": tokenize(normalize-space($resource?projectPath), "/")[last()]
+              "ed": $resource?meta/meta:projectMD/@xml:id
           })
         , $body := $result?content
         , $namespace := if ( $body instance of document-node() or $body instance of element() )

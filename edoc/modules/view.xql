@@ -16,13 +16,12 @@ import module namespace wdb          = "https://github.com/dariok/wdbplus/wdb"  
 import module namespace wdba         = "https://github.com/dariok/wdbplus/auth"          at "auth.xqm";
 import module namespace wdbAddinMain = "https://github.com/dariok/wdbplus/addins-main"   at "addin.xqm";
 import module namespace wdbe         = "https://github.com/dariok/wdbplus/entity"        at "entity.xqm";
+import module namespace wdbErr       = "https://github.com/dariok/wdbplus/errors"        at "error.xqm";
 import module namespace wdbFiles     = "https://github.com/dariok/wdbplus/files"         at "wdb-files.xqm";
 import module namespace wdbfp        = "https://github.com/dariok/wdbplus/functionpages" at "function.xqm";
 import module namespace wdbpq        = "https://github.com/dariok/wdbplus/pquery"        at "pquery.xqm";
-import module namespace wdbs         = "https://github.com/dariok/wdbplus/stats"         at "stats.xqm";
-import module namespace wdbSearch    = "https://github.com/dariok/wdbplus/wdbs"          at "search.xqm";
+import module namespace wdbi         = "https://github.com/dariok/wdbplus/index"         at "index.xqm";
 import module namespace wdbst        = "https://github.com/dariok/wdbplus/start"         at "start.xqm";
-import module namespace wdbv         = "https://github.com/dariok/wdbplus/mView"         at "view.xqm";
 
 declare option output:method "html5";
 declare option output:media-type "text/html";
@@ -55,7 +54,8 @@ let $lookup := function($functionName as xs:string, $arity as xs:integer) {
 let $content := request:get-data()
   , $id := request:get-parameter("id", "")
 
-return if ( request:get-method() = 'GET' )
+return try {
+  if ( request:get-method() = 'GET' )
     then templates:apply($content, $lookup, (), $config)
     else if ( request:get-method() = 'HEAD' ) then
       let $requestedModified := (
@@ -74,3 +74,12 @@ return if ( request:get-method() = 'GET' )
         else
           response:set-status-code(304)
     else templates:apply($content, $lookup, (), $config)
+} catch * {
+  wdbErr:error(map{
+    "code": $err:code,
+    "desc": $err:description,
+    "value": $err:value,
+    "additional": $err:additional,
+    "location": $err:module || '@' || $err:line-number || ':' || $err:column-number
+  })
+}

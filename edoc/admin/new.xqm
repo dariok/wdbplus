@@ -41,7 +41,8 @@ declare function wdbPN:body ( $node as node(), $model as map(*), $pName as xs:st
         <dt>
           <ul>
             <li><a href="directoryForm.html?ed={$pID}">Upload</a></li>
-            <li><a href="new.html?ed={$pID}">Unterprojekt erstellen</a></li>
+            <li><a href="new.html?ed={$pID}">Unterprojekt unter { $pID } erstellen</a></li>
+            <li><a href="new.html?ed={$model?ed}">Unterprojekt unter { $model?ed } erstellen</a></li>
           </ul>
         </dt>
       </dl>
