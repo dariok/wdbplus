@@ -5,10 +5,6 @@
  *   - this include styles for a simple CSS-only slider
  */
 
-aside {
-  padding-left: 1em;
-}
-
 aside div div {
   padding-bottom: 1em;
 }
@@ -17,16 +13,37 @@ aside div div {
  * on start.html, we dont want full styling in aside */
 aside nav {
   border: 0;
+  /* h2: margin-top/bottom ~ .85em; font-size ~ 1.5em */
+  max-height: calc(100% - 5.5em);
+  padding-left: .5em;
   position: initial;
+  scrollbar-gutter: stable;
 }
 
-aside nav h2 {
-  display: none;
+aside h2 {
+  margin-bottom: .4em;
 }
+/* aside nav h2 {
+  display: none;
+} */
 
 .cite {
   text-align: center;
   width: 100%;
+}
+
+main h1 {
+  font-size: 2em;
+  line-height: 2.25rem;
+}
+main h2 {
+  font-size: 1.5em;
+  line-height: 1.75rem;
+}
+
+p {
+  hyphens: auto;
+  text-align: justify;
 }
 
 p[data-role] {

@@ -27,7 +27,7 @@
    <xsl:template match="meta:struct[not(parent::meta:struct)]">
       <nav>
          <xsl:comment>created in generic nav.xsl</xsl:comment>
-         <ul>
+         <ul id="{ @ed }">
             <xsl:apply-templates select="*">
                <xsl:sort select="meta:order(@order)"/>
             </xsl:apply-templates>
@@ -41,6 +41,7 @@
       </xsl:variable>
       
       <li>
+         <span class="label">–</span>
          <button class="wdbNav level" data-lvl="{$id}">
             <xsl:attribute name="title">
                <xsl:choose>
@@ -52,7 +53,7 @@
          </button>
          <ul>
             <xsl:attribute name="id" select="$id" />
-            <xsl:if test="not(meta:view) and (@ed != $id or not(@ed))">
+            <xsl:if test="preceding-sibling::meta:import">
                <xsl:attribute name="style">display: none;</xsl:attribute>
             </xsl:if>
             <xsl:if test="not(meta:struct or meta:view)">
@@ -118,6 +119,7 @@
    
    <xsl:template match="meta:struct[@file]">
       <li>
+         <span class="label">–</span>
          <button class="wdbNav load" data-ed="{@file}" title="Navigationsebene einblenden">
             <xsl:apply-templates select="@label" />
          </button>
@@ -126,13 +128,24 @@
    
    <xsl:template match="meta:view">
       <li>
-         <xsl:if test="@order">
-            <span class="label" data-sort="{meta:order(@order)}"><xsl:value-of select="@order" /></span>
-         </xsl:if>
-         <a href="view.html?id={@file}">
-            <xsl:apply-templates select="@label | meta:label" />
-         </a>
+         <span class="label">
+            <xsl:choose>
+               <xsl:when test="@order">
+                  <xsl:attribute name="data-order" select="meta:order(@order)"/>
+                  <xsl:value-of select="@order" />
+               </xsl:when>
+               <xsl:otherwise>
+                  <xsl:text>–</xsl:text>
+               </xsl:otherwise>
+            </xsl:choose>
+         </span>
+         <xsl:apply-templates select="." mode="link" />
       </li>
+   </xsl:template>
+   <xsl:template match="meta:view" mode="link">
+      <a href="view.html?id={@file}">
+         <xsl:apply-templates select="@label | meta:label" />
+      </a>
    </xsl:template>
    
    <xsl:template match="meta:label">

@@ -32,8 +32,14 @@ main {
   display: flex;
   flex-wrap: wrap;
   
+  font-family: mufi;
+  font-size: 1.25em;
+  letter-spacing: .4px;
+  line-height: 1.25em;
+  padding: 0 1em;
   resize: horizontal;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
@@ -49,12 +55,8 @@ main {
 }
 
 /* the main text */
-main > section {
-  width: calc(100% - 1em);
-  padding-left: 0.25em;
-  flex: 0 1 auto;
-  
-  padding: 0 0.5%;
+main section {
+  text-align: justify;
 }
 #content_container {
   grid-area: main;
@@ -65,9 +67,7 @@ main > section {
 
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
-  main > section {
-    width: 100%;
-  }
+
 }
 
 /* Show/hide bar */

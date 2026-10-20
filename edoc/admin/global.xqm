@@ -29,24 +29,24 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
       </div>
       
     case 'title' return
-      local:titleForm($config:configFile)
+      wdbGS:titleForm($config:configFile)
         
     case 'chgTitle' return
       let $u1 := update replace $config:configFile//config:meta/config:name
         with <name xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('longTitle', '')}</name>
       let $u1 := update replace $config:configFile//config:meta/config:short
         with <short xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('shortTitle', '')}</short>
-      return local:titleForm($config:configFile)
+      return wdbGS:titleForm($config:configFile)
     
     case 'role' return
-      local:roleForm($config:configFile)
+      wdbGS:roleForm($config:configFile)
     
     case 'chgRole' return
       let $u1 := update replace $config:configFile//config:role/config:type
         with <type xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('role', '')}</type>
       let $u1 := update replace $config:configFile//config:role/config:other
         with <other xmlns="https://github.com/dariok/wdbplus/config">{request:get-parameter('other', '')}</other>
-      return local:roleForm($config:configFile)
+      return wdbGS:roleForm($config:configFile)
     
     default return
       <div>
@@ -55,7 +55,7 @@ declare function wdbGS:body ( $node as node(), $model as map(*) ) {
       </div>
 };
 
-declare function local:titleForm($config:configFile) {
+declare function wdbGS:titleForm($config:configFile) {
   <div>
     <h3>Titeldaten verändern</h3>
     <form action="global.html">
@@ -69,7 +69,7 @@ declare function local:titleForm($config:configFile) {
   </div>
 };
 
-declare function local:roleForm($config:configFile) {
+declare function wdbGS:roleForm($config:configFile) {
   let $role := $config:configFile//config:role/config:type
   let $other := $config:configFile//config:role/config:other
   

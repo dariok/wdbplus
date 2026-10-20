@@ -1,27 +1,18 @@
 <!DOCTYPE html>
-<html data-template="wdbv:getEE">
-  <head data-template="wdbv:getHead">
-    <title>head set by app.xqm</title>
-  </head>
-  <body>
-    <div class="loadingModal"></div>
-    <header data-template="wdbv:getHeader"></header>
-    <main data-template="wdbv:getContent"></main>
-    <aside id="wdbRight" aria-label="groups images of witnesses and additional information">
-      <ul style="display: none;">
-        <li><a href="#fac">Faksimile</a></li>
-        <li><a href="#ann">Fußnoten</a></li>
-        <li><a href="#cnt">Inhaltliches</a></li>
-      </ul>
-      <div id="ann" role="note" aria-label="contains footnotes and other information when selected"></div>
-      <div id="fac" role="figure" aria-label="conains a digital facsimile or other image"></div>
-      <div id="cnt" role="note" aria-label="contains meta data for the text" style="display: none;">
-        <!-- this space can be used to add project specific content, e.g. to create a TOC of the text within a tabbed
-             area to the right -->
-      </div>
-      <footer data-template="wdbv:getRightFooter"></footer>
-    </aside>
-    <aside id="wdbAnnotations" data-template="wdb:getAnnotationDialogue"></aside>
-    <footer data-template="wdbv:getGlobalFooter"></footer>
-  </body>
+<html data-template="wdbrh:getValueForAttribute" data-template-attribute="lang" data-template-key="language">
+   <!-- TODO: restore `head` after fixing https://github.com/eXist-db/exist/issues/6587 -->
+   <content data-template="wdbView:getHead" />
+   <!-- <head data-template="wdbView:getHead"/> -->
+   <body>
+      <div class="loadingModal"></div>
+      <header data-template="wdbView:getHeader"></header>
+      <main>
+         <section data-template="wdbView:getContent" />
+         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="mainFooter"></footer>
+      </main>
+      <aside id="wdbRight" aria-label="groups images of witnesses and additional information"
+            data-template="wdbView:getAside"></aside>
+      <!-- <aside id="wdbAnnotations" data-template="wdb:getAnnotationDialogue"></aside> -->
+      <footer data-template="wdbrh:getProjectSpecifics" data-template-name="bodyFooter"></footer>
+   </body>
 </html>

@@ -716,21 +716,20 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
     // load navigation if necessary and toggle visibility
     toggleNavigation: function( ) {
       if ( $("header nav").css("display") === "none" ) {
-        $("#showNavLink").text("Navigation ausblenden");
+        $("#showNavLink").text("Navigation ⮙");
       } else {
-        $("#showNavLink").text("Navigation einblenden");
+        $("#showNavLink").text("Navigation ⮛");
       }
       
       if ( $("header nav").text() === "" ) {
         $("header nav").text("lädt...");
-        let edition = wdb.meta.get('ed;')
         
         $.ajax({
           url: new URL("projects/" + wdb.meta.get('ed') + "/views/navigation", wdb.restUrl).toString(),
           success: function (data) {
             $("header nav").replaceWith($(data));
           },
-          data: "html"
+          dataType: "html"
         });
       }
       $("header nav").slideToggle();
@@ -755,9 +754,11 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
         url: wdb.restUrl + "projects/" + ed + "/views/navigation",
         dataType: "html",
         success:  ( data ) => {
-          let replacement = $(data).find('#' + ed).prev().addBack();
+          let replacement = $(data).find('#' + ed);//.prev().addBack();
           if ( replacement.length > 0 ) {
-            $(event.currentTarget).replaceWith(replacement);
+            $(event.currentTarget).after(replacement);
+            $(event.currentTarget).removeClass('load').addClass('level');
+            $(event.currentTarget).removeAttr('data-ed').attr('data-lvl', ed);
           }
         },
         error: ( xhr, status, error ) => {

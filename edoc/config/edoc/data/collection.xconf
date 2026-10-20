@@ -5,6 +5,9 @@
       <analyzer id="std" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
       <!-- main index – information for filtering is provided when results are prepared per file -->
       <text qname="tei:text"/>
+      <text qname="tei:div">
+        <field name="heading" expression="(ancestor-or-self::*[tei:head])[1]/tei:head[1]"/>
+      </text>
       
       <!-- notes usually contain text that is outside the main text’s flow; hence, they must be handled separately. -->
       <ignore qname="tei:note" />

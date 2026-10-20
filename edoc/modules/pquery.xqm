@@ -16,22 +16,27 @@ declare function wdbpq:body ( $node as node(), $model as map(*) ) as item()* {
   let $module := try {
     load-xquery-module("https://github.com/dariok/wdbplus/wdbq", $map)
   } catch * {
-    wdbErr:error(map {
-      "code": fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2001'),
-      "path": $path, "model": $model, "err": $err:value, "desc": $err:description
-    })
+    error(xs:QName('wdbErr:wdb2001'), "error loading module",
+        map{
+          "responseCode": 500,
+          "path": $path,
+          "model": $model
+        }
+    )
   }
   
   return try {
     let $function := $module?functions?(xs:QName("wdbq:query"))?1
     return $function($model)
   } catch * {
-    wdbErr:error(map {
-      "code": fn:QName('https://github.com/dariok/wdbErr', 'wdbErr:wdb2002'),
-      "path": $path, "model": $model, "err": $err:value, "module": $module, "desc": $err:description,
+    
+    error(xs:QName('wdbErr:wdb2002'), "error executing module function", map {
+      "path": $path,
+      "model": $model,
+      "module": $module,
       "available": exists(function-lookup(xs:QName("wdbq:query"), 1)),
       "functions": inspect:module-functions(xs:anyURI($path)),
-      "location": $err:module || '@' || $err:line-number
+      "responseCode": 500
     })
   }
 };

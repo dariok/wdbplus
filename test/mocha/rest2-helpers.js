@@ -50,7 +50,7 @@ function loginAs( agent, user, password ) {
  * @param {ChaiHttp.Agent} agent
  */
 function loginAsAdmin( agent ) {
-  return loginAs(agent, "wdbadmin", "wdbadmin");
+  return loginAs(agent, "admin", "admin");
 }
 
 /**
