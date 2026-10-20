@@ -49,7 +49,8 @@
 				<xsl:value-of select="normalize-space(@id)"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}/entities/collection/{ancestor::results/@collection}/{ancestor::results/@type}/{@id}.html', '{@id}', this)">→</a>
+			<!-- TODO: adjust this to the new endpoint; use event listener, see FTS  -->
+			<!-- <a href="javascript:void(0);" onclick="load('{$rest}/entities/collection/{ancestor::results/@collection}/{ancestor::results/@type}/{@id}.html', '{@id}', this)">→</a> -->
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
@@ -60,7 +61,8 @@
 				<xsl:value-of select="*:titleStmt/*[descendant::text()][1]"/>
 			</a>
 			<xsl:text> </xsl:text>
-			<a href="javascript:void(0);" onclick="load('{$rest}/entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a>
+			<!-- TODO adjust to the new endpoints; use event listener, see FTS  -->
+			<!-- <a href="javascript:void(0);" onclick="load('{$rest}/entities/file/{@id}/{ancestor::results/@ref}.html', '{@id}', this)">→</a> -->
 			<div id="{@id}" class="results" style="display: none;"/>
 		</li>
 	</xsl:template>
@@ -73,7 +75,8 @@
 				<xsl:value-of select="normalize-space(@fragment)"/>
 			</a>
             <xsl:value-of select="' (' || count(*) || ' Treffer)'"/>
-            <a href="javascript:void(0);" onclick="$('#{parent::results/@id}{@fragment}').toggle();"> →</a>
+						<!-- TODO use event listener, see FTS -->
+            <!-- <a href="javascript:void(0);" onclick="$('#{parent::results/@id}{@fragment}').toggle();"> →</a> -->
             <div id="{parent::results/@id}{@fragment}" class="results" style="display: none;">
                 <xsl:apply-templates select="match"/>
             </div>

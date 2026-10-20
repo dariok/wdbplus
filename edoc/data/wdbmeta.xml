@@ -1,8 +1,9 @@
-<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://raw.githubusercontent.com/dariok/wdbmeta/master/wdbmeta.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
 <projectMD xmlns="https://github.com/dariok/wdbplus/wdbmeta" xml:id="data">
     <projectID></projectID>
     <titleData>
-        <title></title>
+        <title type="main">wdb+ main project collection</title>
         <involvement></involvement>
         <date></date>
         <place></place>
@@ -22,8 +23,12 @@
         </legal>
     </metaData>
     <files></files>
-    <process target="">
-        <command type=""></command>
-    </process>
+    <processes>
+        <process target="">
+            <command>
+                <step type=""/>
+            </command>
+        </process>
+    </processes>
     <struct></struct>
 </projectMD>

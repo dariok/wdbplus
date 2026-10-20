@@ -9,7 +9,7 @@ declare function wdba:getAuth ( $node as node(), $model as map(*) ) as element(d
   
   return if ( $current = 'guest' or $model?res = 'logout' ) then
     <div id="auth" role="dialog" aria-roledescription="login dialog">
-      <button type="button" onclick="javascript:$('#login').toggle();" title="click to log in" aria-label="opens a login form">Login: </button>
+      <button type="button" title="click to log in" aria-label="opens a login form">Login: </button>
       <form enctype="multipart/form-data" id="login" style="display: none;" aria-label="login form">
         <input type="text" id="user"/>
         <input type="password" id="password"/>

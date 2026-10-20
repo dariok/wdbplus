@@ -5,13 +5,14 @@
 
 body {
   grid-template-columns: 3fr 7fr;
+  /* font-family: sans-serif is inherited from wdb.css */
 }
 
 body > footer {
   grid-area: bottom;
 }
 
-h1 {
+h1, h2 {
   width: 100%;
   text-align: center;
 }
@@ -19,12 +20,9 @@ h1 {
 aside {
   grid-area: left;
   overflow: auto;
-  padding-right: 5px;
+  padding: 0 .5em;
 }
 
-aside h1, aside h2 {
-  font-family: sans-serif;
-}
 aside h1 {
   font-size: 1.3em;
 }
@@ -35,18 +33,10 @@ main {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-}
-main h1, main h2 {
-  font-family: sans-serif;
-  width: 100%;
-  text-align: center;
+  scrollbar-gutter: stable;
 }
 main div {
   flex-grow: 1;
-}
-
-header a {
-  font-family: sans-serif;
 }
 
 /* Styles for smaller screens (e.g. mobile devices) */

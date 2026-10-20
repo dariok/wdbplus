@@ -10,10 +10,6 @@
                 <propdesc>get info from URL and display it on the right</propdesc>
             </property>
             <property>
-                <proptype>showFile(ed, file)</proptype>
-                <propdesc>Show file information on the right</propdesc>
-            </property>
-            <property>
                 <proptype>showJob(job, file)</proptype>
                 <propdesc>Show job results</propdesc>
             </property>

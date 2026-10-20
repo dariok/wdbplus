@@ -2,12 +2,28 @@ xquery version "3.1";
 
 module namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
-import module namespace response  = "http://exist-db.org/xquery/response"        at "java:org.exist.xquery.functions.response.ResponseModule";
-import module namespace map       = "http://www.w3.org/2005/xpath-functions/map" at "java:org.exist.xquery.functions.map.MapModule";
-import module namespace functx    = "http://www.functx.com"                      at "/db/system/repo/functx-1.0.1/functx/functx.xq";
+import module namespace config = "https://github.com/dariok/wdbplus/config" at "wdb-config.xqm";
+import module namespace functx = "http://www.functx.com";
 
+declare namespace response = "http://exist-db.org/xquery/response";
+declare namespace map      = "http://www.w3.org/2005/xpath-functions/map";
 
-declare function wdbErr:error ( $data as map (*) ) as item()+ {
+declare function wdbErr:getError ( $node as node(), $map as map(*) ) as element() {
+  element { local-name($node) } {
+    $node/@class,
+      try {
+        parse-xml(request:get-attribute("org.exist.forward.error"))/*
+      } catch * {
+        request:get-attribute("org.exist.forward.error")
+      }
+  }
+};
+
+declare function wdbErr:error ( $data as map (*) ) as element()+ {
+  (: This map will contain the error variables created when catching an error;
+     most importantly, $data?value = $err:value should include what is handed
+     over by the third argument of fn:error#3 :)
+
   let $error := switch ( xs:string($data("code")) )
     case "wdbErr:wdb0000"
     case "wdb0000"
@@ -33,64 +49,78 @@ declare function wdbErr:error ( $data as map (*) ) as item()+ {
     case "wdbErr:wdb3001" return "Error creating model in function.xqm"
     default return "An unknown error has occurred: " || $data("code")
 
-  let $statusCode := if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdbErr:wdb0404") )
+  let $statusCode := if ( $data?value instance of map(*) and exists($data?value?responseCode) )
+    then $data?value?responseCode
+    else if ( xs:string($data?code) = ("wdbErr:wdb0200", "wdbErr:wdb0000", "wdb0000", "wdbErr:wdb0404") )
     then 404
     else 418
+
+  let $errorMap := map:merge(($data, map:entry("user", sm:id())))
+    , $prettyPrint := wdbErr:get($errorMap, '')
   
   let $errorContent := if ( $statusCode = 404 )
-    then
-        <div>
-            <h1>Seite nicht gefunden</h1>
-            <p>Leider konnten wir die angegebene Seite nicht finden</p>
-        </div>
-    else 
-        <div>
-          <h1>Something has gone wrong...</h1>
-          <p>{$error}</p>
-          { wdbErr:get(map:merge(($data, map:entry("user", sm:id()))), '') }
-        </div>
+    then (
+      <h2>Seite nicht gefunden</h2>,
+      <p>Leider konnten wir die angegebene Seite nicht finden. <a href=".">nach oben</a></p>
+    )
+    else (
+      <h2>Something has gone wrong...</h2>,
+      <p>{ $error }</p>,
+      <p>ID: { wdbErr:store("error", $error, $errorMap) }</p>,
+      <details>
+        <summary>Logged error details:</summary>
+        { $prettyPrint }
+      </details>
+    )
 
   return (
     util:log("error", $error),
     util:log("info", $data),
-    response:set-status-code($statusCode),
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="wdb-template" content="(error page)" />
-      <title>ERROR</title>
-      <link rel="stylesheet" type="text/css" href="$shared/css/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="data/resources/wdb.css" />
-      <link rel="stylesheet" type="text/css" href="$shared/css/function.css" />
-      <script src="resources/scripts/function.js"/>
-    </head>,
-    <body>
-      <header>head</header>
-      <main>
-        { $errorContent }
-      </main>
-    </body>
+    if ( response:exists() ) then response:set-status-code($statusCode) else (),
+    <div class="error">{ $errorContent }</div>
   )
 };
 
-declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) {
-  typeswitch ($test)
-    case array(*) return
-      for $n in (1 to array:size($test)) return
-        wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
-    case map(*) return
-      for $key in map:keys($test) return
-      try {  
-        if ($test($key) instance of map(*))
+declare function wdbErr:get ( $test as item()*, $prefix as xs:string* ) as element(dl) {
+  <dl>{
+    typeswitch ($test)
+      case array(*) return
+        for $n in (1 to array:size($test)) return
+          wdbErr:get($test($n), $prefix || ' → [' || $n || ']')
+      case map(*) return
+        for $key in map:keys($test) return
+        try {  
+          if ($test($key) instance of map(*))
+            then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
+          else if ($test($key) instance of function(*))
+            then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
+          else if ($test($key) instance of xs:string 
+                  or $test($key) instance of xs:boolean 
+                  or $test($key) instance of xs:integer 
+                  or $test($key) instance of xs:double)
           then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
-        else if ($test($key) instance of function(*))
-          then (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{function-name($test($key))}#{function-arity($test($key))}</dd>)
-        else if ($test($key) instance of xs:string or $test($key) instance of xs:boolean)
-          then wdbErr:get($test($key), string-join(($prefix, $key), ' → '))
-        else (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{functx:atomic-type($test($key))}</dd>)
-      } catch * {
-        functx:atomic-type($key) || " - " || functx:atomic-type($prefix)
-      }
-    case element(*) return
-      (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
-    default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
+          else (<dt>{string-join(($prefix, $key), ' → ')}</dt>, <dd>{functx:atomic-type($test($key))}</dd>)
+        } catch * {
+          functx:atomic-type($key) || " - " || functx:atomic-type($prefix)
+        }
+      case element(*) return
+        (<dt>{string-join(($prefix, "element(" || local-name($test) || ")"), ' → ')}</dt>, <dd>{normalize-space($test)}</dd>)
+      default return (<dt>{$prefix}</dt>, <dd>{$test}</dd>)
+  }</dl>
+};
+
+declare function wdbErr:store ( $type as xs:string, $description as xs:string, $content as map(*) ) as xs:string {
+  let $id := util:uuid()
+
+  return (
+    $id,
+    update insert 
+        <error xmlns="https://github.com/dariok/wdbplus/errors" xml:id="e-{$id}">
+          <desc>{ $description }</desc>
+          <type>{ $type }</type>
+          <date>{ xs:dateTime(current-dateTime()) }</date>
+          <content>{ wdbErr:get($content, '') }</content>
+        </error>
+      into doc($config:edocBaseDB || "/logs/errors.xml")//wdbErr:errors
+  )
 };

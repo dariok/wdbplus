@@ -1,0 +1,27 @@
+xquery version "3.1";
+
+declare namespace index = "https://github.com/dariok/wdbplus/index";
+declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
+
+update delete doc("/db/apps/edoc/index/project-index.xml")/index:index/*,
+update delete doc("/db/apps/edoc/index/file-index.xml")/index:index/*,
+for $project in collection('/db/apps/edoc/data')//meta:projectMD
+  let $path := util:collection-name($project)
+  let $files := $project//meta:file
+  let $file-entries := for $file in $files
+    return <file xmlns="https://github.com/dariok/wdbplus/index"
+        xml:id="{ $file/@xml:id }"
+        project="{ base-uri($file) }"
+    />
+
+  return (
+    update insert <project xmlns="https://github.com/dariok/wdbplus/index"
+        xml:id="{ $project/@xml:id }"
+        path="{ $path }"
+        title="{ $project//meta:title[@type='main'] }"
+       /> into doc("/db/apps/edoc/index/project-index.xml")/index:index,
+    if ( not(empty($file-entries)) )
+      then update insert $file-entries into doc("/db/apps/edoc/index/file-index.xml")/index:index
+      else ()
+  ),
+xmldb:reindex("/db/apps/edoc/index")

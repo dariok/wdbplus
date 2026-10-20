@@ -3,7 +3,7 @@
     <author>Dario Kampkaspar</author>
     <website>https://github.com/dariok/wdbplus</website>
     <status>stable</status>
-    <license>GNU-LGPL</license>
+    <license>MIT</license>
     <copyright>true</copyright>
     <type>application</type>
     <target>edoc</target>

@@ -11,7 +11,7 @@
  */
 
 body {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
 }
 
 /* hide right side on small broser windows, e.g. mobile */
@@ -32,8 +32,14 @@ main {
   display: flex;
   flex-wrap: wrap;
   
+  font-family: mufi;
+  font-size: 1.25em;
+  letter-spacing: .4px;
+  line-height: 1.25em;
+  padding: 0 1em;
   resize: horizontal;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
@@ -49,12 +55,8 @@ main {
 }
 
 /* the main text */
-main > section {
-  width: calc(100% - 1em);
-  padding-left: 0.25em;
-  flex: 0 1 auto;
-  
-  padding: 0 0.5%;
+main section {
+  text-align: justify;
 }
 #content_container {
   grid-area: main;
@@ -65,9 +67,7 @@ main > section {
 
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
-  main > section {
-    width: 100%;
-  }
+
 }
 
 /* Show/hide bar */
@@ -94,12 +94,8 @@ body > aside {
   overflow: initial;
 }
 
-#ann {
+aside > div {
   position: absolute;
-}
-
-#fac {
-  height: 100%;
 }
 
 q {
@@ -134,12 +130,12 @@ div.footnote {
   display: table-row;
 }
 
-/* footnote number within the main text */
+/* footnote number within the main text
 .fnNumber {
   font-size: 0.9em;
   vertical-align: super;
   line-height: 0;
-}
+} */
 
 /* footnote number within apparatus */
 .footnotes .fnNumber {
@@ -171,9 +167,11 @@ div.footnote {
 
 /* footnote links */
 button[aria-label].footnoteNumber {
-  vertical-align: super;
-  font-size: 0.75rem;
+  display: inline-block;
+  font-size: 0.9em;
   line-height: 0;
+  text-indent: 0;
+  vertical-align: super;
 }
 
 /* Spans acting as buttons to display entity information */
