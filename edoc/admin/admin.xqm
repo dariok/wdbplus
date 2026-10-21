@@ -62,7 +62,7 @@ declare function wdbAdmin:getAside ( $node as node(), $model as map(*) ) as elem
     <div>
       <h3>Funktionen</h3>
       {
-        switch ($model?page)
+        switch ( $model?page )
           case "projects.html" return (
             <a href="new.html?ed={$model?ed}">(Unter-)Projekt erstellen</a>,<br/>,
             <a href="directoryForm.html?ed={$model?ed}">Dateien hochladen</a>
@@ -74,7 +74,7 @@ declare function wdbAdmin:getAside ( $node as node(), $model as map(*) ) as elem
     <div>
       <h3>Übergeordnetes Projekt</h3>
       {
-        let $parent := doc($model?filePathInfo?parentProject || '/wdbmeta.xml')
+        let $parent := try { doc($model?filePathInfo?parentProject || '/wdbmeta.xml') } catch * { () }
         return if ( not(empty($parent)) )
           then <a href="projects.html?ed={ $parent/meta:projectMD/@xml:id }">{ string($parent//meta:title[@type='main']) }</a>
           else <span>kein übergeordnetes Projekt verlinkt</span>
