@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "wdb-config.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"             at "../modules/app.xqm";
 import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
