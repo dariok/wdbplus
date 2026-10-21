@@ -1,34 +1,35 @@
 xquery version "3.1";
 
 (: Note: default values set automatically during installation
-   - default user and group:   wdb:wdbusers  – set in repo.xml
-   - default mode:             rw-rw-r--     – set in repo.xml
-   - execute flag:             rwxrwxr-x     – set automatically https://exist-db.org/exist/apps/doc/repo.xml#sect-repoxml
+   - default user and group:  wdbadmin:wdbadmins – set in repo.xml
+   - default mode:            r--r--r--          – set in repo.xml
+   - execute flag for XQuery: r-xr-xr-x          – set automatically https://exist-db.org/exist/apps/doc/repo.xml#sect-repoxml
  :)
 
 let $targetCollection := '/db/apps/edoc'
-  , $collsr := ("/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl")
 
-(: Make global resources and collections read-only
-   This is to remind admins that these are not to be edited but the cascading logic (i.e., files in data/resources) must
-   be used instead.
+(: All core elements are read-only, set in repo.xml
+   We make those writable to the wdbadmin user and wdbadmins group that must be writable
  :)
 return (
-  for $coll in $collsr
-    let $resources := xmldb:get-child-resources($targetCollection || $coll)
-    return for $resource in $resources
-      let $res := $targetCollection || $coll || '/' || $resource
-      return sm:chmod(xs:anyURI($res), 'r--r--r--'),
-  
-  for $html in xmldb:get-child-resources($targetCollection)[ends-with(., '.html')]
-    return sm:chmod(xs:anyURI($targetCollection || '/' || $html), 'r--r--r--'),
-  
-  for $s in xmldb:get-child-collections($targetCollection)
-    return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
-  
   (: /data/ must be writable for admins so that projects can be created :)
   sm:chmod(xs:anyURI($targetCollection || '/data'), 'rwxrwxr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/resources'), 'rwxrwxr-x'),
+  for $global in xmldb:get-child-collections($targetCollection || '/data/resources')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/'||$global), 'rwxrwxr-x'),
+  for $r in xmldb:get-child-resources($targetCollection || '/data/resources/xsl')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/xsl/'||$r), 'rw-rw-r--'),
+  for $r in xmldb:get-child-resources($targetCollection || '/data/resources/css')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/css/'||$r), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/instance.xqm'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
 
   (: /addins/ must be writable for admins so that addins can be installed or created :)
   sm:chmod(xs:anyURI($targetCollection || '/addins'), 'rwxrwxr-x')
+
+  (: /index/ must be writable for admins so that the ID index files can be updated for projects and resources :)
+  sm:chmod(xs:anyURI($targetCollection || '/index'), 'rwxrwxr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/file-index.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/project-index.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/index-projects.xq'), 'r-xr-x---')
 )
