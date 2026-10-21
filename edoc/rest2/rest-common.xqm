@@ -288,9 +288,14 @@ declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*),
             and @uuid = $parsedUpload?hash]
           ) then
     r2:response(204, 'text/plain', ``[`{$parsedUpload?relativePath}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $parsedUpload?relatviePath and @xml:id != $request?parameters?id] ) then
+  else if ( $meta//meta:file[@path = $parsedUpload?relativePath and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $parsedUpload?relativePath || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $parsedUpload?relativePath] ) then
+  (: a resource created by a POST or PUT request has an ID that is already in use
+     r2r:putResource()                 ─┐
+     r2p:createProjectResourceWithId() ─┴→ value for $id is set in the actual request, hence $id = $request?parameters?id
+     r2p:createProjectResourceWithoutId()  POST do not have $request?parameters?id – $id = (/*[1]/@xml:id, util:uuid())[1]  :)
+  (: TODO: should this check against the global ID index to avoid duplicating IDs between projects? :)
+  else if ( $meta//meta:file[@xml:id = $id and @path != $parsedUpload?relativePath] ) then
     r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?relativePath, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $parsedUpload?hash] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $parsedUpload?hash || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $parsedUpload?hash]/@path, $r2:allOrigins)
