@@ -488,6 +488,9 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
       r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
+(: build the ancestor tree for a project
+   We intentionally do not include siblings of a main project to avoid confuosion
+ :)
 declare %private function r2p:imported ( $import, $importerContent ) {
   let $base-uri := base-uri($import)
     , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path
