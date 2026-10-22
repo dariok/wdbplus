@@ -12,6 +12,10 @@ let $targetCollection := '/db/apps/edoc'
    We make those writable to the wdbadmin user and wdbadmins group that must be writable
  :)
 return (
+  (: create wdb and wdbusers :)
+  sm:create-group("wdbusers", "wdbadmin", "general user group"),
+  sm:create-account("wdb", "wdb", "wdbusers"),
+
   (: /data/ must be writable for admins so that projects can be created :)
   sm:chmod(xs:anyURI($targetCollection || '/data'), 'rwxrwxr-x'),
   sm:chmod(xs:anyURI($targetCollection || '/data/resources'), 'rwxrwxr-x'),
@@ -25,7 +29,7 @@ return (
   sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
 
   (: /addins/ must be writable for admins so that addins can be installed or created :)
-  sm:chmod(xs:anyURI($targetCollection || '/addins'), 'rwxrwxr-x')
+  sm:chmod(xs:anyURI($targetCollection || '/addins'), 'rwxrwxr-x'),
 
   (: /index/ must be writable for admins so that the ID index files can be updated for projects and resources :)
   sm:chmod(xs:anyURI($targetCollection || '/index'), 'rwxrwxr-x'),
