@@ -337,7 +337,7 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   try {
-    r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
+    r2:checkAndStore($request, r2:parseUpload($request), $request?parameters?ed, $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
   } catch *:wdb0000 {
@@ -488,6 +488,9 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
       r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
+(: build the ancestor tree for a project
+   We intentionally do not include siblings of a main project to avoid confuosion
+ :)
 declare %private function r2p:imported ( $import, $importerContent ) {
   let $base-uri := base-uri($import)
     , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path

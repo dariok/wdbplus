@@ -6,7 +6,7 @@ declare namespace response = "http://exist-db.org/xquery/response";
 declare namespace tei      = "http://www.tei-c.org/ns/1.0";
 declare namespace meta     = "https://github.com/dariok/wdbplus/wdbmeta";
 
-import module namespace config = "https://github.com/dariok/wdbplus/config"          at "wdb-config.xqm";
+import module namespace config = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace wdbrh  = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
 
 declare function wdbSearch:getAside ( $node as node(), $model as map(*) ) as element()+ {
