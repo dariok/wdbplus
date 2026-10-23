@@ -35,5 +35,12 @@ return (
   sm:chmod(xs:anyURI($targetCollection || '/index'), 'rwxrwxr-x'),
   sm:chmod(xs:anyURI($targetCollection || '/index/file-index.xml'), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/index/project-index.xml'), 'rw-rw-r--'),
-  sm:chmod(xs:anyURI($targetCollection || '/index/index-projects.xq'), 'r-xr-x---')
+  sm:chmod(xs:anyURI($targetCollection || '/index/index-projects.xq'), 'r-xr-x---'),
+
+  (: The log must be writable for everyone but readable only for admins :)
+  sm:chmod(xs:anyURI($targetCollection || '/logs/errors.xml'), 'rw-rw-rw-'),
+
+  (: TODO remove for release :)
+  (: for development purposes, the routing JSON must be writable :)
+  sm:chmod(xs:anyURI($targetCollection || '/rest2/v2.json'), 'rw-rw-r--')
 )
