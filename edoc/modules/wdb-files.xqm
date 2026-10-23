@@ -114,6 +114,7 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
       return map {
         "collectionPath": xs:anyURI(functx:substring-before-last($path, '/')),
               "fileName": xs:anyURI(functx:substring-after-last($path, '/')),
+              "fullPath": xs:anyURI($path),
            "mainProject": xs:anyURI(wdbFiles:findMainProject($projectPath)),
            "projectPath": xs:anyURI($projectPath),
                   "type": "file"
