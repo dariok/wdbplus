@@ -90,7 +90,7 @@ else if ( $exist:resource = '' ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 
@@ -104,7 +104,7 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/admin/view.xql"/>
+      <forward url="{$exist:controller}/admin/error.xql"/>
     </error-handler>
   </dispatch>
 (: view.html :)
@@ -120,7 +120,7 @@ else if ( $exist:resource = "view.html" ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql" />
     </error-handler>
   </dispatch>
 (: search.html, start.html :)
@@ -136,7 +136,7 @@ else if ( $exist:resource = ('search.html', 'start.html') ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 (: other HTML :)
@@ -152,7 +152,7 @@ else if ( ends-with($exist:resource, ".html") ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 
