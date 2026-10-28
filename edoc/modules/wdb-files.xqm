@@ -62,6 +62,7 @@ declare function wdbFiles:getAbsolutePath ( $path as attribute() ) as xs:anyURI 
  : @return map(string, string) with keys including "type", "projectPath", "collectionPath", and "fileName"
  : @throws wdbErr:wdb0000
  : @throws wdbErr:wdb0001
+ : @throws wdbErr:wdb1001
 :)
 declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs:string )? {
   let $file-hint := doc("/db/apps/edoc/index/file-index.xml")/id($id)
@@ -72,19 +73,19 @@ declare function wdbFiles:getFullPath ( $id as xs:string ) as map( xs:string, xs
   return
     if ( count($file) = 0 ) then
       error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0000'),
+        xs:QName('wdbErr:wdb0000'),
         "no file with ID " || $id,
         map { "id": $id, "request": $request }
       )
     else if ( count($file-hint) gt 1 ) then
       error(
-        QName('https://github.com/dariok/wdbErr', 'wdb0001'),
+        xs:QName('wdbErr:wdb0001'),
         "multiple files with ID " || $id,
         map { "id": $id, "request": $request }
       )
     else if ( count($project-hint) gt 1 ) then
       error(
-        QName('https://github.com/dariok/wdbErr', 'wdb1001'),
+        xs:QName('wdbErr:wdb1001'),
         "multiple projects with ID " || $id,
         map { "id": $id, "request": $request }
       )
