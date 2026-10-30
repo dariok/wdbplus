@@ -876,7 +876,19 @@ paths:
   # /api/v2/oai
 
   # TODO
-  # /api/v2/dts
+  /api/v2/dts:
+    get:
+      tags:
+        - dts
+      summary: Entry point
+      operationId: "r2d:entryPoint"
+      responses:
+        200:
+          description: DTS entry point
+          content:
+            application/ld+json:
+              example: ""
+              
 
 components:
   securitySchemes:
