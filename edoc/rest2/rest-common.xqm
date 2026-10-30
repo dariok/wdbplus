@@ -251,19 +251,19 @@ declare function r2:parseUpload ( $request as map(*) ) as map(*)? {
           then parse-xml(util:binary-to-string($data))
           else parse-xml($data)
 
-      (: we cannot be certain to have a file name in the `file` field; hence for stability, we use the path field only :)
-      , $fullTargetPath := $request?project?collectionPath || $request?body?path
-      , $fileName := if ( contains($request?body?path, '/') )
-            then tokenize($request?body?path, '/')[last()]
-            else $request?body?path
-      , $targetCollection := $fullTargetPath => substring-before($fileName)
-      , $relPath := $targetCollection => substring-after($request?project?collectionPath)
+      (: with some browsers, the path field contains the full path and file name; sometimes that might not be the case :)
+      , $targetPath := if ( ends-with($request?body?path, $request?body?file?name) )
+            then $request?body?path
+            else $request?body?path || '/' || $request?body?file?name
+      , $fileName := tokenize($targetPath, '/')[last()]
+      , $targetCollection := $targetPath => substring-before($fileName)
+      , $sanitisedFilename := r2:sanitiseFilename($fileName)
 
     return map {
       "xml": $xml,
       "hash": util:uuid($xml),
-      "relativePath": $relPath || r2:sanitiseFilename($fileName),
-      "sanitisedFilename": r2:sanitiseFilename($fileName)
+      "sanitisedFilename": $sanitisedFilename,
+      "targetCollection": $targetCollection
     }
 };
 
@@ -288,9 +288,14 @@ declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*),
             and @uuid = $parsedUpload?hash]
           ) then
     r2:response(204, 'text/plain', ``[`{$parsedUpload?relativePath}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $parsedUpload?relatviePath and @xml:id != $request?parameters?id] ) then
+  else if ( $meta//meta:file[@path = $parsedUpload?relativePath and @xml:id != $request?parameters?id] ) then
     r2:response(409, 'text/plain', 'A resource with path ' || $parsedUpload?relativePath || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
-  else if ( $meta//meta:file[@xml:id = $request?parameters?id and @path != $parsedUpload?relativePath] ) then
+  (: a resource created by a POST or PUT request has an ID that is already in use
+     r2r:putResource()                 ─┐
+     r2p:createProjectResourceWithId() ─┴→ value for $id is set in the actual request, hence $id = $request?parameters?id
+     r2p:createProjectResourceWithoutId()  POST do not have $request?parameters?id – $id = (/*[1]/@xml:id, util:uuid())[1] :)
+  (: TODO: should this check against the global ID index to avoid duplicating IDs between projects? :)
+  else if ( $meta//meta:file[@xml:id = $id and @path != $parsedUpload?relativePath] ) then
     r2:response(409, 'text/plain', 'A resource with ID ' || $request?parameters?id || ' already exists in project ' || $request?parameters?ed || ' with different path ' || $request?body?relativePath, $r2:allOrigins)
   else if ( $meta//meta:file[@uuid = $parsedUpload?hash] ) then
     r2:response(409, 'text/plain', 'A resource with a hash of ' || $parsedUpload?hash || ' already exists in project ' || $request?parameters?ed || ' as ' || $meta//meta:file[@uuid = $parsedUpload?hash]/@path, $r2:allOrigins)
@@ -329,40 +334,36 @@ declare function r2:createXmlResource ( $request as map(*) ) as map(*) {
         else if ( exists($request?body?file?type) )
         then $request?body?file?type
         else error()
-    
+
     , $meta := doc($request?project?collectionPath || "/wdbmeta.xml")
       (: checks for conflicts have been done in projects.xqm; this should either be exactly one meta:file or empty :)
     , $existing := $meta//id($request?parameters?id)
     
-    , $fullTargetPath := $request?project?projectPath || $request?body?relativePath
-    , $t := util:log("Info", $fullTargetPath)
-    , $fileNameBase := if ( contains($request?body?relativePath, '/') )
-        then substring-after($request?body?relativePath, '/')
-        else $request?body?relativePath
-    , $targetPath := $fullTargetPath => substring-before($fileNameBase)
-    , $relPath := $targetPath => substring-after($request?project?collectionPath)
+    , $c := $request?project?collectionPath
+    , $relPath := $request?body?targetCollection
+    , $targetCollection := $c || $relPath
     , $fileNameMod := $request?body?sanitisedFilename
 
   let $store := (
-        if ( not(xmldb:collection-available($targetPath)) )
-          then (
-            xmldb:create-collection($request?project?collectionPath, $relPath),
-            sm:chown(xs:anyURI($targetPath), "wdb"),
-            sm:chgrp(xs:anyURI($targetPath), "wdbusers")
-          )
-          else (),
-        r2:store($targetPath, $fileNameMod, $request?body?xml, $mimeType, $existing),
-        r2:enterMetaForXml(map{
-          "collectionPath": $request?project?collectionPath,
-          "targetPath": $relPath,
-          "filename": $fileNameMod,
-          "hash": $request?body?hash,
-          "id": $request?parameters?id,
-          "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
-          "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
-        })
-      )
-      (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
+      if ( not(xmldb:collection-available($targetCollection)) )
+        then (
+          xmldb:create-collection($request?project?collectionPath, $relPath),
+          sm:chown(xs:anyURI($targetCollection), "wdb"),
+          sm:chgrp(xs:anyURI($targetCollection), "wdbusers")
+        )
+        else (),
+      r2:store($targetCollection, $fileNameMod, $request?body?xml, $mimeType, $existing),
+      r2:enterMetaForXml(map{
+        "collectionPath": $c,
+        "targetPath": $relPath,
+        "filename": $fileNameMod,
+        "hash": $request?body?hash,
+        "id": $request?parameters?id,
+        "numberingTitle": $request?body?xml//tei:titleStmt/tei:title[@type = 'num'],
+        "mainTitle": normalize-space(($request?body?xml//tei:titleStmt/tei:title[@level eq 'a'], $request?body?xml//tei:titleStmt/tei:title[1])[1])
+      })
+    )
+    (: note: we do not need to update the file index here as this is done automatically by the update trigger :)
 
     , $status := if ( exists($existing) ) then 204 else 201
 
@@ -381,7 +382,7 @@ declare function r2:logMap ( $request as map(*), $depth as xs:integer ) as item(
       else if ( $request($key) instance of document-node() or $request($key) instance of element() ) then
         $ind || 'XML[' || string-length($request($key)) || ']'
       else if ( $request($key) instance of xs:string ) then
-        $ind || 'String[' || string-length($request($key)) || ']'
+        $ind || 'String[' || string-length($request($key)) || ']: `' || substring($request($key), 1, 100) || '`'
       else if ( $request($key) instance of xs:boolean ) then
         $ind || 'boolean = ' || string($request($key))
       else if ( $request($key) castable as xs:double ) then

@@ -5,8 +5,9 @@ module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects";
 import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
 
-declare namespace index = "https://github.com/dariok/wdbplus/index";
-declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace index  = "https://github.com/dariok/wdbplus/index";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : List all projects
@@ -169,7 +170,7 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
             xmldb:create-collection($subCollection || "/resources", "js"),
             xmldb:create-collection($subCollection || "/resources", "xq"),
 
-            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl", $subCollection || "/resources"),
+            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl/", $subCollection || "/resources"),
 
             sm:chmod(xs:anyURI($subCollection || "/resources"), 'rwxrwxr-x'),
             sm:chown(xs:anyURI($subCollection || "/resources"), "wdb:wdbusers"),
@@ -323,6 +324,8 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
     return r2:checkAndStore($request, $parsed, $request?parameters?ed, $id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  } catch * {
+    r2:response(($err:value?responseCode, 418)[1], 'text/plain', 'nope', $r2:allOrigins)
   }
 };
 
@@ -337,11 +340,13 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   try {
-    r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
+    r2:checkAndStore($request, r2:parseUpload($request), $request?parameters?ed, $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
-  } catch *:wdb0000 {
+  } catch wdbErr:wdb0000 {
     r2:response(404, 'text/plain', $err:description, $r2:allOrigins)
+  } catch * {
+    r2:response(($err:value?responseCode, 418)[1], 'text/plain', 'nope', $r2:allOrigins)
   }
 };
 
@@ -488,6 +493,9 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
       r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
+(: build the ancestor tree for a project
+   We intentionally do not include siblings of a main project to avoid confuosion
+ :)
 declare %private function r2p:imported ( $import, $importerContent ) {
   let $base-uri := base-uri($import)
     , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path

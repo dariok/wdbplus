@@ -19,13 +19,17 @@ declare variable $exist:prefix external;
 declare variable $local:isget := request:get-method() = ("GET","get");
 declare variable $local:config := doc("/db/apps/edoc/config.xml")/config:config;
 
-(: util:log("info", "Request-Path: " || $exist:path || "; Resource: " || $exist:resource || "; Controller: " || $exist:controller || "; Prefix: " || $exist:prefix), :)
+util:log("info", "Request-Path: " || $exist:path || "; Resource: " || $exist:resource || "; Controller: " || $exist:controller || "; Prefix: " || $exist:prefix),
 (: util:log("info", request:get-method() || " " || request:get-url() || ' ? ' || request:get-query-string() || " → resource: " || $exist:resource), :)
 
 (: static HTML page for API documentation should be served directly to make sure it is always accessible :)
 if ( $local:isget and $exist:resource = ('v2.json', 'v2.html', 'v2.yaml') ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <forward url="{$exist:controller}/rest2/{$exist:resource}"/>
+  </dispatch>
+else if ( $local:isget and starts-with($exist:path, '/api/swagger-ui/') ) then
+  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <forward url="{$exist:controller}/rest2/{substring-after($exist:path, 'api/')}"/>
   </dispatch>
 
 (: login :)
@@ -86,7 +90,7 @@ else if ( $exist:resource = '' ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 
@@ -100,7 +104,7 @@ else if ( ends-with($exist:resource, ".html") and contains($exist:path, '/admin/
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/admin/view.xql"/>
+      <forward url="{$exist:controller}/admin/error.xql"/>
     </error-handler>
   </dispatch>
 (: view.html :)
@@ -116,7 +120,7 @@ else if ( $exist:resource = "view.html" ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql" />
     </error-handler>
   </dispatch>
 (: search.html, start.html :)
@@ -132,7 +136,7 @@ else if ( $exist:resource = ('search.html', 'start.html') ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 (: other HTML :)
@@ -148,7 +152,7 @@ else if ( ends-with($exist:resource, ".html") ) then
     </view>
     <error-handler>
       <forward url="{$exist:controller}/templates/error-page.html" method="get"/>
-      <forward url="{$exist:controller}/modules/view.xql"/>
+      <forward url="{$exist:controller}/renderers/error.xql"/>
     </error-handler>
   </dispatch>
 
@@ -172,14 +176,14 @@ else if ( contains($exist:path, "/$global/") ) then
       }
     </forward>
   </dispatch>
-
+(: XQueries that are called directly are handled without additional renderers :)
 else if ( ends-with($exist:path, ".xql") or ends-with($exist:path, ".xq") ) then
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <set-header name="Cache-Control" value="no-cache"/>
     <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
   </dispatch>
 
-  (: everything else is passed through :)
+(: everything else is passed through :)
 else
   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     <cache-control cache="yes"/>

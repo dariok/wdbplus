@@ -197,12 +197,13 @@ declare function r2r:putResource ( $request as map(*) ) as map(*) {
 };
 
 declare function r2r:patchResource ( $request as map(*) ) as item() {
-  let $resource := r2r:requireWritableResource($request)
-  return if ( exists($resource?error) ) then
-    $resource?error
-  else
-    let $content := try { doc($resource?path) } catch * { () }
-      , $patch := if ( $request?body instance of document-node() ) then $request?body else try { parse-xml($request?body) } catch * { () }
+  try {
+    let $resource := r2r:requireWritableResource($request)
+      , $content := doc($resource?path)
+      , $patch := if ( $request?body instance of document-node() )
+          then $request?body
+          else parse-xml($request?body)
+    
     return if ( empty($content) ) then
       r2:response(404, "text/plain", "File " || $request?parameters?id || " not found", $r2:allOrigins)
     else if ( empty($patch) or empty($patch/*[1]/@xml:id) ) then
@@ -217,6 +218,12 @@ declare function r2r:patchResource ( $request as map(*) ) as item() {
           
           r2:response(204, "text/plain", "", $r2:allOrigins)
         )[last()]
+  } catch err:FODC0006 {
+    r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  } catch * {
+    util:log("error", $err:code || ': ' || $err:module || '@' || $err:line-number),
+    r2:response(($err:additional?responseCode, 400)[1], 'text/plain', $err:description, $r2:allOrigins)
+  }
 };
 
 declare function r2r:optionsResource ( $request as map(*) ) as item() {
@@ -229,11 +236,9 @@ declare function r2r:optionsResource ( $request as map(*) ) as item() {
 };
 
 declare function r2r:deleteResource ( $request as map(*) ) as item() {
-  let $resource := r2r:requireWritableResource($request)
-  return if ( exists($resource?error) ) then
-    $resource?error
-  else
-    r2:response(
+  try {
+    let $resource := r2r:requireWritableResource($request)
+    return r2:response(
       204,
       "text/plain",
       (
@@ -245,6 +250,10 @@ declare function r2r:deleteResource ( $request as map(*) ) as item() {
       )[last()],
       $r2:allOrigins
     )
+  } catch * {
+    util:log("error", $err:code || ': ' || $err:module || '@' || $err:line-number),
+    r2:response(($err:additional?responseCode, 400)[1], 'text/plain', $err:description, $r2:allOrigins)
+  }
 };
 
 declare function r2r:listResourceViews ( $request as map(*) ) as item() {

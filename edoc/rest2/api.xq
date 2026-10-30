@@ -6,6 +6,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 import module namespace roaster = "http://e-editiones.org/roaster";
 
 import module namespace auth = "http://e-editiones.org/roaster/auth";
+import module namespace r2d  = "https://github.com/dariok/wdbplus/rest2/dts"       at "dts.xqm";
 import module namespace r2p  = "https://github.com/dariok/wdbplus/rest2/projects"  at "projects.xqm";
 import module namespace r2r  = "https://github.com/dariok/wdbplus/rest2/resources" at "resources.xqm";
 import module namespace r2s  = "https://github.com/dariok/wdbplus/rest2/search"    at "search.xqm";
@@ -19,15 +20,25 @@ declare variable $api:definitions := ("rest2/v2.json");
  : Loopkup function to look up a function by name – this is necessary because functions are only known to importing modules
  : The name is expected to be a QName, e.g. "rest:listProjects".
  :)
-declare function api:lookup ( $name as xs:string ) {
+declare function api:lookup ( $name as xs:string ) as function(*)? {
   function-lookup(xs:QName($name), 1)
 };
 
 declare function api:addHeader ( $request as map(*), $response as map(*)) as map(*)+ {
-  map:put($request, "headers", map {
-    "Accept": (request:get-header("Accept") => tokenize(','))[1]
-  }),
-  $response
+  let $map :=  if ( starts-with($request?path, "/api/v2/dts") ) then
+      map:put($request, "headers", 
+        map {
+          "Accept": "application/ld+json"
+        }
+      )
+    else
+      map:put($request,"headers",
+        map {
+          "Accept": (request:get-header("Accept") => tokenize(','))[1]
+        }
+      )
+  
+  return ($map , $response)
 };
 
 declare variable $api:use := (
