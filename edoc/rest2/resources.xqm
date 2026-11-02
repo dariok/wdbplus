@@ -192,7 +192,7 @@ declare function r2r:putResource ( $request as map(*) ) as map(*) {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
   } catch * {
     util:log("error", $err:code || ': ' || $err:module || '@' || $err:line-number),
-    r2:response(($err:additional?responseCode, 400)[1], 'text/plain', $err:description, $r2:allOrigins)
+    r2:response(($err:value?responseCode, 418)[1], 'text/plain', $err:description, $r2:allOrigins)
   }
 };
 
