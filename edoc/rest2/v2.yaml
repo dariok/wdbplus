@@ -26,8 +26,8 @@ tags:
     description: Full text search
   # - name: oai
   #   description: OAI PMH endpoints
-  # - name: dts
-  #   description: Endpoints for Distributed Text Services
+  - name: dts
+    description: Distributed Text Services 1.0
 security:
   - cookieAuth: []
 paths:
@@ -779,15 +779,9 @@ paths:
   /api/v2/resources/{id}/views/{view}:
     parameters:
       - $ref: "#/components/parameters/id"
-      - $ref: "#/components/parameters/modified"
       - $ref: "#/components/parameters/view"
       - $ref: "#/components/parameters/accept"
-      - name: view
-        in: path
-        description: The ID of the view to be invoked
-        schema:
-          type: string
-        required: true
+      - $ref: "#/components/parameters/modified"
     get:
       tags:
         - resources
@@ -801,6 +795,7 @@ paths:
         406:
           description: No representation could be created for the requested media type
   /api/v2/resources/byPid/{pid}:
+    description: Retrieve a resource by external PID; returns either a redirction or 404.
     parameters:
       - name: "pid"
         in: path
@@ -875,20 +870,201 @@ paths:
   # TODO
   # /api/v2/oai
 
-  # TODO
   /api/v2/dts:
     get:
       tags:
-        - dts
-      summary: Entry point
-      operationId: "r2d:entryPoint"
+      - dts
+      summary: DTS entry point
+      operationId: r2d:entryPoint
+      security: []
       responses:
-        200:
-          description: DTS entry point
+        '200':
+          description: DTS 1.0 response
           content:
             application/ld+json:
-              example: ""
-              
+              schema:
+                $ref: '#/components/schemas/DtsEntryPoint'
+  /api/v2/dts/collection:
+    get:
+      tags:
+      - dts
+      summary: DTS collection
+      description: Browse registered projects and their readable TEI resources. The root collection is data.
+      operationId: r2d:collection
+      security: []
+      responses:
+        '200':
+          description: DTS 1.0 response
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/DtsCollectionResponse'
+        '400':
+          description: Missing parameter, invalid parameter combination, depth, page
+            or range order.
+        '404':
+          description: Unknown collection, resource, citation tree, reference or media
+            type.
+      parameters:
+      - name: id
+        in: query
+        required: false
+        description: Collection or resource identifier; defaults to the root collection
+          data.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: One-based page number (25 members per page).
+        schema:
+          type: integer
+          minimum: 1
+      - name: nav
+        in: query
+        required: false
+        description: Return child or parent collections/resources.
+        schema:
+          type: string
+          enum:
+          - children
+          - parents
+          default: children
+  /api/v2/dts/navigation:
+    get:
+      tags:
+      - dts
+      summary: DTS navigation
+      description: Navigate the default tree of xml:id elements within tei:text. Unidentified containers do not introduce citation levels.
+      operationId: r2d:navigation
+      security: []
+      responses:
+        '200':
+          description: DTS 1.0 response
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/DtsNavigation'
+        '400':
+          description: Missing parameter, invalid parameter combination, depth, page
+            or range order.
+        '404':
+          description: Unknown collection, resource, citation tree, reference or media
+            type.
+      parameters:
+      - name: resource
+        in: query
+        required: true
+        description: Registered TEI resource identifier.
+        schema:
+          type: string
+      - name: ref
+        in: query
+        required: false
+        description: xml:id of a citable unit; excludes start and end.
+        schema:
+          type: string
+      - name: start
+        in: query
+        required: false
+        description: Inclusive start xml:id; requires end and excludes ref.
+        schema:
+          type: string
+      - name: end
+        in: query
+        required: false
+        description: Inclusive end xml:id; requires start and excludes ref.
+        schema:
+          type: string
+      - name: down
+        in: query
+        required: false
+        description: Relative citation depth; -1 returns all levels, 0 returns siblings
+          of ref. Without ref or a range, down must be positive or -1. Without down,
+          return only the selected unit(s).
+        schema:
+          type: integer
+          minimum: -1
+      - name: tree
+        in: query
+        required: false
+        description: Citation tree identifier. Omit for the default xml:id tree. This
+          implementation has no alternative trees.
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: One-based page number (25 members per page).
+        schema:
+          type: integer
+          minimum: 1
+  /api/v2/dts/document:
+    get:
+      tags:
+      - dts
+      summary: DTS document
+      description: Retrieve a full TEI document or an inclusive fragment in a DTS wrapper.
+      operationId: r2d:document
+      security: []
+      responses:
+        '200':
+          description: DTS 1.0 response
+          content:
+            application/tei+xml:
+              schema:
+                type: string
+          headers:
+            Link:
+              description: Link to the collection description of this resource.
+              schema:
+                type: string
+        '400':
+          description: Missing parameter, invalid parameter combination, depth, page
+            or range order.
+        '404':
+          description: Unknown collection, resource, citation tree, reference or media
+            type.
+      parameters:
+      - name: resource
+        in: query
+        required: true
+        description: Registered TEI resource identifier.
+        schema:
+          type: string
+      - name: ref
+        in: query
+        required: false
+        description: xml:id of a citable unit; excludes start and end.
+        schema:
+          type: string
+      - name: start
+        in: query
+        required: false
+        description: Inclusive start xml:id; requires end and excludes ref.
+        schema:
+          type: string
+      - name: end
+        in: query
+        required: false
+        description: Inclusive end xml:id; requires start and excludes ref.
+        schema:
+          type: string
+      - name: tree
+        in: query
+        required: false
+        description: Citation tree identifier. Omit for the default xml:id tree. This
+          implementation has no alternative trees.
+        schema:
+          type: string
+      - name: mediaType
+        in: query
+        required: false
+        description: Requested document representation.
+        schema:
+          type: string
+          enum:
+          - application/tei+xml
 
 components:
   securitySchemes:
@@ -970,6 +1146,7 @@ components:
         default: 25
         maximum: 100
     modified:
+      description: If-Modified-Since header as defined by RFC
       name: "If-Modified-Since"
       in: header
       schema:
@@ -1129,6 +1306,7 @@ components:
 
   schemas:
     contents:
+      description: The contents of a filtered list request, usually lists of projects and/or resources
       type: object
       xml:
         name: contents
@@ -1139,6 +1317,7 @@ components:
       required:
         - for
     login:
+      description: Body for login requests
       type: object
       required: [ "user" ]
       properties:
@@ -1206,6 +1385,7 @@ components:
     #     - $ref: '#/components/schemas/listProjects'
     #     - $ref: '#/components/schemas/listViews'
     ResultBase:
+      description: Wrapper for API list or search request responses
       type: object
       xml:
         name: result
@@ -1502,3 +1682,208 @@ components:
       type: integer
       xml:
         attribute: true
+
+    DtsEntryPoint:
+      description: The response for an Entry Point request as defined by the DTS API
+      type: object
+      required:
+        - '@context'
+        - '@id'
+        - '@type'
+        - dtsVersion
+        - collection
+        - navigation
+        - document
+      properties:
+        '@context':
+          type: string
+        '@id':
+          type: string
+        '@type':
+          const: EntryPoint
+        dtsVersion:
+          const: '1.0'
+        collection:
+          type: string
+        navigation:
+          type: string
+        document:
+          type: string
+    DtsCollection:
+      description: The response for a Collection request as defined by the DTS API
+      type: object
+      required:
+        - '@id'
+        - '@type'
+        - dtsVersion
+        - title
+        - totalParents
+        - collection
+      properties:
+        '@context':
+          type: string
+        '@id':
+          type: string
+        '@type':
+          type: string
+          enum:
+            - Collection
+            - Resource
+        dtsVersion:
+          const: '1.0'
+        title:
+          type: string
+        totalParents:
+          type: integer
+          minimum: 0
+        totalChildren:
+          type: integer
+          minimum: 0
+        collection:
+          type: string
+        navigation:
+          type: string
+        document:
+          type: string
+        citationTrees:
+          type: array
+          items:
+            $ref: '#/components/schemas/DtsCitationTree'
+        mediaTypes:
+          type: array
+          items:
+            type: string
+        member:
+          type: array
+          items:
+            $ref: '#/components/schemas/DtsCollection'
+        view:
+          $ref: '#/components/schemas/DtsPagination'
+      allOf:
+        - if:
+            properties:
+              '@type':
+                const: Collection
+          then:
+            required:
+              - totalChildren
+        - if:
+            properties:
+              '@type':
+                const: Resource
+          then:
+            required:
+              - navigation
+              - document
+              - citationTrees
+              - mediaTypes
+    DtsCitationTree:
+      description: The response for a Citation Tree request as defined by the DTS API
+      type: object
+      required:
+        - '@type'
+      properties:
+        '@type':
+          const: CitationTree
+        identifier:
+          type: string
+        citeStructure:
+          type: array
+          items:
+            $ref: '#/components/schemas/DtsCiteStructure'
+    DtsCiteStructure:
+      description: A Cite Structure as defined by the DTS API
+      type: object
+      required:
+        - citeType
+      properties:
+        citeType:
+          type: string
+        citeStructure:
+          type: array
+          items:
+            $ref: '#/components/schemas/DtsCiteStructure'
+    DtsCitableUnit:
+      description: A Citable Unit as defined by the DTS API
+      type: object
+      required:
+        - '@type'
+        - identifier
+        - parent
+        - level
+      properties:
+        '@type':
+          const: CitableUnit
+        identifier:
+          type: string
+        parent:
+          type:
+            - string
+            - 'null'
+        level:
+          type: integer
+          minimum: 1
+        citeType:
+          type: string
+    DtsPagination:
+      description: A paginated response as defined by the DTS API
+      type: object
+      required:
+        - '@type'
+        - '@id'
+        - first
+        - previous
+        - next
+        - last
+      properties:
+        '@type':
+          const: Pagination
+        '@id':
+          type: string
+        first:
+          type: string
+        previous:
+          type: string
+        next:
+          type: string
+        last:
+          type: string
+    DtsNavigation:
+      description: The response for a Navigation request as defined by the DTS API
+      type: object
+      required:
+        - '@context'
+        - '@id'
+        - '@type'
+        - dtsVersion
+        - resource
+      properties:
+        '@context':
+          type: string
+        '@id':
+          type: string
+          format: uri
+        '@type':
+          const: Navigation
+        dtsVersion:
+          const: '1.0'
+        resource:
+          $ref: '#/components/schemas/DtsCollection'
+        ref:
+          $ref: '#/components/schemas/DtsCitableUnit'
+        start:
+          $ref: '#/components/schemas/DtsCitableUnit'
+        end:
+          $ref: '#/components/schemas/DtsCitableUnit'
+        member:
+          type: array
+          items:
+            $ref: '#/components/schemas/DtsCitableUnit'
+        view:
+          $ref: '#/components/schemas/DtsPagination'
+    DtsCollectionResponse:
+      description: The content for a Collection request as defined by the DTS API
+      allOf:
+        - $ref: '#/components/schemas/DtsCollection'
+        - required:
+          - '@context'

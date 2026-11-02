@@ -1,1 +1,39 @@
-GET http://localhost:8080/exist/apps/edoc/api/v2/dts
+@base = http://localhost:8080/exist/apps/edoc/api/v2/dts
+# Set these to registered resource and xml:id values in your test instance.
+@resource = example-resource
+@ref = chapter1
+@start = paragraph1
+@end = paragraph2
+
+### Entry point
+GET {{base}}
+
+### Root collection
+GET {{base}}/collection
+
+### Resource metadata
+GET {{base}}/collection?id={{resource}}
+
+### Resource parents
+GET {{base}}/collection?id={{resource}}&nav=parents
+
+### Top-level references
+GET {{base}}/navigation?resource={{resource}}&down=1
+
+### Complete citation tree, first page
+GET {{base}}/navigation?resource={{resource}}&down=-1&page=1
+
+### Unit and its subtree
+GET {{base}}/navigation?resource={{resource}}&ref={{ref}}&down=-1
+
+### Inclusive navigation range
+GET {{base}}/navigation?resource={{resource}}&start={{start}}&end={{end}}&down=-1
+
+### Full TEI
+GET {{base}}/document?resource={{resource}}
+
+### TEI fragment
+GET {{base}}/document?resource={{resource}}&ref={{ref}}
+
+### TEI range
+GET {{base}}/document?resource={{resource}}&start={{start}}&end={{end}}
