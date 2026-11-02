@@ -170,23 +170,23 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
             xmldb:create-collection($subCollection || "/resources", "js"),
             xmldb:create-collection($subCollection || "/resources", "xq"),
 
-            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl/", $subCollection || "/resources"),
+            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl/", $subCollection || "/resources/"),
 
             sm:chmod(xs:anyURI($subCollection || "/resources"), 'rwxrwxr-x'),
-            sm:chown(xs:anyURI($subCollection || "/resources"), "wdb:wdbusers"),
-            for $c in xmldb:get-child-collections($subCollection || "/resources")
+            sm:chown(xs:anyURI($subCollection || "/resources"), "wdbadmin:wdbadmins"),
+            for $c in xmldb:get-child-collections($subCollection || "/resources/")
               return (
                   sm:chmod(xs:anyURI($subCollection || "/resources/" || $c), 'rwxrwxr-x'),
-                  sm:chown(xs:anyURI($subCollection || "/resources/" || $c), "wdb:wdbusers")
+                  sm:chown(xs:anyURI($subCollection || "/resources/" || $c), "wdbadmin:wdbadmins")
                 ),
-            for $f in xmldb:get-child-resources($subCollection || "/resources/xsl")
+            for $f in xmldb:get-child-resources($subCollection || "/resources/xsl/")
               return (
                 sm:chmod(xs:anyURI($subCollection || "/resources/xsl/" || $f), "rwxrwxr-x"),
-                sm:chown(xs:anyURI($subCollection || "/resources/xsl/" || $f), "wdb:wdbusers")
+                sm:chown(xs:anyURI($subCollection || "/resources/xsl/" || $f), "wdbadmin:wdbadmins")
               ),
             
             xmldb:copy-resource("/db/apps/edoc/admin/project-template", "project.xqm", $subCollection, "project.xqm"),
-            sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdb:wdbusers"),
+            sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdbadmin:wdbadmins"),
             sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x"),
 
             (: we assume that main projects do no import globally as this would comlpetely overwhelm navigation :)
@@ -399,7 +399,7 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
     else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
       r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
     else if ( not(r2:writeAllowed($request?user)) ) then
-      r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+      r2:response(403, 'text/plain', 'Forbidden for ' || $request?user, $r2:allOrigins)
     else if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
     else if ( not(sm:has-access($project?collectionPath, "w")) ) then
