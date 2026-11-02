@@ -59,7 +59,9 @@ declare variable $r2:defaultResponseLength := 25;
 declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $pathInfo as map(*), $function as xs:string ) as map(*) {
   try {
     switch ( $mediaType )
-      case "application/json"
+      case "application/ld+json"
+        return router:response(200, "application/ld+json", parse-json($data), $r2:allOrigins)
+      case "application/json"      
         return router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
       case "text/html"
         return router:response(200, "text/html", wdb:applySpecificXsl($data, $pathInfo, $function || ".xsl"), $r2:allOrigins)
@@ -78,14 +80,19 @@ declare function r2:returnResponse ( $data as item(), $mediaType as xs:string, $
 };
 
 declare function r2:returnXmlOrJson ( $data as item() ) as item() {
-  let $mediaType := request:get-header("Accept")
-  return
-    if ( $mediaType = "application/json" ) then
-      router:response(200, "application/json", parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))), $r2:allOrigins)
-    else if ( $mediaType = "application/xml" ) then
-      router:response(200, "application/xml", $data, $r2:allOrigins)
-    else
-      router:response(406, "text/plain", "Not acceptable", $r2:allOrigins)
+  r2:returnXmlOrJson($data, request:get-header("Accept"))
+};
+declare function r2:returnXmlOrJson ( $data as item(), $mediaType as xs:string ) as item() {
+  if ( $mediaType = ("application/json", "application/ld+json") ) then
+    router:response(200,
+        $mediaType,
+        parse-json(xml-to-json(transform:transform($data, doc('api.xsl'), ()))),
+        $r2:allOrigins
+      )
+  else if ( $mediaType = "application/xml" ) then
+    router:response(200, "application/xml", $data, $r2:allOrigins)
+  else
+    router:response(406, "text/plain", "Not acceptable", $r2:allOrigins)
 };
 
 declare function r2:response ( $status as xs:integer, $mediaType as xs:string, $body as item(), $headers as map(*) ) as item() {
@@ -106,7 +113,7 @@ declare function r2:parseBody ( $request as map(*) ) as item() {
 };
 
 declare function r2:writeAllowed ( $user as map(*) ) as xs:boolean {
-  $user?groups = ('dba', 'wdbadmin')
+  $user?groups = ('dba', 'wdbadmins')
 };
 
 declare function r2:mapKeysAllowed( $m as map(*), $required as xs:string*, $optional as xs:string* ) as xs:boolean {
@@ -283,13 +290,13 @@ declare function r2:checkAndStore ( $request as map(*), $parsedUpload as map(*),
     r2:response(422, 'text/plain', 'File content is not valid XML.', $r2:allOrigins)
   else if ( exists($parsedUpload?xml/*[1]/@xml:id) and $parsedUpload?xml/*[1]/@xml:id != $request?parameters?id ) then
     r2:response(422, 'text/plain', 'ID in the XML content (' || $parsedUpload?xml/*[1]/@xml:id || ') does not match the ID in the URL (' || $request?parameters?id || ').', $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $parsedUpload?relativePath
+  else if ( $meta//meta:file[@path = $parsedUpload?targetCollection
             and @xml:id = $request?parameters?id
             and @uuid = $parsedUpload?hash]
           ) then
-    r2:response(204, 'text/plain', ``[`{$parsedUpload?relativePath}`: `{$request?parameters?id}`]``, $r2:allOrigins)
-  else if ( $meta//meta:file[@path = $parsedUpload?relativePath and @xml:id != $request?parameters?id] ) then
-    r2:response(409, 'text/plain', 'A resource with path ' || $parsedUpload?relativePath || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
+    r2:response(204, 'text/plain', ``[`{$parsedUpload?targetCollection}`: `{$request?parameters?id}`]``, $r2:allOrigins)
+  else if ( $meta//meta:file[@path = $parsedUpload?targetCollection and @xml:id != $request?parameters?id] ) then
+    r2:response(409, 'text/plain', 'A resource with path ' || $parsedUpload?targetCollection || ' already exists in project ' || $request?parameters?ed  || ' with ID ' || $request?parameters?id, $r2:allOrigins)
   (: a resource created by a POST or PUT request has an ID that is already in use
      r2r:putResource()                 ─┐
      r2p:createProjectResourceWithId() ─┴→ value for $id is set in the actual request, hence $id = $request?parameters?id

@@ -13,9 +13,9 @@ declare function r2d:entryPoint ( $request as map(*) ) as map(*) {
         "dtsVersion": "1.0",
         "@id": "/api/v2/dts/",
         "@type": "EntryPoint",
-        "collection":  "/api/v2/dts/collection/{?id,page,nav}",
-        "navigation" : "/api/v2/dts/navigation/{?resource,ref,start,end,down,tree,page}",
-        "document":    "/api/v2/dts/document/{?resource,ref,start,end,tree,mediaType}"
+        "collection": "/api/v2/dts/collection/{?id,page,nav}",
+        "navigation": "/api/v2/dts/navigation/{?resource,ref,start,end,down,tree,page}",
+        "document":   "/api/v2/dts/document/{?resource,ref,start,end,tree,mediaType}"
       }'),
     $r2:allOrigins
   )
