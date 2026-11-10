@@ -96,7 +96,6 @@ body > header {
 body > footer {
   background-color: var(--wdb-function-bg);
   display: block;
-  flex: 1 1 auto;
   grid-area: bottom;
   padding: 1em;
 }
