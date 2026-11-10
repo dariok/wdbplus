@@ -10,13 +10,8 @@
  *          2021-12-04 DK: - move all styles for body > header, body > footer to wdb.css
  */
 
-/* hide right side on small broser windows, e.g. mobile */
+/* hide aside on small broser windows, e.g. mobile */
 @media screen and (max-width: 768px) {
-  body {
-    grid-template-columns: none;
-    grid-template-areas: 'header'
-                         'main';
-  }
   aside {
     display: none;
   }
@@ -73,28 +68,6 @@ main section {
 /* #footnote_container {
   grid-area: annotations;
 } */
-
-/* no showHide, so full width on small screens */
-@media screen and (max-width: 768px) {
-
-}
-
-/* Show/hide bar */
-/* This one is necessary for at least basic resizing as long as CSS resize property is not supported
- * by Edge and many versions of gnawed-at fruit crap */
-#wdbShowHide {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  margin-top: 0;
-  padding-top: 45vh;
-  width: 0.5em;
-}
-/* do not display on small screens */
-@media screen and (max-width: 768px) {
-  #wdbShowHide {
-    display: none;
-  }
-}
 
 aside > div {
   position: absolute;
