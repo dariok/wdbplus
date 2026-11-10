@@ -55,6 +55,11 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) as element(
     <script src="./$shared/js/function.js"/>
     <script src="./$shared/js/{ $wdbfp:resourceName }.js" />
     {
+      if ( util:binary-doc-available($config:data || "/resources/js/" || $wdbfp:resourceName || ".js") )
+        then <script src="$global/js/{ $wdbfp:resourceName }.js" />
+        else ()
+    }
+    {
       if ( util:binary-doc-available($model?projectResources || 'js/project.js') )
         then <script src="{ substring-after($model?projectResources, $config:edocBaseDB||'/')}js/project.js" />
         else ()
