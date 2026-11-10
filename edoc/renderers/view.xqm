@@ -148,3 +148,11 @@ declare function wdbView:getAside ( $node as node(), $model as map(*) ) as eleme
          <footer data-template="wdbrh:getProjectSpecifics" data-template-name="RightFooter"></footer>
       </aside>
 };
+
+declare function wdbView:getAsideLeft ( $node as node(), $model as map(*) ) {
+  let $aside := wdbrh:getProjectSpecifics($node, $model, "view-aside")
+
+  return if ( exists($aside) )
+    then $aside
+    else ()
+};

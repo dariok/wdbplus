@@ -10,16 +10,12 @@
  *          2021-12-04 DK: - move all styles for body > header, body > footer to wdb.css
  */
 
-body {
-  grid-template-columns: 1fr 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
-}
-
 /* hide right side on small broser windows, e.g. mobile */
 @media screen and (max-width: 768px) {
   body {
     grid-template-columns: none;
     grid-template-areas: 'header'
-                         'left';
+                         'main';
   }
   aside {
     display: none;
@@ -27,8 +23,13 @@ body {
 }
 
 /* Main content below header */
-main {
+#wdbContentContainer {
+  overflow-x: clip;
+  overflow-y: auto;
   grid-area: left;
+  display: flex;
+}
+main {
   display: flex;
   flex-wrap: wrap;
   
@@ -36,10 +37,18 @@ main {
   font-size: 1.25em;
   letter-spacing: .4px;
   line-height: 1.25em;
+  max-width: 80%;
+  min-width: 20%;
   padding: 0 1em;
   resize: horizontal;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  width: 50%;
+}
+#wdbRight {
+  flex-grow: 1;
+  min-width: 15%;
+  max-width: 80%;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
@@ -61,9 +70,9 @@ main section {
 #content_container {
   grid-area: main;
 }
-#footnote_container {
+/* #footnote_container {
   grid-area: annotations;
-}
+} */
 
 /* no showHide, so full width on small screens */
 @media screen and (max-width: 768px) {
@@ -85,13 +94,6 @@ main section {
   #wdbShowHide {
     display: none;
   }
-}
-
-/* right side */
-body > aside {
-  grid-area: right;
-  
-  overflow: initial;
 }
 
 aside > div {
