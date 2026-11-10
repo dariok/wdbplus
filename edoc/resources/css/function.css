@@ -3,22 +3,12 @@
  * creator: DK Dario Kampkaspar <dario.kampkaspar@ulb.tu-darmstadt.de>
  * sources: https://github.com/dariok/wdbplus */
 
-body {
-  grid-template-columns: 3fr 7fr;
-  /* font-family: sans-serif is inherited from wdb.css */
-}
-
-body > footer {
-  grid-area: bottom;
-}
-
-h1, h2 {
+h1, h2, h3 {
   width: 100%;
   text-align: center;
 }
 
 aside {
-  grid-area: left;
   overflow: auto;
   padding: 0 .5em;
 }
@@ -28,7 +18,7 @@ aside h1 {
 }
 
 main {
-  grid-area: right;
+  grid-area: main;
   
   display: flex;
   flex-direction: column;
