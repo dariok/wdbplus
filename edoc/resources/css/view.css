@@ -21,7 +21,7 @@
 #wdbContentContainer {
   overflow-x: clip;
   overflow-y: auto;
-  grid-area: left;
+  grid-area: main;
   display: flex;
 }
 main {
