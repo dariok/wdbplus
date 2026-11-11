@@ -1,7 +1,0 @@
-header {
-  grid-area: header;
-}
-main {
-  grid-area: left;
-  grid-column: 1 / 3;
-}

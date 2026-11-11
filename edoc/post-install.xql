@@ -1,29 +1,46 @@
 xquery version "3.1";
 
-let $targetCollection := '/db/apps/edoc'
-  , $collsr := ("/modules", "/templates", "/resources/css", "/resources/js", "/resources/xsl")
+(: Note: default values set automatically during installation
+   - default user and group:  wdbadmin:wdbadmins – set in repo.xml
+   - default mode:            r--r--r--          – set in repo.xml
+   - execute flag for XQuery: r-xr-xr-x          – set automatically https://exist-db.org/exist/apps/doc/repo.xml#sect-repoxml
+ :)
 
+let $targetCollection := '/db/apps/edoc'
+
+(: All core elements are read-only, set in repo.xml
+   We make those writable to the wdbadmin user and wdbadmins group that must be writable
+ :)
 return (
-  (: for $coll in $collsr
-    let $resources := xmldb:get-child-resources($targetCollection || $coll)
-    return for $resource in $resources
-      let $res := $targetCollection || $coll || '/' || $resource
-      return $res || ' (r--r--r--): ' || sm:chmod(xs:anyURI($res), 'r--r--r--'),
-  for $html in xmldb:get-child-resources($targetCollection)[ends-with(., '.html')]
-    return sm:chmod(xs:anyURI($targetCollection || '/' || $html), 'r--r--r--'),
-  for $xql in xmldb:get-child-resources($targetCollection || '/rest')[ends-with(., '.xql')]
-    return sm:chmod(xs:anyURI($targetCollection || '/rest/' || $xql), 'r-xr-xr-x'),
-  for $xql in xmldb:get-child-resources($targetCollection || '/modules')[ends-with(., '.xql')]
-    return sm:chmod(xs:anyURI($targetCollection || '/modules/' || $xql), 'r-xr-xr-x'), :)
-  for $logs in xmldb:get-child-resources($targetCollection || '/logs')
-    return sm:chmod(xs:anyURI($targetCollection || '/logs/' || $logs), 'rw-rw-rw-')
-    (: ,
-  sm:chmod(xs:anyURI($targetCollection || '/config.xml'), 'rw-rw-r--'),
-  sm:chmod(xs:anyURI($targetCollection || '/controller.xql'), 'r-xr-xr-x'),
-  sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
+  (: create wdb and wdbusers :)
+  sm:create-group("wdbusers", "wdbadmin", "general user group"),
+  sm:create-account("wdb", "wdb", "wdbusers"),
+
+  (: /data/ must be writable for admins so that projects can be created :)
+  sm:chmod(xs:anyURI($targetCollection || '/data'), 'rwxrwxr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/data/resources'), 'rwxrwxr-x'),
+  for $global in xmldb:get-child-collections($targetCollection || '/data/resources')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/'||$global), 'rwxrwxr-x'),
+  for $r in xmldb:get-child-resources($targetCollection || '/data/resources/xsl')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/xsl/'||$r), 'rw-rw-r--'),
+  for $r in xmldb:get-child-resources($targetCollection || '/data/resources/css')
+    return sm:chmod(xs:anyURI($targetCollection || '/data/resources/css/'||$r), 'rw-rw-r--'),
   sm:chmod(xs:anyURI($targetCollection || '/data/instance.xqm'), 'rw-rw-r--'),
-  for $s in xmldb:get-child-collections($targetCollection)
-    return sm:chmod(xs:anyURI($targetCollection || '/' || $s), "r-xr-xr-x"),
-  sm:chown(xs:anyURI($targetCollection || '/annotations'), 'wdb:wdbusers'),
-  sm:chown(xs:anyURI($targetCollection || '/data'), 'wdb:wdbusers'), :)
+  sm:chmod(xs:anyURI($targetCollection || '/data/wdbmeta.xml'), 'rw-rw-r--'),
+
+  (: /addins/ must be writable for admins so that addins can be installed or created :)
+  sm:chmod(xs:anyURI($targetCollection || '/addins'), 'rwxrwxr-x'),
+
+  (: /index/ must be writable for admins so that the ID index files can be updated for projects and resources :)
+  sm:chmod(xs:anyURI($targetCollection || '/index'), 'rwxrwxr-x'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/file-index.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/project-index.xml'), 'rw-rw-r--'),
+  sm:chmod(xs:anyURI($targetCollection || '/index/index-projects.xq'), 'r-xr-x---'),
+
+  (: The log must be writable for everyone but readable only for admins :)
+  sm:chmod(xs:anyURI($targetCollection || '/logs/errors.xml'), 'rw-rw-rw-'),
+
+  (: TODO remove for release :)
+  (: for development purposes, the routing JSON must be writable :)
+  sm:chmod(xs:anyURI($targetCollection || '/rest2/v2.json'), 'rw-rw-r--')
 )

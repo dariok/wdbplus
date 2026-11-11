@@ -145,6 +145,14 @@ declare function wdbView:getAside ( $node as node(), $model as map(*) ) as eleme
             <!-- this space can be used to add project specific content, e.g. to create a TOC of the text within a tabbed
                  area to the right -->
          </div>
-         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="RightFooter"></footer>
+         <footer>{ wdbrh:getProjectSpecifics($node, $model, "RightFooter") }</footer>
       </aside>
+};
+
+declare function wdbView:getAsideLeft ( $node as node(), $model as map(*) ) {
+  let $aside := wdbrh:getProjectSpecifics($node, $model, "view-aside")
+
+  return if ( exists($aside) )
+    then $aside
+    else ()
 };

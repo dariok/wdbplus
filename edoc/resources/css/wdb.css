@@ -45,10 +45,41 @@ body {
   line-height: 1.4rem;
   
   display: grid;
-  grid-template-areas: 'header header'
-                       'left right'
-                       'bottom bottom';
   grid-template-rows: min-content auto min-content;
+}
+/* general layout, e.g. with ContentContainer (a flex container in view.html) is
+   the three rows only. This replaces templates/widepage.html */
+body {
+  grid-template-areas: 'header' 'main' 'bottom';
+}
+/* If a body has content in one aside only (apart from main) */
+body:has(#wdbLeft:not(:empty)):has(#wdbRight:empty) {
+  grid-template-areas: 'header header'
+                       'left main'
+                       'bottom bottom';
+  grid-template-columns: 3fr 7fr;
+}
+body:has(#wdbRight:not(:empty)):has(#wdbLeft:empty) {
+  grid-template-areas: 'header header'
+                       'main right'
+                       'bottom bottom';
+  grid-template-columns: 7fr 3fr;
+}
+body:has(#wdbLeft:not(:empty)):has(#wdbRight:not(:empty)) {
+  grid-template-areas: 'header header header'
+                       'left main right'
+                       'bottom bottom bottom';
+  grid-template-columns: 2fr 6fr 2fr;
+}
+
+#wdbLeft {
+  grid-area: left;
+}
+aside:empty {
+  display: none;
+}
+#wdbRight {
+  grid-area: right;
 }
 
 /* main header */
@@ -65,7 +96,6 @@ body > header {
 body > footer {
   background-color: var(--wdb-function-bg);
   display: block;
-  flex: 1 1 auto;
   grid-area: bottom;
   padding: 1em;
 }

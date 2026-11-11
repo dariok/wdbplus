@@ -1,0 +1,2 @@
+# DTS 1.0 validator 0.2.3, pinned for reproducible API checks.
+dts-validator @ https://github.com/distributed-text-services/validator/archive/b3a826fc35947345245c8f1cc35bd4323f37295e.zip

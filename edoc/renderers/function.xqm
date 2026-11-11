@@ -2,7 +2,7 @@ xquery version "3.1";
 
 module namespace wdbfp = "https://github.com/dariok/wdbplus/functionpages";
 
-import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "wdb-config.xqm";
+import module namespace config    = "https://github.com/dariok/wdbplus/config"          at "../modules/wdb-config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/html-templating";
 import module namespace wdb       = "https://github.com/dariok/wdbplus/wdb"             at "../modules/app.xqm";
 import module namespace wdbrh     = "https://github.com/dariok/wdbplus/renderer-helper" at "renderer-helper.xqm";
@@ -54,6 +54,11 @@ declare function wdbfp:getHead ( $node as node(), $model as map(*) ) as element(
     <script src="./$shared/js/legal.js"/>
     <script src="./$shared/js/function.js"/>
     <script src="./$shared/js/{ $wdbfp:resourceName }.js" />
+    {
+      if ( util:binary-doc-available($config:data || "/resources/js/" || $wdbfp:resourceName || ".js") )
+        then <script src="$global/js/{ $wdbfp:resourceName }.js" />
+        else ()
+    }
     {
       if ( util:binary-doc-available($model?projectResources || 'js/project.js') )
         then <script src="{ substring-after($model?projectResources, $config:edocBaseDB||'/')}js/project.js" />

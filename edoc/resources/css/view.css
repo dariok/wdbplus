@@ -10,25 +10,21 @@
  *          2021-12-04 DK: - move all styles for body > header, body > footer to wdb.css
  */
 
-body {
-  grid-template-columns: 1fr 1fr; /* this should allow main to grow/shrink and aside with contents to follow */
-}
-
-/* hide right side on small broser windows, e.g. mobile */
+/* hide aside on small broser windows, e.g. mobile */
 @media screen and (max-width: 768px) {
-  body {
-    grid-template-columns: none;
-    grid-template-areas: 'header'
-                         'left';
-  }
   aside {
     display: none;
   }
 }
 
 /* Main content below header */
+#wdbContentContainer {
+  overflow-x: clip;
+  overflow-y: auto;
+  grid-area: main;
+  display: flex;
+}
 main {
-  grid-area: left;
   display: flex;
   flex-wrap: wrap;
   
@@ -36,10 +32,18 @@ main {
   font-size: 1.25em;
   letter-spacing: .4px;
   line-height: 1.25em;
+  max-width: 80%;
+  min-width: 20%;
   padding: 0 1em;
   resize: horizontal;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  width: 50%;
+}
+#wdbRight {
+  flex-grow: 1;
+  min-width: 15%;
+  max-width: 80%;
 }
 
 /* Marginalia – width is set by JS as CSS :has() is still not there… */
@@ -61,38 +65,9 @@ main section {
 #content_container {
   grid-area: main;
 }
-#footnote_container {
+/* #footnote_container {
   grid-area: annotations;
-}
-
-/* no showHide, so full width on small screens */
-@media screen and (max-width: 768px) {
-
-}
-
-/* Show/hide bar */
-/* This one is necessary for at least basic resizing as long as CSS resize property is not supported
- * by Edge and many versions of gnawed-at fruit crap */
-#wdbShowHide {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  margin-top: 0;
-  padding-top: 45vh;
-  width: 0.5em;
-}
-/* do not display on small screens */
-@media screen and (max-width: 768px) {
-  #wdbShowHide {
-    display: none;
-  }
-}
-
-/* right side */
-body > aside {
-  grid-area: right;
-  
-  overflow: initial;
-}
+} */
 
 aside > div {
   position: absolute;

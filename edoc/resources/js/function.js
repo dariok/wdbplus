@@ -790,17 +790,6 @@ $(target).closest(".annotations").delay(1000).fadeOut(500);
           pos = pbs.index(url);
       viewer.goToPage(pos);
     }
-  },
-
-  // make the left wider/smaller when resizing of div is not available
-  changeMainWidth: function () {
-    if ($('#wdbShowHide > button').html() == '»') {
-      $('body').css('grid-template-columns', '2fr 1fr');
-      $('#wdbShowHide > button').html('«').attr('title', "linke Seite schmaler");
-    } else {
-      $('body').css('grid-template-columns', '1fr 1fr');
-      $('#wdbShowHide > button').html('»').attr("title", "linke Seite breiter");
-    }
   }
 };
 Object.freeze(wdbDocument);
@@ -932,11 +921,6 @@ $( () => {
   // load a navigation level 
   $('body').on('click', '.wdbNav.load', ( event ) => {
     wdbDocument.nav.loadNavigation(event);
-  });
-
-  // toggle width button solely for iOS Safari
-  $('#wdbShowHide').on('click', () =>{
-    wdbDocument.changeMainWidth();
   });
 
   // register hover handler for footnote link buttons

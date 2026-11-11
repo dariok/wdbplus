@@ -20,8 +20,16 @@ function wdbi:getEd( $node as node(), $model as map(*) ) as element(table) {
           , $file := doc("/db/apps/edoc/data/" || $f)
         
         return <tr>
-          <td><a href="/v/{ $struct/@file }"><img src="{ $file//meta:coverImages/meta:image[1]/@href }" /></a></td>
-          <td><a href="/v/{ $struct/@file }"><b>{ $struct/@label || $struct/meta:label }</b></a> <br/> { normalize-space($file//meta:projectDesc) }</td>
+          <td>
+            <a href="/v/{ $struct/@file }">
+              <img src="{ $file//meta:coverImages/meta:image[1]/@href }">{ $file//meta:coverImages/meta:image[1]/@title }</img>
+            </a>
+          </td>
+          <td>
+            <a href="/v/{ $struct/@file }"><b>{ $struct/@label || $struct/meta:label }</b></a>
+            <br/>
+            { normalize-space($file//meta:projectDesc) }
+          </td>
         </tr>
     }
   </table>

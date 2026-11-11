@@ -5,8 +5,9 @@ module namespace r2p = "https://github.com/dariok/wdbplus/rest2/projects";
 import module namespace r2       = "https://github.com/dariok/wdbplus/rest2/common" at "rest-common.xqm";
 import module namespace wdbFiles = "https://github.com/dariok/wdbplus/files"        at "../modules/wdb-files.xqm";
 
-declare namespace index = "https://github.com/dariok/wdbplus/index";
-declare namespace meta  = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace index  = "https://github.com/dariok/wdbplus/index";
+declare namespace meta   = "https://github.com/dariok/wdbplus/wdbmeta";
+declare namespace wdbErr = "https://github.com/dariok/wdbplus/errors";
 
 (:~
  : List all projects
@@ -169,23 +170,23 @@ declare function r2p:createProjectWithId ( $request as map(*) ) as map(*) {
             xmldb:create-collection($subCollection || "/resources", "js"),
             xmldb:create-collection($subCollection || "/resources", "xq"),
 
-            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl", $subCollection || "/resources"),
+            xmldb:copy-collection("/db/apps/edoc/admin/project-template/resources/xsl/", $subCollection || "/resources/"),
 
             sm:chmod(xs:anyURI($subCollection || "/resources"), 'rwxrwxr-x'),
-            sm:chown(xs:anyURI($subCollection || "/resources"), "wdb:wdbusers"),
-            for $c in xmldb:get-child-collections($subCollection || "/resources")
+            sm:chown(xs:anyURI($subCollection || "/resources"), "wdbadmin:wdbadmins"),
+            for $c in xmldb:get-child-collections($subCollection || "/resources/")
               return (
                   sm:chmod(xs:anyURI($subCollection || "/resources/" || $c), 'rwxrwxr-x'),
-                  sm:chown(xs:anyURI($subCollection || "/resources/" || $c), "wdb:wdbusers")
+                  sm:chown(xs:anyURI($subCollection || "/resources/" || $c), "wdbadmin:wdbadmins")
                 ),
-            for $f in xmldb:get-child-resources($subCollection || "/resources/xsl")
+            for $f in xmldb:get-child-resources($subCollection || "/resources/xsl/")
               return (
                 sm:chmod(xs:anyURI($subCollection || "/resources/xsl/" || $f), "rwxrwxr-x"),
-                sm:chown(xs:anyURI($subCollection || "/resources/xsl/" || $f), "wdb:wdbusers")
+                sm:chown(xs:anyURI($subCollection || "/resources/xsl/" || $f), "wdbadmin:wdbadmins")
               ),
             
             xmldb:copy-resource("/db/apps/edoc/admin/project-template", "project.xqm", $subCollection, "project.xqm"),
-            sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdb:wdbusers"),
+            sm:chown(xs:anyURI($subCollection || "/project.xqm"), "wdbadmin:wdbadmins"),
             sm:chmod(xs:anyURI($subCollection || "/project.xqm"), "rwxrwxr-x"),
 
             (: we assume that main projects do no import globally as this would comlpetely overwhelm navigation :)
@@ -323,6 +324,8 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
     return r2:checkAndStore($request, $parsed, $request?parameters?ed, $id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
+  } catch * {
+    r2:response(($err:value?responseCode, 418)[1], 'text/plain', 'nope', $r2:allOrigins)
   }
 };
 
@@ -337,11 +340,13 @@ declare function r2p:createProjectResourceWithoutId ( $request as map(*) ) as ma
  :)
 declare function r2p:createProjectResourceWithId ( $request as map(*) )  {
   try {
-    r2:checkAndStore($request, r2:parseUpload($request), $request?parameter?ed, $request?parameters?id)
+    r2:checkAndStore($request, r2:parseUpload($request), $request?parameters?ed, $request?parameters?id)
   } catch err:FODC0006 {
     r2:response(422, 'text/plain', 'Content could not be parsed as XML', $r2:allOrigins)
-  } catch *:wdb0000 {
+  } catch wdbErr:wdb0000 {
     r2:response(404, 'text/plain', $err:description, $r2:allOrigins)
+  } catch * {
+    r2:response(($err:value?responseCode, 418)[1], 'text/plain', 'nope', $r2:allOrigins)
   }
 };
 
@@ -394,7 +399,7 @@ declare function r2p:deleteProject ( $request as map(*) ) as map(*) {
     else if ( not(exists($request?user)) or $request?user?fullName = 'guest' ) then
       r2:response(401, 'text/plain', 'Unauthorized', $r2:allOrigins)
     else if ( not(r2:writeAllowed($request?user)) ) then
-      r2:response(403, 'text/plain', 'Forbidden', $r2:allOrigins)
+      r2:response(403, 'text/plain', 'Forbidden for ' || $request?user, $r2:allOrigins)
     else if ( $project instance of xs:QName ) then
       r2:response(404, 'text/plain', 'Project ' || $request?parameters?ed || ' not found', $r2:allOrigins)
     else if ( not(sm:has-access($project?collectionPath, "w")) ) then
@@ -488,6 +493,9 @@ declare function r2p:projectView ( $request as map(*) ) as map(*) {
       r2:returnResponse($meta, "application/xml", map {}, '')
 };
 
+(: build the ancestor tree for a project
+   We intentionally do not include siblings of a main project to avoid confuosion
+ :)
 declare %private function r2p:imported ( $import, $importerContent ) {
   let $base-uri := base-uri($import)
     , $fullImportedPath := substring-before($base-uri, "wdbmeta.xml") || $import/@path

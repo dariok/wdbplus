@@ -1,8 +1,17 @@
-<body xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/widepage.html" data-template-at="container">
-  <header data-template="wdbfp:getHeader" />
-  <main>
-    <h2>Inhalt</h2>
-    <table data-template="wdbi:getEd"/>
-  </main>
-  <footer data-template="wdbfp:getFooter"/>
-</body>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      data-template="wdbrh:getValueForAttribute"
+      data-template-attribute="lang"
+      data-template-key="language">
+   <!-- TODO: restore `head` after fixing https://github.com/eXist-db/exist/issues/6587 -->
+   <content data-template="wdbfp:getHead"/>
+   <body>
+      <header data-template="wdbfp:getHeader" />
+      <aside id="wdbLeft"></aside>
+      <main>
+         <h2>Inhalt</h2>
+         <table data-template="wdbi:getEd"/>
+      </main>
+      <aside id="wdbRight"></aside>
+      <footer data-template="wdbfp:getMainFooter"/>
+   </body>
+</html>

@@ -6,13 +6,20 @@
    <body>
       <div class="loadingModal"></div>
       <header data-template="wdbView:getHeader"></header>
-      <main>
-         <section data-template="wdbView:getContent" />
-         <footer data-template="wdbrh:getProjectSpecifics" data-template-name="mainFooter"></footer>
-      </main>
-      <aside id="wdbRight" aria-label="groups images of witnesses and additional information"
-            data-template="wdbView:getAside"></aside>
+      <div id="wdbContentContainer">
+         <aside id="wdbLeft"
+                data-template="wdbView:getAsideLeft"></aside>
+         <main>
+            <section data-template="wdbView:getContent" />
+            <footer data-template="wdbrh:getProjectSpecifics"
+                    data-template-name="mainFooter"></footer>
+         </main>
+         <aside id="wdbRight"
+                aria-label="groups images of witnesses and additional information"
+                data-template="wdbView:getAside"></aside>
+      </div>
       <!-- <aside id="wdbAnnotations" data-template="wdb:getAnnotationDialogue"></aside> -->
-      <footer data-template="wdbrh:getProjectSpecifics" data-template-name="bodyFooter"></footer>
+      <footer data-template="wdbrh:getProjectSpecifics"
+              data-template-name="bodyFooter"></footer>
    </body>
 </html>

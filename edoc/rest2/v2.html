@@ -1,34 +1,19 @@
-<html>
-    <head>
-        <meta charset="utf-8"/>
-        <title>wdb+ - OpenAPI</title>
-        <link rel="icon" type="image/png" href="static/roaster-router-logo.png" />
-        <link rel="stylesheet" href="$shared/css/swagger-ui.css"/>
-        <script src="$shared/js/swagger-ui-bundle.js" charset="UTF-8"></script>
-    </head>
-    <body>
-        <div id="basic"/>
-        <div id="custom"/>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                SwaggerUIBundle({
-                    url: 'v2.yaml',
-                    dom_id: '#basic',
-                    displayOperationId: true,
-                    displayRequestDuration: true,
-                    showExtensions: true,
-                    withCredentials: true
-                });
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="swagger-ui/index.css" />
+    <link rel="icon" type="image/png" href="swagger-ui/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="swagger-ui/favicon-16x16.png" sizes="16x16" />
+  </head>
 
-               //  SwaggerUIBundle({
-               //      url: 'api-jwt.json',
-               //      dom_id: '#custom',
-               //      displayOperationId: true,
-               //      displayRequestDuration: true,
-               //      showExtensions: true,
-               //      withCredentials: true
-               //  });
-            })
-        </script>
-    </body>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="swagger-ui/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script src="swagger-ui/swagger-initializer.js" charset="UTF-8"> </script>
+  </body>
 </html>

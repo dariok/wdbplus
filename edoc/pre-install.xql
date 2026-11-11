@@ -13,8 +13,5 @@ return (
   xmldb:create-collection($configCollection || "/edoc", "rest"),
   xmldb:create-collection($configCollection || "/edoc/data", "documentation"),
   
-  xmldb:store-files-from-pattern($configCollection || "/edoc/", $dir||"/config/edoc", "**/collection.xconf", "application/xml", true()),
-  
-  sm:create-group("wdbadmin", "admin", "Administrators for this installation"),
-  sm:create-account("wdbadmin", "wdbadmin", ("wdbuser", "wdbadmin"))
+  xmldb:store-files-from-pattern($configCollection || "/edoc/", $dir||"/config/edoc", "**/collection.xconf", "application/xml", true())
 )
